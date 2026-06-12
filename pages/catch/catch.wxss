@@ -1,0 +1,94 @@
+.card { background: #ffffff; border-radius: 20rpx; padding: 24rpx; margin-bottom: 16rpx; box-shadow: 0 1px 8px rgba(0,0,0,0.04); }
+.card-title { font-size: 30rpx; font-weight: 600; color: #1a1a1a; margin-bottom: 16rpx; padding-left: 12rpx; border-left: 4px solid #ff6900; display: flex; justify-content: space-between; align-items: center; }
+.expand { font-size: 22rpx; color: #999; font-weight: normal; }
+.coin-row { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; border-radius: 12rpx; padding: 16rpx; margin-bottom: 12rpx; }
+.coin-label { font-size: 24rpx; color: #999; }
+.coin-val { font-size: 40rpx; font-weight: 700; color: #ff9500; }
+.coin-input-row { display: flex; gap: 10rpx; }
+.coin-input { flex: 1; background: #f5f7fa; border-radius: 10rpx; padding: 12rpx; font-size: 26rpx; color: #333; }
+.coin-btn { background: #ff9500; color: #fff; padding: 12rpx 28rpx; border-radius: 10rpx; font-size: 26rpx; }
+.sub-tabs { display: flex; gap: 10rpx; margin-bottom: 16rpx; }
+.sub-tab { flex: 1; padding: 14rpx 0; text-align: center; border-radius: 14rpx; font-size: 24rpx; background: #f5f7fa; color: #999; }
+.sub-tab.on { background: #ff6900; color: #fff; font-weight: 600; }
+.special-row { display: flex; gap: 10rpx; margin-bottom: 12rpx; }
+.special-picker { flex: 1; background: #f5f7fa; border-radius: 10rpx; padding: 12rpx; }
+.picker-text { font-size: 26rpx; color: #333; }
+.special-count { width: 160rpx; background: #f5f7fa; border-radius: 10rpx; padding: 12rpx; font-size: 26rpx; text-align: center; color: #333; }
+.special-btn { padding: 12rpx 28rpx; border-radius: 10rpx; font-size: 26rpx; color: #fff; }
+.special-btn.buy { background: #1565c0; }
+.special-btn.craft { background: #2e7d32; }
+.enc-input-row { display: flex; gap: 10rpx; margin-bottom: 12rpx; }
+.enc-input { flex: 1; background: #f5f7fa; border-radius: 10rpx; padding: 12rpx; font-size: 26rpx; color: #333; }
+.enc-btn { padding: 12rpx 28rpx; border-radius: 10rpx; font-size: 26rpx; color: #fff; }
+.enc-btn.purple { background: #9c27b0; }
+.enc-btn.orange { background: #f57f17; }
+.enc-btn.dark { background: #37474f; }
+.history-row { display: flex; align-items: center; gap: 10rpx; padding: 10rpx 0; border-bottom: 1px solid #f0f0f0; font-size: 22rpx; color: #333; }
+.history-row:last-child { border: none; }
+.hbadge { padding: 3rpx 12rpx; border-radius: 8rpx; font-size: 18rpx; color: #fff; }
+.hbadge.buy { background: #1565c0; }
+.hbadge.craft { background: #2e7d32; }
+.hbadge.ok { background: #34c759; }
+.hbadge.no { background: #ff3b30; }
+.hname { font-weight: 600; }
+.hcount { color: #999; }
+.hevent { color: #9c27b0; font-weight: 600; }
+.htime { color: #ccc; margin-left: auto; font-size: 20rpx; }
+.clear-row { text-align: right; margin-top: 8rpx; }
+.clear-link { font-size: 20rpx; color: #ff3b30; }
+.expand-hint { text-align: center; color: #999; font-size: 24rpx; padding: 16rpx 0; display: block; }
+.ball-row { display: flex; align-items: center; padding: 10rpx 0; border-bottom: 1px solid #f0f0f0; }
+.ball-row:last-child { border: none; }
+.ball-dot { width: 24rpx; height: 24rpx; border-radius: 50%; margin-right: 12rpx; }
+.ball-info { flex: 1; }
+.ball-name { font-size: 24rpx; font-weight: 600; color: #333; display: block; }
+.ball-rate { font-size: 18rpx; color: #999; }
+.counter { display: flex; align-items: center; gap: 12rpx; }
+.cbtn { width: 48rpx; height: 48rpx; background: #f5f7fa; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28rpx; color: #333; font-weight: 600; }
+.cval { font-size: 28rpx; font-weight: 700; color: #1a1a1a; width: 48rpx; text-align: center; }
+.result-btns { display: flex; gap: 16rpx; }
+.rbtn { flex: 1; padding: 16rpx; text-align: center; border-radius: 14rpx; font-size: 28rpx; font-weight: 600; }
+.rbtn.ok { background: #e8f5e9; color: #2e7d32; }
+.rbtn.ok.on { background: #34c759; color: #fff; }
+.rbtn.no { background: #ffebee; color: #d32f2f; }
+.rbtn.no.on { background: #ff3b30; color: #fff; }
+.rbtn.pause { background: #fff8e1; color: #f57f17; }
+.rbtn.pause.on { background: #ff9500; color: #fff; }
+.rbtn.miss { background: #fce4ec; color: #e91e63; }
+.rbtn.miss.on { background: #e91e63; color: #fff; }
+.stats-row { display: flex; gap: 12rpx; margin-bottom: 16rpx; }
+.stat-box { flex: 1; text-align: center; background: #f8f9fa; border-radius: 14rpx; padding: 14rpx; }
+.sval { font-size: 32rpx; font-weight: 700; color: #1a1a1a; display: block; }
+.slb { font-size: 20rpx; color: #999; margin-top: 4rpx; display: block; }
+.record-btn { background: #ff6900 !important; color: #fff !important; border: none !important; border-radius: 40rpx !important; font-size: 28rpx !important; }
+.record-btn::after { border: none; }
+.empty { text-align: center; color: #999; font-size: 24rpx; padding: 20rpx 0; display: block; }
+.foot { text-align: center; font-size: 20rpx; color: #999; padding: 20rpx 0; }
+.btns-row { display: flex; gap: 12rpx; margin-bottom: 16rpx; }
+.btn-export { flex: 1; background: #ff6900; color: #fff; border: none; border-radius: 40rpx; height: 80rpx; line-height: 80rpx; font-size: 28rpx; }
+.btn-export::after { border: none; }
+.btn-share { flex: 1; background: #f5f7fa; color: #333; border: none; border-radius: 40rpx; height: 80rpx; line-height: 80rpx; font-size: 28rpx; }
+.btn-share::after { border: none; }
+.encounter-stats { display: flex; gap: 10rpx; margin-bottom: 16rpx; }
+.enc-item { flex: 1; text-align: center; background: #f8f9fa; border-radius: 14rpx; padding: 16rpx 8rpx; }
+.enc-num { font-size: 36rpx; font-weight: 700; display: block; }
+.enc-label { font-size: 20rpx; color: #999; display: block; margin-top: 4rpx; }
+.enc-shiny .enc-num { color: #9c27b0; }
+.enc-carnival .enc-num { color: #f57f17; }
+.enc-nightmare .enc-num { color: #37474f; }
+.enc-total .enc-num { color: #ff6900; }
+.count-row { display: flex; align-items: center; gap: 16rpx; padding: 12rpx 0; }
+.count-btn { padding: 12rpx 28rpx; border-radius: 12rpx; font-size: 26rpx; font-weight: 600; background: #9c27b0; color: #fff; }
+.count-btn.orange { background: #f57f17; }
+.count-btn.dark { background: #37474f; }
+.count-display { font-size: 48rpx; font-weight: 700; color: #1a1a1a; }
+.clear-btn-small { font-size: 22rpx; color: #ff3b30; margin-left: auto; }
+.wealth-calc { margin-top: 16rpx; padding-top: 16rpx; border-top: 1px solid #f0f0f0; }
+.calc-row { display: flex; align-items: center; gap: 12rpx; margin-bottom: 12rpx; }
+.calc-label { font-size: 24rpx; color: #666; flex-shrink: 0; width: 200rpx; }
+.calc-input { flex: 1; background: #f5f7fa; border-radius: 10rpx; padding: 12rpx; font-size: 26rpx; color: #333; }
+.calc-result { display: flex; align-items: center; justify-content: center; gap: 12rpx; margin-top: 16rpx; padding: 16rpx; background: #f8f9fa; border-radius: 12rpx; }
+.calc-text { font-size: 26rpx; color: #666; }
+.calc-val { font-size: 36rpx; font-weight: 700; }
+.calc-val.positive { color: #34c759; }
+.calc-val.negative { color: #ff3b30; }

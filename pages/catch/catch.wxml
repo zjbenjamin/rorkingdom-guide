@@ -1,0 +1,103 @@
+<view class="page">
+  <view class="container">
+    <view class="card">
+      <view class="card-title">洛克贝记录</view>
+      <view class="coin-row"><text class="coin-label">洛克贝财富初始值</text><text class="coin-val">{{initialWealth}}</text></view>
+      <view class="coin-input-row"><input class="coin-input" placeholder="设置初始洛克贝数量" type="number" value="{{wealthInput}}" bindinput="onWealthInput" /><view class="coin-btn" bindtap="onSetWealth">设置</view></view>
+      <view class="coin-row"><text class="coin-label">累计洛克贝</text><text class="coin-val">{{rocoCoins}}</text></view>
+      <view class="coin-input-row"><input class="coin-input" placeholder="输入数量" type="number" value="{{coinInput}}" bindinput="onCoinInput" /><view class="coin-btn" bindtap="onAddCoins">记录</view></view>
+      <view class="wealth-calc">
+        <view class="calc-row"><text class="calc-label">本次消耗洛克贝</text><input class="calc-input" placeholder="消耗数量" type="number" value="{{costInput}}" bindinput="onCostInput" /></view>
+        <view class="calc-row"><text class="calc-label">本次回顾洛克贝</text><input class="calc-input" placeholder="回顾数量" type="number" value="{{gainInput}}" bindinput="onGainInput" /></view>
+        <view class="calc-result" wx:if="{{costInput||gainInput}}"><text class="calc-text">净变化：</text><text class="calc-val {{(gainInput-costInput)>=0?'positive':'negative'}}">{{(gainInput||0)-(costInput||0)}}</text></view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">奇遇事件统计</view>
+      <view class="encounter-stats">
+        <view class="enc-item enc-shiny"><text class="enc-num">{{shinyCount}}</text><text class="enc-label">🔴 异色</text></view>
+        <view class="enc-item enc-carnival"><text class="enc-num">{{carnivalCount}}</text><text class="enc-label">🌟 狂欢时刻</text></view>
+        <view class="enc-item enc-nightmare"><text class="enc-num">{{nightmareCount}}</text><text class="enc-label">☠️ 噩梦污染</text></view>
+        <view class="enc-item enc-total"><text class="enc-num">{{shinyCount+carnivalCount+nightmareCount}}</text><text class="enc-label">🎯 总奇遇</text></view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">奇遇事件记录</view>
+      <view class="sub-tabs">
+        <view class="sub-tab {{encounterTab==='shiny'?'on':''}}" bindtap="onEncounterTab" data-t="shiny">🔴 异色</view>
+        <view class="sub-tab {{encounterTab==='carnival'?'on':''}}" bindtap="onEncounterTab" data-t="carnival">🌟 狂欢时刻</view>
+        <view class="sub-tab {{encounterTab==='nightmare'?'on':''}}" bindtap="onEncounterTab" data-t="nightmare">☠️ 噩梦污染</view>
+      </view>
+      <view wx:if="{{encounterTab==='shiny'}}">
+        <view class="count-row"><view class="count-btn" bindtap="onAddShiny">👍 记录 +1</view><view class="count-display">{{shinyCount}}</view><view class="clear-btn-small" bindtap="onClearShiny">清空</view></view>
+      </view>
+      <view wx:if="{{encounterTab==='carnival'}}">
+        <view class="count-row"><view class="count-btn orange" bindtap="onAddCarnival">👍 记录 +1</view><view class="count-display">{{carnivalCount}}</view><view class="clear-btn-small" bindtap="onClearCarnival">清空</view></view>
+      </view>
+      <view wx:if="{{encounterTab==='nightmare'}}">
+        <view class="count-row"><view class="count-btn dark" bindtap="onAddNightmare">👍 记录 +1</view><view class="count-display">{{nightmareCount}}</view><view class="clear-btn-small" bindtap="onClearNightmare">清空</view></view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">特殊事件统计</view>
+      <view class="sub-tabs">
+        <view class="sub-tab {{specialTab==='buy'?'on':''}}" bindtap="onSpecialTab" data-t="buy">购买球</view>
+        <view class="sub-tab {{specialTab==='craft'?'on':''}}" bindtap="onSpecialTab" data-t="craft">合成球</view>
+      </view>
+      <view class="special-row">
+        <picker class="special-picker" bindchange="onSpecialBall" range="{{specialBalls}}"><text class="picker-text">{{specialBall}}</text></picker>
+        <input class="special-count" placeholder="数量" type="number" value="{{specialCount}}" bindinput="onSpecialCount" />
+        <view class="special-btn {{specialTab}}" bindtap="onAddSpecial">{{specialTab==='buy'?'购买':'合成'}}</view>
+      </view>
+      <view class="history-row" wx:for="{{specialHistory}}" wx:key="index"><view class="hbadge {{item.type==='购买'?'buy':'craft'}}">{{item.type}}</view><text class="hname">{{item.ball}}</text><text class="hcount">x{{item.count}}</text><text class="htime">{{item.time}}</text></view>
+      <view class="clear-row" wx:if="{{specialHistory.length>0}}"><text class="clear-link" bindtap="onClearSpecial">清空</text></view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">使用球类型 <text class="expand" bindtap="onToggle">{{expanded?'收起':'展开'}}</text></view>
+      <view wx:if="{{expanded}}">
+        <view class="ball-row" wx:for="{{balls}}" wx:key="id"><view class="ball-dot" style="background:{{item.color}}"></view><view class="ball-info"><text class="ball-name">{{item.name}}</text><text class="ball-rate">{{item.rate}}</text></view><view class="counter"><view class="cbtn" bindtap="onSub" data-i="{{index}}">-</view><text class="cval">{{item.count}}</text><view class="cbtn" bindtap="onAdd" data-i="{{index}}">+</view></view></view>
+      </view>
+      <text wx:else class="expand-hint">点击展开选择咕噜球类型</text>
+    </view>
+
+    <view class="card">
+      <view class="card-title">捕捉结果</view>
+      <view class="result-btns">
+        <view class="rbtn ok {{result==='success'?'on':''}}" bindtap="onResult" data-r="success">✅ 成功</view>
+        <view class="rbtn pause {{result==='pause'?'on':''}}" bindtap="onResult" data-r="pause">⏸️ 暂时中止</view>
+        <view class="rbtn miss {{result==='miss'?'on':''}}" bindtap="onResult" data-r="miss">😵 歪了</view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">捕捉统计</view>
+      <view class="stats-row">
+        <view class="stat-box"><text class="sval">{{totalCatches}}</text><text class="slb">总捕捉</text></view>
+        <view class="stat-box"><text class="sval">{{successCatches}}</text><text class="slb">成功</text></view>
+        <view class="stat-box"><text class="sval">{{totalCatches>0?Math.round(successCatches/totalCatches*100):0}}%</text><text class="slb">成功率</text></view>
+      </view>
+      <button class="record-btn" bindtap="onRecord">记录本次捕捉</button>
+    </view>
+
+    <view class="card">
+      <view class="card-title">捕捉记录 <text class="clear-link" bindtap="onClearHistory">清空</text></view>
+      <view wx:for="{{history}}" wx:key="index" class="history-row">
+        <view class="hbadge {{item.result==='成功'?'ok':item.result==='歪了'?'miss':'pause'}}">{{item.result}}</view>
+        <text class="hname">{{item.balls}}</text>
+        <text class="htime">{{item.time}}</text>
+      </view>
+      <text wx:if="{{history.length===0}}" class="empty">暂无记录</text>
+    </view>
+
+    <view class="btns-row">
+      <button class="btn-export" bindtap="onExport">导出记录</button>
+      <button class="btn-share" bindtap="onShare">分享给好友</button>
+    </view>
+
+    <view class="foot">更新：{{buildTime}}</view>
+  </view>
+</view>

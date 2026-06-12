@@ -1,0 +1,40 @@
+<view class="page" wx:if="{{pet}}">
+  <view class="container">
+    <view class="detail-header">
+      <view class="detail-avatar" style="background:linear-gradient(135deg,#ff6900,#ff8533)">{{pet.name[0]}}</view>
+      <text class="detail-name">{{pet.name}}</text>
+      <text class="detail-meta">{{pet.type}} | {{pet.stage}} | 种族值{{pet.total}}</text>
+    </view>
+    <view class="tabs">
+      <view class="tab {{tab==='info'?'on':''}}" bindtap="onTab" data-t="info">信息</view>
+      <view class="tab {{tab==='stats'?'on':''}}" bindtap="onTab" data-t="stats">种族值</view>
+      <view class="tab {{tab==='skills'?'on':''}}" bindtap="onTab" data-t="skills">技能</view>
+    </view>
+    <view class="card" wx:if="{{tab==='info'}}">
+      <view class="info-row"><text class="info-lb">编号</text><text class="info-vl">#{{pet.id}}</text></view>
+      <view class="info-row"><text class="info-lb">属性</text><text class="info-vl">{{pet.type}}</text></view>
+      <view class="info-row"><text class="info-lb">难度</text><text class="info-vl">{{pet.difficulty}}</text></view>
+      <view class="info-row"><text class="info-lb">地点</text><text class="info-vl">{{pet.location}}</text></view>
+      <view class="info-row"><text class="info-lb">进化</text><text class="info-vl">{{pet.evolves}}</text></view>
+      <text class="info-desc">{{pet.desc}}</text>
+    </view>
+    <view class="card" wx:if="{{tab==='stats'}}">
+      <view class="stat-row"><text class="stat-name">HP</text><view class="stat-bar-bg"><view class="stat-bar" style="width:{{pet.hp/180*100}}%;background:#ff6900"></view></view><text class="stat-val">{{pet.hp}}</text></view>
+      <view class="stat-row"><text class="stat-name">攻击</text><view class="stat-bar-bg"><view class="stat-bar" style="width:{{pet.attack/180*100}}%;background:#ff9500"></view></view><text class="stat-val">{{pet.attack}}</text></view>
+      <view class="stat-row"><text class="stat-name">防御</text><view class="stat-bar-bg"><view class="stat-bar" style="width:{{pet.defense/180*100}}%;background:#007aff"></view></view><text class="stat-val">{{pet.defense}}</text></view>
+      <view class="stat-row"><text class="stat-name">特攻</text><view class="stat-bar-bg"><view class="stat-bar" style="width:{{pet.spAtk/180*100}}%;background:#af52de"></view></view><text class="stat-val">{{pet.spAtk}}</text></view>
+      <view class="stat-row"><text class="stat-name">特防</text><view class="stat-bar-bg"><view class="stat-bar" style="width:{{pet.spDef/180*100}}%;background:#34c759"></view></view><text class="stat-val">{{pet.spDef}}</text></view>
+      <view class="stat-row"><text class="stat-name">速度</text><view class="stat-bar-bg"><view class="stat-bar" style="width:{{pet.speed/180*100}}%;background:#ff9500"></view></view><text class="stat-val">{{pet.speed}}</text></view>
+      <view class="stat-total"><text>种族值合计</text><text class="stat-total-val">{{pet.total}}</text></view>
+    </view>
+    <view class="card" wx:if="{{tab==='skills'}}">
+      <view class="skill-grid">
+        <view class="skill-item" wx:for="{{pet.skills}}" wx:key="*this">
+          <view class="skill-dot"></view>
+          <text class="skill-name">{{item}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="detail-btns"><button class="btn-share" open-type="share">分享</button><button class="btn-copy" bindtap="onCopy">复制信息</button></view>
+  </view>
+</view>

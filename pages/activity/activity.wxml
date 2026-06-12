@@ -1,0 +1,35 @@
+<view class="page">
+  <view class="container">
+    <view class="tabs">
+      <view class="tab {{status===item?'on':''}}" wx:for="{{statuses}}" wx:key="*this" bindtap="onStatus" data-s="{{item}}">{{item}}</view>
+    </view>
+    <view class="act-list">
+      <view class="act-card" wx:for="{{filtered}}" wx:key="id">
+        <view class="act-header" bindtap="onExpand" data-id="{{item.id}}">
+          <view class="act-badges">
+            <view class="badge badge-top" wx:if="{{item.status==='置顶'}}">置顶</view>
+            <view class="badge badge-go" wx:if="{{item.status==='进行中'}}">进行中</view>
+            <view class="badge badge-official" wx:if="{{item.type==='官方权威信息'}}">官方权威信息</view>
+          </view>
+          <text class="act-title">{{item.title}}</text>
+          <text class="expand-hint" wx:if="{{expandedId!==item.id}}">点击展开全文 ›</text>
+          <text class="expand-hint up" wx:if="{{expandedId===item.id}}">收起 ›</text>
+        </view>
+        <view class="act-body" wx:if="{{expandedId===item.id}}">
+          <text class="act-desc">{{item.desc}}</text>
+          <view class="act-footer" wx:if="{{item.rewards.length > 0 || item.start}}">
+            <view class="act-rewards" wx:if="{{item.rewards.length > 0}}">
+              <text class="act-reward" wx:for="{{item.rewards}}" wx:for-item="r" wx:key="*this">{{r}}</text>
+            </view>
+            <text class="act-date" wx:if="{{item.start}}">{{item.start}}~{{item.end}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="navbar">
+    <view class="nav-item" bindtap="go" data-url="/pages/index/index"><text class="nav-icon">🏠</text><text class="nav-text">首页</text></view>
+    <view class="nav-item" bindtap="go" data-url="/pages/pets/pets"><text class="nav-icon">📖</text><text class="nav-text">图鉴</text></view>
+    <view class="nav-item on"><text class="nav-icon">📅</text><text class="nav-text">活动</text></view>
+  </view>
+</view>

@@ -1,0 +1,10 @@
+<view class="page">
+  <view class="container">
+    <view class="dev-card">
+      <text class="dev-icon">🚧</text>
+      <text class="dev-title">正在开发中...</text>
+      <text class="dev-desc">孵蛋查询模块正在努力开发中，敬请期待！</text>
+      <text class="dev-tip">预计包含：蛋径蛋重查询、蛋类型、体型蛋等</text>
+    </view>
+  </view>
+</view>

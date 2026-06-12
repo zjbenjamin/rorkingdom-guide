@@ -1,0 +1,26 @@
+<view class="page">
+  <view class="container">
+    <view class="search-box">
+      <text class="search-icon">🔍</text>
+      <input class="search-input" placeholder="搜索技能名称" value="{{search}}" bindinput="onSearch" />
+    </view>
+    <scroll-view scroll-x class="types">
+      <view class="type-tag {{type===item?'on':''}}" wx:for="{{types}}" wx:key="*this" bindtap="onType" data-t="{{item}}">{{item}}</view>
+    </scroll-view>
+    <view class="skill-list">
+      <view class="skill-item" wx:for="{{filtered}}" wx:key="id" bindtap="showDetail" data-s="{{item}}">
+        <view class="skill-type" style="background:{{item.type==='火'?'#d32f2f':item.type==='水'?'#1565c0':item.type==='草'?'#2e7d32':item.type==='冰'?'#00838f':item.type==='电'?'#f57f17':item.type==='地'?'#795548':item.type==='翼'?'#388e3c':item.type==='幽'?'#673ab7':item.type==='恶'?'#37474f':item.type==='光'?'#f9a825':item.type==='武'?'#c62828':item.type==='机械'?'#546e7a':item.type==='幻'?'#9c27b0':item.type==='毒'?'#7b1fa2':item.type==='虫'?'#558b2f':'#616161'}}">{{item.type}}</view>
+        <view class="skill-info">
+          <text class="skill-name">{{item.name}}</text>
+          <text class="skill-meta">{{item.category}} | {{item.power > 0 ? '威力'+item.power : '变化'}} | PP:{{item.pp}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="source">数据来源：洛克王国手游WIKI（CC BY-NC-SA 4.0）https://wiki.biligame.com/rocom/技能图鉴</view>
+  </view>
+  <view class="navbar">
+    <view class="nav-item" bindtap="go" data-url="/pages/index/index"><text class="nav-icon">🏠</text><text class="nav-text">首页</text></view>
+    <view class="nav-item" bindtap="go" data-url="/pages/pets/pets"><text class="nav-icon">📖</text><text class="nav-text">图鉴</text></view>
+    <view class="nav-item" bindtap="go" data-url="/pages/activity/activity"><text class="nav-icon">📅</text><text class="nav-text">活动</text></view>
+  </view>
+</view>

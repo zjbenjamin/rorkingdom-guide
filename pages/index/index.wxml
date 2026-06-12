@@ -1,0 +1,53 @@
+<view class="page">
+  <view class="container">
+    <view class="banner-card">
+      <view class="banner-bg">
+        <view class="banner-deco-1"></view>
+        <view class="banner-deco-2"></view>
+        <view class="banner-content">
+          <text class="banner-sub">探索洛克王国 发现无限可能</text>
+          <text class="banner-title">洛克王国</text>
+          <text class="banner-title-2">世界攻略</text>
+          <text class="banner-desc">全面攻略 · 精灵图鉴 · 道具图鉴 · 活动资讯</text>
+          <view class="banner-tags">
+            <view class="banner-tag"><text class="tag-text">精灵图鉴</text></view>
+            <view class="banner-tag"><text class="tag-text">道具图鉴</text></view>
+            <view class="banner-tag"><text class="tag-text">捕捉统计</text></view>
+            <view class="banner-tag"><text class="tag-text">活动资讯</text></view>
+          </view>
+        </view>
+        <view class="banner-bottom">
+          <text class="banner-slogan">洛克世界 · 由你探索</text>
+          <text class="banner-slogan-sub">最新最全的攻略资讯助手</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="stitle">快捷入口</view>
+      <view class="actions">
+        <view class="act" bindtap="go" data-url="/pages/pets/pets"><view class="act-icon">📖</view><text>精灵图鉴</text></view>
+        <view class="act" bindtap="go" data-url="/pages/items/items"><view class="act-icon">🎒</view><text>道具图鉴</text></view>
+        <view class="act" bindtap="go" data-url="/pages/egg/egg"><view class="act-icon">🥚</view><text>孵蛋查询</text></view>
+        <view class="act" bindtap="go" data-url="/pages/merchant/merchant"><view class="act-icon">🛒</view><text>远行商人</text></view>
+        <view class="act" bindtap="go" data-url="/pages/activity/activity"><view class="act-icon">📅</view><text>活动日历</text></view>
+        <view class="act" bindtap="go" data-url="/pages/catch/catch"><view class="act-icon">🎯</view><text>捕捉统计</text></view>
+        <view class="act" bindtap="go" data-url="/pages/guides/guides"><view class="act-icon">📝</view><text>攻略指南</text></view>
+        <view class="act" bindtap="go" data-url="/pages/about/about"><view class="act-icon">ℹ️</view><text>关于我们</text></view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="stitle">新闻资讯</view>
+      <view class="news" wx:for="{{news}}" wx:key="id" bindtap="showNews" data-i="{{index}}">
+        <view class="news-tag {{item.pinned?'pinned':''}}">{{item.pinned?'置顶':item.type}}</view>
+        <view class="news-body">
+          <text class="news-t">{{item.title}}</text>
+          <text class="news-d">{{item.date}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="foot">更新：{{buildTime}}</view>
+  </view>
+</view>

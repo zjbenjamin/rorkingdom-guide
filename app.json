@@ -1,0 +1,23 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/pets/pets",
+    "pages/pets/detail/detail",
+    "pages/items/items",
+    "pages/skills/skills",
+    "pages/guides/guides",
+    "pages/activity/activity",
+    "pages/catch/catch",
+    "pages/egg/egg",
+    "pages/merchant/merchant",
+    "pages/about/about"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#1a6d37",
+    "navigationBarTitleText": "洛克王国攻略",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f0f5eb"
+  },
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents"
+}

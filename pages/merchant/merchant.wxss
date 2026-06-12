@@ -1,0 +1,18 @@
+.card { background: #fff; border-radius: 20rpx; padding: 24rpx; margin-bottom: 16rpx; box-shadow: 0 1px 8px rgba(0,0,0,0.04); }
+.card-title { font-size: 30rpx; font-weight: 600; color: #1a1a1a; margin-bottom: 16rpx; padding-left: 12rpx; border-left: 4px solid #ff6900; }
+.merchant-tip { text-align: center; padding: 24rpx 0; }
+.tip-icon { font-size: 64rpx; display: block; margin-bottom: 16rpx; }
+.tip-title { font-size: 32rpx; font-weight: 600; color: #1a1a1a; display: block; margin-bottom: 12rpx; }
+.tip-desc { font-size: 26rpx; color: #666; display: block; margin-bottom: 8rpx; }
+.tip-hint { font-size: 22rpx; color: #999; }
+.item-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10rpx; }
+.item-card { background: #f8f9fa; border-radius: 12rpx; padding: 16rpx; position: relative; }
+.item-badge { position: absolute; top: 8rpx; right: 8rpx; padding: 2rpx 8rpx; border-radius: 6rpx; font-size: 16rpx; color: #fff; }
+.badge-normal { background: #8e8e93; }
+.badge-rare { background: #007aff; }
+.badge-epic { background: #af52de; }
+.badge-legend { background: #ff9500; }
+.item-name { font-size: 26rpx; font-weight: 600; color: #1a1a1a; display: block; margin-bottom: 4rpx; }
+.item-price { font-size: 24rpx; color: #ff6900; font-weight: 500; display: block; margin: 4rpx 0; }
+.item-effect { font-size: 20rpx; color: #999; }
+.source { font-size: 20rpx; color: #999; display: block; }

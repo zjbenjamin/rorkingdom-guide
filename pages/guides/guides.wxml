@@ -1,0 +1,10 @@
+<view class="page">
+  <view class="container">
+    <view class="dev-card">
+      <text class="dev-icon">🚧</text>
+      <text class="dev-title">正在开发中...</text>
+      <text class="dev-desc">攻略模块正在努力开发中，敬请期待！</text>
+      <text class="dev-tip">预计包含：新手攻略、精灵培养、PVP技巧、BOSS挑战等</text>
+    </view>
+  </view>
+</view>

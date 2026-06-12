@@ -1,0 +1,16 @@
+<view class="page">
+  <view class="container">
+    <view class="about-header">
+      <text class="about-icon">🏰</text>
+      <text class="about-name">洛克王国：世界</text>
+      <text class="about-ver">攻略小程序 v1.0.0</text>
+    </view>
+    <view class="card"><view class="card-title">开发者信息</view><view class="dev-row"><view class="dev-avatar">本</view><view class="dev-info"><text class="dev-name">浙里本杰明</text><text class="dev-role">项目开发者</text></view></view></view>
+    <view class="card"><view class="card-title">联系方式</view><view class="contact-row" bindtap="copyEmail"><text class="contact-icon">📧</text><view class="contact-info"><text class="contact-label">邮箱</text><text class="contact-val">{{contact}}</text></view><text class="contact-copy">点击复制</text></view></view>
+    <view class="card"><view class="card-title">数据来源</view><text class="source">精灵图鉴：洛克王国手游WIKI（CC BY-NC-SA 4.0）</text><text class="source">https://wiki.biligame.com/rocom/精灵图鉴</text><text class="source">道具图鉴：洛克王国手游WIKI（CC BY-NC-SA 4.0）</text><text class="source">https://wiki.biligame.com/rocom/道具图鉴</text><text class="source">活动动态：洛克王国世界微信公众号</text><text class="source">捕捉规则：洛克王国世界官方客服</text><text class="source">孵蛋查询：洛克王国世界公开API</text></view>
+    <view class="card"><view class="card-title">隐私政策</view><text class="privacy-item">💾 本地存储：仅保存订阅偏好，数据仅在设备本地</text><text class="privacy-item">🌐 无网络请求：不收集任何个人信息</text><text class="privacy-item">🔒 无第三方SDK：不存在数据共享</text><text class="privacy-item">📤 分享功能：仅用于转发页面内容</text></view>
+    <view class="card"><view class="card-title">免责声明</view><text class="disclaimer">1. 本应用为非官方攻略工具，与腾讯魔方工作室群无关</text><text class="disclaimer">2. 游戏数据仅供参考，以游戏内实际数据为准</text><text class="disclaimer">3. 仅供学习交流使用，请勿用于商业用途</text></view>
+    <view class="action-btns"><button class="btn-copy" bindtap="copyAll">复制全部信息</button><button class="btn-share" open-type="share">分享给好友</button></view>
+    <view class="about-foot"><text class="foot-text">© 2025 浙里本杰明</text><text class="foot-text">更新：{{buildTime}}</text></view>
+  </view>
+</view>

@@ -1,0 +1,29 @@
+<view class="page">
+  <view class="container">
+    <view class="search-box">
+      <text class="search-icon">🔍</text>
+      <input class="search-input" placeholder="搜索精灵名称/属性" value="{{search}}" bindinput="onSearch" />
+    </view>
+    <scroll-view scroll-x class="types">
+      <view class="type-tag {{type===item?'on':''}}" wx:for="{{types}}" wx:key="*this" bindtap="onType" data-t="{{item}}">{{item}}</view>
+    </scroll-view>
+    <view class="pet-list">
+      <view class="pet-item" wx:for="{{filtered}}" wx:key="id" bindtap="goDetail" data-id="{{item.id}}">
+        <view class="pet-avatar">{{item.name[0]}}</view>
+        <view class="pet-info">
+          <text class="pet-name">{{item.name}}</text>
+          <text class="pet-meta">{{item.type}} | 种族值{{item.total}} | {{item.difficulty}}</text>
+        </view>
+        <text class="pet-arrow">›</text>
+      </view>
+    </view>
+    <view class="empty" wx:if="{{filtered.length===0}}">没有找到匹配的精灵</view>
+    <view class="source">数据来源：洛克王国手游WIKI（CC BY-NC-SA 4.0）https://wiki.biligame.com/rocom/精灵图鉴</view>
+  </view>
+  <view class="navbar">
+    <view class="nav-item" bindtap="go" data-url="/pages/index/index"><text class="nav-icon">🏠</text><text class="nav-text">首页</text></view>
+    <view class="nav-item" bindtap="go" data-url="/pages/items/items"><text class="nav-icon">🎒</text><text class="nav-text">道具</text></view>
+    <view class="nav-item" bindtap="go" data-url="/pages/skills/skills"><text class="nav-icon">⚔️</text><text class="nav-text">技能</text></view>
+    <view class="nav-item" bindtap="go" data-url="/pages/activity/activity"><text class="nav-icon">📅</text><text class="nav-text">活动</text></view>
+  </view>
+</view>

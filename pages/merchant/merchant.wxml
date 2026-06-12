@@ -1,0 +1,29 @@
+<view class="page">
+  <view class="container">
+    <view class="card">
+      <view class="merchant-tip">
+        <text class="tip-icon">🛒</text>
+        <text class="tip-title">远行商人出差中</text>
+        <text class="tip-desc">请前往其他小程序或官方途径查询今日排期</text>
+        <text class="tip-hint">官方渠道：游戏内远行商人详细页</text>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">商人物品价格</view>
+      <view class="item-list">
+        <view class="item-card" wx:for="{{items}}" wx:key="id" bindtap="showItem" data-d="{{item}}">
+          <view class="item-badge badge-{{item.rarity==='普通'?'normal':item.rarity==='稀有'?'rare':item.rarity==='史诗'?'epic':'legend'}}">{{item.rarity}}</view>
+          <text class="item-name">{{item.name}}</text>
+          <text class="item-price">{{item.price}}洛克贝</text>
+          <text class="item-effect">{{item.effect}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">数据来源</view>
+      <text class="source">物品数据：洛克王国手游WIKI（CC BY-NC-SA 4.0）https://wiki.biligame.com/rocom/</text>
+    </view>
+  </view>
+</view>

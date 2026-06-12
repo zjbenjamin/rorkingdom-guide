@@ -1,0 +1,13 @@
+.search-box { display: flex; align-items: center; background: #fff; border-radius: 40rpx; padding: 14rpx 20rpx; margin-bottom: 12rpx; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.search-icon { font-size: 28rpx; margin-right: 10rpx; }
+.search-input { flex: 1; font-size: 28rpx; color: #333; }
+.types { white-space: nowrap; margin-bottom: 12rpx; }
+.type-tag { display: inline-block; padding: 8rpx 20rpx; background: #fff; border-radius: 24rpx; font-size: 22rpx; color: #666; margin-right: 8rpx; }
+.type-tag.on { background: #ff6900; color: #fff; font-weight: 600; }
+.skill-list { display: flex; flex-direction: column; gap: 10rpx; }
+.skill-item { display: flex; align-items: center; background: #fff; border-radius: 14rpx; padding: 14rpx; box-shadow: 0 1px 6px rgba(0,0,0,0.03); }
+.skill-type { width: 56rpx; height: 56rpx; border-radius: 12rpx; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20rpx; font-weight: 600; margin-right: 12rpx; flex-shrink: 0; }
+.skill-info { flex: 1; }
+.skill-name { font-size: 28rpx; font-weight: 600; color: #1a1a1a; display: block; }
+.skill-meta { font-size: 20rpx; color: #999; margin-top: 4rpx; }
+.source { text-align: center; font-size: 18rpx; color: #999; padding: 16rpx 0; }
