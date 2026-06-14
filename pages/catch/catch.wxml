@@ -117,6 +117,10 @@
     <view class="card">
       <view class="card-title">使用球类型</view>
       <view class="ball-total-row">
+        <text class="ball-total-label">剩余总数</text>
+        <text class="ball-total-val">{{totalBallUsed}}</text>
+      </view>
+      <view class="ball-total-row">
         <text class="ball-total-label">使用球总数</text>
         <text class="ball-total-val">{{usedBallTotal}}</text>
       </view>
