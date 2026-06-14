@@ -115,11 +115,9 @@
       <view class="clear-row" wx:if="{{specialHistory.length>0}}">
         <text class="clear-link" bindtap="onClearSpecial">清空</text>
       </view>
-    </view>
 
-    <!-- 使用球类型 -->
-    <view class="card">
-      <view class="card-title">使用球类型</view>
+      <!-- 咕噜球明细 -->
+      <view class="ball-detail-title">咕噜球明细</view>
       <view wx:if="{{activeBalls.length > 0}}">
         <view class="ball-row {{selectedBall===item.id-1?'selected':''}}" wx:for="{{activeBalls}}" wx:key="id" bindtap="onSelectBall" data-i="{{item.id-1}}">
           <view class="ball-dot" style="background:{{item.color}}"></view>
