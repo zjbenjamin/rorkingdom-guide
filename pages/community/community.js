@@ -36,6 +36,7 @@ Page({
     activeTab: 'all',
     showPostModal: false,
     postContent: '',
+    imageUrlInput: '',
     posting: false,
     showDetailModal: false,
     detailItem: null,
@@ -500,6 +501,17 @@ Page({
   },
   onPostInput: function(e) {
     this.setData({ postContent: e.detail.value })
+  },
+  onImageUrlInput: function(e) {
+    this.setData({ imageUrlInput: e.detail.value })
+  },
+  addImageByUrl: function() {
+    var self = this
+    var url = self.data.imageUrlInput.trim()
+    if (!url) { wx.showToast({ title: '请输入图片链接', icon: 'none' }); return }
+    if (self.data.postImages.length >= 9) { wx.showToast({ title: '最多上传9张图片', icon: 'none' }); return }
+    var images = self.data.postImages.concat([url])
+    self.setData({ postImages: images, imageUrlInput: '' })
   },
   choosePostImage: function() {
     var self = this

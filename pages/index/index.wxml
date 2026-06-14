@@ -25,7 +25,7 @@
               <text class="action-icon">📷</text>
               <text class="action-text">相册选择</text>
             </view>
-            <input class="banner-input" placeholder="或粘贴图片URL链接" value="{{bannerInput}}" bindinput="onBannerInput" />
+            <input class="banner-input" placeholder="或粘贴图片URL链接" placeholder-style="color:rgba(255,255,255,0.35)" value="{{bannerInput}}" bindinput="onBannerInput" />
           </view>
         </view>
         <view class="modal-footer">

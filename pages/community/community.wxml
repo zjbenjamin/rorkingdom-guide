@@ -164,12 +164,16 @@
         <text class="modal-close" catchtap="closePostModal">✕</text>
       </view>
       <view class="modal-body">
-        <textarea class="modal-textarea" placeholder="分享你的想法..." placeholder-style="color:rgba(255,255,255,0.3)" value="{{postContent}}" bindinput="onPostInput" maxlength="500" cursor-spacing="120" />
+        <textarea class="modal-textarea" placeholder="分享你的想法..." placeholder-style="color:rgba(255,255,255,0.5)" value="{{postContent}}" bindinput="onPostInput" maxlength="500" cursor-spacing="120" />
         <view class="image-list" wx:if="{{postImages.length > 0}}">
           <view class="image-item" wx:for="{{postImages}}" wx:key="*this">
             <image class="image-thumb" src="{{item}}" mode="aspectFill" />
             <view class="image-remove" catchtap="removePostImage" data-idx="{{index}}">✕</view>
           </view>
+        </view>
+        <view class="image-url-row" wx:if="{{postImages.length < 9}}">
+          <input class="image-url-input" placeholder="粘贴图片链接添加" placeholder-style="color:rgba(255,255,255,0.35)" value="{{imageUrlInput}}" bindinput="onImageUrlInput" />
+          <view class="image-url-btn" catchtap="addImageByUrl">添加</view>
         </view>
       </view>
       <view class="modal-footer">
