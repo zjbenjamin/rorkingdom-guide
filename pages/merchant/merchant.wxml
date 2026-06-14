@@ -33,6 +33,15 @@
             <view class="toggle-dot"></view>
           </view>
         </view>
+        <view class="admin-control-row">
+          <view class="admin-control-info">
+            <text class="admin-control-name">出差提示</text>
+            <text class="admin-control-desc">显示"远行商人出差中"提示卡片</text>
+          </view>
+          <view class="toggle {{merchantAway ? 'on' : ''}}" catchtap="toggleMerchantAway">
+            <view class="toggle-dot"></view>
+          </view>
+        </view>
       </view>
 
       <!-- 订阅按钮 -->
@@ -55,7 +64,7 @@
         </view>
       </view>
 
-      <view class="card">
+      <view class="card" wx:if="{{merchantAway}}">
         <view class="merchant-tip">
           <text class="tip-icon">🛒</text>
           <view class="tip-title-row">
@@ -79,17 +88,31 @@
             <text class="dev-edit-text">编辑</text>
           </view>
         </view>
-        <view wx:if="{{currentSelling.length > 0}}" class="item-list">
-          <view class="item-card selling-item" wx:for="{{currentSelling}}" wx:key="id">
-            <view class="item-badge badge-{{item.rarity==='普通'?'normal':item.rarity==='稀有'?'rare':item.rarity==='史诗'?'epic':'legend'}}">{{item.rarity}}</view>
-            <text class="item-name">{{item.name}}</text>
-            <text class="item-price">{{item.price}}{{t.currency || '洛克贝'}}</text>
-            <text class="item-effect">{{item.effect}}</text>
-            <view class="item-delete" wx:if="{{isAdmin}}" catchtap="deleteSellingItem" data-index="{{index}}">✕</view>
+        <!-- 文字轮播模式 -->
+        <view wx:if="{{sellingMode === 'text' && currentSelling.length > 0}}" class="selling-marquee-wrap">
+          <view class="selling-marquee">
+            <view class="selling-marquee-track" style="animation-duration: {{currentSelling.length * 4}}s">
+              <text class="selling-marquee-item" wx:for="{{currentSelling}}" wx:key="id">{{item.name}} · {{item.price}}洛克贝</text>
+              <text class="selling-marquee-item" wx:for="{{currentSelling}}" wx:key="id-2">{{item.name}} · {{item.price}}洛克贝</text>
+            </view>
+          </view>
+          <view class="selling-items">
+            <view class="item-card selling-item" wx:for="{{currentSelling}}" wx:key="id">
+              <view class="item-badge badge-{{item.rarity==='普通'?'normal':item.rarity==='稀有'?'rare':item.rarity==='史诗'?'epic':'legend'}}">{{item.rarity}}</view>
+              <text class="item-name">{{item.name}}</text>
+              <text class="item-price">{{item.price}}{{t.currency || '洛克贝'}}</text>
+              <text class="item-effect">{{item.effect}}</text>
+              <view class="item-delete" wx:if="{{isAdmin}}" catchtap="deleteSellingItem" data-index="{{index}}">✕</view>
+            </view>
           </view>
         </view>
+        <!-- 图片模式 -->
+        <view wx:elif="{{sellingMode === 'image' && currentSellingImage}}" class="selling-image-wrap">
+          <image class="selling-image" src="{{currentSellingImage}}" mode="widthFix" catchtap="previewSellingImage" data-src="{{currentSellingImage}}" />
+        </view>
+        <!-- 空状态 -->
         <view wx:else class="selling-empty">
-          <text class="selling-empty-text">暂无在售物品</text>
+          <text class="selling-empty-text">暂无在售信息</text>
         </view>
       </view>
 
@@ -208,8 +231,39 @@
         <text class="modal-close" catchtap="closeSellingModal">✕</text>
       </view>
       <view class="modal-body">
-        <view class="selling-tip">每行一个物品，格式：名称|价格|效果|稀有度|来源</view>
-        <textarea class="modal-textarea selling-textarea" placeholder="示例：&#10;进化果实|5000|精灵进化材料|稀有|远行商人&#10;高级经验果|2000|增加1000经验|普通|远行商人" value="{{currentSellingText}}" bindinput="onSellingInput" maxlength="5000" cursor-spacing="120" />
+        <view class="selling-mode-tabs">
+          <view class="selling-mode-tab {{sellingMode === 'text' ? 'on' : ''}}" catchtap="switchSellingMode" data-mode="text">
+            <text class="mode-tab-icon">📝</text>
+            <text class="mode-tab-text">文字轮播</text>
+          </view>
+          <view class="selling-mode-tab {{sellingMode === 'image' ? 'on' : ''}}" catchtap="switchSellingMode" data-mode="image">
+            <text class="mode-tab-icon">🖼️</text>
+            <text class="mode-tab-text">图片展示</text>
+          </view>
+        </view>
+        <!-- 文字模式 -->
+        <view wx:if="{{sellingMode === 'text'}}">
+          <view class="selling-tip">每行一个物品，格式：名称|价格|效果|稀有度|来源</view>
+          <textarea class="modal-textarea selling-textarea" placeholder="示例：&#10;进化果实|5000|精灵进化材料|稀有|远行商人&#10;高级经验果|2000|增加1000经验|普通|远行商人" value="{{currentSellingText}}" bindinput="onSellingInput" maxlength="5000" cursor-spacing="120" />
+        </view>
+        <!-- 图片模式 -->
+        <view wx:if="{{sellingMode === 'image'}}">
+          <view class="selling-image-preview" wx:if="{{currentSellingImage}}">
+            <image class="preview-img" src="{{currentSellingImage}}" mode="aspectFill" />
+            <view class="image-remove-btn" catchtap="removeSellingImage">✕</view>
+          </view>
+          <view class="selling-image-actions" wx:if="{{!currentSellingImage}}">
+            <view class="image-action-btn" catchtap="chooseSellingImage">
+              <text class="action-icon">📷</text>
+              <text class="action-text">相册上传</text>
+            </view>
+            <view class="image-action-btn" catchtap="onSellingImageInput">
+              <text class="action-icon">🔗</text>
+              <text class="action-text">图床链接</text>
+            </view>
+          </view>
+          <input wx:if="{{!currentSellingImage}}" class="modal-input" placeholder="或直接粘贴图片URL" value="{{currentSellingImage}}" bindinput="onSellingImageInput" />
+        </view>
       </view>
       <view class="modal-footer">
         <text class="notify-hint">保存后将推送通知给订阅用户</text>

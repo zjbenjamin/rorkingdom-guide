@@ -10,12 +10,15 @@ Page({
     t: {},
     isAdmin: false,
     maintenance: false,
+    merchantAway: false,
     useCustom: false,
     customTitle: '',
     customDesc: '',
     customItems: '',
     currentSelling: [],
     currentSellingText: '',
+    currentSellingImage: '',
+    sellingMode: 'text',
     showSellingModal: false,
     sellingSubmitting: false,
     showModal: false,
@@ -84,13 +87,16 @@ Page({
         var d = res.data
         self.setData({
           maintenance: d.maintenance || false,
+          merchantAway: d.merchantAway || false,
           useCustom: d.useCustom || false,
           customTitle: d.customTitle || '',
           customDesc: d.customDesc || '',
           customItems: d.customItems || '',
           items: (d.useCustom && d.customItems) ? self.parseItems(d.customItems) : merchantData.items,
           currentSelling: d.currentSelling ? self.parseItems(d.currentSelling) : [],
-          currentSellingText: d.currentSelling || ''
+          currentSellingText: d.currentSelling || '',
+          currentSellingImage: d.currentSellingImage || '',
+          sellingMode: d.sellingMode || 'text'
         })
         self.markNewItems()
       })
@@ -135,6 +141,24 @@ Page({
     }).then(function() {
       self.setData({ maintenance: newVal })
       wx.showToast({ title: newVal ? '已下线' : '已上线', icon: 'success' })
+    })
+  },
+  toggleMerchantAway: function() {
+    var self = this
+    if (!db) return
+    var newVal = !self.data.merchantAway
+    var updateOrAdd = function() {
+      return db.collection('page_config').doc('merchant').update({
+        data: { merchantAway: newVal, updateTime: db.serverDate() }
+      })
+    }
+    updateOrAdd().catch(function() {
+      return db.collection('page_config').add({
+        data: { _id: 'merchant', merchantAway: newVal, useCustom: false, customTitle: '', customDesc: '', customItems: '', updateTime: db.serverDate() }
+      })
+    }).then(function() {
+      self.setData({ merchantAway: newVal })
+      wx.showToast({ title: newVal ? '已开启出差提示' : '已关闭出差提示', icon: 'success' })
     })
   },
   toggleMode: function() {
@@ -208,36 +232,81 @@ Page({
   onSellingInput: function(e) {
     this.setData({ currentSellingText: e.detail.value })
   },
+  switchSellingMode: function(e) {
+    this.setData({ sellingMode: e.currentTarget.dataset.mode })
+  },
+  chooseSellingImage: function() {
+    var self = this
+    wx.chooseImage({
+      count: 1,
+      sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
+      success: function(res) {
+        var filePath = res.tempFilePaths[0]
+        wx.showLoading({ title: '上传中...' })
+        var ext = filePath.split('.').pop() || 'jpg'
+        var cloudPath = 'merchant/' + Date.now() + '.' + ext
+        wx.cloud.uploadFile({ cloudPath: cloudPath, filePath: filePath })
+          .then(function(uploadRes) {
+            wx.hideLoading()
+            self.setData({ currentSellingImage: uploadRes.fileID })
+          })
+          .catch(function() {
+            wx.hideLoading()
+            wx.showToast({ title: '上传失败', icon: 'none' })
+          })
+      }
+    })
+  },
+  onSellingImageInput: function(e) {
+    this.setData({ currentSellingImage: e.detail.value })
+  },
+  removeSellingImage: function() {
+    this.setData({ currentSellingImage: '' })
+  },
+  previewSellingImage: function(e) {
+    var src = e.currentTarget.dataset.src
+    if (src) wx.previewImage({ current: src, urls: [src] })
+  },
   saveSelling: function() {
     var self = this
     if (self.data.sellingSubmitting) return
     if (!db) { wx.showToast({ title: '云环境未就绪', icon: 'none' }); return }
     self.setData({ sellingSubmitting: true })
     var text = self.data.currentSellingText.trim()
+    var image = self.data.currentSellingImage.trim()
+    var mode = self.data.sellingMode
     var parsed = text ? self.parseItems(text) : []
+    var data = {
+      sellingMode: mode,
+      currentSelling: text,
+      currentSellingImage: image,
+      updateTime: db.serverDate()
+    }
     var updateOrAdd = function() {
-      return db.collection('page_config').doc('merchant').update({
-        data: { currentSelling: text, updateTime: db.serverDate() }
-      })
+      return db.collection('page_config').doc('merchant').update({ data: data })
     }
     updateOrAdd().catch(function() {
-      return db.collection('page_config').add({
-        data: { _id: 'merchant', currentSelling: text, useCustom: false, customTitle: '', customDesc: '', customItems: '', maintenance: false, updateTime: db.serverDate() }
-      })
+      data._id = 'merchant'
+      data.useCustom = false
+      data.customTitle = ''
+      data.customDesc = ''
+      data.customItems = ''
+      data.maintenance = false
+      return db.collection('page_config').add({ data: data })
     }).then(function() {
-      self.setData({ sellingSubmitting: false, showSellingModal: false, currentSelling: parsed, currentSellingText: text })
+      self.setData({ sellingSubmitting: false, showSellingModal: false, currentSelling: parsed, currentSellingText: text, currentSellingImage: image, sellingMode: mode })
       wx.showToast({ title: '保存成功', icon: 'success' })
-      if (parsed.length > 0) {
-        wx.cloud.callFunction({
-          name: 'sendSubscribe',
-          data: {
-            type: 'merchant',
-            title: '商人上架更新',
-            content: '在售物品已更新，共' + parsed.length + '件',
-            page: '/pages/merchant/merchant'
-          }
-        }).catch(function() {})
-      }
+      var notifyContent = mode === 'image' ? '在售商品图片已更新' : (parsed.length > 0 ? '在售物品已更新，共' + parsed.length + '件' : '在售信息已更新')
+      wx.cloud.callFunction({
+        name: 'sendSubscribe',
+        data: {
+          type: 'merchant',
+          title: '商人上架更新',
+          content: notifyContent,
+          page: '/pages/merchant/merchant'
+        }
+      }).catch(function() {})
     }).catch(function() {
       self.setData({ sellingSubmitting: false })
       wx.showToast({ title: '保存失败', icon: 'none' })
