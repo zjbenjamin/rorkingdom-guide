@@ -53,7 +53,7 @@
           <text class="action-text">歪了</text>
         </view>
       </view>
-        <text class="result-hint">点击 +1 · 长按选球记录数量</text>
+        <text class="result-hint">数据仅供参考，以游戏内实际为准</text>
     </view>
 
     <!-- 洛克贝记录 -->
