@@ -444,14 +444,26 @@ Page({
   },
   uploadImages: function(images) {
     if (images.length === 0) return Promise.resolve([])
-    var tasks = images.map(function(path, i) {
+    var urlImages = []
+    var localImages = []
+    for (var i = 0; i < images.length; i++) {
+      if (images[i].indexOf('http') === 0 || images[i].indexOf('cloud://') === 0) {
+        urlImages.push(images[i])
+      } else {
+        localImages.push(images[i])
+      }
+    }
+    if (localImages.length === 0) return Promise.resolve(urlImages)
+    var ts = Date.now()
+    var tasks = localImages.map(function(path, i) {
       var ext = path.split('.').pop() || 'jpg'
-      var cloudPath = 'community/' + Date.now() + '_' + i + '.' + ext
+      var cloudPath = 'community/' + ts + '_' + i + '.' + ext
       return wx.cloud.uploadFile({ cloudPath: cloudPath, filePath: path })
     })
     return Promise.all(tasks).then(function(res) {
-      return res.map(function(r) { return r.fileID })
-    }).catch(function() { return [] })
+      var fileIDs = res.map(function(r) { return r.fileID })
+      return urlImages.concat(fileIDs)
+    }).catch(function() { return urlImages })
   },
   submitPost: function() {
     var self = this
