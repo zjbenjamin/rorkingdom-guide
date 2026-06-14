@@ -148,8 +148,12 @@
             <text class="ball-name">{{item.name}}</text>
             <text class="ball-rate">{{item.rate}}</text>
           </view>
-          <text class="ball-price" wx:if="{{item.price>0}}">💵{{item.price}}</text>
-          <text class="ball-price free" wx:else>免费</text>
+          <view class="ball-price-group">
+            <text class="ball-price" wx:if="{{item.count - item.freeCount > 0 && item.price > 0}}">购买💵{{item.price}}×{{item.count - item.freeCount}}</text>
+            <text class="ball-price free" wx:if="{{item.freeCount > 0}}">合成💵免费×{{item.freeCount}}</text>
+            <text class="ball-price" wx:if="{{item.freeCount === 0 && item.count - item.freeCount > 0 && item.price > 0}}">💵{{item.price}}</text>
+            <text class="ball-price free" wx:if="{{item.freeCount === 0 && item.price === 0}}">免费</text>
+          </view>
           <text class="ball-count">{{item.count}}</text>
         </view>
       </view>

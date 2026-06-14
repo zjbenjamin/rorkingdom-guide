@@ -21,23 +21,23 @@ Page({
   data: {
     buildTime: '',
     balls: [
-      {id:1,name:'普通咕噜球',color:'#999',count:0,rate:'基础捕捉率',price:0},
-      {id:2,name:'高级咕噜球',color:'#1565c0',count:0,rate:'捕捉率+30%',price:12000},
-      {id:3,name:'国王球',color:'#f57f17',count:0,rate:'100%捕捉，必定了不起',price:0},
-      {id:4,name:'美妙球',color:'#e91e63',count:0,rate:'提升对应属性50%捕捉概率',price:3000},
-      {id:5,name:'好战球',color:'#d32f2f',count:0,rate:'提升对应属性50%捕捉概率',price:3000},
-      {id:6,name:'光合球',color:'#2e7d32',count:0,rate:'提升对应属性50%捕捉概率',price:3000},
-      {id:7,name:'网兜球',color:'#388e3c',count:0,rate:'提升对应属性50%捕捉概率',price:3000},
-      {id:8,name:'暗星球',color:'#37474f',count:0,rate:'提升对应属性50%捕捉概率',price:3000},
-      {id:9,name:'奇趣球',color:'#ff6b6b',count:0,rate:'100%捕捉，资质随机',price:80000},
-      {id:10,name:'补光球',color:'#ffd93d',count:0,rate:'100%捕捉，资质随机',price:80000},
-      {id:11,name:'棱镜球',color:'#a855f7',count:0,rate:'100%捕捉，必定了不起，完美无瑕，天赋随机，炫彩颜色粒子随机',price:0},
-      {id:12,name:'织梦棱镜球',color:'#ec4899',count:0,rate:'100%捕捉，必定了不起，完美无瑕，天赋随机，炫彩粒子为当前赛季主题颜色统一',price:800},
-      {id:13,name:'狂欢棱镜球',color:'#f472b6',count:0,rate:'狂欢系+70%',price:800},
-      {id:14,name:'变幻球',color:'#06b6d4',count:0,rate:'提升对应属性50%捕捉概率',price:3000},
-      {id:15,name:'绝缘球',color:'#8b5cf6',count:0,rate:'绝缘精灵+45%',price:3000},
-      {id:16,name:'调温球',color:'#f97316',count:0,rate:'提升对应属性50%捕捉概率',price:3000},
-      {id:17,name:'淘沙球',color:'#d4a017',count:0,rate:'提升对应属性50%捕捉概率',price:3000}
+      {id:1,name:'普通咕噜球',color:'#999',count:0,freeCount:0,rate:'基础捕捉率',price:0},
+      {id:2,name:'高级咕噜球',color:'#1565c0',count:0,freeCount:0,rate:'捕捉率+30%',price:12000},
+      {id:3,name:'国王球',color:'#f57f17',count:0,freeCount:0,rate:'100%捕捉，必定了不起',price:0},
+      {id:4,name:'美妙球',color:'#e91e63',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:5,name:'好战球',color:'#d32f2f',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:6,name:'光合球',color:'#2e7d32',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:7,name:'网兜球',color:'#388e3c',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:8,name:'暗星球',color:'#37474f',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:9,name:'奇趣球',color:'#ff6b6b',count:0,freeCount:0,rate:'100%捕捉，资质随机',price:80000},
+      {id:10,name:'补光球',color:'#ffd93d',count:0,freeCount:0,rate:'100%捕捉，资质随机',price:80000},
+      {id:11,name:'棱镜球',color:'#a855f7',count:0,freeCount:0,rate:'100%捕捉，必定了不起，完美无瑕，天赋随机，炫彩颜色粒子随机',price:0},
+      {id:12,name:'织梦棱镜球',color:'#ec4899',count:0,freeCount:0,rate:'100%捕捉，必定了不起，完美无瑕，天赋随机，炫彩粒子为当前赛季主题颜色统一',price:800},
+      {id:13,name:'狂欢棱镜球',color:'#f472b6',count:0,freeCount:0,rate:'狂欢系+70%',price:800},
+      {id:14,name:'变幻球',color:'#06b6d4',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:15,name:'绝缘球',color:'#8b5cf6',count:0,freeCount:0,rate:'绝缘精灵+45%',price:3000},
+      {id:16,name:'调温球',color:'#f97316',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:17,name:'淘沙球',color:'#d4a017',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000}
     ],
     selectedBall: null, selectedBallCount: 0,
     totalCatches: 0, successCatches: 0, successRate: 0, pityCount: 0, pityHint: '基础概率', history: [], result: '',
@@ -689,6 +689,8 @@ Page({
         if (diff > 0) {
           decrease[i] = diff
           decreaseIdx = i
+          var freeConsume = Math.min(diff, balls[i].freeCount)
+          balls[i].freeCount = Math.max(0, balls[i].freeCount - freeConsume)
         }
         balls[i].count = remaining
         break
@@ -821,8 +823,15 @@ Page({
     }
     var balls = self.data.balls.slice()
     var oldCount = balls[self.data.selectedBall].count
+    var oldFree = balls[self.data.selectedBall].freeCount
     balls[self.data.selectedBall].count = count
     var diff = oldCount - count
+    if (diff > 0) {
+      var freeConsume = Math.min(diff, oldFree)
+      balls[self.data.selectedBall].freeCount = oldFree - freeConsume
+    } else {
+      balls[self.data.selectedBall].freeCount = oldFree
+    }
     var cost = ball.price * count
     var newCosts = self.data.totalCosts + cost
     var totalBallUsed = 0
@@ -892,6 +901,7 @@ Page({
     for (var i = 0; i < balls.length; i++) {
       if (balls[i].name === ballName) {
         balls[i].count += v
+        if (t === '合成') balls[i].freeCount += v
         break
       }
     }
