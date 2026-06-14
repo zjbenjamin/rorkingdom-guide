@@ -584,17 +584,28 @@ Page({
       success: function(res) {
         if (res.confirm) {
           var items = self.data.items
+          var deleted = items[index]
           items.splice(index, 1)
           var customItemsText = items.map(function(i) {
             return i.name + '|' + i.price + '|' + i.effect + '|' + i.rarity + '|' + i.source
           }).join('\n')
-          db.collection('page_config').doc('merchant').update({
-            data: {
-              customItems: customItemsText,
-              updateTime: db.serverDate()
+          var selling = self.data.currentSelling || []
+          var sellingChanged = false
+          for (var i = selling.length - 1; i >= 0; i--) {
+            if (selling[i].name === deleted.name && selling[i].price === deleted.price) {
+              selling.splice(i, 1)
+              sellingChanged = true
             }
+          }
+          var sellingText = selling.map(function(i) {
+            return i.name + '|' + i.price + '|' + i.effect + '|' + i.rarity + '|' + i.source
+          }).join('\n')
+          var updateData = { customItems: customItemsText, updateTime: db.serverDate() }
+          if (sellingChanged) updateData.currentSelling = sellingText
+          db.collection('page_config').doc('merchant').update({
+            data: updateData
           }).then(function() {
-            self.setData({ items: items, customItems: customItemsText })
+            self.setData({ items: items, customItems: customItemsText, currentSelling: selling, currentSellingText: sellingText })
             wx.showToast({ title: '已删除', icon: 'success' })
           }).catch(function() {
             wx.showToast({ title: '删除失败', icon: 'none' })
