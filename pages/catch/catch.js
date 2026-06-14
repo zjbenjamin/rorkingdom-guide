@@ -698,6 +698,9 @@ Page({
     for (var j = 0; j < balls.length; j++) totalBallUsed += balls[j].count
     var hasActive = false
     for (var k = 0; k < balls.length; k++) { if (balls[k].count > 0) { hasActive = true; break } }
+    var usedInc = decreaseIdx >= 0 ? decrease[decreaseIdx] : 0
+    var newUsedBallTotal = self.data.usedBallTotal + usedInc
+    if (usedInc > 0) wx.setStorageSync('used_ball_total', newUsedBallTotal)
     self.setData({
       showBallCheckModal: false,
       ballCheckRecords: records,
@@ -705,7 +708,9 @@ Page({
       balls: balls,
       hasActiveBalls: hasActive,
       totalBallUsed: totalBallUsed,
-      ballDecrease: decrease
+      usedBallTotal: newUsedBallTotal,
+      ballDecrease: decrease,
+      canStartCapture: self.data.wealthSet && hasActive
     })
     if (decreaseIdx >= 0) {
       setTimeout(function() { self.setData({ ballDecrease: {} }) }, 2500)

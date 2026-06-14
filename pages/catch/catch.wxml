@@ -177,17 +177,6 @@
       <text wx:if="{{history.length===0}}" class="empty">暂无记录</text>
     </view>
 
-    <!-- 球剩余记录 -->
-    <view class="card" wx:if="{{ballCheckRecords.length > 0}}">
-      <view class="card-title">球剩余记录 <text class="clear-link" bindtap="onClearBallCheck">清空</text></view>
-      <view class="history-row" wx:for="{{ballCheckRecords}}" wx:key="index">
-        <view class="hbadge">🎱</view>
-        <text class="hname">{{item.ball}}</text>
-        <text class="hcount">剩余 {{item.remaining}}</text>
-        <text class="htime">{{item.time}}</text>
-      </view>
-    </view>
-
     <view class="foot">更新：{{buildTime}}</view>
   </view>
 
