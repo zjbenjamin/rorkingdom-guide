@@ -132,6 +132,7 @@
         <text class="hname">{{item.ball}}</text>
         <text class="hcount">x{{item.count}}</text>
         <text class="hcost" wx:if="{{item.cost>0}}">💵{{item.cost}}</text>
+        <text class="hcost free" wx:elif="{{item.type==='合成'}}">💵免费</text>
         <text class="htime">{{item.time}}</text>
       </view>
       <view class="clear-row" wx:if="{{specialHistory.length>0}}">

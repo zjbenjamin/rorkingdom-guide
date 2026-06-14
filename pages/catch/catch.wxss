@@ -122,6 +122,7 @@ page { background: #0a0e27; min-height: 100vh; }
 .hpet { font-size: 20rpx; color: #ffab40; margin-left: 6rpx; }
 .hcount { color: rgba(255,255,255,0.5); }
 .hcost { font-size: 20rpx; color: #ffab40; margin-left: 8rpx; }
+.hcost.free { color: rgba(0,230,118,0.8); }
 .htime { color: rgba(255,255,255,0.5); margin-left: auto; font-size: 20rpx; }
 .clear-row { text-align: right; margin-top: 12rpx; }
 .clear-link { font-size: 20rpx; color: #ff4757; }
