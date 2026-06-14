@@ -175,21 +175,18 @@ Page({
       promise = db.collection('announcements').add({ data: data })
     }
     promise.then(function() {
-      var isEdit = !!self.data.systemEditingItem
       self.setData({ systemSubmitting: false, showSystemModal: false, systemEditingItem: null })
       wx.showToast({ title: '操作成功', icon: 'success' })
       self.loadSystemUpdates()
-      if (!isEdit) {
-        wx.cloud.callFunction({
-          name: 'sendSubscribe',
-          data: {
-            type: 'system',
-            title: '新版本发布',
-            content: title.substring(0, 20),
-            page: '/pages/index/index'
-          }
-        }).catch(function() {})
-      }
+      wx.cloud.callFunction({
+        name: 'sendSubscribe',
+        data: {
+          type: 'system',
+          title: title,
+          content: content.substring(0, 20),
+          page: '/pages/index/index'
+        }
+      }).catch(function() {})
     }).catch(function(err) {
       console.error('发布系统更新失败:', err)
       self.setData({ systemSubmitting: false })
@@ -657,21 +654,18 @@ Page({
       promise = db.collection('announcements').add({ data: data })
     }
     promise.then(function() {
-      var isEdit = !!self.data.editingItem
       self.setData({ submitting: false, showModal: false, editingItem: null })
       wx.showToast({ title: '操作成功', icon: 'success' })
       self.loadAnnouncements()
-      if (!isEdit) {
-        wx.cloud.callFunction({
-          name: 'sendSubscribe',
-          data: {
-            type: 'announcement',
-            title: title,
-            content: (content || title).substring(0, 20),
-            page: '/pages/index/index'
-          }
-        }).catch(function() {})
-      }
+      wx.cloud.callFunction({
+        name: 'sendSubscribe',
+        data: {
+          type: 'announcement',
+          title: title,
+          content: (content || title).substring(0, 20),
+          page: '/pages/index/index'
+        }
+      }).catch(function() {})
     }).catch(function(err) {
       console.error('发布公告失败:', err)
       self.setData({ submitting: false })

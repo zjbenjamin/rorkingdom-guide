@@ -222,21 +222,18 @@ Page({
       ? db.collection('announcements').doc(self.data.editingItem.id).update({ data: data })
       : (data.createTime = db.serverDate(), data.author = app.globalData.userInfo ? app.globalData.userInfo.nickName : 'Admin', db.collection('announcements').add({ data: data }))
     promise.then(function() {
-      var isEdit = !!self.data.editingItem
       self.setData({ submitting: false, showEditModal: false, editingItem: null })
       wx.showToast({ title: '操作成功', icon: 'success' })
       self.sortActivities()
-      if (!isEdit) {
-        wx.cloud.callFunction({
-          name: 'sendSubscribe',
-          data: {
-            type: 'activity',
-            title: '新活动上线',
-            content: title.substring(0, 20),
-            page: '/pages/activity/activity'
-          }
-        }).catch(function() {})
-      }
+      wx.cloud.callFunction({
+        name: 'sendSubscribe',
+        data: {
+          type: 'activity',
+          title: title,
+          content: content.substring(0, 20),
+          page: '/pages/activity/activity'
+        }
+      }).catch(function() {})
     }).catch(function() { self.setData({ submitting: false }); wx.showToast({ title: '操作失败', icon: 'none' }) })
   },
   onDeleteActivity: function(e) {

@@ -176,6 +176,15 @@ Page({
         self.setData({ submitting: false, showModal: false })
         wx.showToast({ title: '保存成功', icon: 'success' })
         self.loadConfig()
+        wx.cloud.callFunction({
+          name: 'sendSubscribe',
+          data: {
+            type: 'merchant',
+            title: '商人信息更新',
+            content: value.substring(0, 20),
+            page: '/pages/merchant/merchant'
+          }
+        }).catch(function() {})
       })
       .catch(function() {
         self.setData({ submitting: false })
