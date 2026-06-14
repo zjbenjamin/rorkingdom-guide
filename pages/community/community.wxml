@@ -211,7 +211,7 @@
         </view>
         <view class="reply-section">
           <text class="reply-title">回复 ({{detailReplies.length}})</text>
-          <view class="reply-item" wx:for="{{detailReplies}}" wx:key="_id">
+          <view class="reply-item" wx:for="{{detailReplies}}" wx:key="_id" catchtap="setReplyTarget" data-item="{{item}}">
             <view class="reply-avatar-wrap {{item.userRole === 'developer' ? 'avatar-dev' : item.userRole === 'editor' ? 'avatar-editor' : ''}}">
               <image class="reply-avatar" src="{{item.userAvatar || '/images/default-avatar.png'}}" mode="aspectFill" binderror="onAvatarError" data-idx="{{index}}" data-type="detail" />
               <view class="verified-badge small dev-badge" wx:if="{{item.userRole === 'developer'}}">✓</view>
@@ -234,7 +234,11 @@
         </view>
       </scroll-view>
       <view class="reply-input-bar">
-        <input class="reply-input" placeholder="写回复..." placeholder-style="color:rgba(255,255,255,0.5)" value="{{replyContent}}" bindinput="onReplyInput" />
+        <view class="reply-target-hint" wx:if="{{replyTarget}}" catchtap="clearReplyTarget">
+          <text class="reply-target-text">回复 {{replyTarget.userName}}：</text>
+          <text class="reply-target-clear">✕</text>
+        </view>
+        <input class="reply-input" placeholder="{{replyTarget ? '回复 ' + replyTarget.userName + '...' : '写回复...'}}" placeholder-style="color:rgba(255,255,255,0.5)" value="{{replyContent}}" bindinput="onReplyInput" />
         <button class="reply-submit" bindtap="submitReply" disabled="{{replying}}">{{replying ? '发送中' : '发送'}}</button>
       </view>
     </view>

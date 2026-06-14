@@ -43,6 +43,7 @@ Page({
     detailReplies: [],
     replyContent: '',
     replying: false,
+    replyTarget: null,
     userInfo: null,
     postImages: [],
     detailImages: [],
@@ -543,7 +544,7 @@ Page({
     this.loadReplies(item._id)
   },
   closeDetail: function() {
-    this.setData({ showDetailModal: false, detailItem: null, detailReplies: [], detailImages: [] })
+    this.setData({ showDetailModal: false, detailItem: null, detailReplies: [], detailImages: [], replyTarget: null, replyContent: '' })
   },
   loadReplies: function(parentId) {
     var self = this
@@ -570,6 +571,14 @@ Page({
   onReplyInput: function(e) {
     this.setData({ replyContent: e.detail.value })
   },
+  setReplyTarget: function(e) {
+    var item = e.currentTarget.dataset.item
+    if (item.userName === app.globalData.userInfo.nickName) return
+    this.setData({ replyTarget: { _id: item._id, userName: item.userName, content: item.content } })
+  },
+  clearReplyTarget: function() {
+    this.setData({ replyTarget: null })
+  },
   submitReply: function() {
     var self = this
     if (self.data.replying) return
@@ -583,6 +592,7 @@ Page({
     var roles = self.data.userRoles
     var userRole = roles[app.globalData.userInfo.nickName] || ''
     var avatarUrl = app.globalData.userInfo._cloudAvatar || app.globalData.userInfo.avatarUrl
+    var parentId = self.data.detailItem._id
     var replyData = {
       pageType: self.data.detailItem.pageType || 'community',
       pageId: self.data.detailItem.pageId || '',
@@ -591,7 +601,7 @@ Page({
       userName: app.globalData.userInfo.nickName,
       userAvatar: avatarUrl,
       userRole: userRole,
-      replyTo: self.data.detailItem._id,
+      replyTo: parentId,
       images: [],
       likes: [],
       replyCount: 0,
@@ -601,23 +611,26 @@ Page({
     }
     db.collection('comments').add({ data: replyData })
       .then(function() {
-        return db.collection('comments').doc(self.data.detailItem._id).update({
+        return db.collection('comments').doc(parentId).update({
           data: { replyCount: (self.data.detailItem.replyCount || 0) + 1 }
         })
       })
       .then(function() {
-        self.setData({ replying: false, replyContent: '' })
+        var target = self.data.replyTarget
+        self.setData({ replying: false, replyContent: '', replyTarget: null })
         wx.showToast({ title: '回复成功', icon: 'success' })
-        self.loadReplies(self.data.detailItem._id)
+        self.loadReplies(parentId)
         self.loadComments(true)
         self.loadInlineReplies()
-        if (self.data.detailItem.userName !== app.globalData.userInfo.nickName) {
-          notify.getOpenidByNickname(self.data.detailItem.userName, function(targetOpenid) {
+        var notifyUser = target ? target.userName : self.data.detailItem.userName
+        var notifyContent = target ? target.content : self.data.detailItem.content
+        if (notifyUser !== app.globalData.userInfo.nickName) {
+          notify.getOpenidByNickname(notifyUser, function(targetOpenid) {
             if (targetOpenid) {
               notify.sendInteractionNotify(targetOpenid, 'reply', {
                 userName: app.globalData.userInfo.nickName,
                 content: content,
-                postContent: self.data.detailItem.content
+                postContent: notifyContent
               })
             }
           })
