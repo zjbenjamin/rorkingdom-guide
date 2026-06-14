@@ -153,6 +153,44 @@
       <text wx:if="{{history.length===0}}" class="empty">暂无记录</text>
     </view>
 
+    <!-- 球剩余记录 -->
+    <view class="card" wx:if="{{ballCheckRecords.length > 0}}">
+      <view class="card-title">球剩余记录 <text class="clear-link" bindtap="onClearBallCheck">清空</text></view>
+      <view class="history-row" wx:for="{{ballCheckRecords}}" wx:key="index">
+        <view class="hbadge">🎱</view>
+        <text class="hname">{{item.ball}}</text>
+        <text class="hcount">剩余 {{item.remaining}}</text>
+        <text class="htime">{{item.time}}</text>
+      </view>
+    </view>
+
     <view class="foot">更新：{{buildTime}}</view>
+  </view>
+
+  <!-- 球剩余记录弹窗 -->
+  <view class="modal-mask" wx:if="{{showBallCheckModal}}" bindtap="closeBallCheckModal">
+    <view class="modal-box" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">📝 记录球剩余数量</text>
+        <text class="modal-close" catchtap="closeBallCheckModal">✕</text>
+      </view>
+      <view class="modal-body">
+        <view class="check-hint">每10次奇遇事件，请记录当前使用的球剩余数量</view>
+        <view class="form-group">
+          <text class="form-label">球类型</text>
+          <picker class="form-picker" range="{{ballCheckAllBalls}}" bindchange="onBallCheckBallChange">
+            <view class="picker-text">{{ballCheckBall}} ▾</view>
+          </picker>
+        </view>
+        <view class="form-group">
+          <text class="form-label">剩余数量</text>
+          <input class="form-input" type="number" placeholder="输入剩余数量" value="{{ballCheckCount}}" bindinput="onBallCheckCountInput" />
+        </view>
+      </view>
+      <view class="modal-footer">
+        <button class="modal-cancel" catchtap="closeBallCheckModal">跳过</button>
+        <button class="modal-save" catchtap="onBallCheckConfirm">记录</button>
+      </view>
+    </view>
   </view>
 </view>

@@ -1,4 +1,22 @@
 var app = getApp()
+function formatTime(d) {
+  if (!d) d = new Date()
+  var utc = d.getTime() + d.getTimezoneOffset() * 60000
+  var shanghai = new Date(utc + 8 * 3600000)
+  var y = shanghai.getFullYear()
+  var m = String(shanghai.getMonth() + 1).padStart(2, '0')
+  var day = String(shanghai.getDate()).padStart(2, '0')
+  var h = String(shanghai.getHours()).padStart(2, '0')
+  var min = String(shanghai.getMinutes()).padStart(2, '0')
+  var s = String(shanghai.getSeconds()).padStart(2, '0')
+  return y + '-' + m + '-' + day + ' ' + h + ':' + min + ':' + s
+}
+function formatTimeShort(d) {
+  if (!d) d = new Date()
+  var utc = d.getTime() + d.getTimezoneOffset() * 60000
+  var shanghai = new Date(utc + 8 * 3600000)
+  return String(shanghai.getHours()).padStart(2, '0') + ':' + String(shanghai.getMinutes()).padStart(2, '0') + ':' + String(shanghai.getSeconds()).padStart(2, '0')
+}
 Page({
   data: {
     buildTime: '',
@@ -38,12 +56,16 @@ Page({
     gemCost: 0,
     cnyCost: '0',
     userTitle: '😐 平民',
-    titleColor: 'rgba(255,255,255,0.5)'
+    titleColor: 'rgba(255,255,255,0.5)',
+    showBallCheckModal: false,
+    ballCheckBall: '',
+    ballCheckCount: '',
+    ballCheckRecords: []
   },
   onShow: function() {
     var n = new Date()
     this.setData({
-      buildTime: n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')+' '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0')
+      buildTime: formatTime(n)
     })
     this.loadHistory()
     this.calcTotalBallUsed()
@@ -97,7 +119,8 @@ Page({
       luckyBoxCount: luckyBoxCount,
       activeBalls: activeBalls,
       userTitle: title.name,
-      titleColor: title.color
+      titleColor: title.color,
+      ballCheckRecords: wx.getStorageSync('ball_check_records') || []
     })
     this.updateGemCost()
   },
@@ -141,7 +164,7 @@ Page({
     wx.setStorageSync('total_costs', newCosts)
     var accumulated = self.data.totalGains - newCosts
     var resultText = result === 'success' ? '成功' : '歪了'
-    var record = { time: new Date().toLocaleTimeString(), balls: used.map(function(b) { return b.name + 'x' + b.count }).join(', ') || '未使用球', result: resultText, total: catchCount, cost: totalBallCost, pet: '' }
+    var record = { time: formatTimeShort(), balls: used.map(function(b) { return b.name + 'x' + b.count }).join(', ') || '未使用球', result: resultText, total: catchCount, cost: totalBallCost, pet: '' }
     var h = [record].concat(self.data.history).slice(0, 20)
     wx.setStorageSync('catch_history', h)
     var isShiny = (result === 'success' || result === 'miss')
@@ -177,7 +200,7 @@ Page({
     wx.setStorageSync('total_costs', newCosts)
     var accumulated = self.data.totalGains - newCosts
     var resultText = result === 'success' ? '成功' : '歪了'
-    var record = { time: new Date().toLocaleTimeString(), balls: used.map(function(b) { return b.name + 'x' + b.count }).join(', ') || '未使用球', result: resultText, total: catchCount, cost: totalBallCost, pet: '' }
+    var record = { time: formatTimeShort(), balls: used.map(function(b) { return b.name + 'x' + b.count }).join(', ') || '未使用球', result: resultText, total: catchCount, cost: totalBallCost, pet: '' }
     var h = [record].concat(self.data.history).slice(0, 20)
     wx.setStorageSync('catch_history', h)
     var isShiny = (result === 'success' || result === 'miss')
@@ -248,7 +271,7 @@ Page({
     var totalEncounters = this.data.carnivalCount + this.data.luckyBoxCount
     var petInfo = this.data.petNameInput ? '\n精灵名称：' + this.data.petNameInput : ''
     var text = '🎯 洛手助手捕捉记录\n' +
-      '时间：' + new Date().toLocaleString() + '\n' +
+      '时间：' + formatTime() + '\n' +
       '结果：' + resultText + '\n' +
       '使用球：' + ballText + '\n' +
       '数量：' + total + '\n' +
@@ -281,7 +304,7 @@ Page({
     var petName = this.data.petNameInput || ''
     var resultText = result === 'success' ? '成功' : result === 'miss' ? '歪了' : '中止'
     if (petName) resultText += '(' + petName + ')'
-    var record = { time: new Date().toLocaleTimeString(), balls: used.map(function(b){ return b.name+'x'+b.count }).join(', ')||'未使用球', result: resultText, total: catchCount, cost: totalBallCost, pet: petName }
+    var record = { time: formatTimeShort(), balls: used.map(function(b){ return b.name+'x'+b.count }).join(', ')||'未使用球', result: resultText, total: catchCount, cost: totalBallCost, pet: petName }
     var h = [record].concat(this.data.history).slice(0, 20)
     wx.setStorageSync('catch_history', h)
     
@@ -409,7 +432,7 @@ Page({
   },
   onEncounterTab: function(e) { this.setData({ encounterTab: e.currentTarget.dataset.t }) },
   addEncounterRecord: function(type, icon, count) {
-    var record = { time: new Date().toLocaleTimeString(), balls: type, result: '奇遇', total: 1, icon: icon, count: count }
+    var record = { time: formatTimeShort(), balls: type, result: '奇遇', total: 1, icon: icon, count: count }
     var h = [record].concat(this.data.history).slice(0, 20)
     wx.setStorageSync('catch_history', h)
     this.setData({ history: h })
@@ -418,6 +441,11 @@ Page({
     var newPity = Math.min(80, currentPity + 1)
     this.updatePity(newPity)
     this.updateSuccessRate()
+    
+    var totalEncounters = this.data.carnivalCount + this.data.luckyBoxCount
+    if (totalEncounters > 0 && totalEncounters % 10 === 0) {
+      this.showBallCheckModal()
+    }
   },
   onClearPity: function() {
     var currentPity = this.data.pityCount;
@@ -579,6 +607,41 @@ Page({
       }
     })
   },
+  showBallCheckModal: function() {
+    var allBalls = []
+    for (var i = 0; i < this.data.balls.length; i++) {
+      allBalls.push(this.data.balls[i].name)
+    }
+    this.setData({
+      showBallCheckModal: true,
+      ballCheckBall: allBalls[0] || '',
+      ballCheckCount: '',
+      ballCheckAllBalls: allBalls
+    })
+  },
+  closeBallCheckModal: function() {
+    this.setData({ showBallCheckModal: false })
+  },
+  onBallCheckBallChange: function(e) {
+    this.setData({ ballCheckBall: this.data.ballCheckAllBalls[e.detail.value] })
+  },
+  onBallCheckCountInput: function(e) {
+    this.setData({ ballCheckCount: e.detail.value })
+  },
+  onBallCheckConfirm: function() {
+    var self = this
+    var ballName = self.data.ballCheckBall
+    var remaining = parseInt(self.data.ballCheckCount)
+    if (!ballName) { wx.showToast({ title: '请选择球类型', icon: 'none' }); return }
+    if (isNaN(remaining) || remaining < 0) { wx.showToast({ title: '请输入有效数量', icon: 'none' }); return }
+    var record = { time: formatTime(), ball: ballName, remaining: remaining }
+    var records = self.data.ballCheckRecords.concat([record])
+    wx.setStorageSync('ball_check_records', records)
+    self.setData({ showBallCheckModal: false, ballCheckRecords: records })
+    wx.showToast({ title: '球剩余记录已保存', icon: 'success' })
+  },
+  onClearBallCheck: function() { wx.removeStorageSync('ball_check_records'); this.setData({ ballCheckRecords: [] }) },
+  preventClose: function() {},
   onWealthInput: function(e) { this.setData({ coinInput: e.detail.value }) },
   onSetWealth: function() {
     var self = this
@@ -677,12 +740,17 @@ Page({
     var balls = self.data.balls.slice()
     balls[self.data.selectedBall].count = count
     var cost = ball.price * count
+    var newCosts = self.data.totalCosts + cost
+    var totalBallUsed = 0
+    for (var i = 0; i < balls.length; i++) totalBallUsed += balls[i].count
+    var activeBalls = balls.filter(function(b){ return b.count > 0 })
     if (cost > 0) {
-      var newCosts = self.data.totalCosts + cost
       wx.setStorageSync('total_costs', newCosts)
       var accumulated = self.data.totalGains - newCosts
       self.setData({
         balls: balls,
+        activeBalls: activeBalls,
+        totalBallUsed: totalBallUsed,
         totalCosts: newCosts,
         accumulatedWealth: accumulated,
         totalWealth: self.data.initialWealth + accumulated,
@@ -690,10 +758,12 @@ Page({
         selectedBallCount: 0
       })
       self.updateGemCost()
-        wx.showToast({title: ball.name + ' x' + count + ' 消耗💵' + cost + '洛克贝',icon:'none'})
+      wx.showToast({title: ball.name + ' x' + count + ' 消耗💵' + cost + '洛克贝',icon:'none'})
     } else {
       self.setData({
         balls: balls,
+        activeBalls: activeBalls,
+        totalBallUsed: totalBallUsed,
         selectedBall: null,
         selectedBallCount: 0
       })
@@ -720,7 +790,7 @@ Page({
     var newCosts = self.data.totalCosts + totalCost
     wx.setStorageSync('total_costs', newCosts)
     var accumulated = self.data.totalGains - newCosts
-    var h = [{type: t, ball: ballName, count: v, cost: totalCost, time: new Date().toLocaleString()}].concat(self.data.specialHistory).slice(0, 50)
+    var h = [{type: t, ball: ballName, count: v, cost: totalCost, time: formatTime()}].concat(self.data.specialHistory).slice(0, 50)
     wx.setStorageSync('special_history', h)
     var balls = self.data.balls.slice()
     for (var i = 0; i < balls.length; i++) {
