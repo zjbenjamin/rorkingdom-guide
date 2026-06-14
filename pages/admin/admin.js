@@ -274,8 +274,8 @@ Page({
     if (!db) return
     var stats = { totalUsers: 0, totalPosts: 0, todayPosts: 0 }
     var done = 0
-    db.collection('users').count().then(function(r) { stats.totalUsers = r.total; done++; if (done >= 3) self.setData({ stats: stats, loading: false }) })
-    db.collection('comments').count().then(function(r) { stats.totalPosts = r.total; done++; if (done >= 3) self.setData({ stats: stats, loading: false }) })
+    db.collection('users').count().then(function(r) { stats.totalUsers = r.total; done++; if (done >= 3) self.setData({ stats: stats, loading: false }) }).catch(function() { done++; if (done >= 3) self.setData({ stats: stats, loading: false }) })
+    db.collection('comments').count().then(function(r) { stats.totalPosts = r.total; done++; if (done >= 3) self.setData({ stats: stats, loading: false }) }).catch(function() { done++; if (done >= 3) self.setData({ stats: stats, loading: false }) })
     var today = new Date(); today.setHours(0,0,0,0)
     db.collection('comments').where({ createTime: db.command.gte(today) }).count()
       .then(function(r) { stats.todayPosts = r.total; done++; if (done >= 3) self.setData({ stats: stats, loading: false }) })

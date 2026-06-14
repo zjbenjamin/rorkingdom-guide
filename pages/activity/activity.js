@@ -230,7 +230,7 @@ Page({
         data: {
           type: 'activity',
           title: title,
-          content: content.substring(0, 20),
+          content: desc.substring(0, 20),
           page: '/pages/activity/activity'
         }
       }).catch(function() {})
@@ -239,13 +239,14 @@ Page({
   onDeleteActivity: function(e) {
     var self = this
     var item = e.currentTarget.dataset.item
-    if (!item.isCloud) { wx.showToast({ title: '本地活动无法删除', icon: 'none' }); return }
+    if (!item.isCloud || !db) { wx.showToast({ title: '本地活动无法删除', icon: 'none' }); return }
     wx.showModal({
       title: '删除活动', content: '确定删除该活动？',
       success: function(res) {
         if (res.confirm) {
           db.collection('announcements').doc(item.id).remove()
             .then(function() { wx.showToast({ title: '已删除', icon: 'success' }); self.sortActivities() })
+            .catch(function() { wx.showToast({ title: '删除失败', icon: 'none' }) })
         }
       }
     })

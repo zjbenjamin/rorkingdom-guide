@@ -342,7 +342,7 @@ Page({
     }
     this.setData({ totalBallUsed: total })
   },
-  onClearHistory: function() { var self=this; wx.showModal({ title:'清空', content:'确定清空？', success:function(r){ if(r.confirm){ wx.removeStorageSync('catch_history'); self.setData({history:[],totalCatches:0,successCatches:0}) } } }) },
+  onClearHistory: function() { var self=this; wx.showModal({ title:'清空', content:'确定清空？', success:function(r){ if(r.confirm){ wx.removeStorageSync('catch_history'); wx.removeStorageSync('total_catches'); wx.removeStorageSync('success_catches'); self.setData({history:[],totalCatches:0,successCatches:0}) } } }) },
   onClearStats: function() {
     var self = this
     wx.showActionSheet({
@@ -730,7 +730,7 @@ Page({
       }
     }
     var totalBallUsed = 0
-    for (var i = 0; i < this.data.balls.length; i++) totalBallUsed += this.data.balls[i].count
+    for (var i = 0; i < balls.length; i++) totalBallUsed += balls[i].count
     self.setData({ specialHistory: h, specialCount: '', balls: balls, expanded: true, totalBallUsed: totalBallUsed, totalCosts: newCosts, accumulatedWealth: accumulated, totalWealth: self.data.initialWealth + accumulated })
     self.updateGemCost()
     wx.showToast({title: totalCost > 0 ? t + ballName + ' +' + v + ' 消耗💵' + totalCost : t + ballName + ' +' + v, icon: 'none'})

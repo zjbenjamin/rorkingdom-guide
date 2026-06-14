@@ -303,13 +303,35 @@ Page({
         })
         self.loadInlineReplies()
         var allFileIDs = []
+        var imageRefs = []
         for (var p = 0; p < comments.length; p++) {
           if (cloudUrl.isCloudUrl(comments[p].userAvatar)) allFileIDs.push(comments[p].userAvatar)
           if (comments[p].images) {
             for (var q = 0; q < comments[p].images.length; q++) {
-              if (cloudUrl.isCloudUrl(comments[p].images[q])) allFileIDs.push(comments[p].images[q])
+              if (cloudUrl.isCloudUrl(comments[p].images[q])) {
+                allFileIDs.push(comments[p].images[q])
+                imageRefs.push({ ci: p, ii: q, fid: comments[p].images[q] })
+              }
             }
           }
+        }
+        if (allFileIDs.length > 0) {
+          var uniqueIDs = []
+          var seen = {}
+          for (var r = 0; r < allFileIDs.length; r++) { if (!seen[allFileIDs[r]]) { seen[allFileIDs[r]] = true; uniqueIDs.push(allFileIDs[r]) } }
+          wx.cloud.getTempFileURL({ fileList: uniqueIDs }).then(function(urlRes) {
+            var urlMap = {}
+            if (urlRes.fileList) { for (var s = 0; s < urlRes.fileList.length; s++) { if (urlRes.fileList[s].tempFileURL) urlMap[urlRes.fileList[s].fileID] = urlRes.fileList[s].tempFileURL } }
+            var updated = self.data.comments
+            for (var t = 0; t < updated.length; t++) {
+              if (urlMap[updated[t].userAvatar]) updated[t].userAvatar = urlMap[updated[t].userAvatar]
+            }
+            for (var u = 0; u < imageRefs.length; u++) {
+              var ref = imageRefs[u]
+              if (urlMap[ref.fid] && updated[ref.ci] && updated[ref.ci].images) updated[ref.ci].images[ref.ii] = urlMap[ref.fid]
+            }
+            self.setData({ comments: updated })
+          }).catch(function() {})
         }
       })
       .catch(function() {
@@ -601,7 +623,6 @@ Page({
         self.setData({ replying: false, replyContent: '', replyTarget: null, activeReplyPostId: '' })
         wx.showToast({ title: '回复成功', icon: 'success' })
         self.loadComments(true)
-        self.loadInlineReplies()
         var notifyUser = target ? target.userName : post.userName
         var notifyContent = target ? target.content : post.content
         if (notifyUser !== app.globalData.userInfo.nickName) {

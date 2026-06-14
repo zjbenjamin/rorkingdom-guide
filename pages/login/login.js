@@ -151,7 +151,7 @@ Page({
     wx.setStorageSync('game_uid', uid)
     self.setData({ gameUid: uid, showUidModal: false })
     wx.showToast({ title: uid ? 'UID已保存' : 'UID已清除', icon: 'success' })
-    if (uid) {
+    if (uid && wx.cloud) {
       var db = wx.cloud.database()
       if (db) {
         db.collection('users').where({ nickName: self.data.userInfo.nickName }).get()

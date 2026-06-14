@@ -88,6 +88,7 @@ Page({
   saveEdit() {
     var self = this
     if (self.data.submitting) return
+    if (!db) { wx.showToast({ title: '云环境未就绪', icon: 'none' }); return }
     var value = self.data.editValue.trim()
     if (!value) {
       wx.showToast({ title: '请输入内容', icon: 'none' })

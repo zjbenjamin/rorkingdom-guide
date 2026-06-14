@@ -156,7 +156,8 @@ Component({
     },
     previewImage: function(e) {
       var src = e.currentTarget.dataset.src
-      wx.previewImage({ urls: this.data.images, current: src })
+      var urls = e.currentTarget.dataset.urls || this.data.images
+      wx.previewImage({ urls: urls, current: src })
     },
     uploadImages: function() {
       var self = this

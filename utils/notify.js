@@ -136,7 +136,7 @@ function doSave(db, type, openid, callback) {
       callback(null)
     })
     .catch(function(err) {
-      if (err.errCode === -502005 || err.errMsg.indexOf('collection not exists') >= 0) {
+      if (err.errCode === -502005 || (err.errMsg && err.errMsg.indexOf('collection not exists') >= 0)) {
         db.createCollection('subscribers').then(function() {
           return db.collection('subscribers').add({
             data: {

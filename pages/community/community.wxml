@@ -75,7 +75,7 @@
             <text class="more-icon">···</text>
           </view>
         </view>
-        <view class="feed-content" bindtap="openDetail" data-item="{{item}}">
+        <view class="feed-content">
           <text class="feed-text" wx:if="{{item.content}}">{{item.content}}</text>
           <view class="feed-images" wx:if="{{item.images && item.images.length > 0}}">
             <image class="feed-image" wx:for="{{item.images}}" wx:for-item="img" wx:key="*this" src="{{img}}" mode="widthFix" catchtap="previewImage" data-src="{{img}}" data-urls="{{item.images}}" />
