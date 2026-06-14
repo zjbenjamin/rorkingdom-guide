@@ -78,6 +78,7 @@ Page({
       .catch(() => {})
   },
   onEdit(e) {
+    if (!this.data.isAdmin) return
     var field = e.currentTarget.dataset.field
     var value = e.currentTarget.dataset.value || ''
     this.setData({ showModal: true, editingField: field, editValue: value })

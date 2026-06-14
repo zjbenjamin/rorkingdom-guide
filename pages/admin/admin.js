@@ -205,6 +205,7 @@ Page({
               wx.showToast({ title: '已删除', icon: 'success' })
               self.loadSystemUpdates()
             })
+            .catch(function() { wx.showToast({ title: '删除失败', icon: 'none' }) })
         }
       }
     })
@@ -352,6 +353,7 @@ Page({
         wx.showToast({ title: '操作成功', icon: 'success' })
         self.loadPageConfigs()
       })
+      .catch(function() { wx.showToast({ title: '操作失败', icon: 'none' }) })
   },
   togglePageCustom: function(e) {
     var self = this
@@ -369,6 +371,7 @@ Page({
         wx.showToast({ title: '操作成功', icon: 'success' })
         self.loadPageConfigs()
       })
+      .catch(function() { wx.showToast({ title: '操作失败', icon: 'none' }) })
   },
   openModal: function(e) {
     var item = (e && e.currentTarget && e.currentTarget.dataset) ? e.currentTarget.dataset.item || null : null
@@ -684,13 +687,14 @@ Page({
               wx.showToast({ title: '已删除', icon: 'success' })
               self.loadAnnouncements()
             })
+            .catch(function() { wx.showToast({ title: '删除失败', icon: 'none' }) })
         }
       }
     })
   },
   togglePinnedStatus: function(e) {
     var self = this, item = e.currentTarget.dataset.item
-    db.collection('announcements').doc(item._id).update({ data: { pinned: !item.pinned } }).then(function() { self.loadAnnouncements() })
+    db.collection('announcements').doc(item._id).update({ data: { pinned: !item.pinned } }).then(function() { self.loadAnnouncements() }).catch(function() { wx.showToast({ title: '操作失败', icon: 'none' }) })
   },
   deletePost: function(e) {
     var self = this, item = e.currentTarget.dataset.item
@@ -704,13 +708,14 @@ Page({
               wx.showToast({ title: '已删除', icon: 'success' })
               self.loadPosts()
             })
+            .catch(function() { wx.showToast({ title: '删除失败', icon: 'none' }) })
         }
       }
     })
   },
   togglePostPinned: function(e) {
     var self = this, item = e.currentTarget.dataset.item
-    db.collection('comments').doc(item._id).update({ data: { pinned: !item.pinned } }).then(function() { self.loadPosts() })
+    db.collection('comments').doc(item._id).update({ data: { pinned: !item.pinned } }).then(function() { self.loadPosts() }).catch(function() { wx.showToast({ title: '操作失败', icon: 'none' }) })
   },
   banUser: function(e) {
     var self = this, item = e.currentTarget.dataset.item
@@ -724,13 +729,14 @@ Page({
               wx.showToast({ title: '已封禁', icon: 'success' })
               self.loadUsers()
             })
+            .catch(function() { wx.showToast({ title: '操作失败', icon: 'none' }) })
         }
       }
     })
   },
   unbanUser: function(e) {
     var self = this, item = e.currentTarget.dataset.item
-    db.collection('users').doc(item._id).update({ data: { banned: false } }).then(function() { wx.showToast({ title: '已解封', icon: 'success' }); self.loadUsers() })
+    db.collection('users').doc(item._id).update({ data: { banned: false } }).then(function() { wx.showToast({ title: '已解封', icon: 'success' }); self.loadUsers() }).catch(function() { wx.showToast({ title: '操作失败', icon: 'none' }) })
   },
   deleteUser: function(e) {
     var self = this, item = e.currentTarget.dataset.item
@@ -744,6 +750,7 @@ Page({
               wx.showToast({ title: '已删除', icon: 'success' })
               self.loadUsers()
             })
+            .catch(function() { wx.showToast({ title: '删除失败', icon: 'none' }) })
         }
       }
     })
@@ -760,6 +767,7 @@ Page({
               wx.showToast({ title: '已设为小编', icon: 'success' })
               self.loadUsers()
             })
+            .catch(function() { wx.showToast({ title: '操作失败', icon: 'none' }) })
         }
       }
     })
@@ -776,6 +784,7 @@ Page({
               wx.showToast({ title: '已取消', icon: 'success' })
               self.loadUsers()
             })
+            .catch(function() { wx.showToast({ title: '操作失败', icon: 'none' }) })
         }
       }
     })

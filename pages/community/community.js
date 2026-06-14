@@ -47,7 +47,9 @@ Page({
     adminOpenid: '',
     userRoles: {},
     userTitles: {},
+    titleColors: {},
     userUids: {},
+    userBanned: {},
     isManager: false,
     showTitlePicker: false,
     selectedTitle: '',
@@ -220,7 +222,9 @@ Page({
       .then(function(res) {
         var roles = {}
         var titles = {}
+        var titleColors = {}
         var uids = {}
+        var banned = {}
         var list = res.data || []
         for (var i = 0; i < list.length; i++) {
           var user = list[i]
@@ -231,12 +235,16 @@ Page({
           }
           if (user.title) {
             titles[user.nickName] = user.title
+            titleColors[user.nickName] = user.titleColor || ''
           }
           if (user.gameUid) {
             uids[user.nickName] = user.gameUid
           }
+          if (user.banned) {
+            banned[user.nickName] = true
+          }
         }
-        self.setData({ userRoles: roles, userTitles: titles, userUids: uids })
+        self.setData({ userRoles: roles, userTitles: titles, titleColors: titleColors, userUids: uids, userBanned: banned })
         self.checkManager()
         self.loadComments(true)
       })
@@ -269,7 +277,9 @@ Page({
         var list = res.data || []
         var roles = self.data.userRoles
         var titles = self.data.userTitles
+        var titleColors = self.data.titleColors || {}
         var uids = self.data.userUids
+        var banned = self.data.userBanned || {}
         var daySet = {}
         for (var i = 0; i < list.length; i++) {
           list[i].timeStr = self.formatTime(list[i].createTime)
@@ -278,7 +288,9 @@ Page({
           list[i].inlineReplies = list[i].inlineReplies || []
           list[i].userRole = roles[list[i].userName] || ''
           list[i].userTitle = titles[list[i].userName] || ''
+          list[i].titleColor = titleColors[list[i].userName] || ''
           list[i].gameUid = uids[list[i].userName] || ''
+          list[i].userBanned = !!banned[list[i].userName]
           if (list[i].likes && app.globalData.userInfo) {
             for (var j = 0; j < list[i].likes.length; j++) {
               if (list[i].likes[j] === app.globalData.userInfo.nickName) {
@@ -363,9 +375,9 @@ Page({
           if (!grouped[pid]) grouped[pid] = []
           if (grouped[pid].length < 3) grouped[pid].push(replies[j])
         }
-        var updated = self.data.comments
+        var updated = self.data.comments.slice()
         for (var k = 0; k < updated.length; k++) {
-          updated[k].inlineReplies = grouped[updated[k]._id] || []
+          updated[k] = Object.assign({}, updated[k], { inlineReplies: grouped[updated[k]._id] || [] })
         }
         self.setData({ comments: updated })
         var avatarIDs = []
@@ -379,12 +391,14 @@ Page({
           wx.cloud.getTempFileURL({ fileList: uniqueIDs }).then(function(urlRes) {
             var urlMap = {}
             if (urlRes.fileList) { for (var s = 0; s < urlRes.fileList.length; s++) { if (urlRes.fileList[s].tempFileURL) urlMap[urlRes.fileList[s].fileID] = urlRes.fileList[s].tempFileURL } }
-            var cur = self.data.comments
+            var cur = self.data.comments.slice()
             for (var t = 0; t < cur.length; t++) {
               if (cur[t].inlineReplies) {
-                for (var u = 0; u < cur[t].inlineReplies.length; u++) {
-                  if (urlMap[cur[t].inlineReplies[u].userAvatar]) cur[t].inlineReplies[u].userAvatar = urlMap[cur[t].inlineReplies[u].userAvatar]
+                var newReplies = cur[t].inlineReplies.slice()
+                for (var u = 0; u < newReplies.length; u++) {
+                  if (urlMap[newReplies[u].userAvatar]) newReplies[u] = Object.assign({}, newReplies[u], { userAvatar: urlMap[newReplies[u].userAvatar] })
                 }
+                cur[t] = Object.assign({}, cur[t], { inlineReplies: newReplies })
               }
             }
             self.setData({ comments: cur })
