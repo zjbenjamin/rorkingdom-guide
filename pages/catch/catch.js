@@ -56,6 +56,11 @@ Page({
     ballDecrease: {},
     showCircusParticles: false,
     canStartCapture: false,
+    showResultBallModal: false,
+    resultType: '',
+    resultBall: '',
+    resultBallCount: '',
+    resultBallList: [],
     costMode: 'auto',
     gemCost: 0,
     cnyCost: '0',
@@ -135,21 +140,67 @@ Page({
   onResult: function(e) {
     var r = e.currentTarget.dataset.r
     var self = this
-    var resultText = r === 'success' ? '出异色了！' : '歪了...'
-    var resultIcon = r === 'success' ? '✅' : '😵'
-    var ballInfo = self.data.balls.filter(function(b) { return b.count > 0 })
-    var ballText = ballInfo.length > 0 ? ballInfo.map(function(b) { return b.name + 'x' + b.count }).join(', ') : '未使用球'
-    var totalCost = 0
-    for (var i = 0; i < ballInfo.length; i++) totalCost += ballInfo[i].price * ballInfo[i].count
-
+    var ballList = []
+    for (var i = 0; i < self.data.balls.length; i++) {
+      if (self.data.balls[i].count > 0) {
+        ballList.push(self.data.balls[i].name + ' x' + self.data.balls[i].count)
+      }
+    }
+    if (ballList.length === 0) {
+      ballList.push('未使用球')
+    }
+    self.setData({
+      showResultBallModal: true,
+      resultType: r,
+      resultBall: ballList[0],
+      resultBallCount: '',
+      resultBallList: ballList
+    })
+  },
+  onResultBallChange: function(e) {
+    this.setData({ resultBall: this.data.resultBallList[e.detail.value] })
+  },
+  onResultBallCountInput: function(e) {
+    this.setData({ resultBallCount: e.detail.value })
+  },
+  closeResultBallModal: function() {
+    this.setData({ showResultBallModal: false })
+  },
+  onResultBallConfirm: function() {
+    var self = this
+    var r = self.data.resultType
+    var ballName = self.data.resultBall
+    var usedCount = parseInt(self.data.resultBallCount) || 0
+    self.setData({ showResultBallModal: false, result: r })
+    if (usedCount > 0) {
+      var balls = self.data.balls.slice()
+      for (var i = 0; i < balls.length; i++) {
+        if (balls[i].name + ' x' + balls[i].count === ballName) {
+          var oldCount = balls[i].count
+          var newCount = Math.max(0, oldCount - usedCount)
+          var diff = oldCount - newCount
+          balls[i].count = newCount
+          if (diff > 0) {
+            var freeConsume = Math.min(diff, balls[i].freeCount)
+            balls[i].freeCount = Math.max(0, balls[i].freeCount - freeConsume)
+          }
+          break
+        }
+      }
+      var totalBallUsed = 0
+      for (var j = 0; j < balls.length; j++) totalBallUsed += balls[j].count
+      var newUsedBallTotal = self.data.usedBallTotal + usedCount
+      wx.setStorageSync('used_ball_total', newUsedBallTotal)
+      var hasActive = false
+      for (var k = 0; k < balls.length; k++) { if (balls[k].count > 0) { hasActive = true; break } }
+      self.setData({ balls: balls, totalBallUsed: totalBallUsed, usedBallTotal: newUsedBallTotal, hasActiveBalls: hasActive, canStartCapture: self.data.wealthSet && hasActive })
+    }
     wx.showActionSheet({
       itemList: ['继续累计（保留本次数据）', '清除本次捕捉（重新开始）'],
       success: function(res) {
         if (res.tapIndex === 0) {
-          self.setData({ result: r })
           self.onRecordContinue()
         } else {
-          self.setData({ result: r })
           self.onRecordClear()
         }
       },
@@ -724,6 +775,34 @@ Page({
     var self = this
     self.setData({ showCircusParticles: true })
     setTimeout(function() { self.setData({ showCircusParticles: false }) }, 4000)
+  },
+  onResetBalls: function() {
+    var self = this
+    wx.showModal({
+      title: '重置特殊事件统计',
+      content: '将重置所有咕噜球数量、购买/合成记录、使用球总数。此操作不可撤销',
+      success: function(res) {
+        if (res.confirm) {
+          var balls = self.data.balls.map(function(b) {
+            return { id: b.id, name: b.name, color: b.color, count: 0, freeCount: 0, rate: b.rate, price: b.price }
+          })
+          wx.removeStorageSync('special_history')
+          wx.removeStorageSync('used_ball_total')
+          self.setData({
+            balls: balls,
+            hasActiveBalls: false,
+            totalBallUsed: 0,
+            usedBallTotal: 0,
+            specialHistory: [],
+            selectedBall: null,
+            selectedBallCount: 0,
+            ballDecrease: {},
+            canStartCapture: false
+          })
+          wx.showToast({ title: '已重置', icon: 'success' })
+        }
+      }
+    })
   },
   preventClose: function() {},
   onWealthInput: function(e) { this.setData({ coinInput: e.detail.value }) },
