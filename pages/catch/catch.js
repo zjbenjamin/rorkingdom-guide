@@ -228,7 +228,8 @@ Page({
       totalWealth: self.data.initialWealth + accumulated,
       history: h,
       result: '',
-      totalBallUsed: 0,
+    totalBallUsed: 0,
+    usedBallTotal: 0,
       usedBallTotal: newUsedBallTotal,
       selectedBall: null
     })
