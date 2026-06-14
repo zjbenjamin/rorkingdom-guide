@@ -83,9 +83,15 @@
       <view class="card selling-card">
         <view class="card-title-row">
           <text class="card-title">🔥 正在售卖</text>
-          <view class="dev-edit-btn" wx:if="{{isAdmin}}" catchtap="openSellingModal">
-            <text class="dev-edit-icon">📢</text>
-            <text class="dev-edit-text">发布并推送</text>
+          <view class="selling-btns" wx:if="{{isAdmin}}">
+            <view class="dev-add-btn" catchtap="openAddSellingItemModal">
+              <text class="dev-add-icon">＋</text>
+              <text class="dev-add-text">添加商品</text>
+            </view>
+            <view class="dev-edit-btn" catchtap="openSellingModal">
+              <text class="dev-edit-icon">📢</text>
+              <text class="dev-edit-text">发布并推送</text>
+            </view>
           </view>
         </view>
         <!-- 文字轮播模式 -->
@@ -272,6 +278,33 @@
       <view class="modal-footer">
         <text class="notify-hint">发布后将推送至远行商人订阅用户</text>
         <button class="modal-save" catchtap="saveSelling" disabled="{{sellingSubmitting}}">{{sellingSubmitting ? '发布中...' : '发布并推送'}}</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 添加商品选择器 -->
+  <view class="modal-mask" wx:if="{{showAddSellingItemModal}}" bindtap="closeAddSellingItemModal">
+    <view class="modal-box" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">选择商品添加到售卖</text>
+        <text class="modal-close" catchtap="closeAddSellingItemModal">✕</text>
+      </view>
+      <view class="modal-body">
+        <view class="picker-list" wx:if="{{items.length > 0}}">
+          <view class="picker-item" wx:for="{{items}}" wx:key="id" catchtap="addSellingItemFromList" data-item="{{item}}">
+            <view class="picker-item-left">
+              <view class="picker-badge badge-{{item.rarity==='普通'?'normal':item.rarity==='稀有'?'rare':item.rarity==='史诗'?'epic':'legend'}}">{{item.rarity}}</view>
+              <view class="picker-item-info">
+                <text class="picker-item-name">{{item.name}}</text>
+                <text class="picker-item-effect">{{item.effect}}</text>
+              </view>
+            </view>
+            <text class="picker-item-price">{{item.price}}洛克贝</text>
+          </view>
+        </view>
+        <view wx:else class="selling-empty">
+          <text class="selling-empty-text">暂无可选物品，请先在下方添加物品</text>
+        </view>
       </view>
     </view>
   </view>

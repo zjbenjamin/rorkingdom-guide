@@ -189,7 +189,7 @@
   </view>
 
   <!-- 帖子详情弹窗 -->
-  <view class="modal-mask" wx:if="{{showDetailModal}}" bindtap="closeDetail">
+  <view class="modal-mask detail-mask" wx:if="{{showDetailModal}}" bindtap="closeDetail">
     <view class="detail-modal" catchtap="preventClose">
       <view class="modal-header">
         <text class="modal-title">帖子详情</text>

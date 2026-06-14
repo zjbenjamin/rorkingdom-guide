@@ -39,7 +39,9 @@ Page({
     addingItem: false,
     newItems: [],
     newItemsPage: 0,
-    newItemsAnim: false
+    newItemsAnim: false,
+    showAddSellingItemModal: false,
+    addingSellingItem: false
   },
   newItemsTimer: null,
   onShow: function() {
@@ -223,6 +225,42 @@ Page({
     wx.showModal({ title: d.name, content: (t.price || '价格') + ': ' + d.price + (t.currency || '洛克贝') + '\n' + (t.effect || '效果') + ': ' + d.effect + '\n' + (t.rarity || '稀有度') + ': ' + d.rarity + '\n' + (t.source || '来源') + ': ' + d.source, showCancel: false })
   },
   go: function(e) { wx.navigateTo({ url: e.currentTarget.dataset.url }) },
+  openAddSellingItemModal: function() {
+    if (this.data.currentSelling.length >= 8) {
+      wx.showToast({ title: '最多8件商品', icon: 'none' })
+      return
+    }
+    this.setData({ showAddSellingItemModal: true })
+  },
+  closeAddSellingItemModal: function() {
+    this.setData({ showAddSellingItemModal: false })
+  },
+  addSellingItemFromList: function(e) {
+    var self = this
+    var item = e.currentTarget.dataset.item
+    if (!item || !db) return
+    var exists = false
+    for (var i = 0; i < self.data.currentSelling.length; i++) {
+      if (self.data.currentSelling[i].name === item.name && self.data.currentSelling[i].price === item.price) {
+        exists = true
+        break
+      }
+    }
+    if (exists) { wx.showToast({ title: '已在售卖列表中', icon: 'none' }); return }
+    if (self.data.currentSelling.length >= 8) { wx.showToast({ title: '最多8件商品', icon: 'none' }); return }
+    var updated = self.data.currentSelling.concat([item])
+    var text = updated.map(function(i) {
+      return i.name + '|' + i.price + '|' + i.effect + '|' + i.rarity + '|' + i.source
+    }).join('\n')
+    db.collection('page_config').doc('merchant').update({
+      data: { currentSelling: text, updateTime: db.serverDate() }
+    }).then(function() {
+      self.setData({ currentSelling: updated, currentSellingText: text, showAddSellingItemModal: false })
+      wx.showToast({ title: '已添加: ' + item.name, icon: 'success' })
+    }).catch(function() {
+      wx.showToast({ title: '添加失败', icon: 'none' })
+    })
+  },
   openSellingModal: function() {
     this.setData({ showSellingModal: true })
   },
