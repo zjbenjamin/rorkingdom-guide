@@ -5,7 +5,7 @@ var cloudUrl = require('../../utils/cloudUrl')
 
 function getDeviceModel() {
   try {
-    var info = wx.getSystemInfoSync()
+    var info = wx.getDeviceInfo()
     var model = info.model || ''
     if (model.indexOf('iPhone') >= 0) return 'iPhone'
     if (model.indexOf('HUAWEI') >= 0 || model.indexOf('Huawei') >= 0) return '华为'

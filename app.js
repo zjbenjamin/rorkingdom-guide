@@ -14,7 +14,7 @@ App({
   onLaunch: function() {
     var self = this
     try {
-      var res = wx.getSystemInfoSync()
+      var res = wx.getAppBaseInfo()
       self.globalData.theme = res.theme || 'light'
     } catch (e) {
       self.globalData.theme = 'light'
