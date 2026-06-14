@@ -90,7 +90,7 @@
             <text class="action-icon">{{item.liked ? '❤' : '♡'}}</text>
             <text class="action-text" wx:if="{{item.likes.length > 0}}">{{item.likes.length}}</text>
           </view>
-          <view class="feed-action" bindtap="openDetail" data-item="{{item}}">
+          <view class="feed-action" catchtap="toggleReplyBar" data-item="{{item}}">
             <text class="action-icon">💬</text>
             <text class="action-text" wx:if="{{item.replyCount > 0}}">{{item.replyCount}}</text>
           </view>
@@ -100,9 +100,9 @@
             <view class="admin-btn danger" catchtap="deletePost" data-item="{{item}}">🗑</view>
           </view>
         </view>
-        <!-- 内联回复预览 -->
+        <!-- 内联回复列表 -->
         <view class="inline-replies" wx:if="{{item.inlineReplies && item.inlineReplies.length > 0}}">
-          <view class="inline-reply" wx:for="{{item.inlineReplies}}" wx:for-item="rp" wx:key="_id">
+          <view class="inline-reply" wx:for="{{item.inlineReplies}}" wx:for-item="rp" wx:key="_id" catchtap="setReplyTarget" data-item="{{rp}}">
             <image class="inline-reply-avatar" src="{{rp.userAvatar || '/images/default-avatar.png'}}" mode="aspectFill" />
             <view class="inline-reply-body">
               <text class="inline-reply-name">{{rp.userName}}</text>
@@ -110,8 +110,19 @@
             </view>
             <text class="inline-reply-time">{{rp.timeStr}}</text>
           </view>
-          <view class="inline-reply-more" wx:if="{{item.replyCount > 3}}" bindtap="openDetail" data-item="{{item}}">
-            查看全部 {{item.replyCount}} 条回复 ›
+          <view class="inline-reply-more" wx:if="{{item.replyCount > 3}}">
+            <text class="inline-reply-more-text">共 {{item.replyCount}} 条回复</text>
+          </view>
+        </view>
+        <!-- 内联回复输入栏 -->
+        <view class="inline-reply-bar" wx:if="{{activeReplyPostId === item._id}}">
+          <view class="inline-reply-target" wx:if="{{replyTarget}}" catchtap="clearReplyTarget">
+            <text class="inline-reply-target-text">回复 {{replyTarget.userName}}</text>
+            <text class="inline-reply-target-clear">✕</text>
+          </view>
+          <view class="inline-reply-input-row">
+            <input class="inline-reply-input" placeholder="{{replyTarget ? '回复 ' + replyTarget.userName + '...' : '写回复...'}}" placeholder-style="color:rgba(255,255,255,0.5)" value="{{replyContent}}" bindinput="onReplyInput" focus="{{activeReplyPostId === item._id}}" />
+            <button class="inline-reply-send" bindtap="submitReply" disabled="{{replying}}">{{replying ? '...' : '发送'}}</button>
           </view>
         </view>
         <!-- 置顶/精选标签 -->
@@ -184,68 +195,6 @@
           <text class="char-count">{{postContent.length}}/500</text>
         </view>
         <button class="modal-submit" catchtap="submitPost" disabled="{{posting}}">{{posting ? '发布中...' : '发布'}}</button>
-      </view>
-    </view>
-  </view>
-
-  <!-- 帖子详情弹窗 -->
-  <view class="modal-mask detail-mask" wx:if="{{showDetailModal}}" bindtap="closeDetail">
-    <view class="detail-modal" catchtap="preventClose">
-      <view class="modal-header">
-        <text class="modal-title">帖子详情</text>
-        <text class="modal-close" bindtap="closeDetail">✕</text>
-      </view>
-      <scroll-view class="detail-scroll" scroll-y>
-        <view class="detail-post">
-          <view class="detail-post-header">
-            <image class="detail-avatar" src="{{detailItem.userAvatar || '/images/default-avatar.png'}}" mode="aspectFill" binderror="onAvatarError" data-type="detail-post" />
-            <view class="detail-user">
-              <text class="detail-name">{{detailItem.userName}}</text>
-              <text class="detail-time">{{detailItem.timeStr}}</text>
-            </view>
-          </view>
-          <text class="detail-content">{{detailItem.content}}</text>
-          <view class="detail-images" wx:if="{{detailItem.images && detailItem.images.length > 0}}">
-            <image class="detail-img" wx:for="{{detailItem.images}}" wx:for-item="img" wx:key="*this" src="{{img}}" mode="widthFix" catchtap="previewDetailImage" data-src="{{img}}" data-urls="{{detailItem.images}}" />
-          </view>
-        </view>
-        <view class="reply-section">
-          <text class="reply-title">回复 ({{detailReplies.length}})</text>
-          <view class="reply-item" wx:for="{{detailReplies}}" wx:key="_id" catchtap="setReplyTarget" data-item="{{item}}">
-            <view class="reply-avatar-wrap {{item.userRole === 'developer' ? 'avatar-dev' : item.userRole === 'editor' ? 'avatar-editor' : ''}}">
-              <image class="reply-avatar" src="{{item.userAvatar || '/images/default-avatar.png'}}" mode="aspectFill" binderror="onAvatarError" data-idx="{{index}}" data-type="detail" />
-              <view class="verified-badge small dev-badge" wx:if="{{item.userRole === 'developer'}}">✓</view>
-              <view class="verified-badge small editor-badge" wx:elif="{{item.userRole === 'editor'}}">✓</view>
-            </view>
-            <view class="reply-body">
-              <view class="reply-name-row">
-                <text class="reply-name">{{item.userName}}</text>
-                <view class="role-tag developer small" wx:if="{{item.userRole === 'developer'}}">开发者</view>
-                <view class="role-tag editor small" wx:elif="{{item.userRole === 'editor'}}">小编</view>
-              </view>
-              <text class="reply-text">{{item.content}}</text>
-              <view class="reply-bottom-row">
-                <text class="reply-meta" wx:if="{{item.device || item.location}}">{{item.device}}{{item.device && item.location ? ' · ' : ''}}{{item.location}}</text>
-                <text class="reply-time">{{item.timeStr}}</text>
-                <view class="reply-count" wx:if="{{item.replyCount > 0}}">
-                  <text class="reply-count-icon">💬</text>
-                  <text class="reply-count-num">{{item.replyCount}}</text>
-                </view>
-              </view>
-            </view>
-          </view>
-          <view class="reply-empty" wx:if="{{detailReplies.length === 0}}">
-            <text class="reply-empty-text">暂无回复</text>
-          </view>
-        </view>
-      </scroll-view>
-      <view class="reply-input-bar">
-        <view class="reply-target-hint" wx:if="{{replyTarget}}" catchtap="clearReplyTarget">
-          <text class="reply-target-text">回复 {{replyTarget.userName}}：</text>
-          <text class="reply-target-clear">✕</text>
-        </view>
-        <input class="reply-input" placeholder="{{replyTarget ? '回复 ' + replyTarget.userName + '...' : '写回复...'}}" placeholder-style="color:rgba(255,255,255,0.5)" value="{{replyContent}}" bindinput="onReplyInput" />
-        <button class="reply-submit" bindtap="submitReply" disabled="{{replying}}">{{replying ? '发送中' : '发送'}}</button>
       </view>
     </view>
   </view>

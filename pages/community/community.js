@@ -38,15 +38,12 @@ Page({
     postContent: '',
     imageUrlInput: '',
     posting: false,
-    showDetailModal: false,
-    detailItem: null,
-    detailReplies: [],
+    activeReplyPostId: '',
     replyContent: '',
     replying: false,
     replyTarget: null,
     userInfo: null,
     postImages: [],
-    detailImages: [],
     adminOpenid: '',
     userRoles: {},
     userTitles: {},
@@ -400,12 +397,6 @@ Page({
         comments[idx].userAvatar = '/images/default-avatar.png'
         this.setData({ comments: comments })
       }
-    } else if (type === 'detail' && idx !== undefined) {
-      var replies = this.data.detailReplies
-      if (replies[idx]) {
-        replies[idx].userAvatar = '/images/default-avatar.png'
-        this.setData({ detailReplies: replies })
-      }
     } else if (type === 'post') {
       var userInfo = this.data.userInfo
       if (userInfo) {
@@ -538,70 +529,48 @@ Page({
         self.loadComments(true)
       })
   },
-  openDetail: function(e) {
+  toggleReplyBar: function(e) {
     var item = e.currentTarget.dataset.item
-    this.setData({ showDetailModal: true, detailItem: item, detailReplies: [], replyContent: '', detailImages: [] })
-    this.loadReplies(item._id)
-  },
-  closeDetail: function() {
-    this.setData({ showDetailModal: false, detailItem: null, detailReplies: [], detailImages: [], replyTarget: null, replyContent: '' })
-  },
-  loadReplies: function(parentId) {
-    var self = this
-    if (!db) return
-    var roles = self.data.userRoles
-    var titles = self.data.userTitles
-    db.collection('comments')
-      .where({ replyTo: parentId })
-      .orderBy('createTime', 'asc')
-      .get()
-      .then(function(res) {
-        var list = res.data || []
-        for (var i = 0; i < list.length; i++) {
-          list[i].timeStr = self.formatTime(list[i].createTime)
-          list[i].userRole = roles[list[i].userName] || ''
-          list[i].userTitle = titles[list[i].userName] || ''
-        }
-        self.setData({ detailReplies: list })
-        cloudUrl.convertList(list, 'userAvatar', function(converted) {
-          self.setData({ detailReplies: converted })
-        })
-      })
-  },
-  onReplyInput: function(e) {
-    this.setData({ replyContent: e.detail.value })
+    if (!app.globalData.userInfo) { wx.showToast({ title: '请先登录', icon: 'none' }); return }
+    var postId = this.data.activeReplyPostId === item._id ? '' : item._id
+    this.setData({ activeReplyPostId: postId, replyContent: '', replyTarget: null })
   },
   setReplyTarget: function(e) {
     var item = e.currentTarget.dataset.item
-    if (item.userName === app.globalData.userInfo.nickName) return
+    if (!app.globalData.userInfo || item.userName === app.globalData.userInfo.nickName) return
     this.setData({ replyTarget: { _id: item._id, userName: item.userName, content: item.content } })
   },
   clearReplyTarget: function() {
     this.setData({ replyTarget: null })
   },
+  onReplyInput: function(e) {
+    this.setData({ replyContent: e.detail.value })
+  },
   submitReply: function() {
     var self = this
     if (self.data.replying) return
     var content = self.data.replyContent.trim()
-    if (!content) {
-      wx.showToast({ title: '请输入回复内容', icon: 'none' })
-      return
+    if (!content) { wx.showToast({ title: '请输入回复内容', icon: 'none' }); return }
+    if (!db || !app.globalData.userInfo || !self.data.activeReplyPostId) return
+    var postId = self.data.activeReplyPostId
+    var post = null
+    for (var i = 0; i < self.data.comments.length; i++) {
+      if (self.data.comments[i]._id === postId) { post = self.data.comments[i]; break }
     }
-    if (!db || !app.globalData.userInfo || !self.data.detailItem) return
+    if (!post) return
     self.setData({ replying: true })
     var roles = self.data.userRoles
     var userRole = roles[app.globalData.userInfo.nickName] || ''
     var avatarUrl = app.globalData.userInfo._cloudAvatar || app.globalData.userInfo.avatarUrl
-    var parentId = self.data.detailItem._id
     var replyData = {
-      pageType: self.data.detailItem.pageType || 'community',
-      pageId: self.data.detailItem.pageId || '',
+      pageType: post.pageType || 'community',
+      pageId: post.pageId || '',
       content: content,
       rating: 0,
       userName: app.globalData.userInfo.nickName,
       userAvatar: avatarUrl,
       userRole: userRole,
-      replyTo: parentId,
+      replyTo: postId,
       images: [],
       likes: [],
       replyCount: 0,
@@ -611,19 +580,18 @@ Page({
     }
     db.collection('comments').add({ data: replyData })
       .then(function() {
-        return db.collection('comments').doc(parentId).update({
-          data: { replyCount: (self.data.detailItem.replyCount || 0) + 1 }
+        return db.collection('comments').doc(postId).update({
+          data: { replyCount: (post.replyCount || 0) + 1 }
         })
       })
       .then(function() {
         var target = self.data.replyTarget
-        self.setData({ replying: false, replyContent: '', replyTarget: null })
+        self.setData({ replying: false, replyContent: '', replyTarget: null, activeReplyPostId: '' })
         wx.showToast({ title: '回复成功', icon: 'success' })
-        self.loadReplies(parentId)
         self.loadComments(true)
         self.loadInlineReplies()
-        var notifyUser = target ? target.userName : self.data.detailItem.userName
-        var notifyContent = target ? target.content : self.data.detailItem.content
+        var notifyUser = target ? target.userName : post.userName
+        var notifyContent = target ? target.content : post.content
         if (notifyUser !== app.globalData.userInfo.nickName) {
           notify.getOpenidByNickname(notifyUser, function(targetOpenid) {
             if (targetOpenid) {
@@ -835,13 +803,6 @@ Page({
       urls: urls
     })
   },
-  previewDetailImage: function(e) {
-    var src = e.currentTarget.dataset.src
-    var urls = e.currentTarget.dataset.urls || [src]
-    wx.previewImage({
-      current: src,
-      urls: urls
-    })
-  },
+  go: function(e) { wx.navigateTo({ url: e.currentTarget.dataset.url }) }
   go: function(e) { wx.navigateTo({ url: e.currentTarget.dataset.url }) }
 })

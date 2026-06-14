@@ -104,7 +104,19 @@
 .inline-reply-name { font-size: 22rpx; color: rgba(0,212,255,0.8); font-weight: 600; margin-right: 8rpx; }
 .inline-reply-text { font-size: 24rpx; color: rgba(255,255,255,0.6); line-height: 1.5; }
 .inline-reply-time { font-size: 20rpx; color: rgba(255,255,255,0.4); flex-shrink: 0; margin-top: 2rpx; }
-.inline-reply-more { font-size: 24rpx; color: #00d4ff; padding: 8rpx 0 0; text-align: center; }
+.inline-reply-more { text-align: center; padding: 8rpx 0; }
+.inline-reply-more-text { font-size: 22rpx; color: rgba(255,255,255,0.4); }
+
+/* 内联回复输入栏 */
+.inline-reply-bar { margin-top: 12rpx; padding: 12rpx 16rpx; background: rgba(0,0,0,0.2); border-radius: 12rpx; border: 1rpx solid rgba(0,212,255,0.1); }
+.inline-reply-target { display: flex; align-items: center; gap: 8rpx; padding: 6rpx 0; margin-bottom: 8rpx; }
+.inline-reply-target-text { font-size: 22rpx; color: #00d4ff; flex: 1; }
+.inline-reply-target-clear { font-size: 24rpx; color: rgba(255,255,255,0.5); padding: 4rpx 8rpx; }
+.inline-reply-input-row { display: flex; gap: 12rpx; }
+.inline-reply-input { flex: 1; min-height: 60rpx; background: rgba(0,0,0,0.3); border: 1rpx solid rgba(0,212,255,0.15); border-radius: 8rpx; padding: 0 16rpx; font-size: 24rpx; color: #fff; }
+.inline-reply-send { padding: 0 24rpx; height: 60rpx; line-height: 60rpx; background: linear-gradient(135deg, #00d4ff, #9945ff); border-radius: 8rpx; font-size: 24rpx; color: #fff; min-width: 100rpx; }
+.inline-reply-send::after { border: none; }
+.inline-reply-send[disabled] { opacity: 0.5; }
 
 .empty-wrap { text-align: center; padding: 100rpx 0; position: relative; }
 .empty-particles { position: relative; width: 300rpx; height: 300rpx; margin: 0 auto 40rpx; }
@@ -156,44 +168,3 @@
 .image-url-row { display: flex; gap: 12rpx; margin-top: 12rpx; }
 .image-url-input { flex: 1; min-height: 64rpx; background: rgba(0,0,0,0.3); border: 1rpx solid rgba(0,212,255,0.15); border-radius: 8rpx; padding: 0 16rpx; font-size: 24rpx; color: #fff; }
 .image-url-btn { padding: 0 24rpx; height: 64rpx; line-height: 64rpx; background: rgba(0,212,255,0.15); border: 1rpx solid rgba(0,212,255,0.3); border-radius: 8rpx; font-size: 24rpx; color: #00d4ff; flex-shrink: 0; }
-
-.detail-scroll { flex: 1; padding: 0 32rpx; overflow-y: auto; }
-.detail-post { padding: 24rpx 0; border-bottom: 1rpx solid rgba(0,212,255,0.1); }
-.detail-post-header { display: flex; align-items: center; gap: 16rpx; margin-bottom: 16rpx; }
-.detail-avatar { width: 72rpx; height: 72rpx; border-radius: 0; flex-shrink: 0; background: rgba(0,212,255,0.1); }
-.detail-user { flex: 1; }
-.detail-name { font-size: 28rpx; color: rgba(255,255,255,0.8); font-weight: 600; display: block; }
-.detail-time { font-size: 22rpx; color: rgba(255,255,255,0.5); display: block; margin-top: 4rpx; }
-.detail-content { font-size: 28rpx; color: rgba(255,255,255,0.7); line-height: 1.7; display: block; margin-bottom: 12rpx; }
-.detail-images { display: flex; flex-direction: column; gap: 12rpx; margin-bottom: 12rpx; }
-.detail-img { width: 100%; border-radius: 12rpx; display: block; }
-.reply-section { padding: 24rpx 0; }
-.reply-title { font-size: 28rpx; font-weight: 600; color: rgba(255,255,255,0.6); display: block; margin-bottom: 20rpx; }
-.reply-item { display: flex; gap: 16rpx; margin-bottom: 24rpx; }
-.reply-avatar { width: 56rpx; height: 56rpx; border-radius: 0; flex-shrink: 0; background: rgba(0,212,255,0.1); }
-.reply-avatar-wrap { position: relative; flex-shrink: 0; overflow: hidden; border-radius: 0; }
-.reply-avatar-wrap.avatar-dev::after { content: ''; position: absolute; top: -50%; left: -100%; width: 60%; height: 200%; background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.5) 45%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.5) 55%, transparent 60%); animation: metalSweep 3s ease-in-out infinite; transform: skewX(-20deg); z-index: 2; pointer-events: none; }
-.reply-avatar-wrap.avatar-editor::after { content: ''; position: absolute; top: -50%; left: -100%; width: 60%; height: 200%; background: linear-gradient(105deg, transparent 40%, rgba(255,200,100,0.5) 45%, rgba(255,220,150,0.8) 50%, rgba(255,200,100,0.5) 55%, transparent 60%); animation: metalSweep 3s ease-in-out infinite; transform: skewX(-20deg); z-index: 2; pointer-events: none; }
-.verified-badge.small { width: 22rpx; height: 22rpx; font-size: 12rpx; border-width: 2rpx; }
-.role-tag.small { font-size: 16rpx; padding: 1rpx 8rpx; }
-.reply-body { flex: 1; }
-.reply-name-row { display: flex; align-items: center; gap: 8rpx; margin-bottom: 4rpx; }
-.reply-name { font-size: 24rpx; color: rgba(255,255,255,0.6); font-weight: 600; display: block; }
-.reply-text { font-size: 26rpx; color: rgba(255,255,255,0.7); line-height: 1.6; display: block; margin: 8rpx 0; }
-.reply-time { font-size: 22rpx; color: rgba(255,255,255,0.5); display: block; }
-.reply-meta { font-size: 20rpx; color: rgba(255,255,255,0.45); display: block; margin-top: 2rpx; }
-.reply-bottom-row { display: flex; align-items: center; gap: 12rpx; margin-top: 6rpx; }
-.reply-count { display: flex; align-items: center; gap: 4rpx; margin-left: auto; }
-.reply-count-icon { font-size: 20rpx; }
-.reply-count-num { font-size: 20rpx; color: rgba(255,255,255,0.5); }
-.reply-empty { text-align: center; padding: 40rpx 0; }
-.reply-empty-text { font-size: 26rpx; color: rgba(255,255,255,0.5); }
-.reply-input-bar { display: flex; flex-wrap: wrap; gap: 12rpx; padding: 20rpx 32rpx; border-top: 1rpx solid rgba(0,212,255,0.1); background: rgba(10,14,39,0.95); }
-.reply-target-hint { display: flex; align-items: center; gap: 8rpx; width: 100%; padding: 8rpx 12rpx; background: rgba(0,212,255,0.1); border-radius: 8rpx; }
-.reply-target-text { font-size: 22rpx; color: #00d4ff; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.reply-target-clear { font-size: 24rpx; color: rgba(255,255,255,0.5); padding: 4rpx 8rpx; }
-.reply-input { flex: 1; min-height: 68rpx; background: rgba(0,0,0,0.3); border: 1rpx solid rgba(0,212,255,0.15); border-radius: 8rpx; padding: 16rpx 20rpx; font-size: 26rpx; color: #fff; }
-.reply-submit { background: linear-gradient(135deg, #00d4ff, #9945ff) !important; color: #fff !important; border-radius: 8rpx !important; padding: 0 24rpx !important; height: 68rpx !important; line-height: 68rpx !important; font-size: 26rpx !important; min-width: 120rpx; position: relative; overflow: hidden; }
-.reply-submit::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); animation: btn-shine 2s ease-in-out infinite; }
-.reply-submit::after { border: none; }
-.reply-submit[disabled] { opacity: 0.5; }
