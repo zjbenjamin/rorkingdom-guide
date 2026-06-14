@@ -182,6 +182,10 @@
 .reply-text { font-size: 26rpx; color: rgba(255,255,255,0.7); line-height: 1.6; display: block; margin: 8rpx 0; }
 .reply-time { font-size: 22rpx; color: rgba(255,255,255,0.5); display: block; }
 .reply-meta { font-size: 20rpx; color: rgba(255,255,255,0.45); display: block; margin-top: 2rpx; }
+.reply-bottom-row { display: flex; align-items: center; gap: 12rpx; margin-top: 6rpx; }
+.reply-count { display: flex; align-items: center; gap: 4rpx; margin-left: auto; }
+.reply-count-icon { font-size: 20rpx; }
+.reply-count-num { font-size: 20rpx; color: rgba(255,255,255,0.5); }
 .reply-empty { text-align: center; padding: 40rpx 0; }
 .reply-empty-text { font-size: 26rpx; color: rgba(255,255,255,0.5); }
 .reply-input-bar { display: flex; flex-wrap: wrap; gap: 12rpx; padding: 20rpx 32rpx; border-top: 1rpx solid rgba(0,212,255,0.1); background: rgba(10,14,39,0.95); }

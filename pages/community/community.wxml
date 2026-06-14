@@ -224,8 +224,14 @@
                 <view class="role-tag editor small" wx:elif="{{item.userRole === 'editor'}}">小编</view>
               </view>
               <text class="reply-text">{{item.content}}</text>
-              <text class="reply-meta" wx:if="{{item.device || item.location}}">{{item.device}}{{item.device && item.location ? ' · ' : ''}}{{item.location}}</text>
-              <text class="reply-time">{{item.timeStr}}</text>
+              <view class="reply-bottom-row">
+                <text class="reply-meta" wx:if="{{item.device || item.location}}">{{item.device}}{{item.device && item.location ? ' · ' : ''}}{{item.location}}</text>
+                <text class="reply-time">{{item.timeStr}}</text>
+                <view class="reply-count" wx:if="{{item.replyCount > 0}}">
+                  <text class="reply-count-icon">💬</text>
+                  <text class="reply-count-num">{{item.replyCount}}</text>
+                </view>
+              </view>
             </view>
           </view>
           <view class="reply-empty" wx:if="{{detailReplies.length === 0}}">
