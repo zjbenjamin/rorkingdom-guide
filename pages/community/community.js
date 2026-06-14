@@ -804,5 +804,4 @@ Page({
     })
   },
   go: function(e) { wx.navigateTo({ url: e.currentTarget.dataset.url }) }
-  go: function(e) { wx.navigateTo({ url: e.currentTarget.dataset.url }) }
 })
