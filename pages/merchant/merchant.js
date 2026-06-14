@@ -277,6 +277,10 @@ Page({
     var image = self.data.currentSellingImage.trim()
     var mode = self.data.sellingMode
     var parsed = text ? self.parseItems(text) : []
+    if (parsed.length > 8) {
+      parsed = parsed.slice(0, 8)
+      wx.showToast({ title: '最多8件，已截取前8件', icon: 'none' })
+    }
     var data = {
       sellingMode: mode,
       currentSelling: text,

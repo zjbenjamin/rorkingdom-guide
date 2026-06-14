@@ -93,6 +93,8 @@
 .selling-marquee-item { font-size: 26rpx; color: #ffab40; font-weight: 600; flex-shrink: 0; }
 @keyframes marqueeScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 .selling-items { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12rpx; }
+.selling-items-scroll { margin-top: 8rpx; }
+.selling-items-sv { overflow-y: auto; }
 
 /* 图片模式 */
 .selling-image-wrap { margin-top: 8rpx; }

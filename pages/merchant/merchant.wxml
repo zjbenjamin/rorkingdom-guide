@@ -84,8 +84,8 @@
         <view class="card-title-row">
           <text class="card-title">🔥 正在售卖</text>
           <view class="dev-edit-btn" wx:if="{{isAdmin}}" catchtap="openSellingModal">
-            <text class="dev-edit-icon">✏️</text>
-            <text class="dev-edit-text">编辑</text>
+            <text class="dev-edit-icon">📢</text>
+            <text class="dev-edit-text">发布并推送</text>
           </view>
         </view>
         <!-- 文字轮播模式 -->
@@ -96,14 +96,18 @@
               <text class="selling-marquee-item" wx:for="{{currentSelling}}" wx:key="id-2">{{item.name}} · {{item.price}}洛克贝</text>
             </view>
           </view>
-          <view class="selling-items">
-            <view class="item-card selling-item" wx:for="{{currentSelling}}" wx:key="id">
-              <view class="item-badge badge-{{item.rarity==='普通'?'normal':item.rarity==='稀有'?'rare':item.rarity==='史诗'?'epic':'legend'}}">{{item.rarity}}</view>
-              <text class="item-name">{{item.name}}</text>
-              <text class="item-price">{{item.price}}{{t.currency || '洛克贝'}}</text>
-              <text class="item-effect">{{item.effect}}</text>
-              <view class="item-delete" wx:if="{{isAdmin}}" catchtap="deleteSellingItem" data-index="{{index}}">✕</view>
-            </view>
+          <view class="selling-items-scroll">
+            <scroll-view scroll-y class="selling-items-sv" style="max-height: {{currentSelling.length > 4 ? '520rpx' : 'auto'}}">
+              <view class="selling-items">
+                <view class="item-card selling-item" wx:for="{{currentSelling}}" wx:key="id">
+                  <view class="item-badge badge-{{item.rarity==='普通'?'normal':item.rarity==='稀有'?'rare':item.rarity==='史诗'?'epic':'legend'}}">{{item.rarity}}</view>
+                  <text class="item-name">{{item.name}}</text>
+                  <text class="item-price">{{item.price}}{{t.currency || '洛克贝'}}</text>
+                  <text class="item-effect">{{item.effect}}</text>
+                  <view class="item-delete" wx:if="{{isAdmin}}" catchtap="deleteSellingItem" data-index="{{index}}">✕</view>
+                </view>
+              </view>
+            </scroll-view>
           </view>
         </view>
         <!-- 图片模式 -->
@@ -243,7 +247,7 @@
         </view>
         <!-- 文字模式 -->
         <view wx:if="{{sellingMode === 'text'}}">
-          <view class="selling-tip">每行一个物品，格式：名称|价格|效果|稀有度|来源</view>
+          <view class="selling-tip">每行一个物品，最多8件 · 格式：名称|价格|效果|稀有度|来源</view>
           <textarea class="modal-textarea selling-textarea" placeholder="示例：&#10;进化果实|5000|精灵进化材料|稀有|远行商人&#10;高级经验果|2000|增加1000经验|普通|远行商人" value="{{currentSellingText}}" bindinput="onSellingInput" maxlength="5000" cursor-spacing="120" />
         </view>
         <!-- 图片模式 -->
@@ -266,8 +270,8 @@
         </view>
       </view>
       <view class="modal-footer">
-        <text class="notify-hint">保存后将推送通知给订阅用户</text>
-        <button class="modal-save" catchtap="saveSelling" disabled="{{sellingSubmitting}}">{{sellingSubmitting ? '保存中...' : '保存并推送'}}</button>
+        <text class="notify-hint">发布后将推送至远行商人订阅用户</text>
+        <button class="modal-save" catchtap="saveSelling" disabled="{{sellingSubmitting}}">{{sellingSubmitting ? '发布中...' : '发布并推送'}}</button>
       </view>
     </view>
   </view>
