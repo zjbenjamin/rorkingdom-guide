@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/login/login",
     "pages/pets/pets",
     "pages/pets/detail/detail",
     "pages/items/items",
@@ -10,14 +11,22 @@
     "pages/catch/catch",
     "pages/egg/egg",
     "pages/merchant/merchant",
-    "pages/about/about"
+    "pages/about/about",
+    "pages/community/community",
+    "pages/admin/admin",
+    "pages/webview/webview"
   ],
   "window": {
-    "navigationBarBackgroundColor": "#1a6d37",
-    "navigationBarTitleText": "洛克王国攻略",
+    "navigationBarBackgroundColor": "#0a0e27",
+    "navigationBarTitleText": "洛手助手攻略",
     "navigationBarTextStyle": "white",
-    "backgroundColor": "#f0f5eb"
+    "backgroundColor": "#0a0e27"
   },
   "style": "v2",
-  "lazyCodeLoading": "requiredComponents"
+  "lazyCodeLoading": "requiredComponents",
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于显示帖子发布位置"
+    }
+  }
 }

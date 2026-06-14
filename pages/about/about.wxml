@@ -1,16 +1,240 @@
 <view class="page">
   <view class="container">
     <view class="about-header">
+      <view class="header-glow"></view>
       <text class="about-icon">🏰</text>
-      <text class="about-name">洛克王国：世界</text>
-      <text class="about-ver">攻略小程序 v1.0.0</text>
+      <text class="about-name">{{aboutData.appName || '洛手攻略'}}</text>
+      <text class="about-ver">{{aboutData.version || '版本 v1.0.6'}}</text>
+      <view class="header-tags">
+        <view class="header-tag">离线可用</view>
+        <view class="header-tag">数据安全</view>
+        <view class="header-tag">免费使用</view>
+      </view>
     </view>
-    <view class="card"><view class="card-title">开发者信息</view><view class="dev-row"><view class="dev-avatar">本</view><view class="dev-info"><text class="dev-name">浙里本杰明</text><text class="dev-role">项目开发者</text></view></view></view>
-    <view class="card"><view class="card-title">联系方式</view><view class="contact-row" bindtap="copyEmail"><text class="contact-icon">📧</text><view class="contact-info"><text class="contact-label">邮箱</text><text class="contact-val">{{contact}}</text></view><text class="contact-copy">点击复制</text></view></view>
-    <view class="card"><view class="card-title">数据来源</view><text class="source">精灵图鉴：洛克王国手游WIKI（CC BY-NC-SA 4.0）</text><text class="source">https://wiki.biligame.com/rocom/精灵图鉴</text><text class="source">道具图鉴：洛克王国手游WIKI（CC BY-NC-SA 4.0）</text><text class="source">https://wiki.biligame.com/rocom/道具图鉴</text><text class="source">活动动态：洛克王国世界微信公众号</text><text class="source">捕捉规则：洛克王国世界官方客服</text><text class="source">孵蛋查询：洛克王国世界公开API</text></view>
-    <view class="card"><view class="card-title">隐私政策</view><text class="privacy-item">💾 本地存储：仅保存订阅偏好，数据仅在设备本地</text><text class="privacy-item">🌐 无网络请求：不收集任何个人信息</text><text class="privacy-item">🔒 无第三方SDK：不存在数据共享</text><text class="privacy-item">📤 分享功能：仅用于转发页面内容</text></view>
-    <view class="card"><view class="card-title">免责声明</view><text class="disclaimer">1. 本应用为非官方攻略工具，与腾讯魔方工作室群无关</text><text class="disclaimer">2. 游戏数据仅供参考，以游戏内实际数据为准</text><text class="disclaimer">3. 仅供学习交流使用，请勿用于商业用途</text></view>
-    <view class="action-btns"><button class="btn-copy" bindtap="copyAll">复制全部信息</button><button class="btn-share" open-type="share">分享给好友</button></view>
-    <view class="about-foot"><text class="foot-text">© 2025 浙里本杰明</text><text class="foot-text">更新：{{buildTime}}</text></view>
+
+    <view class="card" wx:if="{{isAdmin}}">
+      <view class="admin-tip">
+        <text class="admin-tip-icon">⚙</text>
+        <text class="admin-tip-text">管理模式：点击下方卡片内容可编辑</text>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">开发者信息</view>
+      <view class="dev-row">
+        <view class="avatar-wrap">
+          <image class="dev-avatar" src="{{aboutData.devAvatar || '/images/avatar.jpg'}}" mode="aspectFill"></image>
+          <view class="verified-badge">V</view>
+        </view>
+        <view class="dev-info" bindtap="onEdit" data-field="devName" data-value="{{aboutData.devName || '浙里本杰明'}}">
+          <text class="dev-name">{{aboutData.devName || '浙里本杰明'}}</text>
+          <text class="dev-role">项目开发者</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">我的洛克王国UID</view>
+      <view class="uid-row" bindtap="onEdit" data-field="uid" data-value="{{aboutData.uid || '476200'}}">
+        <view class="uid-info">
+          <text class="uid-label">玩家UID</text>
+          <text class="uid-val">{{aboutData.uid || '476200'}}</text>
+        </view>
+        <view class="uid-copy" catchtap="copyUID">复制</view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">免费福利</view>
+      <view class="gift-list">
+        <view class="gift-item" bindtap="onEdit" data-field="gift1" data-value="{{aboutData.gift1 || '免费领一测、二测、三测鸭蛋'}}">
+          <text class="gift-icon">🎁</text>
+          <text class="gift-text">{{aboutData.gift1 || '免费领一测、二测、三测鸭蛋'}}</text>
+        </view>
+        <view class="gift-item" bindtap="onEdit" data-field="gift2" data-value="{{aboutData.gift2 || '赐福奇袭固执罗隐'}}">
+          <text class="gift-icon">🎁</text>
+          <text class="gift-text">{{aboutData.gift2 || '赐福奇袭固执罗隐'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">联系方式</view>
+      <view class="contact-row" bindtap="copyEmail">
+        <text class="contact-icon">📧</text>
+        <view class="contact-info" catchtap="onEdit" data-field="contact" data-value="{{aboutData.contact || 'flyzccboard@yeah.net'}}">
+          <text class="contact-label">邮箱</text>
+          <text class="contact-val">{{aboutData.contact || 'flyzccboard@yeah.net'}}</text>
+        </view>
+        <view class="contact-copy">复制</view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">数据来源</view>
+      <view class="source-list">
+        <view class="source-item">
+          <text class="source-icon">📖</text>
+          <text class="source-text">精灵图鉴：洛克王国手游WIKI（CC BY-NC-SA 4.0）</text>
+        </view>
+        <view class="source-item">
+          <text class="source-icon">🎒</text>
+          <text class="source-text">道具图鉴：洛克王国手游WIKI（CC BY-NC-SA 4.0）</text>
+        </view>
+        <view class="source-item">
+          <text class="source-icon">📅</text>
+          <text class="source-text">活动动态：洛克王国世界微信公众号</text>
+        </view>
+        <view class="source-item">
+          <text class="source-icon">🎯</text>
+          <text class="source-text">捕捉规则：洛克王国世界官方客服</text>
+        </view>
+        <view class="source-item">
+          <text class="source-icon">🎨</text>
+          <text class="source-text">页面图片：ChatGPT / 腾讯元宝 AI生成</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">特别鸣谢</view>
+      <view class="thanks-list">
+        <view class="thanks-item">
+          <text class="thanks-icon">🏆</text>
+          <text class="thanks-text">洛克王国手游WIKI团队</text>
+        </view>
+        <view class="thanks-item">
+          <text class="thanks-icon">💎</text>
+          <text class="thanks-text">洛克王国世界官方客服</text>
+        </view>
+        <view class="thanks-item">
+          <text class="thanks-icon">🌟</text>
+          <text class="thanks-text">洛克王国世界微信公众号</text>
+        </view>
+        <view class="thanks-item">
+          <text class="thanks-icon">🎮</text>
+          <text class="thanks-text">腾讯魔方工作室群</text>
+        </view>
+        <view class="thanks-item">
+          <text class="thanks-icon">❤️</text>
+          <text class="thanks-text">所有支持本小程序的玩家</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">隐私政策</view>
+      <view class="privacy-list">
+        <view class="privacy-item">
+          <text class="privacy-icon">💾</text>
+          <text class="privacy-text">本地存储：偏好设置、捕捉统计等数据仅保存在设备本地</text>
+        </view>
+        <view class="privacy-item">
+          <text class="privacy-icon">☁️</text>
+          <text class="privacy-text">云端同步：登录信息、社区帖子等数据安全存储在微信云环境</text>
+        </view>
+        <view class="privacy-item">
+          <text class="privacy-icon">📱</text>
+          <text class="privacy-text">社区展示：发帖自动记录手机品牌和IP归属省份（开发者除外）</text>
+        </view>
+        <view class="privacy-item">
+          <text class="privacy-icon">🔒</text>
+          <text class="privacy-text">无第三方SDK：不存在数据共享和行为追踪</text>
+        </view>
+        <view class="privacy-item">
+          <text class="privacy-icon">📤</text>
+          <text class="privacy-text">分享功能：仅用于转发页面内容</text>
+        </view>
+        <view class="privacy-item">
+          <text class="privacy-icon">🔐</text>
+          <text class="privacy-text">登录数据：3天自动过期，到期自动清除本地授权</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">免责声明</view>
+      <view class="disclaimer-list">
+        <text class="disclaimer">1. 本应用为非官方攻略工具，与腾讯魔方工作室群无关</text>
+        <text class="disclaimer">2. 游戏数据仅供参考，以游戏内实际数据为准</text>
+        <text class="disclaimer">3. 仅供学习交流使用，请勿用于商业用途</text>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">更新日志</view>
+      <view class="changelog-list">
+        <view class="changelog-item">
+          <view class="changelog-ver">v1.0.6</view>
+          <view class="changelog-date">2026-06-14</view>
+          <view class="changelog-content">
+            <text class="changelog-add">新增：精灵图鉴、道具图鉴、孵蛋查询</text>
+            <text class="changelog-add">新增：活动日历、捕捉统计、战斗模拟器</text>
+            <text class="changelog-add">新增：社区发帖功能（支持图片上传）</text>
+            <text class="changelog-add">新增：评论评分、点赞、回复功能</text>
+            <text class="changelog-add">新增：管理者后台（公告管理、帖子管理、用户管理）</text>
+            <text class="changelog-add">新增：累计登录天数等级系统</text>
+            <text class="changelog-add">新增：云端数据同步</text>
+            <text class="changelog-add">新增：用户头衔系统（8种头衔）</text>
+            <text class="changelog-add">新增：社区帖子显示开发者/小编标签</text>
+            <text class="changelog-add">新增：用户可自行选择/更换头衔</text>
+            <text class="changelog-add">新增：首页公告栏（有公告全员可见，无公告管理员可见）</text>
+            <text class="changelog-add">新增：关于页面支持开发者后台编辑</text>
+            <text class="changelog-add">新增：首页大图支持网络图片链接</text>
+            <text class="changelog-add">新增：活动页面管理员可编辑/新增/删除活动</text>
+            <text class="changelog-add">新增：保底进度条动态粒子效果</text>
+            <text class="changelog-add">新增：异色统计清除选项</text>
+            <text class="changelog-add">新增：管理后台发布公告支持图片上传和链接输入</text>
+            <text class="changelog-add">新增：活动管理员可为活动添加图片</text>
+            <text class="changelog-add">新增：远行商人和孵蛋查询支持管理员自定义编辑</text>
+            <text class="changelog-add">新增：公告和活动支持导入XML/DOCX文件自动解析</text>
+            <text class="changelog-add">新增：公告通知和远行商人页面支持订阅小程序推送</text>
+            <text class="changelog-add">新增：发布失败时显示具体错误信息便于排查</text>
+            <text class="changelog-add">新增：社区发帖/回复自动显示IP归属省份</text>
+            <text class="changelog-add">新增：数据来源页面标注（含AI生成素材声明）</text>
+            <text class="changelog-fix">修复：社区发帖弹窗输入法遮挡导致无法输入问题</text>
+            <text class="changelog-fix">修复：社区发帖选择图片后弹窗自动关闭问题</text>
+            <text class="changelog-fix">修复：管理后台发布公告弹窗输入法遮挡问题</text>
+            <text class="changelog-fix">修复：管理后台发布公告弹窗自动关闭无法发布问题</text>
+            <text class="changelog-fix">修复：未登录用户点击发布按钮无任何提示问题</text>
+            <text class="changelog-fix">修复：管理后台发布公告标题输入框显示异常问题</text>
+            <text class="changelog-fix">修复：关于页面管理员编辑器输入框显示异常问题</text>
+            <text class="changelog-fix">修复：首页大图显示比例异常</text>
+            <text class="changelog-fix">修复：云存储图片加载问题</text>
+            <text class="changelog-fix">修复：默认头像缺失问题</text>
+            <text class="changelog-fix">修复：管理后台JS语法错误</text>
+            <text class="changelog-fix">优化：登录页UI体验</text>
+            <text class="changelog-fix">优化：全局交互按钮增加流光特效</text>
+            <text class="changelog-fix">优化：按钮样式统一为蓝紫渐变</text>
+            <text class="changelog-add">更新：隐私政策补充云端数据存储、设备信息、归属地说明</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="about-foot">
+      <text class="foot-text">© 2026 浙里本杰明</text>
+      <text class="foot-text">更新：{{buildTime}}</text>
+    </view>
+
+    <view class="feedback-btn" bindtap="onFeedback">
+      <text class="feedback-icon">💬</text>
+      <text class="feedback-text">意见反馈</text>
+    </view>
+  </view>
+
+  <!-- 编辑弹窗 -->
+  <view class="modal-mask" wx:if="{{showModal}}" bindtap="closeModal">
+    <view class="modal-box" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">编辑{{editingField === 'devName' ? '开发者名称' : editingField === 'uid' ? 'UID' : editingField === 'contact' ? '邮箱' : editingField === 'gift1' ? '福利1' : '福利2'}}</text>
+        <text class="modal-close" bindtap="closeModal">✕</text>
+      </view>
+      <input class="modal-input" placeholder="请输入内容" value="{{editValue}}" bindinput="onEditInput" />
+      <view class="modal-footer">
+        <button class="modal-cancel" bindtap="closeModal">取消</button>
+        <button class="modal-save" bindtap="saveEdit" disabled="{{submitting}}">{{submitting ? '保存中...' : '保存'}}</button>
+      </view>
+    </view>
   </view>
 </view>

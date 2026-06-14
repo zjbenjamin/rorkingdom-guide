@@ -1,29 +1,179 @@
 <view class="page">
   <view class="container">
-    <view class="card">
-      <view class="merchant-tip">
-        <text class="tip-icon">🛒</text>
-        <text class="tip-title">远行商人出差中</text>
-        <text class="tip-desc">请前往其他小程序或官方途径查询今日排期</text>
-        <text class="tip-hint">官方渠道：游戏内远行商人详细页</text>
-      </view>
+    <!-- 维护模式提示 -->
+    <view class="maintain-card" wx:if="{{maintenance}}">
+      <text class="maintain-icon">🚧</text>
+      <text class="maintain-title">页面维护中</text>
+      <text class="maintain-desc">该功能正在开发或维护中，请稍后再来</text>
     </view>
 
-    <view class="card">
-      <view class="card-title">商人物品价格</view>
-      <view class="item-list">
-        <view class="item-card" wx:for="{{items}}" wx:key="id" bindtap="showItem" data-d="{{item}}">
-          <view class="item-badge badge-{{item.rarity==='普通'?'normal':item.rarity==='稀有'?'rare':item.rarity==='史诗'?'epic':'legend'}}">{{item.rarity}}</view>
-          <text class="item-name">{{item.name}}</text>
-          <text class="item-price">{{item.price}}洛克贝</text>
-          <text class="item-effect">{{item.effect}}</text>
+    <!-- 正常内容 -->
+    <view wx:if="{{!maintenance}}">
+      <!-- 管理员控制面板 -->
+      <view class="card admin-panel" wx:if="{{isAdmin}}">
+        <view class="admin-panel-title">
+          <text class="admin-panel-icon">⚙️</text>
+          <text class="admin-panel-text">管理员设置</text>
+        </view>
+        <view class="admin-control-row">
+          <view class="admin-control-info">
+            <text class="admin-control-name">维护模式</text>
+            <text class="admin-control-desc">开启后页面显示维护提示</text>
+          </view>
+          <view class="toggle {{maintenance ? 'on' : ''}}" catchtap="toggleMaintenance">
+            <view class="toggle-dot"></view>
+          </view>
+        </view>
+        <view class="admin-control-row">
+          <view class="admin-control-info">
+            <text class="admin-control-name">自定义数据</text>
+            <text class="admin-control-desc">使用自定义物品数据替代默认</text>
+          </view>
+          <view class="toggle {{useCustom ? 'on' : ''}}" catchtap="toggleMode">
+            <view class="toggle-dot"></view>
+          </view>
         </view>
       </view>
-    </view>
 
-    <view class="card">
-      <view class="card-title">数据来源</view>
-      <text class="source">物品数据：洛克王国手游WIKI（CC BY-NC-SA 4.0）https://wiki.biligame.com/rocom/</text>
+      <!-- 订阅按钮 -->
+      <view class="card">
+        <view class="subscribe-row">
+          <view class="subscribe-info">
+            <text class="subscribe-title">远行商人提醒</text>
+            <text class="subscribe-desc">{{subscribedMerchant ? '已开启推送通知' + (subscribeCount > 0 ? ' (' + subscribeCount + '次)' : '') : '开启后可收到商人更新推送'}}</text>
+          </view>
+          <view class="subscribe-right">
+            <view class="notify-counter" catchtap="subscribeMerchant">
+              <view class="counter-btn">
+                <text class="counter-plus">+</text>
+              </view>
+              <view class="counter-badge" wx:if="{{subscribeCount > 0}}">
+                <text class="counter-num">{{subscribeCount}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="card">
+        <view class="merchant-tip">
+          <text class="tip-icon">🛒</text>
+          <view class="tip-title-row">
+            <text class="tip-title">{{customTitle || t.merchantBusy || '远行商人出差中'}}</text>
+            <view class="edit-btn" wx:if="{{isAdmin}}" catchtap="onEdit" data-field="customTitle" data-value="{{customTitle}}">✏️</view>
+          </view>
+          <view class="tip-desc-row">
+            <text class="tip-desc">{{customDesc || t.merchantHint || '请前往其他小程序或官方途径查询今日排期'}}</text>
+            <view class="edit-btn" wx:if="{{isAdmin}}" catchtap="onEdit" data-field="customDesc" data-value="{{customDesc}}">✏️</view>
+          </view>
+          <text class="tip-hint">{{t.merchantChannel || '官方渠道：游戏内远行商人详细页'}}</text>
+        </view>
+      </view>
+
+      <!-- 新品上架滚动展示 -->
+      <view class="card new-items-card" wx:if="{{newItems.length > 0}}">
+        <view class="new-items-header">
+          <view class="new-items-label">
+            <text class="new-items-tag">NEW</text>
+            <text class="new-items-title">新品上架</text>
+          </view>
+          <text class="new-items-count">{{newItems.length}}件</text>
+        </view>
+        <view class="new-items-marquee">
+          <view class="new-items-track {{newItemsAnim ? 'sliding' : ''}}" style="transform: translateX(-{{newItemsPage * 228}}rpx)">
+            <view class="new-item-card" wx:for="{{newItems}}" wx:key="id">
+              <view class="new-item-badge badge-{{item.rarity==='普通'?'normal':item.rarity==='稀有'?'rare':item.rarity==='史诗'?'epic':'legend'}}">{{item.rarity}}</view>
+              <text class="new-item-name">{{item.name}}</text>
+              <text class="new-item-price">{{item.price}}洛克贝</text>
+            </view>
+          </view>
+        </view>
+        <view class="new-items-dots" wx:if="{{newItems.length > 1}}">
+          <view class="dot {{newItemsPage === index ? 'active' : ''}}" wx:for="{{newItems}}" wx:key="id" wx:for-index="index"></view>
+        </view>
+      </view>
+
+      <view class="card">
+        <view class="card-title">{{t.merchantPrices || '商人物品价格'}}</view>
+        <view class="admin-edit-hint" wx:if="{{isAdmin}}" bindtap="openAddItemModal">
+          <text class="edit-hint-icon">➕</text>
+          <text class="edit-hint-text">点击添加新物品</text>
+        </view>
+        <view class="admin-edit-hint" wx:if="{{isAdmin && useCustom}}" bindtap="onEdit" data-field="customItems" data-value="{{customItems}}">
+          <text class="edit-hint-icon">📝</text>
+          <text class="edit-hint-text">点击编辑物品数据（每行一个，格式：名称|价格|效果|稀有度|来源）</text>
+        </view>
+        <view class="item-list">
+          <view class="item-card" wx:for="{{items}}" wx:key="id">
+            <view class="item-badge badge-{{item.rarity==='普通'?'normal':item.rarity==='稀有'?'rare':item.rarity==='史诗'?'epic':'legend'}}">{{item.rarity}}</view>
+            <text class="item-name">{{item.name}}</text>
+            <text class="item-price">{{item.price}}{{t.currency || '洛克贝'}}</text>
+            <text class="item-effect">{{item.effect}}</text>
+            <view class="item-delete" wx:if="{{isAdmin}}" catchtap="deleteMerchantItem" data-index="{{index}}">✕</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="card">
+        <view class="card-title">{{t.dataSource || '数据来源'}}</view>
+        <text class="source">物品数据：洛克王国手游WIKI（CC BY-NC-SA 4.0）https://wiki.biligame.com/rocom/</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 编辑弹窗 -->
+  <view class="modal-mask" wx:if="{{showModal}}" bindtap="closeModal">
+    <view class="modal-box" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">编辑{{editingField === 'customTitle' ? '标题' : editingField === 'customDesc' ? '描述' : '物品数据'}}</text>
+        <text class="modal-close" catchtap="closeModal">✕</text>
+      </view>
+      <view class="modal-body">
+        <textarea wx:if="{{editingField === 'customItems'}}" class="modal-textarea" placeholder="每行一个物品，格式：名称|价格|效果|稀有度|来源" value="{{editValue}}" bindinput="onEditInput" maxlength="5000" cursor-spacing="120" />
+        <input wx:else class="modal-input" placeholder="请输入内容" value="{{editValue}}" bindinput="onEditInput" />
+      </view>
+      <view class="modal-footer">
+        <button class="modal-cancel" catchtap="closeModal">取消</button>
+        <button class="modal-save" catchtap="saveEdit" disabled="{{submitting}}">{{submitting ? '保存中...' : '保存'}}</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 添加物品弹窗 -->
+  <view class="modal-mask" wx:if="{{showAddItemModal}}" bindtap="closeAddItemModal">
+    <view class="modal-box" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">添加新物品</text>
+        <text class="modal-close" catchtap="closeAddItemModal">✕</text>
+      </view>
+      <view class="modal-body">
+        <view class="form-group">
+          <text class="form-label">物品名称 *</text>
+          <input class="modal-input" placeholder="输入物品名称" value="{{newItem.name}}" bindinput="onNewItemInput" data-field="name" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">价格（洛克贝）*</text>
+          <input class="modal-input" type="number" placeholder="输入价格" value="{{newItem.price}}" bindinput="onNewItemInput" data-field="price" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">效果说明 *</text>
+          <input class="modal-input" placeholder="输入物品效果" value="{{newItem.effect}}" bindinput="onNewItemInput" data-field="effect" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">稀有度</text>
+          <picker mode="selector" range="{{rarityOptions}}" value="{{rarityOptions.indexOf(newItem.rarity)}}" bindchange="onRarityChange">
+            <view class="picker-value">{{newItem.rarity}}</view>
+          </picker>
+        </view>
+        <view class="form-group">
+          <text class="form-label">来源</text>
+          <input class="modal-input" placeholder="输入来源" value="{{newItem.source}}" bindinput="onNewItemInput" data-field="source" />
+        </view>
+      </view>
+      <view class="modal-footer">
+        <button class="modal-cancel" catchtap="closeAddItemModal">取消</button>
+        <button class="modal-save" catchtap="addMerchantItem" disabled="{{addingItem}}">{{addingItem ? '添加中...' : '添加'}}</button>
+      </view>
     </view>
   </view>
 </view>

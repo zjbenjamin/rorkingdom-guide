@@ -1,5 +1,5 @@
 {
-  "description": "洛克王国攻略小程序",
+  "description": "洛手助手版本",
   "packOptions": {
     "ignore": [],
     "include": []
@@ -43,7 +43,9 @@
   "libVersion": "3.16.1",
   "appid": "wxeddd39c667edfd84",
   "projectname": "rorkingdom-guide",
+  "cloudfunctionRoot": "cloudfunctions/",
   "condition": {},
   "simulatorPluginLibVersion": {},
-  "editorSetting": {}
+  "editorSetting": {},
+  "cloudfunctionTemplateRoot": "cloudfunctionTemplate/"
 }

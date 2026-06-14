@@ -1,28 +1,41 @@
 <view class="page">
   <view class="container">
-    <view class="banner-card">
-      <view class="banner-bg">
-        <view class="banner-deco-1"></view>
-        <view class="banner-deco-2"></view>
-        <view class="banner-content">
-          <text class="banner-sub">探索洛克王国 发现无限可能</text>
-          <text class="banner-title">洛克王国</text>
-          <text class="banner-title-2">世界攻略</text>
-          <text class="banner-desc">全面攻略 · 精灵图鉴 · 道具图鉴 · 活动资讯</text>
-          <view class="banner-tags">
-            <view class="banner-tag"><text class="tag-text">精灵图鉴</text></view>
-            <view class="banner-tag"><text class="tag-text">道具图鉴</text></view>
-            <view class="banner-tag"><text class="tag-text">捕捉统计</text></view>
-            <view class="banner-tag"><text class="tag-text">活动资讯</text></view>
+    <!-- 首页大图 -->
+    <view class="banner-card" bindtap="{{isAdmin ? 'toggleBannerModal' : ''}}">
+      <image class="banner-image" src="{{bannerUrl || '/images/banner1.png'}}" mode="widthFix"></image>
+      <view class="banner-edit" wx:if="{{isAdmin}}">
+        <text class="banner-edit-icon">✏️</text>
+        <text class="banner-edit-text">编辑头图</text>
+      </view>
+    </view>
+
+    <!-- 头图编辑弹窗 -->
+    <view class="modal-mask" wx:if="{{showBannerModal}}" bindtap="toggleBannerModal">
+      <view class="modal-box" catchtap="preventClose">
+        <view class="modal-header">
+          <text class="modal-title">编辑首页头图</text>
+          <text class="modal-close" catchtap="toggleBannerModal">✕</text>
+        </view>
+        <view class="modal-body">
+          <view class="banner-preview" wx:if="{{bannerInput}}">
+            <image class="preview-img" src="{{bannerInput}}" mode="aspectFill" />
+          </view>
+          <view class="banner-actions">
+            <view class="image-action-btn" catchtap="chooseBannerImage">
+              <text class="action-icon">📷</text>
+              <text class="action-text">相册选择</text>
+            </view>
+            <input class="banner-input" placeholder="或粘贴图片URL链接" value="{{bannerInput}}" bindinput="onBannerInput" />
           </view>
         </view>
-        <view class="banner-bottom">
-          <text class="banner-slogan">洛克世界 · 由你探索</text>
-          <text class="banner-slogan-sub">最新最全的攻略资讯助手</text>
+        <view class="modal-footer">
+          <button class="modal-cancel" catchtap="toggleBannerModal">取消</button>
+          <button class="modal-save" catchtap="saveBanner" disabled="{{bannerSaving}}">{{bannerSaving ? '保存中...' : '保存'}}</button>
         </view>
       </view>
     </view>
 
+    <!-- 快捷入口 -->
     <view class="card">
       <view class="stitle">快捷入口</view>
       <view class="actions">
@@ -37,17 +50,89 @@
       </view>
     </view>
 
-    <view class="card">
-      <view class="stitle">新闻资讯</view>
-      <view class="news" wx:for="{{news}}" wx:key="id" bindtap="showNews" data-i="{{index}}">
-        <view class="news-tag {{item.pinned?'pinned':''}}">{{item.pinned?'置顶':item.type}}</view>
-        <view class="news-body">
-          <text class="news-t">{{item.title}}</text>
-          <text class="news-d">{{item.date}}</text>
+    <!-- 公告栏：有公告时全员可见，无公告时仅管理员可见 -->
+    <view class="card announcement-card" wx:if="{{announcements.length > 0 || isAdmin}}">
+      <view class="stitle-row">
+        <text class="stitle">📢 公告通知</text>
+      </view>
+      <!-- 有公告 -->
+      <view wx:if="{{announcements.length > 0}}">
+        <view class="news-item" wx:for="{{announcements}}" wx:key="_id">
+          <view class="news" bindtap="showAnnouncement" data-i="{{index}}">
+            <view class="news-tag {{item.pinned?'pinned':''}}">{{item.pinned?'置顶':item.type === 'notice' ? '公告' : item.type === 'update' ? '更新' : item.type === 'event' ? '活动' : '提示'}}</view>
+            <view class="news-body">
+              <text class="news-t">{{item.title}}</text>
+              <text class="news-d">{{item.timeStr}}</text>
+            </view>
+            <view class="news-arrow {{expandedIndex === index ? 'expanded' : ''}}">›</view>
+          </view>
+          <view class="news-detail" wx:if="{{expandedIndex === index}}">
+            <rich-text wx:if="{{item.richContent && item.richContent.length > 0}}" class="news-detail-rich" nodes="{{item.content}}" />
+            <text wx:else class="news-detail-content">{{item.content}}</text>
+            <view class="news-source" wx:if="{{item.source}}">
+              <text class="source-label">来源：</text>
+              <text class="source-text">{{item.source}}</text>
+            </view>
+            <image 
+              wx:if="{{item.image}}" 
+              class="news-detail-image" 
+              src="{{item.image}}" 
+              mode="widthFix" 
+              catchtap="previewAnnouncementImage" 
+              data-src="{{item.image}}"
+              binderror="onAnnouncementImageError"
+              data-index="{{index}}"
+            />
+          </view>
+        </view>
+      </view>
+      <!-- 无公告，管理员可见提示 -->
+      <view class="empty-notice" wx:if="{{announcements.length === 0 && isAdmin}}">
+        <text class="empty-notice-text">暂无公告，请前往管理后台发布</text>
+        <view class="empty-notice-btn" bindtap="goAdmin">去发布</view>
+      </view>
+      <!-- 订阅按钮 -->
+      <view class="announce-footer">
+        <view class="sub-link {{subscribedAnnouncement ? 'on' : ''}}" catchtap="subscribeAnnouncement">
+          <text class="sub-icon">{{subscribedAnnouncement ? '🔔' : '🔕'}}</text>
+          <text class="sub-text">{{subscribedAnnouncement ? '已开启推送通知' + (subscribeCount > 0 ? ' (' + subscribeCount + '次)' : '') : '开启推送通知'}}</text>
+        </view>
+        <view class="sub-counter" catchtap="subscribeAnnouncement">
+          <view class="sub-counter-btn">
+            <text class="sub-counter-plus">+</text>
+          </view>
+          <view class="sub-counter-badge" wx:if="{{subscribeCount > 0}}">
+            <text class="sub-counter-num">{{subscribeCount}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 热门榜单 -->
+    <view class="card" wx:if="{{hotPosts.length > 0}}">
+      <view class="stitle">🔥 热门榜单</view>
+      <view class="hot-list">
+        <view class="hot-item" wx:for="{{hotPosts}}" wx:key="_id" bindtap="go" data-url="/pages/community/community">
+          <view class="hot-rank rank-{{index < 3 ? index + 1 : 'other'}}">{{index + 1}}</view>
+          <view class="hot-info">
+            <text class="hot-name">{{item.userName}}</text>
+            <text class="hot-content">{{item.content || '分享了图片'}}</text>
+          </view>
+          <view class="hot-likes">
+            <text class="hot-heart">❤</text>
+            <text class="hot-count">{{item.likeCount}}</text>
+          </view>
         </view>
       </view>
     </view>
 
     <view class="foot">更新：{{buildTime}}</view>
+  </view>
+
+  <view class="navbar">
+    <view class="nav-item on"><text class="nav-icon">🏠</text><text class="nav-text">首页</text></view>
+    <view class="nav-item" bindtap="go" data-url="/pages/community/community"><text class="nav-icon">👥</text><text class="nav-text">社区</text></view>
+    <view class="nav-item" bindtap="go" data-url="/pages/activity/activity"><text class="nav-icon">📅</text><text class="nav-text">活动</text></view>
+    <view class="nav-item" bindtap="go" data-url="/pages/login/login"><text class="nav-icon">👤</text><text class="nav-text">我的</text></view>
   </view>
 </view>

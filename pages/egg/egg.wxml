@@ -1,10 +1,109 @@
 <view class="page">
   <view class="container">
-    <view class="dev-card">
-      <text class="dev-icon">🚧</text>
-      <text class="dev-title">正在开发中...</text>
-      <text class="dev-desc">孵蛋查询模块正在努力开发中，敬请期待！</text>
-      <text class="dev-tip">预计包含：蛋径蛋重查询、蛋类型、体型蛋等</text>
+    <!-- 维护模式提示 -->
+    <view class="maintain-card" wx:if="{{maintenance}}">
+      <text class="maintain-icon">🚧</text>
+      <text class="maintain-title">页面维护中</text>
+      <text class="maintain-desc">该功能正在开发或维护中，请稍后再来</text>
+    </view>
+
+    <!-- 正常内容 -->
+    <view wx:if="{{!maintenance}}">
+      <!-- 自定义模式 -->
+      <view wx:if="{{useCustom}}">
+        <view class="card">
+          <view class="card-title">孵蛋查询</view>
+          <view class="admin-edit-hint" bindtap="onEdit" data-field="customContent" data-value="{{customContent}}">
+            <text class="edit-hint-icon">📝</text>
+            <text class="edit-hint-text">点击编辑页面内容（支持纯文本）</text>
+          </view>
+          <view class="custom-content" wx:if="{{customContent}}">
+            <text class="custom-text">{{customContent}}</text>
+          </view>
+          <view class="empty-hint" wx:else>
+            <text class="empty-text">暂无内容，点击上方编辑</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 默认装修页 -->
+      <view wx:else>
+      <!-- 蛋类型 -->
+      <view class="card">
+        <view class="card-title">蛋类型</view>
+        <view class="egg-grid">
+          <view class="egg-card" wx:for="{{types}}" wx:key="id">
+            <text class="egg-icon">{{item.icon}}</text>
+            <text class="egg-name">{{item.name}}</text>
+            <text class="egg-prob">概率 {{item.prob}}</text>
+            <text class="egg-desc">{{item.desc}}</text>
+            <text class="egg-bonus" wx:if="{{item.bonus !== '无'}}">{{item.bonus}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 蛋体型 -->
+      <view class="card">
+        <view class="card-title">蛋体型</view>
+        <view class="egg-grid">
+          <view class="egg-card" wx:for="{{sizes}}" wx:key="id">
+            <text class="egg-icon">{{item.icon}}</text>
+            <text class="egg-name">{{item.name}}</text>
+            <text class="egg-prob">概率 {{item.prob}}</text>
+            <text class="egg-desc">{{item.desc}}</text>
+            <text class="egg-bonus" wx:if="{{item.bonus !== '无'}}">{{item.bonus}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 精灵蛋池 -->
+      <view class="card">
+        <view class="card-title">精灵蛋池</view>
+        <view class="pet-list">
+          <view class="pet-item" wx:for="{{pets}}" wx:key="name">
+            <text class="pet-name">{{item.name}}</text>
+            <text class="pet-type type-{{item.type}}">{{item.type}}</text>
+            <text class="pet-egg">{{item.egg}}</text>
+            <text class="pet-loc">{{item.loc}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 骑乘效果 -->
+      <view class="card">
+        <view class="card-title">骑乘效果</view>
+        <view class="mount-list">
+          <view class="mount-item" wx:for="{{mounts}}" wx:key="pet">
+            <text class="mount-pet">{{item.pet}}</text>
+            <text class="mount-name">{{item.mount}}</text>
+            <text class="mount-bonus">{{item.bonus}}</text>
+            <text class="mount-req">{{item.req}}</text>
+          </view>
+        </view>
+      </view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">数据来源</view>
+      <text class="source">洛克王国手游WIKI（CC BY-NC-SA 4.0）https://wiki.biligame.com/rocom/</text>
+    </view>
+  </view>
+
+  <!-- 编辑弹窗 -->
+  <view class="modal-mask" wx:if="{{showModal}}" bindtap="closeModal">
+    <view class="modal-box" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">编辑{{editingField === 'customContent' ? '页面内容' : editingField}}</text>
+        <text class="modal-close" catchtap="closeModal">✕</text>
+      </view>
+      <view class="modal-body">
+        <textarea class="modal-textarea" placeholder="输入内容..." value="{{editValue}}" bindinput="onEditInput" maxlength="10000" cursor-spacing="120" />
+      </view>
+      <view class="modal-footer">
+        <button class="modal-cancel" catchtap="closeModal">取消</button>
+        <button class="modal-save" catchtap="saveEdit" disabled="{{submitting}}">{{submitting ? '保存中...' : '保存'}}</button>
+      </view>
     </view>
   </view>
 </view>

@@ -1,17 +1,47 @@
-.banner-card { border-radius: 24rpx; overflow: hidden; margin-bottom: 20rpx; position: relative; }
-.banner-bg { background: linear-gradient(135deg, #5b6abf 0%, #7c4dff 30%, #651fff 60%, #4a148c 100%); border-radius: 24rpx; padding: 32rpx 28rpx 24rpx; position: relative; overflow: hidden; min-height: 360rpx; }
-.banner-deco-1 { position: absolute; top: -40rpx; right: -20rpx; width: 200rpx; height: 200rpx; background: rgba(255,255,255,0.08); border-radius: 50%; }
-.banner-deco-2 { position: absolute; bottom: 20rpx; left: -30rpx; width: 150rpx; height: 150rpx; background: rgba(255,255,255,0.05); border-radius: 50%; }
-.banner-deco-3 { position: absolute; top: 60rpx; right: 40rpx; width: 80rpx; height: 80rpx; background: rgba(255,255,255,0.06); border-radius: 50%; }
-.banner-content { position: relative; z-index: 2; }
-.banner-sub { font-size: 22rpx; color: rgba(255,255,255,0.8); display: block; margin-bottom: 8rpx; letter-spacing: 2rpx; }
-.banner-title { font-size: 52rpx; font-weight: 900; color: #fff; display: block; line-height: 1.1; text-shadow: 0 4rpx 12rpx rgba(0,0,0,0.2); }
-.banner-title-2 { font-size: 52rpx; font-weight: 900; color: #ffd54f; display: block; line-height: 1.1; margin-bottom: 12rpx; text-shadow: 0 4rpx 12rpx rgba(0,0,0,0.2); }
-.banner-desc { font-size: 22rpx; color: rgba(255,255,255,0.85); display: block; margin-bottom: 20rpx; }
-.banner-tags { display: flex; gap: 12rpx; flex-wrap: wrap; }
-.banner-tag { display: flex; align-items: center; gap: 6rpx; background: rgba(255,255,255,0.2); border-radius: 20rpx; padding: 8rpx 16rpx; }
-.tag-icon { font-size: 24rpx; }
-.tag-text { font-size: 20rpx; color: #fff; }
-.banner-bottom { position: absolute; bottom: 24rpx; left: 28rpx; right: 28rpx; z-index: 2; display: flex; justify-content: space-between; align-items: center; }
-.banner-slogan { font-size: 24rpx; font-weight: 600; color: #fff; }
-.banner-slogan-sub { font-size: 20rpx; color: rgba(255,255,255,0.7); }
+/* 首页样式 */
+.stitle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20rpx; }
+.announce-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 16rpx; border-top: 1rpx solid rgba(0,212,255,0.08); margin-top: 16rpx; }
+.sub-link { display: flex; align-items: center; gap: 8rpx; padding: 8rpx 0; }
+.sub-icon { font-size: 28rpx; }
+.sub-text { font-size: 22rpx; color: rgba(255,255,255,0.4); }
+.sub-link.on .sub-text { color: #00e676; }
+.sub-counter { display: flex; align-items: center; gap: 10rpx; }
+.sub-counter-btn { width: 48rpx; height: 48rpx; background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(153,69,255,0.15)); border: 1rpx solid rgba(0,212,255,0.3); border-radius: 14rpx; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.sub-counter-btn::after { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: left 0.4s; }
+.sub-counter-btn:active { transform: scale(0.92); background: linear-gradient(135deg, rgba(0,212,255,0.3), rgba(153,69,255,0.3)); }
+.sub-counter-btn:active::after { left: 100%; }
+.sub-counter-plus { font-size: 30rpx; color: #00d4ff; font-weight: 300; line-height: 1; }
+.sub-counter-badge { min-width: 32rpx; height: 32rpx; background: linear-gradient(135deg, #00d4ff, #9945ff); border-radius: 16rpx; display: flex; align-items: center; justify-content: center; padding: 0 8rpx; box-shadow: 0 4px 12px rgba(0,212,255,0.3); }
+.sub-counter-num { font-size: 20rpx; color: #fff; font-weight: 700; }
+
+/* 弹窗 */
+.modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: flex; align-items: flex-end; }
+.modal-box { width: 100%; background: linear-gradient(180deg, #1a1040, #0a0e27); border-radius: 24rpx 24rpx 0 0; padding: 32rpx; max-height: 80vh; display: flex; flex-direction: column; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24rpx; flex-shrink: 0; }
+.modal-title { font-size: 32rpx; font-weight: 700; color: #00d4ff; }
+.modal-close { font-size: 36rpx; color: rgba(255,255,255,0.4); padding: 8rpx; }
+.modal-body { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.banner-preview { width: 100%; height: 200rpx; border-radius: 12rpx; overflow: hidden; margin-bottom: 20rpx; border: 1rpx solid rgba(0,212,255,0.2); }
+.preview-img { width: 100%; height: 100%; }
+.banner-actions { display: flex; flex-direction: column; gap: 16rpx; }
+.banner-input { width: 100%; min-height: 80rpx; background: rgba(0,0,0,0.3); border: 1rpx solid rgba(0,212,255,0.2); border-radius: 12rpx; padding: 20rpx; font-size: 26rpx; color: #fff; box-sizing: border-box; }
+.modal-footer { display: flex; gap: 16rpx; flex-shrink: 0; padding-top: 20rpx; }
+.modal-cancel { flex: 1; background: rgba(255,255,255,0.1) !important; color: rgba(255,255,255,0.6) !important; border-radius: 12rpx !important; height: 80rpx !important; line-height: 80rpx !important; font-size: 28rpx !important; }
+.modal-cancel::after { border: none; }
+.modal-save { flex: 1; background: linear-gradient(135deg, #00d4ff, #9945ff) !important; color: #fff !important; border-radius: 12rpx !important; height: 80rpx !important; line-height: 80rpx !important; font-size: 28rpx !important; }
+.modal-save::after { border: none; }
+.modal-save[disabled] { opacity: 0.5; }
+
+/* 热门榜单 */
+.hot-list { display: flex; flex-direction: column; gap: 8rpx; max-height: 280rpx; overflow: hidden; }
+.hot-item { display: flex; align-items: center; gap: 16rpx; padding: 14rpx 16rpx; background: rgba(0,0,0,0.2); border-radius: 10rpx; border: 1rpx solid rgba(0,212,255,0.06); }
+.hot-rank { width: 40rpx; height: 40rpx; border-radius: 10rpx; display: flex; align-items: center; justify-content: center; font-size: 22rpx; font-weight: 700; color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.05); flex-shrink: 0; }
+.rank-1 { background: linear-gradient(135deg, #ff4757, #cc3a48); color: #fff; }
+.rank-2 { background: linear-gradient(135deg, #ffab40, #ff9100); color: #fff; }
+.rank-3 { background: linear-gradient(135deg, #9945ff, #7c3aed); color: #fff; }
+.hot-info { flex: 1; overflow: hidden; }
+.hot-name { font-size: 24rpx; color: rgba(255,255,255,0.7); display: block; font-weight: 600; }
+.hot-content { font-size: 22rpx; color: rgba(255,255,255,0.4); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2rpx; }
+.hot-likes { display: flex; align-items: center; gap: 4rpx; flex-shrink: 0; }
+.hot-heart { font-size: 22rpx; color: #ff4757; }
+.hot-count { font-size: 22rpx; color: rgba(255,255,255,0.4); }

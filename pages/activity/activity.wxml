@@ -1,21 +1,71 @@
 <view class="page">
   <view class="container">
+    <view class="admin-bar" wx:if="{{isAdmin}}">
+      <text class="admin-text">管理员模式</text>
+      <view class="admin-btn" bindtap="onAddActivity"><text>+ 新增活动</text></view>
+    </view>
+    <view class="card subscribe-card">
+      <view class="subscribe-row">
+        <view class="subscribe-info">
+          <text class="subscribe-title">活动提醒</text>
+          <text class="subscribe-desc">{{subscribedActivity ? '已开启推送通知' + (subscribeCount > 0 ? ' (' + subscribeCount + '次)' : '') : '开启后可收到活动更新推送'}}</text>
+        </view>
+        <view class="subscribe-right">
+          <view class="notify-counter" catchtap="subscribeActivity">
+            <view class="counter-btn">
+              <text class="counter-plus">+</text>
+            </view>
+            <view class="counter-badge" wx:if="{{subscribeCount > 0}}">
+              <text class="counter-num">{{subscribeCount}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
     <view class="tabs">
       <view class="tab {{status===item?'on':''}}" wx:for="{{statuses}}" wx:key="*this" bindtap="onStatus" data-s="{{item}}">{{item}}</view>
     </view>
     <view class="act-list">
-      <view class="act-card" wx:for="{{filtered}}" wx:key="id">
+      <view class="act-card headline" wx:for="{{filtered}}" wx:key="id" wx:if="{{item.status==='置顶'}}">
         <view class="act-header" bindtap="onExpand" data-id="{{item.id}}">
           <view class="act-badges">
-            <view class="badge badge-top" wx:if="{{item.status==='置顶'}}">置顶</view>
-            <view class="badge badge-go" wx:if="{{item.status==='进行中'}}">进行中</view>
+            <view class="badge badge-top">📌 置顶头条</view>
             <view class="badge badge-official" wx:if="{{item.type==='官方权威信息'}}">官方权威信息</view>
+          </view>
+          <text class="act-title headline-title">{{item.title}}</text>
+          <text class="act-summary">{{item.desc}}</text>
+        </view>
+        <view class="act-footer" wx:if="{{item.rewards.length > 0 || item.start}}">
+          <view class="act-rewards" wx:if="{{item.rewards.length > 0}}">
+            <text class="act-reward" wx:for="{{item.rewards}}" wx:for-item="r" wx:key="*this">{{r}}</text>
+          </view>
+          <text class="act-date" wx:if="{{item.start}}">{{item.start}}~{{item.end}}</text>
+        </view>
+        <view class="act-admin-btns" wx:if="{{isAdmin}}">
+          <view class="act-admin-btn edit" catchtap="onEditActivity" data-item="{{item}}">编辑</view>
+          <view class="act-admin-btn del" catchtap="onDeleteActivity" data-item="{{item}}" wx:if="{{item.isCloud}}">删除</view>
+        </view>
+      </view>
+    </view>
+    <view class="section-title" wx:if="{{status==='全部'}}">
+      <text class="section-line"></text>
+      <text class="section-text">其他活动</text>
+      <text class="section-line"></text>
+    </view>
+    <view class="act-list">
+      <view class="act-card" wx:for="{{filtered}}" wx:key="id" wx:if="{{item.status!=='置顶'}}">
+        <view class="act-header" bindtap="onExpand" data-id="{{item.id}}">
+          <view class="act-badges">
+            <view class="badge badge-go" wx:if="{{item.status==='进行中'}}">进行中</view>
+            <view class="badge badge-soon" wx:if="{{item.status==='即将开始'}}">即将开始</view>
+            <view class="badge badge-type" wx:if="{{item.type}}">{{item.type}}</view>
           </view>
           <text class="act-title">{{item.title}}</text>
           <text class="expand-hint" wx:if="{{expandedId!==item.id}}">点击展开全文 ›</text>
-          <text class="expand-hint up" wx:if="{{expandedId===item.id}}">收起 ›</text>
+          <text class="expand-hint" wx:if="{{expandedId===item.id}}">‹ 收起</text>
         </view>
         <view class="act-body" wx:if="{{expandedId===item.id}}">
+          <image class="act-image" wx:if="{{item.image}}" src="{{item.image}}" mode="widthFix" />
           <text class="act-desc">{{item.desc}}</text>
           <view class="act-footer" wx:if="{{item.rewards.length > 0 || item.start}}">
             <view class="act-rewards" wx:if="{{item.rewards.length > 0}}">
@@ -23,13 +73,90 @@
             </view>
             <text class="act-date" wx:if="{{item.start}}">{{item.start}}~{{item.end}}</text>
           </view>
+          <view class="act-admin-btns" wx:if="{{isAdmin}}">
+            <view class="act-admin-btn edit" catchtap="onEditActivity" data-item="{{item}}">编辑</view>
+            <view class="act-admin-btn del" catchtap="onDeleteActivity" data-item="{{item}}" wx:if="{{item.isCloud}}">删除</view>
+          </view>
         </view>
       </view>
     </view>
+    <view class="empty" wx:if="{{filtered.length===0}}">暂无活动</view>
   </view>
+
+  <!-- 编辑弹窗 -->
+  <view class="modal-mask" wx:if="{{showEditModal}}" bindtap="onCloseModal">
+    <view class="modal-box" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">{{editingItem ? '编辑活动' : '新增活动'}}</text>
+        <text class="modal-close" bindtap="onCloseModal">✕</text>
+      </view>
+      <view class="modal-body">
+        <view class="form-group">
+          <text class="form-label">标题</text>
+          <input class="form-input" placeholder="活动标题" value="{{editTitle}}" bindinput="onEditInput" maxlength="50" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">类型</text>
+          <input class="form-input" placeholder="如：限时活动、日常活动" value="{{editType}}" bindinput="onTypeInput" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">状态</text>
+          <picker class="form-picker" range="{{['进行中','即将开始','置顶']}}" bindchange="onStatusChange">
+            <text class="picker-text">{{editStatus}} ▾</text>
+          </picker>
+        </view>
+        <view class="form-group">
+          <text class="form-label">描述</text>
+          <textarea class="form-textarea" placeholder="活动描述..." value="{{editDesc}}" bindinput="onDescInput" maxlength="500" cursor-spacing="120" />
+          <view class="file-import" catchtap="importActivityFile">
+            <text class="file-import-icon">📄</text>
+            <text class="file-import-text">导入文件（XML/DOCX）</text>
+          </view>
+        </view>
+        <view class="form-group">
+          <text class="form-label">奖励（每行一个）</text>
+          <textarea class="form-textarea" placeholder="洛克贝x1000&#10;经验果x5" value="{{editRewards}}" bindinput="onRewardsInput" maxlength="200" cursor-spacing="120" />
+        </view>
+        <view class="form-row">
+          <view class="form-group half">
+            <text class="form-label">开始日期</text>
+            <input class="form-input" placeholder="2026-01-01" value="{{editStart}}" bindinput="onStartInput" />
+          </view>
+          <view class="form-group half">
+            <text class="form-label">结束日期</text>
+            <input class="form-input" placeholder="2026-01-31" value="{{editEnd}}" bindinput="onEndInput" />
+          </view>
+        </view>
+        <view class="form-group">
+          <text class="form-label">图片（可选）</text>
+          <view class="image-section">
+            <view class="image-preview" wx:if="{{editImage}}" catchtap="previewEditImage">
+              <image class="preview-img" src="{{editImage}}" mode="aspectFill" />
+              <view class="image-remove" catchtap="removeEditImage">✕</view>
+            </view>
+            <view class="image-actions" wx:if="{{!editImage}}">
+              <view class="image-action-btn" catchtap="chooseEditImage">
+                <text class="action-icon">📷</text>
+                <text class="action-text">相册</text>
+              </view>
+              <view class="image-action-btn" catchtap="inputEditImageUrl">
+                <text class="action-icon">🔗</text>
+                <text class="action-text">链接</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="modal-footer">
+        <button class="modal-submit" bindtap="onSubmitActivity" disabled="{{submitting}}">{{submitting ? '提交中...' : (editingItem ? '更新' : '发布')}}</button>
+      </view>
+    </view>
+  </view>
+
   <view class="navbar">
     <view class="nav-item" bindtap="go" data-url="/pages/index/index"><text class="nav-icon">🏠</text><text class="nav-text">首页</text></view>
-    <view class="nav-item" bindtap="go" data-url="/pages/pets/pets"><text class="nav-icon">📖</text><text class="nav-text">图鉴</text></view>
+    <view class="nav-item" bindtap="go" data-url="/pages/community/community"><text class="nav-icon">👥</text><text class="nav-text">社区</text></view>
     <view class="nav-item on"><text class="nav-icon">📅</text><text class="nav-text">活动</text></view>
+    <view class="nav-item" bindtap="go" data-url="/pages/login/login"><text class="nav-icon">👤</text><text class="nav-text">我的</text></view>
   </view>
 </view>

@@ -1,0 +1,329 @@
+<view class="page">
+  <view class="container">
+    <view class="no-access" wx:if="{{!loading && !isAdmin}}">
+      <text class="no-icon">🔒</text>
+      <text class="no-title">无访问权限</text>
+      <text class="no-desc">此页面仅限管理者访问</text>
+    </view>
+
+    <view class="loading" wx:if="{{loading && isAdmin}}">
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <view wx:if="{{isAdmin}}">
+      <!-- 顶部标题栏 -->
+      <view class="admin-header">
+        <text class="admin-title">管理后台</text>
+        <view class="refresh-btn" bindtap="refreshData">
+          <text>刷新</text>
+        </view>
+      </view>
+
+      <!-- Tab 栏 -->
+      <view class="admin-tabs">
+        <view class="admin-tab {{activeTab === 'announce' ? 'on' : ''}}" bindtap="switchTab" data-tab="announce">公告</view>
+        <view class="admin-tab {{activeTab === 'system' ? 'on' : ''}}" bindtap="switchTab" data-tab="system">系统</view>
+        <view class="admin-tab {{activeTab === 'posts' ? 'on' : ''}}" bindtap="switchTab" data-tab="posts">帖子</view>
+        <view class="admin-tab {{activeTab === 'users' ? 'on' : ''}}" bindtap="switchTab" data-tab="users">用户</view>
+        <view class="admin-tab {{activeTab === 'pages' ? 'on' : ''}}" bindtap="switchTab" data-tab="pages">页面</view>
+        <view class="admin-tab {{activeTab === 'stats' ? 'on' : ''}}" bindtap="switchTab" data-tab="stats">统计</view>
+      </view>
+
+      <!-- 公告管理 -->
+      <view wx:if="{{activeTab === 'announce'}}">
+        <view class="section-header">
+          <text class="section-title">公告列表</text>
+          <view class="add-btn" bindtap="openModal"><text>+ 发布</text></view>
+        </view>
+        <view class="card-item" wx:for="{{announcements}}" wx:key="_id">
+          <view class="card-top">
+            <view class="tag tag-{{item.type}}">{{item.type === 'notice' ? '公告' : item.type === 'update' ? '更新' : item.type === 'event' ? '活动' : '提示'}}</view>
+            <view class="pin-tag {{item.pinned ? 'on' : ''}}" bindtap="togglePinnedStatus" data-item="{{item}}">{{item.pinned ? '已置顶' : '置顶'}}</view>
+          </view>
+          <text class="card-title">{{item.title}}</text>
+          <text class="card-desc">{{item.content}}</text>
+          <view class="card-bottom">
+            <text class="card-time">{{item.timeStr}}</text>
+            <view class="card-actions">
+              <view class="btn-edit" bindtap="openModal" data-item="{{item}}">编辑</view>
+              <view class="btn-delete" bindtap="deleteAnnouncement" data-item="{{item}}">删除</view>
+            </view>
+          </view>
+        </view>
+        <view class="empty" wx:if="{{announcements.length === 0}}"><text class="empty-text">暂无公告</text></view>
+      </view>
+
+      <!-- 系统信息管理 -->
+      <view wx:if="{{activeTab === 'system'}}">
+        <view class="section-header">
+          <text class="section-title">系统更新 · 发布即推送</text>
+          <view class="add-btn" bindtap="openSystemModal"><text>+ 发布</text></view>
+        </view>
+        <view class="card-item" wx:for="{{systemUpdates}}" wx:key="_id">
+          <view class="card-top">
+            <view class="tag tag-system">{{item.updateType === 'feature' ? '新功能' : item.updateType === 'fix' ? '修复' : item.updateType === 'improve' ? '优化' : '通知'}}</view>
+            <text class="card-version" wx:if="{{item.version}}">{{item.version}}</text>
+          </view>
+          <text class="card-title">{{item.title}}</text>
+          <text class="card-desc">{{item.content}}</text>
+          <view class="card-bottom">
+            <text class="card-time">{{item.timeStr}}</text>
+            <view class="card-actions">
+              <view class="btn-edit" bindtap="openSystemModal" data-item="{{item}}">编辑</view>
+              <view class="btn-delete" bindtap="deleteSystemUpdate" data-item="{{item}}">删除</view>
+            </view>
+          </view>
+        </view>
+        <view class="empty" wx:if="{{systemUpdates.length === 0}}"><text class="empty-text">暂无系统更新，点击上方 + 发布</text></view>
+      </view>
+
+      <!-- 帖子管理 -->
+      <view wx:if="{{activeTab === 'posts'}}">
+        <view class="section-header"><text class="section-title">帖子列表 (可管理所有帖子)</text></view>
+        <view class="card-item" wx:for="{{posts}}" wx:key="_id">
+          <view class="card-top">
+            <image class="card-avatar" src="{{item.userAvatar || '/images/default-avatar.png'}}" mode="aspectFill" />
+            <text class="card-author">{{item.userName}}</text>
+            <view class="pin-tag {{item.pinned ? 'on' : ''}}" bindtap="togglePostPinned" data-item="{{item}}">{{item.pinned ? '已置顶' : '置顶'}}</view>
+          </view>
+          <text class="card-desc" wx:if="{{item.content}}">{{item.content}}</text>
+          <view class="card-images" wx:if="{{item.images && item.images.length > 0}}">
+            <image class="card-img" wx:for="{{item.images}}" wx:for-item="img" wx:key="*this" src="{{img}}" mode="aspectFill" />
+          </view>
+          <view class="card-bottom">
+            <text class="card-time">{{item.timeStr}} · ❤ {{item.likes ? item.likes.length : 0}} · 💬 {{item.replyCount || 0}}</text>
+            <view class="card-actions">
+              <view class="btn-delete" bindtap="deletePost" data-item="{{item}}">删除</view>
+            </view>
+          </view>
+        </view>
+        <view class="empty" wx:if="{{posts.length === 0}}"><text class="empty-text">暂无帖子</text></view>
+      </view>
+
+      <!-- 用户管理 -->
+      <view wx:if="{{activeTab === 'users'}}">
+        <view class="section-header"><text class="section-title">用户列表</text></view>
+        <view class="card-item" wx:for="{{users}}" wx:key="_id">
+          <view class="card-top">
+            <image class="card-avatar" src="{{item.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill" />
+            <view class="card-user-info">
+              <text class="card-author">{{item.nickName}}</text>
+              <text class="card-meta">Lv.{{item.level}} · 登录{{item.loginDays ? item.loginDays.length : 0}}天 · {{item.timeStr}}</text>
+            </view>
+            <view class="ban-tag {{item.banned ? 'banned' : ''}}">{{item.banned ? '已封禁' : '正常'}}</view>
+          </view>
+          <view class="card-bottom">
+            <view class="card-actions">
+              <view class="btn-edit" wx:if="{{!item.banned}}" bindtap="banUser" data-item="{{item}}">封禁</view>
+              <view class="btn-edit" wx:if="{{item.banned}}" bindtap="unbanUser" data-item="{{item}}">解封</view>
+              <view class="btn-edit" wx:if="{{item.role !== 'editor'}}" bindtap="setEditor" data-item="{{item}}">设为小编</view>
+              <view class="btn-edit" wx:if="{{item.role === 'editor'}}" bindtap="removeEditor" data-item="{{item}}">取消小编</view>
+              <view class="btn-delete" bindtap="deleteUser" data-item="{{item}}">删除</view>
+            </view>
+          </view>
+        </view>
+        <view class="empty" wx:if="{{users.length === 0}}"><text class="empty-text">暂无用户</text></view>
+      </view>
+
+      <!-- 页面管理 -->
+      <view wx:if="{{activeTab === 'pages'}}">
+        <view class="section-header"><text class="section-title">页面状态管理</text></view>
+        <view class="card-item" wx:for="{{pageConfigs}}" wx:key="id">
+          <view class="card-top">
+            <view class="page-icon">{{item.icon}}</view>
+            <view class="card-user-info">
+              <text class="card-author">{{item.name}}</text>
+              <text class="card-meta">状态：{{item.maintenance ? '维护中（已下线）' : '运行中'}}</text>
+            </view>
+            <view class="toggle {{item.maintenance ? 'on' : ''}}" catchtap="togglePageMaintenance" data-id="{{item.id}}">
+              <view class="toggle-dot"></view>
+            </view>
+          </view>
+          <view class="page-actions">
+            <view class="btn-edit" catchtap="togglePageCustom" data-id="{{item.id}}">自定义：{{item.useCustom ? '开' : '关'}}</view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 统计面板 -->
+      <view wx:if="{{activeTab === 'stats'}}">
+        <view class="section-header"><text class="section-title">数据统计</text></view>
+        <view class="stats-grid">
+          <view class="stat-card">
+            <text class="stat-num">{{stats.totalUsers}}</text>
+            <text class="stat-label">总用户数</text>
+          </view>
+          <view class="stat-card">
+            <text class="stat-num">{{stats.totalPosts}}</text>
+            <text class="stat-label">总帖子数</text>
+          </view>
+          <view class="stat-card">
+            <text class="stat-num">{{stats.todayPosts}}</text>
+            <text class="stat-label">今日发帖</text>
+          </view>
+          <view class="stat-card">
+            <text class="stat-num">{{announcements.length}}</text>
+            <text class="stat-label">公告数量</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 发布/编辑弹窗 -->
+    <view class="modal-mask" wx:if="{{showModal}}" bindtap="closeModal">
+        <view class="modal-box" catchtap="preventClose">
+        <view class="modal-header">
+          <text class="modal-title">{{editingItem ? '编辑公告' : '发布公告'}}</text>
+          <text class="modal-close" catchtap="closeModal">✕</text>
+        </view>
+        <view class="modal-body">
+          <view class="form-group">
+            <text class="form-label">类型</text>
+            <picker class="form-picker" range="{{['公告', '更新', '活动', '提示']}}" bindchange="onTypeChange">
+              <text class="picker-text">{{formType === 'notice' ? '公告' : formType === 'update' ? '更新' : formType === 'event' ? '活动' : '提示'}} ▾</text>
+            </picker>
+          </view>
+          <view class="form-group">
+            <text class="form-label">标题</text>
+            <input class="form-input" placeholder="输入公告标题" value="{{formTitle}}" bindinput="onTitleInput" maxlength="50" />
+          </view>
+          <view class="form-group">
+            <view class="form-label-row">
+              <text class="form-label">内容</text>
+              <view class="editor-mode-btn" catchtap="switchEditorMode">
+                <text class="mode-icon">{{editorMode === 'simple' ? '✏️' : '📝'}}</text>
+                <text class="mode-text">{{editorMode === 'simple' ? '切换排版模式' : '切换简易模式'}}</text>
+              </view>
+            </view>
+            
+            <!-- 富文本编辑工具栏 -->
+            <view class="rich-toolbar" wx:if="{{editorMode === 'rich'}}">
+              <view class="toolbar-row">
+                <view class="tool-btn {{currentFontWeight === 'bold' ? 'active' : ''}}" catchtap="toggleBold">
+                  <text class="tool-icon" style="font-weight:bold;">B</text>
+                </view>
+                <view class="tool-btn {{currentFontStyle === 'italic' ? 'active' : ''}}" catchtap="toggleItalic">
+                  <text class="tool-icon" style="font-style:italic;">I</text>
+                </view>
+                <view class="tool-btn" catchtap="showFontSizePicker">
+                  <text class="tool-icon">Aa</text>
+                </view>
+                <view class="tool-btn" catchtap="showFontColorPicker">
+                  <view class="color-preview" style="background:{{currentFontColor}};"></view>
+                </view>
+                <view class="tool-btn" catchtap="addRichTextBlock">
+                  <text class="tool-icon">+</text>
+                  <text class="tool-text">添加</text>
+                </view>
+                <view class="tool-btn" catchtap="addRichQuoteBlock">
+                  <text class="tool-icon">❝</text>
+                  <text class="tool-text">引用</text>
+                </view>
+              </view>
+              
+              <!-- 字号选择器 -->
+              <view class="size-picker" wx:if="{{showSizePicker}}">
+                <view class="size-option {{currentFontSize === item ? 'active' : ''}}" wx:for="{{fontSizeOptions}}" wx:key="*this" catchtap="setFontSize" data-size="{{item}}">
+                  <text style="font-size:{{item}}rpx;">{{item}}</text>
+                </view>
+              </view>
+              
+              <!-- 颜色选择器 -->
+              <view class="color-picker" wx:if="{{showColorPicker}}">
+                <view class="color-option {{currentFontColor === item.value ? 'active' : ''}}" wx:for="{{fontColorOptions}}" wx:key="value" catchtap="setFontColor" data-color="{{item.value}}">
+                  <view class="color-dot" style="background:{{item.value}};"></view>
+                  <text class="color-name">{{item.name}}</text>
+                </view>
+              </view>
+            </view>
+            
+            <!-- 已添加的富文本块 -->
+            <view class="rich-blocks" wx:if="{{editorMode === 'rich' && formRichContent.length > 0}}">
+              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}}" wx:for="{{formRichContent}}" wx:key="index">
+                <view class="block-content">
+                  <text wx:if="{{item.type === 'quote'}}" class="block-quote-icon">❝</text>
+                  <text class="block-text" style="font-size:{{item.size}}rpx;color:{{item.color}};font-weight:{{item.weight}};font-style:{{item.style}};">{{item.content}}</text>
+                </view>
+                <view class="block-actions">
+                  <view class="block-btn" catchtap="editRichBlock" data-idx="{{index}}">编辑</view>
+                  <view class="block-btn delete" catchtap="removeRichBlock" data-idx="{{index}}">删除</view>
+                </view>
+              </view>
+            </view>
+            
+            <textarea class="form-textarea" placeholder="{{editorMode === 'rich' ? '输入内容后点击工具栏按钮添加...' : '输入公告内容...'}}" value="{{formContent}}" bindinput="onContentInput" maxlength="500" cursor-spacing="120" />
+            <view class="file-import" catchtap="importFile" wx:if="{{editorMode === 'simple'}}">
+              <text class="file-import-icon">📄</text>
+              <text class="file-import-text">导入文件（XML/DOCX）</text>
+            </view>
+          </view>
+          <view class="form-group">
+            <text class="form-label">引用来源（可选）</text>
+            <input class="form-input" placeholder="输入引用来源或出处" value="{{formSource}}" bindinput="onSourceInput" maxlength="100" />
+          </view>
+          <view class="form-group row">
+            <text class="form-label">置顶</text>
+            <view class="toggle {{formPinned ? 'on' : ''}}" catchtap="togglePinned"><view class="toggle-dot"></view></view>
+          </view>
+          <view class="form-group">
+            <text class="form-label">图片（可选）</text>
+            <view class="image-section">
+              <view class="image-preview" wx:if="{{formImage}}" catchtap="previewFormImage">
+                <image class="preview-img" src="{{formImage}}" mode="aspectFill" />
+                <view class="image-remove" catchtap="removeFormImage">✕</view>
+              </view>
+              <view class="image-actions" wx:if="{{!formImage}}">
+                <view class="image-action-btn" catchtap="chooseFormImage">
+                  <text class="action-icon">📷</text>
+                  <text class="action-text">相册</text>
+                </view>
+                <view class="image-action-btn" catchtap="inputImageUrl">
+                  <text class="action-icon">🔗</text>
+                  <text class="action-text">链接</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view class="modal-footer">
+          <text class="char-count">{{formContent.length}}/500</text>
+          <button class="modal-submit" catchtap="submitAnnouncement" disabled="{{submitting}}">{{submitting ? '提交中...' : (editingItem ? '更新' : '发布')}}</button>
+        </view>
+      </view>
+    </view>
+
+    <!-- 系统更新弹窗 -->
+    <view class="modal-mask" wx:if="{{showSystemModal}}" bindtap="closeSystemModal">
+      <view class="modal-box" catchtap="preventClose">
+        <view class="modal-header">
+          <text class="modal-title">{{systemEditingItem ? '编辑系统更新' : '发布系统更新'}}</text>
+          <text class="modal-close" catchtap="closeSystemModal">✕</text>
+        </view>
+        <view class="modal-body">
+          <view class="form-group">
+            <text class="form-label">更新类型</text>
+            <picker class="form-picker" range="{{['新功能', '修复', '优化', '通知']}}" bindchange="onSystemTypeChange">
+              <text class="picker-text">{{systemFormType === 'feature' ? '新功能' : systemFormType === 'fix' ? '修复' : systemFormType === 'improve' ? '优化' : '通知'}} ▾</text>
+            </picker>
+          </view>
+          <view class="form-group">
+            <text class="form-label">版本号（可选）</text>
+            <input class="form-input" placeholder="如 v1.0.7" value="{{systemFormVersion}}" bindinput="onSystemVersionInput" maxlength="20" />
+          </view>
+          <view class="form-group">
+            <text class="form-label">标题</text>
+            <input class="form-input" placeholder="输入更新标题" value="{{systemFormTitle}}" bindinput="onSystemTitleInput" maxlength="50" />
+          </view>
+          <view class="form-group">
+            <text class="form-label">更新内容</text>
+            <textarea class="form-textarea" placeholder="输入更新内容详情..." value="{{systemFormContent}}" bindinput="onSystemContentInput" maxlength="1000" cursor-spacing="120" />
+          </view>
+        </view>
+        <view class="modal-footer">
+          <text class="notify-hint">发布后将自动推送通知给所有订阅用户</text>
+          <button class="modal-submit" catchtap="submitSystemUpdate" disabled="{{systemSubmitting}}">{{systemSubmitting ? '提交中...' : (systemEditingItem ? '更新' : '发布并推送')}}</button>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -22,8 +22,8 @@
   </view>
   <view class="navbar">
     <view class="nav-item" bindtap="go" data-url="/pages/index/index"><text class="nav-icon">🏠</text><text class="nav-text">首页</text></view>
-    <view class="nav-item" bindtap="go" data-url="/pages/items/items"><text class="nav-icon">🎒</text><text class="nav-text">道具</text></view>
-    <view class="nav-item" bindtap="go" data-url="/pages/skills/skills"><text class="nav-icon">⚔️</text><text class="nav-text">技能</text></view>
+    <view class="nav-item" bindtap="go" data-url="/pages/community/community"><text class="nav-icon">👥</text><text class="nav-text">社区</text></view>
     <view class="nav-item" bindtap="go" data-url="/pages/activity/activity"><text class="nav-icon">📅</text><text class="nav-text">活动</text></view>
+    <view class="nav-item" bindtap="go" data-url="/pages/login/login"><text class="nav-icon">👤</text><text class="nav-text">我的</text></view>
   </view>
 </view>

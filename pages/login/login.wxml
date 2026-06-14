@@ -1,0 +1,250 @@
+<view class="page">
+  <view class="container">
+    <view class="login-header">
+      <view class="logo-box">
+        <image class="logo-image" src="/images/logo.png" mode="aspectFill"></image>
+      </view>
+      <text class="app-name">洛手助手攻略</text>
+      <text class="app-desc">全面攻略 · 精灵图鉴 · 道具图鉴</text>
+    </view>
+
+    <!-- 未登录 -->
+    <view class="login-card" wx:if="{{!hasUserInfo}}">
+      <view class="login-tips">
+        <text class="tips-title">欢迎使用</text>
+        <text class="tips-desc">登录后可同步个人数据，解锁更多功能</text>
+      </view>
+
+      <view class="avatar-section">
+        <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+          <view class="avatar-wrap">
+            <image class="avatar-img" src="{{tempAvatar}}" wx:if="{{tempAvatar}}" mode="aspectFill" />
+            <view class="avatar-empty" wx:else>
+              <text class="avatar-plus">+</text>
+            </view>
+          </view>
+        </button>
+        <text class="avatar-hint">{{tempAvatar ? '头像已选择' : '点击选择头像'}}</text>
+      </view>
+
+      <view class="form-section">
+        <view class="form-item">
+          <text class="form-label">昵称</text>
+          <input class="form-input" type="nickname" placeholder="请输入昵称" placeholder-style="color:rgba(255,255,255,0.3)" value="{{tempNickName}}" bindinput="onNickNameInput" />
+        </view>
+      </view>
+
+      <button class="submit-btn" bindtap="onLogin" loading="{{isLogging}}" disabled="{{isLogging}}">登录</button>
+
+      <view class="agree-text">
+        <text>登录即表示同意</text>
+        <text class="link" bindtap="showAgreement">《用户协议》</text>
+        <text>和</text>
+        <text class="link" bindtap="showPrivacy">《隐私政策》</text>
+      </view>
+    </view>
+
+    <!-- 已登录 -->
+    <view class="user-card" wx:if="{{hasUserInfo}}">
+      <view class="user-header">
+        <view class="avatar-wrap">
+          <image class="user-avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill"></image>
+          <view class="level-tag">Lv.{{level}}</view>
+        </view>
+        <view class="user-detail">
+          <text class="user-name">{{userInfo.nickName}}</text>
+          <text class="user-exp">累计登录 {{loginDays}} 天{{loginDays < nextLevelDays ? '，还需 ' + (nextLevelDays - loginDays) + ' 天升级' : ''}}</text>
+          <view class="exp-bar">
+            <view class="exp-fill" style="width: {{loginDays >= nextLevelDays ? 100 : (loginDays / nextLevelDays * 100)}}%"></view>
+          </view>
+        </view>
+      </view>
+
+      <view class="expire-bar">登录有效期剩余：{{loginExpire}}</view>
+
+      <!-- 洛克王国UID -->
+      <view class="uid-card" bindtap="toggleUidModal">
+        <view class="uid-left">
+          <text class="uid-label">洛克王国UID</text>
+          <text class="uid-value" wx:if="{{gameUid}}">{{gameUid}}</text>
+          <text class="uid-empty" wx:else>点击设置UID，展示在社区发帖中</text>
+        </view>
+        <text class="uid-arrow">›</text>
+      </view>
+
+      <view class="stat-grid">
+        <view class="stat-box">
+          <text class="stat-num">Lv.{{level}}</text>
+          <text class="stat-name">等级</text>
+        </view>
+        <view class="stat-box">
+          <text class="stat-num">{{loginDays}}</text>
+          <text class="stat-name">登录天数</text>
+        </view>
+        <view class="stat-box">
+          <text class="stat-num">{{todayLogin ? '✓' : '—'}}</text>
+          <text class="stat-name">今日打卡</text>
+        </view>
+      </view>
+
+      <view class="notify-section">
+        <view class="notify-title">
+          <text class="notify-title-icon">🔔</text>
+          <text class="notify-title-text">通知设置</text>
+          <text class="notify-title-hint">点击 + 增加推送次数，最多99条</text>
+        </view>
+        <view class="notify-item">
+          <view class="notify-info">
+            <text class="notify-name">公告通知</text>
+            <text class="notify-desc">接收最新公告和公告更新</text>
+          </view>
+          <view class="notify-right">
+            <view wx:if="{{notifyConfigured.announcement}}" class="notify-counter" data-type="announcement" catchtap="onNotifyAdd">
+              <view class="counter-btn">
+                <text class="counter-plus">+</text>
+              </view>
+              <view class="counter-badge" wx:if="{{notifyCount.announcement > 0}}">
+                <text class="counter-num">{{notifyCount.announcement}}</text>
+              </view>
+            </view>
+            <view wx:else class="notify-na">暂未开放</view>
+          </view>
+        </view>
+        <view class="notify-item">
+          <view class="notify-info">
+            <text class="notify-name">活动提醒</text>
+            <text class="notify-desc">活动开始前推送提醒</text>
+          </view>
+          <view class="notify-right">
+            <view wx:if="{{notifyConfigured.activity}}" class="notify-counter" data-type="activity" catchtap="onNotifyAdd">
+              <view class="counter-btn">
+                <text class="counter-plus">+</text>
+              </view>
+              <view class="counter-badge" wx:if="{{notifyCount.activity > 0}}">
+                <text class="counter-num">{{notifyCount.activity}}</text>
+              </view>
+            </view>
+            <view wx:else class="notify-na">暂未开放</view>
+          </view>
+        </view>
+        <view class="notify-item">
+          <view class="notify-info">
+            <text class="notify-name">系统消息</text>
+            <text class="notify-desc">系统更新和维护通知</text>
+          </view>
+          <view class="notify-right">
+            <view wx:if="{{notifyConfigured.system}}" class="notify-counter" data-type="system" catchtap="onNotifyAdd">
+              <view class="counter-btn">
+                <text class="counter-plus">+</text>
+              </view>
+              <view class="counter-badge" wx:if="{{notifyCount.system > 0}}">
+                <text class="counter-num">{{notifyCount.system}}</text>
+              </view>
+            </view>
+            <view wx:else class="notify-na">暂未开放</view>
+          </view>
+        </view>
+        <view class="notify-item">
+          <view class="notify-info">
+            <text class="notify-name">商人提醒</text>
+            <text class="notify-desc">远行商人新商品上架推送</text>
+          </view>
+          <view class="notify-right">
+            <view wx:if="{{notifyConfigured.merchant}}" class="notify-counter" data-type="merchant" catchtap="onNotifyAdd">
+              <view class="counter-btn">
+                <text class="counter-plus">+</text>
+              </view>
+              <view class="counter-badge" wx:if="{{notifyCount.merchant > 0}}">
+                <text class="counter-num">{{notifyCount.merchant}}</text>
+              </view>
+            </view>
+            <view wx:else class="notify-na">暂未开放</view>
+          </view>
+        </view>
+        <view class="notify-item">
+          <view class="notify-info">
+            <text class="notify-name">互动通知</text>
+            <text class="notify-desc">收到点赞和回复时推送</text>
+          </view>
+          <view class="notify-right">
+            <view wx:if="{{notifyConfigured.interaction}}" class="notify-counter" data-type="interaction" catchtap="onNotifyAdd">
+              <view class="counter-btn">
+                <text class="counter-plus">+</text>
+              </view>
+              <view class="counter-badge" wx:if="{{notifyCount.interaction > 0}}">
+                <text class="counter-num">{{notifyCount.interaction}}</text>
+              </view>
+            </view>
+            <view wx:else class="notify-na">暂未开放</view>
+          </view>
+        </view>
+        <view class="notify-tip" bindtap="onNotifySetting">
+          <text class="notify-tip-text">如需修改通知权限，请点击前往系统设置</text>
+        </view>
+      </view>
+
+      <view class="action-list">
+        <view class="action-item admin-item" wx:if="{{isAdmin}}" bindtap="goAdmin">
+          <view class="action-icon-wrap admin-icon-wrap">
+            <text class="action-icon">⚙</text>
+          </view>
+          <text class="action-text">管理后台</text>
+          <text class="action-arrow">›</text>
+        </view>
+        <view class="action-item danger-item" bindtap="onLogout">
+          <view class="action-icon-wrap danger-icon-wrap">
+            <text class="action-icon">🚪</text>
+          </view>
+          <text class="action-text danger-text">退出登录</text>
+          <text class="action-arrow">›</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="feature-grid">
+      <view class="feature-box">
+        <text class="feature-emoji">📖</text>
+        <text class="feature-title">精灵图鉴</text>
+        <text class="feature-desc">收录全部精灵数据</text>
+      </view>
+      <view class="feature-box">
+        <text class="feature-emoji">🎯</text>
+        <text class="feature-title">捕捉统计</text>
+        <text class="feature-desc">记录你的捕捉历程</text>
+      </view>
+      <view class="feature-box">
+        <text class="feature-emoji">📅</text>
+        <text class="feature-title">活动日历</text>
+        <text class="feature-desc">不错过每个活动</text>
+      </view>
+    </view>
+
+    <view class="notice-box">
+      <text class="notice-title">📋 登录说明</text>
+      <text class="notice-text">• 登录后数据仅在本地设备保存</text>
+      <text class="notice-text">• 登录有效期为 3 天，到期后自动退出登录</text>
+      <text class="notice-text">• 您可随时手动退出登录并清除本地数据</text>
+      <text class="notice-text">• 我们不会向任何服务器上传您的个人信息</text>
+    </view>
+
+    <text class="version">洛手助手版本 v1.0.6D 体验版</text>
+  </view>
+
+  <!-- UID编辑弹窗 -->
+  <view class="modal-mask" wx:if="{{showUidModal}}" bindtap="toggleUidModal">
+    <view class="modal-box" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">设置洛克王国UID</text>
+        <text class="modal-close" bindtap="toggleUidModal">✕</text>
+      </view>
+      <view class="modal-body">
+        <input class="modal-input" placeholder="输入您的洛克王国UID（纯数字）" placeholder-style="color:rgba(255,255,255,0.3)" value="{{uidInput}}" bindinput="onUidInput" type="number" />
+        <text class="modal-hint">设置后将显示在社区发帖名称旁</text>
+      </view>
+      <view class="modal-footer">
+        <button class="modal-cancel" bindtap="toggleUidModal">取消</button>
+        <button class="modal-save" bindtap="saveUid">保存</button>
+      </view>
+    </view>
+  </view>
+</view>
