@@ -234,7 +234,7 @@
         </view>
       </scroll-view>
       <view class="reply-input-bar">
-        <input class="reply-input" placeholder="写回复..." placeholder-style="color:rgba(255,255,255,0.3)" value="{{replyContent}}" bindinput="onReplyInput" />
+        <input class="reply-input" placeholder="写回复..." placeholder-style="color:rgba(255,255,255,0.5)" value="{{replyContent}}" bindinput="onReplyInput" />
         <button class="reply-submit" bindtap="submitReply" disabled="{{replying}}">{{replying ? '发送中' : '发送'}}</button>
       </view>
     </view>

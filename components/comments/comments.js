@@ -21,7 +21,8 @@ Component({
     hasMore: true,
     pageSize: 20,
     images: [],
-    uploading: false
+    uploading: false,
+    imageUrlInput: ''
   },
   lifetimes: {
     attached: function() {
@@ -141,6 +142,17 @@ Component({
       var images = this.data.images
       images.splice(idx, 1)
       this.setData({ images: images })
+    },
+    onImageUrlInput: function(e) {
+      this.setData({ imageUrlInput: e.detail.value })
+    },
+    addImageByUrl: function() {
+      var self = this
+      var url = self.data.imageUrlInput.trim()
+      if (!url) { wx.showToast({ title: '请输入图片链接', icon: 'none' }); return }
+      if (self.data.images.length >= 9) { wx.showToast({ title: '最多上传9张图片', icon: 'none' }); return }
+      var images = self.data.images.concat([url])
+      self.setData({ images: images, imageUrlInput: '' })
     },
     previewImage: function(e) {
       var src = e.currentTarget.dataset.src

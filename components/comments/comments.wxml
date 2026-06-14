@@ -28,6 +28,10 @@
         <view class="image-remove" catchtap="removeImage" data-idx="{{index}}">✕</view>
       </view>
     </view>
+    <view class="image-url-row" wx:if="{{images.length < 9}}">
+      <input class="image-url-input" placeholder="粘贴图片链接添加" placeholder-style="color:rgba(255,255,255,0.35)" value="{{imageUrlInput}}" bindinput="onImageUrlInput" />
+      <view class="image-url-btn" catchtap="addImageByUrl">添加</view>
+    </view>
     <view class="form-footer">
       <view class="form-tools">
         <view class="tool-btn" bindtap="chooseImage">
