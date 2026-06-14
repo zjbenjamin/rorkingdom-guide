@@ -175,7 +175,7 @@
         <text class="modal-close" catchtap="closeBallCheckModal">✕</text>
       </view>
       <view class="modal-body">
-        <view class="check-hint">每10次奇遇事件，请记录当前使用的球剩余数量</view>
+        <view class="check-hint">每10次奇遇事件，请记录当前已购买/合成的球剩余数量</view>
         <view class="form-group">
           <text class="form-label">球类型</text>
           <picker class="form-picker" range="{{ballCheckAllBalls}}" bindchange="onBallCheckBallChange">

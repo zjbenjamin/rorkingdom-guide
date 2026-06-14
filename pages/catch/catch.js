@@ -608,15 +608,21 @@ Page({
     })
   },
   showBallCheckModal: function() {
-    var allBalls = []
+    var activeBalls = []
     for (var i = 0; i < this.data.balls.length; i++) {
-      allBalls.push(this.data.balls[i].name)
+      if (this.data.balls[i].count > 0) {
+        activeBalls.push(this.data.balls[i].name)
+      }
+    }
+    if (activeBalls.length === 0) {
+      wx.showToast({ title: '暂无已购买/合成的球', icon: 'none' })
+      return
     }
     this.setData({
       showBallCheckModal: true,
-      ballCheckBall: allBalls[0] || '',
+      ballCheckBall: activeBalls[0],
       ballCheckCount: '',
-      ballCheckAllBalls: allBalls
+      ballCheckAllBalls: activeBalls
     })
   },
   closeBallCheckModal: function() {
