@@ -55,6 +55,7 @@ Page({
     hasActiveBalls: false,
     ballDecrease: {},
     showCircusParticles: false,
+    canStartCapture: false,
     costMode: 'auto',
     gemCost: 0,
     cnyCost: '0',
@@ -123,6 +124,7 @@ Page({
       carnivalCount: carnivalCount,
       luckyBoxCount: luckyBoxCount,
       hasActiveBalls: activeBalls.length > 0,
+      canStartCapture: initial > 0 && activeBalls.length > 0,
       userTitle: title.name,
       titleColor: title.color,
       ballCheckRecords: wx.getStorageSync('ball_check_records') || [],
@@ -729,7 +731,7 @@ Page({
     wx.setStorageSync('initial_wealth', v)
     wx.setStorageSync('total_gains', 0)
     wx.setStorageSync('total_costs', 0)
-    self.setData({ initialWealth: v, totalGains: 0, totalCosts: 0, accumulatedWealth: 0, totalWealth: v, wealthSet: true, coinInput: '' })
+    self.setData({ initialWealth: v, totalGains: 0, totalCosts: 0, accumulatedWealth: 0, totalWealth: v, wealthSet: true, coinInput: '', canStartCapture: self.data.hasActiveBalls })
     wx.showToast({title:'初始值已设置',icon:'success'})
   },
   onResetWealth: function() {
@@ -890,7 +892,9 @@ Page({
     }
     var totalBallUsed = 0
     for (var i = 0; i < balls.length; i++) totalBallUsed += balls[i].count
-    self.setData({ specialHistory: h, specialCount: '', balls: balls, expanded: true, totalBallUsed: totalBallUsed, totalCosts: newCosts, accumulatedWealth: accumulated, totalWealth: self.data.initialWealth + accumulated })
+    var hasActive = false
+    for (var i = 0; i < balls.length; i++) { if (balls[i].count > 0) { hasActive = true; break } }
+    self.setData({ specialHistory: h, specialCount: '', balls: balls, totalBallUsed: totalBallUsed, totalCosts: newCosts, accumulatedWealth: accumulated, totalWealth: self.data.initialWealth + accumulated, hasActiveBalls: hasActive, canStartCapture: self.data.wealthSet && hasActive })
     self.updateGemCost()
     wx.showToast({title: totalCost > 0 ? t + ballName + ' +' + v + ' 消耗💵' + totalCost : t + ballName + ' +' + v, icon: 'none'})
   },
