@@ -52,7 +52,9 @@ Page({
     attributeBalls: ['美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','淘沙球'],
     specialCount: '', specialHistory: [],
     totalBallUsed: 0,
-    activeBalls: [],
+    hasActiveBalls: false,
+    ballDecrease: {},
+    showCircusParticles: false,
     costMode: 'auto',
     gemCost: 0,
     cnyCost: '0',
@@ -120,7 +122,7 @@ Page({
       successRate: rate,
       carnivalCount: carnivalCount,
       luckyBoxCount: luckyBoxCount,
-      activeBalls: activeBalls,
+      hasActiveBalls: activeBalls.length > 0,
       userTitle: title.name,
       titleColor: title.color,
       ballCheckRecords: wx.getStorageSync('ball_check_records') || [],
@@ -463,8 +465,9 @@ Page({
     
     var totalEncounters = this.data.carnivalCount + this.data.luckyBoxCount
     if (totalEncounters > 0 && totalEncounters % 10 === 0) {
+      this.triggerCircusParticles()
       var self = this
-      setTimeout(function() { self.showBallCheckModal() }, 1500)
+      setTimeout(function() { self.showBallCheckModal() }, 800)
     }
   },
   onClearPity: function() {
@@ -491,6 +494,7 @@ Page({
     wx.setStorageSync('success_catches', sc)
     self.setData({ carnivalCount: c, totalCatches: tc, successCatches: sc })
     self.addEncounterRecord('🌟 狂欢时刻', '🌟', c)
+    self.triggerCircusParticles()
     wx.showToast({ title: '🌟 狂欢时刻 +1', icon: 'none' })
   },
   onCarnivalLongPress: function() {
@@ -675,26 +679,43 @@ Page({
     var h = [historyRecord].concat(self.data.history).slice(0, 20)
     wx.setStorageSync('catch_history', h)
     var balls = self.data.balls.slice()
+    var decrease = {}
+    var decreaseIdx = -1
     for (var i = 0; i < balls.length; i++) {
       if (balls[i].name === ballName) {
+        var diff = balls[i].count - remaining
+        if (diff > 0) {
+          decrease[i] = diff
+          decreaseIdx = i
+        }
         balls[i].count = remaining
         break
       }
     }
     var totalBallUsed = 0
     for (var j = 0; j < balls.length; j++) totalBallUsed += balls[j].count
-    var activeBalls = balls.filter(function(b){ return b.count > 0 })
+    var hasActive = false
+    for (var k = 0; k < balls.length; k++) { if (balls[k].count > 0) { hasActive = true; break } }
     self.setData({
       showBallCheckModal: false,
       ballCheckRecords: records,
       history: h,
       balls: balls,
-      activeBalls: activeBalls,
-      totalBallUsed: totalBallUsed
+      hasActiveBalls: hasActive,
+      totalBallUsed: totalBallUsed,
+      ballDecrease: decrease
     })
+    if (decreaseIdx >= 0) {
+      setTimeout(function() { self.setData({ ballDecrease: {} }) }, 2500)
+    }
     wx.showToast({ title: '已同步: ' + ballName + ' 剩余' + remaining, icon: 'success' })
   },
   onClearBallCheck: function() { wx.removeStorageSync('ball_check_records'); this.setData({ ballCheckRecords: [] }) },
+  triggerCircusParticles: function() {
+    var self = this
+    self.setData({ showCircusParticles: true })
+    setTimeout(function() { self.setData({ showCircusParticles: false }) }, 4000)
+  },
   preventClose: function() {},
   onWealthInput: function(e) { this.setData({ coinInput: e.detail.value }) },
   onSetWealth: function() {
@@ -792,36 +813,50 @@ Page({
       return
     }
     var balls = self.data.balls.slice()
+    var oldCount = balls[self.data.selectedBall].count
     balls[self.data.selectedBall].count = count
+    var diff = oldCount - count
     var cost = ball.price * count
     var newCosts = self.data.totalCosts + cost
     var totalBallUsed = 0
     for (var i = 0; i < balls.length; i++) totalBallUsed += balls[i].count
-    var activeBalls = balls.filter(function(b){ return b.count > 0 })
+    var hasActive = false
+    for (var i = 0; i < balls.length; i++) { if (balls[i].count > 0) { hasActive = true; break } }
+    var decrease = diff > 0 ? (function() { var d = {}; d[self.data.selectedBall] = diff; return d })() : {}
+    var usedInc = diff > 0 ? diff : 0
+    var newUsedBallTotal = self.data.usedBallTotal + usedInc
+    if (usedInc > 0) wx.setStorageSync('used_ball_total', newUsedBallTotal)
     if (cost > 0) {
       wx.setStorageSync('total_costs', newCosts)
       var accumulated = self.data.totalGains - newCosts
       self.setData({
         balls: balls,
-        activeBalls: activeBalls,
+        hasActiveBalls: hasActive,
         totalBallUsed: totalBallUsed,
+        usedBallTotal: newUsedBallTotal,
         totalCosts: newCosts,
         accumulatedWealth: accumulated,
         totalWealth: self.data.initialWealth + accumulated,
         selectedBall: null,
-        selectedBallCount: 0
+        selectedBallCount: 0,
+        ballDecrease: decrease
       })
       self.updateGemCost()
       wx.showToast({title: ball.name + ' x' + count + ' 消耗💵' + cost + '洛克贝',icon:'none'})
     } else {
       self.setData({
         balls: balls,
-        activeBalls: activeBalls,
+        hasActiveBalls: hasActive,
         totalBallUsed: totalBallUsed,
+        usedBallTotal: newUsedBallTotal,
         selectedBall: null,
-        selectedBallCount: 0
+        selectedBallCount: 0,
+        ballDecrease: decrease
       })
       wx.showToast({title: ball.name + ' x' + count + ' (免费)',icon:'none'})
+    }
+    if (Object.keys(decrease).length > 0) {
+      setTimeout(function() { self.setData({ ballDecrease: {} }) }, 2500)
     }
   },
   onSpecialTab: function(e) { var tab=e.currentTarget.dataset.t; this.setData({ specialTab:tab, specialBall:tab==='buy'?'高级咕噜球':'国王球', specialBalls:tab==='buy'?this.data.specialBalls:this.data.craftBalls }) },

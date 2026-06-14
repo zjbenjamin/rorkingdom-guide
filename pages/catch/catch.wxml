@@ -1,4 +1,20 @@
 <view class="page">
+  <!-- 马戏团粒子特效 -->
+  <view class="circus-overlay" wx:if="{{showCircusParticles}}">
+    <view class="circus-particle p1">🎪</view>
+    <view class="circus-particle p2">✨</view>
+    <view class="circus-particle p3">🌟</view>
+    <view class="circus-particle p4">🎉</view>
+    <view class="circus-particle p5">🎊</view>
+    <view class="circus-particle p6">⭐</view>
+    <view class="circus-particle p7">🎪</view>
+    <view class="circus-particle p8">✨</view>
+    <view class="circus-particle p9">🌟</view>
+    <view class="circus-particle p10">🎉</view>
+    <view class="circus-particle p11">🎊</view>
+    <view class="circus-particle p12">⭐</view>
+    <view class="circus-glow"></view>
+  </view>
   <view class="container">
     <!-- 异色统计 -->
     <view class="card">
@@ -118,8 +134,8 @@
 
       <!-- 咕噜球明细 -->
       <view class="ball-detail-title">咕噜球明细</view>
-      <view wx:if="{{activeBalls.length > 0}}">
-        <view class="ball-row {{selectedBall===item.id-1?'selected':''}}" wx:for="{{activeBalls}}" wx:key="id" bindtap="onSelectBall" data-i="{{item.id-1}}">
+      <view wx:for="{{balls}}" wx:key="id" wx:if="{{item.count > 0}}">
+        <view class="ball-row {{selectedBall===index?'selected':''}}" bindtap="onSelectBall" data-i="{{index}}">
           <view class="ball-dot" style="background:{{item.color}}"></view>
           <view class="ball-info">
             <text class="ball-name">{{item.name}}</text>
@@ -129,13 +145,13 @@
           <text class="ball-price free" wx:else>免费</text>
           <text class="ball-count">{{item.count}}</text>
         </view>
-        <view class="ball-use-row" wx:if="{{selectedBall!==null}}">
-          <text class="ball-use-label">使用 {{balls[selectedBall].name}}</text>
-          <input class="ball-use-input" placeholder="数量" type="number" value="{{selectedBallCount}}" bindinput="onBallCountInput" />
-          <view class="ball-use-btn" bindtap="onUseBall">确认</view>
-        </view>
       </view>
-      <view wx:else class="empty-ball">
+      <view class="ball-use-row" wx:if="{{selectedBall!==null && balls[selectedBall].count > 0}}">
+        <text class="ball-use-label">使用 {{balls[selectedBall].name}}</text>
+        <input class="ball-use-input" placeholder="数量" type="number" value="{{selectedBallCount}}" bindinput="onBallCountInput" />
+        <view class="ball-use-btn" bindtap="onUseBall">确认</view>
+      </view>
+      <view wx:if="{{!hasActiveBalls}}" class="empty-ball">
         <text class="empty-hint">暂无已购买/合成的球</text>
       </view>
     </view>
