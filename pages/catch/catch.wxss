@@ -1,6 +1,6 @@
 /* 捕捉统计页 - 统一科技感主题 */
 page { background: #0a0e27; min-height: 100vh; }
-.page { min-height: 100vh; padding-bottom: 120rpx; position: relative; overflow: hidden; }
+.page { min-height: 100vh; padding-bottom: 120rpx; position: relative; }
 .container { padding: 24rpx; }
 
 /* 马戏团粒子特效 */

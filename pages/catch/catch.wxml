@@ -240,6 +240,10 @@
           <text class="form-label">使用数量</text>
           <input class="form-input" type="number" placeholder="输入使用数量" value="{{resultBallCount}}" bindinput="onResultBallCountInput" />
         </view>
+        <view class="form-group">
+          <text class="form-label">回顾洛克贝（正数盈利，负数亏损）</text>
+          <input class="form-input" type="number" placeholder="输入洛克贝数量（可正可负）" value="{{resultGainInput}}" bindinput="onResultGainInput" />
+        </view>
       </view>
       <view class="modal-footer">
         <button class="modal-cancel" catchtap="closeResultBallModal">取消</button>

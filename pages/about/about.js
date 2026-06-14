@@ -9,7 +9,7 @@ Page({
     uid: '476200',
     aboutData: {
       appName: '洛手攻略',
-      version: '版本 v1.0.6D 体验版',
+      version: '版本 v1.0.6F 体验版',
       devName: '浙里本杰明',
       devAvatar: '/images/avatar.jpg',
       uid: '476200',

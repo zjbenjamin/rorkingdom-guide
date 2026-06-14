@@ -61,6 +61,7 @@ Page({
     resultBall: '',
     resultBallCount: '',
     resultBallList: [],
+    resultGainInput: '',
     costMode: 'auto',
     gemCost: 0,
     cnyCost: '0',
@@ -163,6 +164,9 @@ Page({
   onResultBallCountInput: function(e) {
     this.setData({ resultBallCount: e.detail.value })
   },
+  onResultGainInput: function(e) {
+    this.setData({ resultGainInput: e.detail.value })
+  },
   closeResultBallModal: function() {
     this.setData({ showResultBallModal: false })
   },
@@ -171,7 +175,8 @@ Page({
     var r = self.data.resultType
     var ballName = self.data.resultBall
     var usedCount = parseInt(self.data.resultBallCount) || 0
-    self.setData({ showResultBallModal: false, result: r })
+    var gainVal = parseInt(self.data.resultGainInput) || 0
+    self.setData({ showResultBallModal: false, result: r, resultGainInput: '' })
     if (usedCount > 0) {
       var balls = self.data.balls.slice()
       for (var i = 0; i < balls.length; i++) {
@@ -194,6 +199,13 @@ Page({
       var hasActive = false
       for (var k = 0; k < balls.length; k++) { if (balls[k].count > 0) { hasActive = true; break } }
       self.setData({ balls: balls, totalBallUsed: totalBallUsed, usedBallTotal: newUsedBallTotal, hasActiveBalls: hasActive, canStartCapture: self.data.wealthSet && hasActive })
+    }
+    if (gainVal !== 0) {
+      var newGains = self.data.totalGains + gainVal
+      wx.setStorageSync('total_gains', newGains)
+      var newAccumulated = newGains - self.data.totalCosts
+      self.setData({ totalGains: newGains, accumulatedWealth: newAccumulated, totalWealth: self.data.initialWealth + newAccumulated })
+      self.updateGemCost()
     }
     wx.showActionSheet({
       itemList: ['继续累计（保留本次数据）', '清除本次捕捉（重新开始）'],
