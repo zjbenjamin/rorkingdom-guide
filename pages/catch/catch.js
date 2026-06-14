@@ -446,7 +446,8 @@ Page({
     
     var totalEncounters = this.data.carnivalCount + this.data.luckyBoxCount
     if (totalEncounters > 0 && totalEncounters % 10 === 0) {
-      this.showBallCheckModal()
+      var self = this
+      setTimeout(function() { self.showBallCheckModal() }, 1500)
     }
   },
   onClearPity: function() {

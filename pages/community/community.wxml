@@ -49,10 +49,10 @@
     </view>
 
     <view class="feed-list">
-      <view class="feed-card" wx:for="{{comments}}" wx:key="_id">
+      <view class="feed-card" wx:for="{{comments}}" wx:key="_id" wx:for-index="postIdx">
         <view class="feed-header">
           <view class="feed-avatar-wrap {{item.userRole === 'developer' ? 'avatar-dev' : item.userRole === 'editor' ? 'avatar-editor' : ''}}">
-            <image class="feed-avatar" src="{{item.userAvatar || '/images/default-avatar.png'}}" mode="aspectFill" binderror="onAvatarError" data-idx="{{index}}" data-type="comments" />
+            <image class="feed-avatar" src="{{item.userAvatar || '/images/default-avatar.png'}}" mode="aspectFill" binderror="onAvatarError" data-idx="{{postIdx}}" data-type="comments" />
             <view class="verified-badge dev-badge" wx:if="{{item.userRole === 'developer'}}">✓</view>
             <view class="verified-badge editor-badge" wx:elif="{{item.userRole === 'editor'}}">✓</view>
           </view>
@@ -78,7 +78,7 @@
         <view class="feed-content">
           <text class="feed-text" wx:if="{{item.content}}">{{item.content}}</text>
           <view class="feed-images" wx:if="{{item.images && item.images.length > 0}}">
-            <image class="feed-image" wx:for="{{item.images}}" wx:for-item="img" wx:key="*this" src="{{img}}" mode="widthFix" catchtap="previewImage" data-src="{{img}}" data-urls="{{item.images}}" />
+            <image class="feed-image" wx:for="{{item.images}}" wx:for-item="img" wx:key="*this" src="{{img}}" mode="widthFix" catchtap="previewImage" data-src="{{img}}" data-urls="{{item.images}}" binderror="onFeedImageError" data-idx="{{index}}" data-post="{{postIdx}}" wx:if="{{!imageLoadErrors[postIdx + '_' + index]}}" />
           </view>
           <view class="feed-stars" wx:if="{{item.rating > 0}}">
             <text class="star-on" wx:for="{{5}}" wx:for-item="s" wx:for-index="si" wx:key="si" wx:if="{{si < item.rating}}">★</text>

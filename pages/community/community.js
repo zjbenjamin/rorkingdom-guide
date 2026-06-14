@@ -37,6 +37,7 @@ Page({
     showPostModal: false,
     postContent: '',
     imageUrlInput: '',
+    imageLoadErrors: {},
     posting: false,
     activeReplyPostId: '',
     replyContent: '',
@@ -446,6 +447,16 @@ Page({
   },
   onImageUrlInput: function(e) {
     this.setData({ imageUrlInput: e.detail.value })
+  },
+  onFeedImageError: function(e) {
+    var idx = e.currentTarget.dataset.idx
+    var postIdx = e.currentTarget.dataset.post
+    if (postIdx !== undefined && idx !== undefined) {
+      var key = postIdx + '_' + idx
+      var errors = this.data.imageLoadErrors
+      errors[key] = true
+      this.setData({ imageLoadErrors: errors })
+    }
   },
   addImageByUrl: function() {
     var self = this
