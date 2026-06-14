@@ -70,6 +70,29 @@
         </view>
       </view>
 
+      <!-- 正在售卖 -->
+      <view class="card selling-card">
+        <view class="card-title-row">
+          <text class="card-title">🔥 正在售卖</text>
+          <view class="dev-edit-btn" wx:if="{{isAdmin}}" catchtap="openSellingModal">
+            <text class="dev-edit-icon">✏️</text>
+            <text class="dev-edit-text">编辑</text>
+          </view>
+        </view>
+        <view wx:if="{{currentSelling.length > 0}}" class="item-list">
+          <view class="item-card selling-item" wx:for="{{currentSelling}}" wx:key="id">
+            <view class="item-badge badge-{{item.rarity==='普通'?'normal':item.rarity==='稀有'?'rare':item.rarity==='史诗'?'epic':'legend'}}">{{item.rarity}}</view>
+            <text class="item-name">{{item.name}}</text>
+            <text class="item-price">{{item.price}}{{t.currency || '洛克贝'}}</text>
+            <text class="item-effect">{{item.effect}}</text>
+            <view class="item-delete" wx:if="{{isAdmin}}" catchtap="deleteSellingItem" data-index="{{index}}">✕</view>
+          </view>
+        </view>
+        <view wx:else class="selling-empty">
+          <text class="selling-empty-text">暂无在售物品</text>
+        </view>
+      </view>
+
       <!-- 新品上架滚动展示 -->
       <view class="card new-items-card" wx:if="{{newItems.length > 0}}">
         <view class="new-items-header">
@@ -173,6 +196,24 @@
       <view class="modal-footer">
         <button class="modal-cancel" catchtap="closeAddItemModal">取消</button>
         <button class="modal-save" catchtap="addMerchantItem" disabled="{{addingItem}}">{{addingItem ? '添加中...' : '添加'}}</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 正在售卖编辑弹窗 -->
+  <view class="modal-mask" wx:if="{{showSellingModal}}" bindtap="closeSellingModal">
+    <view class="modal-box" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">编辑正在售卖</text>
+        <text class="modal-close" catchtap="closeSellingModal">✕</text>
+      </view>
+      <view class="modal-body">
+        <view class="selling-tip">每行一个物品，格式：名称|价格|效果|稀有度|来源</view>
+        <textarea class="modal-textarea selling-textarea" placeholder="示例：&#10;进化果实|5000|精灵进化材料|稀有|远行商人&#10;高级经验果|2000|增加1000经验|普通|远行商人" value="{{currentSellingText}}" bindinput="onSellingInput" maxlength="5000" cursor-spacing="120" />
+      </view>
+      <view class="modal-footer">
+        <text class="notify-hint">保存后将推送通知给订阅用户</text>
+        <button class="modal-save" catchtap="saveSelling" disabled="{{sellingSubmitting}}">{{sellingSubmitting ? '保存中...' : '保存并推送'}}</button>
       </view>
     </view>
   </view>

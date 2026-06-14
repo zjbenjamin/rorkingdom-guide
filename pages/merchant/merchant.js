@@ -14,6 +14,10 @@ Page({
     customTitle: '',
     customDesc: '',
     customItems: '',
+    currentSelling: [],
+    currentSellingText: '',
+    showSellingModal: false,
+    sellingSubmitting: false,
     showModal: false,
     editingField: '',
     editValue: '',
@@ -84,7 +88,9 @@ Page({
           customTitle: d.customTitle || '',
           customDesc: d.customDesc || '',
           customItems: d.customItems || '',
-          items: (d.useCustom && d.customItems) ? self.parseItems(d.customItems) : merchantData.items
+          items: (d.useCustom && d.customItems) ? self.parseItems(d.customItems) : merchantData.items,
+          currentSelling: d.currentSelling ? self.parseItems(d.currentSelling) : [],
+          currentSellingText: d.currentSelling || ''
         })
         self.markNewItems()
       })
@@ -184,6 +190,68 @@ Page({
     wx.showModal({ title: d.name, content: (t.price || '价格') + ': ' + d.price + (t.currency || '洛克贝') + '\n' + (t.effect || '效果') + ': ' + d.effect + '\n' + (t.rarity || '稀有度') + ': ' + d.rarity + '\n' + (t.source || '来源') + ': ' + d.source, showCancel: false })
   },
   go: function(e) { wx.navigateTo({ url: e.currentTarget.dataset.url }) },
+  openSellingModal: function() {
+    this.setData({ showSellingModal: true })
+  },
+  closeSellingModal: function() {
+    this.setData({ showSellingModal: false })
+  },
+  onSellingInput: function(e) {
+    this.setData({ currentSellingText: e.detail.value })
+  },
+  saveSelling: function() {
+    var self = this
+    if (self.data.sellingSubmitting) return
+    if (!db) { wx.showToast({ title: '云环境未就绪', icon: 'none' }); return }
+    self.setData({ sellingSubmitting: true })
+    var text = self.data.currentSellingText.trim()
+    var parsed = text ? self.parseItems(text) : []
+    var updateOrAdd = function() {
+      return db.collection('page_config').doc('merchant').update({
+        data: { currentSelling: text, updateTime: db.serverDate() }
+      })
+    }
+    updateOrAdd().catch(function() {
+      return db.collection('page_config').add({
+        data: { _id: 'merchant', currentSelling: text, useCustom: false, customTitle: '', customDesc: '', customItems: '', maintenance: false, updateTime: db.serverDate() }
+      })
+    }).then(function() {
+      self.setData({ sellingSubmitting: false, showSellingModal: false, currentSelling: parsed, currentSellingText: text })
+      wx.showToast({ title: '保存成功', icon: 'success' })
+      if (parsed.length > 0) {
+        wx.cloud.callFunction({
+          name: 'sendSubscribe',
+          data: {
+            type: 'merchant',
+            title: '商人上架更新',
+            content: '在售物品已更新，共' + parsed.length + '件',
+            page: '/pages/merchant/merchant'
+          }
+        }).catch(function() {})
+      }
+    }).catch(function() {
+      self.setData({ sellingSubmitting: false })
+      wx.showToast({ title: '保存失败', icon: 'none' })
+    })
+  },
+  deleteSellingItem: function(e) {
+    var self = this
+    var index = e.currentTarget.dataset.index
+    if (!self.data.isAdmin || !db) return
+    var items = self.data.currentSelling
+    items.splice(index, 1)
+    var text = items.map(function(i) {
+      return i.name + '|' + i.price + '|' + i.effect + '|' + i.rarity + '|' + i.source
+    }).join('\n')
+    db.collection('page_config').doc('merchant').update({
+      data: { currentSelling: text, updateTime: db.serverDate() }
+    }).then(function() {
+      self.setData({ currentSelling: items, currentSellingText: text })
+      wx.showToast({ title: '已移除', icon: 'success' })
+    }).catch(function() {
+      wx.showToast({ title: '操作失败', icon: 'none' })
+    })
+  },
   markNewItems: function() {
     var self = this
     var recent = wx.getStorageSync('merchant_new_items') || []

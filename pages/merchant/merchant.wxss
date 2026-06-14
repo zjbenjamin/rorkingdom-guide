@@ -72,6 +72,20 @@
 .item-card { position: relative; }
 .item-delete { position: absolute; top: 10rpx; left: 10rpx; width: 36rpx; height: 36rpx; background: rgba(255,71,87,0.8); color: #fff; font-size: 20rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 2; }
 
+/* 正在售卖 */
+.selling-card { border: 1rpx solid rgba(255,71,87,0.2); background: linear-gradient(145deg, rgba(255,71,87,0.05), rgba(20,25,60,0.9)); }
+.card-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20rpx; }
+.dev-edit-btn { display: flex; align-items: center; gap: 6rpx; padding: 6rpx 16rpx; background: rgba(255,71,87,0.15); border: 1rpx solid rgba(255,71,87,0.3); border-radius: 8rpx; }
+.dev-edit-icon { font-size: 22rpx; }
+.dev-edit-text { font-size: 22rpx; color: #ff4757; }
+.dev-edit-btn:active { background: rgba(255,71,87,0.3); }
+.selling-item { border-color: rgba(255,71,87,0.15); }
+.selling-empty { text-align: center; padding: 32rpx 0; }
+.selling-empty-text { font-size: 26rpx; color: rgba(255,255,255,0.3); }
+.selling-tip { font-size: 24rpx; color: rgba(255,171,64,0.7); margin-bottom: 16rpx; padding: 12rpx 16rpx; background: rgba(255,171,64,0.08); border: 1rpx solid rgba(255,171,64,0.15); border-radius: 8rpx; }
+.selling-textarea { height: 480rpx; }
+.notify-hint { font-size: 22rpx; color: rgba(255,171,64,0.6); }
+
 /* 新品上架滚动 */
 .new-items-card { border: 1rpx solid rgba(255,171,64,0.2); background: linear-gradient(145deg, rgba(255,171,64,0.05), rgba(20,25,60,0.9)); overflow: hidden; }
 .new-items-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20rpx; }
