@@ -176,11 +176,19 @@
       </view>
       <view class="modal-body">
         <view class="check-hint">每10次奇遇事件，请记录当前已购买/合成的球剩余数量</view>
-        <view class="form-group">
+        <view class="check-mode-tabs">
+          <view class="check-mode-tab {{ballCheckMode === 'select' ? 'on' : ''}}" catchtap="onBallCheckModeSwitch" data-mode="select">已购球选择</view>
+          <view class="check-mode-tab {{ballCheckMode === 'custom' ? 'on' : ''}}" catchtap="onBallCheckModeSwitch" data-mode="custom">自选记录</view>
+        </view>
+        <view class="form-group" wx:if="{{ballCheckMode === 'select'}}">
           <text class="form-label">球类型</text>
           <picker class="form-picker" range="{{ballCheckAllBalls}}" bindchange="onBallCheckBallChange">
             <view class="picker-text">{{ballCheckBall}} ▾</view>
           </picker>
+        </view>
+        <view class="form-group" wx:if="{{ballCheckMode === 'custom'}}">
+          <text class="form-label">捕捉器名称</text>
+          <input class="form-input" placeholder="输入捕捉器/球名称" value="{{ballCheckCustomName}}" bindinput="onBallCheckCustomInput" />
         </view>
         <view class="form-group">
           <text class="form-label">剩余数量</text>

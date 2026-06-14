@@ -60,7 +60,9 @@ Page({
     showBallCheckModal: false,
     ballCheckBall: '',
     ballCheckCount: '',
-    ballCheckRecords: []
+    ballCheckRecords: [],
+    ballCheckMode: 'select',
+    ballCheckCustomName: ''
   },
   onShow: function() {
     var n = new Date()
@@ -622,23 +624,31 @@ Page({
       showBallCheckModal: true,
       ballCheckBall: activeBalls[0],
       ballCheckCount: '',
-      ballCheckAllBalls: activeBalls
+      ballCheckAllBalls: activeBalls,
+      ballCheckMode: 'select',
+      ballCheckCustomName: ''
     })
   },
   closeBallCheckModal: function() {
     this.setData({ showBallCheckModal: false })
   },
+  onBallCheckModeSwitch: function(e) {
+    this.setData({ ballCheckMode: e.currentTarget.dataset.mode, ballCheckCustomName: '' })
+  },
   onBallCheckBallChange: function(e) {
     this.setData({ ballCheckBall: this.data.ballCheckAllBalls[e.detail.value] })
+  },
+  onBallCheckCustomInput: function(e) {
+    this.setData({ ballCheckCustomName: e.detail.value })
   },
   onBallCheckCountInput: function(e) {
     this.setData({ ballCheckCount: e.detail.value })
   },
   onBallCheckConfirm: function() {
     var self = this
-    var ballName = self.data.ballCheckBall
+    var ballName = self.data.ballCheckMode === 'custom' ? self.data.ballCheckCustomName.trim() : self.data.ballCheckBall
     var remaining = parseInt(self.data.ballCheckCount)
-    if (!ballName) { wx.showToast({ title: '请选择球类型', icon: 'none' }); return }
+    if (!ballName) { wx.showToast({ title: self.data.ballCheckMode === 'custom' ? '请输入捕捉器名称' : '请选择球类型', icon: 'none' }); return }
     if (isNaN(remaining) || remaining < 0) { wx.showToast({ title: '请输入有效数量', icon: 'none' }); return }
     var record = { time: formatTime(), ball: ballName, remaining: remaining }
     var records = self.data.ballCheckRecords.concat([record])
