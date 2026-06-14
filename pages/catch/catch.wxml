@@ -88,7 +88,7 @@
         <view class="sub-tab {{specialTab==='craft'?'on':''}}" bindtap="onSpecialTab" data-t="craft">合成球</view>
       </view>
       <view class="ball-total-row">
-        <text class="ball-total-label">使用球总数</text>
+        <text class="ball-total-label">剩余球总数</text>
         <text class="ball-total-val">{{totalBallUsed}}</text>
       </view>
       <view class="special-row">
@@ -116,6 +116,10 @@
     <!-- 使用球类型 -->
     <view class="card">
       <view class="card-title">使用球类型</view>
+      <view class="ball-total-row">
+        <text class="ball-total-label">使用球总数</text>
+        <text class="ball-total-val">{{usedBallTotal}}</text>
+      </view>
       <view wx:if="{{activeBalls.length > 0}}">
         <view class="ball-row {{selectedBall===item.id-1?'selected':''}}" wx:for="{{activeBalls}}" wx:key="id" bindtap="onSelectBall" data-i="{{item.id-1}}">
           <view class="ball-dot" style="background:{{item.color}}"></view>

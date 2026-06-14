@@ -123,7 +123,8 @@ Page({
       activeBalls: activeBalls,
       userTitle: title.name,
       titleColor: title.color,
-      ballCheckRecords: wx.getStorageSync('ball_check_records') || []
+      ballCheckRecords: wx.getStorageSync('ball_check_records') || [],
+      usedBallTotal: wx.getStorageSync('used_ball_total') || 0
     })
     this.updateGemCost()
   },
@@ -172,6 +173,10 @@ Page({
     wx.setStorageSync('catch_history', h)
     var isShiny = (result === 'success' || result === 'miss')
     if (isShiny) self.updatePity(0)
+    var usedCount = 0
+    for (var j = 0; j < used.length; j++) usedCount += used[j].count
+    var newUsedBallTotal = self.data.usedBallTotal + usedCount
+    wx.setStorageSync('used_ball_total', newUsedBallTotal)
     self.setData({
       totalCatches: newTotalCatches,
       successCatches: newSuccessCatches,
@@ -179,7 +184,8 @@ Page({
       accumulatedWealth: accumulated,
       totalWealth: self.data.initialWealth + accumulated,
       history: h,
-      result: ''
+      result: '',
+      usedBallTotal: newUsedBallTotal
     })
     self.updateSuccessRate()
     self.updateGemCost()
@@ -209,6 +215,10 @@ Page({
     var isShiny = (result === 'success' || result === 'miss')
     if (isShiny) self.updatePity(0)
     var resetBalls = balls.map(function(b) { return { id: b.id, name: b.name, color: b.color, count: 0, rate: b.rate, price: b.price } })
+    var usedCount = 0
+    for (var j = 0; j < used.length; j++) usedCount += used[j].count
+    var newUsedBallTotal = self.data.usedBallTotal + usedCount
+    wx.setStorageSync('used_ball_total', newUsedBallTotal)
     self.setData({
       balls: resetBalls,
       totalCatches: newTotalCatches,
@@ -219,6 +229,7 @@ Page({
       history: h,
       result: '',
       totalBallUsed: 0,
+      usedBallTotal: newUsedBallTotal,
       selectedBall: null
     })
     self.updateSuccessRate()
@@ -324,8 +335,12 @@ Page({
     if (isShiny) {
       this.updatePity(0);
     }
+    var usedCount = 0
+    for (var j = 0; j < used.length; j++) usedCount += used[j].count
+    var newUsedBallTotal = this.data.usedBallTotal + usedCount
+    wx.setStorageSync('used_ball_total', newUsedBallTotal)
     
-    this.setData({ balls: balls.map(function(b){ return {id:b.id,name:b.name,color:b.color,count:0,rate:b.rate,price:b.price} }), totalCatches: newTotalCatches, successCatches: newSuccessCatches, totalCosts: newCosts, accumulatedWealth: accumulated, totalWealth: this.data.initialWealth + accumulated, history: h, result: '', petNameInput: '', totalBallUsed: 0 })
+    this.setData({ balls: balls.map(function(b){ return {id:b.id,name:b.name,color:b.color,count:0,rate:b.rate,price:b.price} }), totalCatches: newTotalCatches, successCatches: newSuccessCatches, totalCosts: newCosts, accumulatedWealth: accumulated, totalWealth: this.data.initialWealth + accumulated, history: h, result: '', petNameInput: '', totalBallUsed: 0, usedBallTotal: newUsedBallTotal })
     this.updateSuccessRate()
     this.updateGemCost()
     
@@ -365,7 +380,8 @@ Page({
     for (var i = 0; i < this.data.balls.length; i++) {
       total += this.data.balls[i].count
     }
-    this.setData({ totalBallUsed: total })
+    var used = wx.getStorageSync('used_ball_total') || 0
+    this.setData({ totalBallUsed: total, usedBallTotal: used })
   },
   onClearHistory: function() { var self=this; wx.showModal({ title:'清空', content:'确定清空？', success:function(r){ if(r.confirm){ wx.removeStorageSync('catch_history'); wx.removeStorageSync('total_catches'); wx.removeStorageSync('success_catches'); self.setData({history:[],totalCatches:0,successCatches:0}) } } }) },
   onClearStats: function() {
