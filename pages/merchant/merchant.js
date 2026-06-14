@@ -7,7 +7,6 @@ var db = null
 Page({
   data: {
     items: [],
-    defaultItems: merchantData.items,
     t: {},
     isAdmin: false,
     maintenance: false,
@@ -33,8 +32,7 @@ Page({
     addingItem: false,
     newItems: [],
     newItemsPage: 0,
-    newItemsAnim: false,
-    newItemsReady: false
+    newItemsAnim: false
   },
   newItemsTimer: null,
   onShow: function() {
@@ -119,41 +117,37 @@ Page({
     var self = this
     if (!db) return
     var newVal = !self.data.maintenance
-    db.collection('page_config').doc('merchant').get()
-      .then(function() {
-        return db.collection('page_config').doc('merchant').update({
-          data: { maintenance: newVal, updateTime: db.serverDate() }
-        })
+    var updateOrAdd = function() {
+      return db.collection('page_config').doc('merchant').update({
+        data: { maintenance: newVal, updateTime: db.serverDate() }
       })
-      .catch(function() {
-        return db.collection('page_config').add({
-          data: { _id: 'merchant', maintenance: newVal, useCustom: false, customTitle: '', customDesc: '', customItems: '', updateTime: db.serverDate() }
-        })
+    }
+    updateOrAdd().catch(function() {
+      return db.collection('page_config').add({
+        data: { _id: 'merchant', maintenance: newVal, useCustom: false, customTitle: '', customDesc: '', customItems: '', updateTime: db.serverDate() }
       })
-      .then(function() {
-        self.setData({ maintenance: newVal })
-        wx.showToast({ title: newVal ? '已下线' : '已上线', icon: 'success' })
-      })
+    }).then(function() {
+      self.setData({ maintenance: newVal })
+      wx.showToast({ title: newVal ? '已下线' : '已上线', icon: 'success' })
+    })
   },
   toggleMode: function() {
     var self = this
     if (!db) return
     var newMode = !self.data.useCustom
-    db.collection('page_config').doc('merchant').get()
-      .then(function() {
-        return db.collection('page_config').doc('merchant').update({
-          data: { useCustom: newMode, updateTime: db.serverDate() }
-        })
+    var updateOrAdd = function() {
+      return db.collection('page_config').doc('merchant').update({
+        data: { useCustom: newMode, updateTime: db.serverDate() }
       })
-      .catch(function() {
-        return db.collection('page_config').add({
-          data: { _id: 'merchant', useCustom: newMode, customTitle: '', customDesc: '', customItems: '', updateTime: db.serverDate() }
-        })
+    }
+    updateOrAdd().catch(function() {
+      return db.collection('page_config').add({
+        data: { _id: 'merchant', useCustom: newMode, customTitle: '', customDesc: '', customItems: '', updateTime: db.serverDate() }
       })
-      .then(function() {
-        self.setData({ useCustom: newMode, items: newMode ? self.parseItems(self.data.customItems) : merchantData.items })
-        wx.showToast({ title: newMode ? '已切换为自定义' : '已切换为默认', icon: 'success' })
-      })
+    }).then(function() {
+      self.setData({ useCustom: newMode, items: newMode ? self.parseItems(self.data.customItems) : merchantData.items })
+      wx.showToast({ title: newMode ? '已切换为自定义' : '已切换为默认', icon: 'success' })
+    })
   },
   onEdit: function(e) {
     var field = e.currentTarget.dataset.field
@@ -164,6 +158,7 @@ Page({
   saveEdit: function() {
     var self = this
     if (self.data.submitting) return
+    if (!db) { wx.showToast({ title: '云环境未就绪', icon: 'none' }); return }
     var value = self.data.editValue.trim()
     if (!value) { wx.showToast({ title: '请输入内容', icon: 'none' }); return }
     self.setData({ submitting: true })
@@ -208,9 +203,9 @@ Page({
         }
       }
     }
-    self.setData({ newItems: matched, newItemsPage: 0, newItemsReady: false })
+    self.setData({ newItems: matched, newItemsPage: 0 })
     if (matched.length > 0) {
-      setTimeout(function() { self.setData({ newItemsReady: true }) }, 50)
+      self.startNewItemsTimer()
     }
   },
   startNewItemsTimer: function() {
@@ -234,7 +229,7 @@ Page({
     var next = (self.data.newItemsPage + 1) % len
     self.setData({ newItemsAnim: true, newItemsPage: next })
     setTimeout(function() { self.setData({ newItemsAnim: false }) }, 500)
-  }
+  },
   subscribeMerchant: function() {
     var self = this
     if (!app.globalData.userInfo) {
@@ -280,77 +275,6 @@ Page({
         })
       }
     })
-  },
-  saveSubscription: function(type) {
-    var self = this
-    if (!db) return
-    var openid = ''
-    try {
-      var res = wx.getStorageSync('openid')
-      if (res) openid = res
-    } catch (e) {}
-    if (!openid) {
-      wx.cloud.callFunction({
-        name: 'login',
-        timeout: 3000,
-        success: function(loginRes) {
-          if (loginRes.result && loginRes.result.openid) {
-            openid = loginRes.result.openid
-            wx.setStorageSync('openid', openid)
-            self.doSaveSubscription(type, openid)
-          }
-        },
-        fail: function() {}
-      })
-    } else {
-      self.doSaveSubscription(type, openid)
-    }
-  },
-  doSaveSubscription: function(type, openid) {
-    var self = this
-    db.collection('subscribers').where({ openid: openid, type: type }).get()
-      .then(function(res) {
-        if (res.data.length > 0) {
-          var sub = res.data[0]
-          var newCount = (sub.count || 0) + 1
-          return db.collection('subscribers').doc(sub._id).update({
-            data: { count: newCount, status: 'active', updateTime: db.serverDate() }
-          })
-        } else {
-          return db.collection('subscribers').add({
-            data: {
-              openid: openid,
-              type: type,
-              count: 1,
-              status: 'active',
-              createTime: db.serverDate()
-            }
-          })
-        }
-      })
-      .then(function() {
-        wx.showToast({ title: '订阅成功', icon: 'success' })
-        self.checkSubscription()
-      })
-      .catch(function() {
-        wx.showToast({ title: '订阅失败', icon: 'none' })
-      })
-  },
-  checkSubscription: function() {
-    var self = this
-    if (!db) return
-    var openid = wx.getStorageSync('openid')
-    if (!openid) return
-    db.collection('subscribers').where({ openid: openid, type: 'merchant' }).get()
-      .then(function(res) {
-        if (res.data.length > 0) {
-          self.setData({
-            subscribedMerchant: res.data[0].status === 'active',
-            subscribeCount: res.data[0].count || 0
-          })
-        }
-      })
-      .catch(function() {})
   },
   openAddItemModal: function() {
     this.setData({
@@ -465,7 +389,7 @@ Page({
   deleteMerchantItem: function(e) {
     var self = this
     var index = e.currentTarget.dataset.index
-    if (!self.data.isAdmin) return
+    if (!self.data.isAdmin || !db) return
     wx.showModal({
       title: '删除物品',
       content: '确定要删除该物品吗？',
