@@ -53,7 +53,7 @@
           <text class="action-text">歪了</text>
         </view>
       </view>
-      <text class="result-hint">点击记录 · 长按选择球类型</text>
+        <text class="result-hint">点击 +1 · 长按选球记录数量</text>
     </view>
 
     <!-- 洛克贝记录 -->
@@ -115,8 +115,8 @@
 
     <!-- 使用球类型 -->
     <view class="card">
-      <view class="card-title">使用球类型 <text class="expand" bindtap="onToggle">{{expanded?'收起':'展开'}}</text></view>
-      <view wx:if="{{expanded && activeBalls.length > 0}}">
+      <view class="card-title">使用球类型</view>
+      <view wx:if="{{activeBalls.length > 0}}">
         <view class="ball-row {{selectedBall===item.id-1?'selected':''}}" wx:for="{{activeBalls}}" wx:key="id" bindtap="onSelectBall" data-i="{{item.id-1}}">
           <view class="ball-dot" style="background:{{item.color}}"></view>
           <view class="ball-info">
@@ -133,10 +133,9 @@
           <view class="ball-use-btn" bindtap="onUseBall">确认</view>
         </view>
       </view>
-      <view wx:elif="{{expanded && activeBalls.length === 0}}" class="empty-ball">
+      <view wx:else class="empty-ball">
         <text class="empty-hint">暂无已购买/合成的球</text>
       </view>
-      <text wx:else class="expand-hint">点击展开查看咕噜球类型</text>
     </view>
 
     <!-- 捕捉记录 -->

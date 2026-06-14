@@ -24,11 +24,11 @@ Page({
       {id:1,name:'普通咕噜球',color:'#999',count:0,rate:'基础捕捉率',price:0},
       {id:2,name:'高级咕噜球',color:'#1565c0',count:0,rate:'捕捉率+30%',price:12000},
       {id:3,name:'国王球',color:'#f57f17',count:0,rate:'100%捕捉，必定了不起',price:0},
-      {id:4,name:'美妙球',color:'#e91e63',count:0,rate:'提升对应属性50%捕捉概率',price:0},
-      {id:5,name:'好战球',color:'#d32f2f',count:0,rate:'提升对应属性50%捕捉概率',price:0},
-      {id:6,name:'光合球',color:'#2e7d32',count:0,rate:'提升对应属性50%捕捉概率',price:0},
-      {id:7,name:'网兜球',color:'#388e3c',count:0,rate:'提升对应属性50%捕捉概率',price:0},
-      {id:8,name:'暗星球',color:'#37474f',count:0,rate:'提升对应属性50%捕捉概率',price:0},
+      {id:4,name:'美妙球',color:'#e91e63',count:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:5,name:'好战球',color:'#d32f2f',count:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:6,name:'光合球',color:'#2e7d32',count:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:7,name:'网兜球',color:'#388e3c',count:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:8,name:'暗星球',color:'#37474f',count:0,rate:'提升对应属性50%捕捉概率',price:3000},
       {id:9,name:'奇趣球',color:'#ff6b6b',count:0,rate:'100%捕捉，资质随机',price:80000},
       {id:10,name:'补光球',color:'#ffd93d',count:0,rate:'100%捕捉，资质随机',price:80000},
       {id:11,name:'棱镜球',color:'#a855f7',count:0,rate:'100%捕捉，必定了不起，完美无瑕，天赋随机，炫彩颜色粒子随机',price:0},
@@ -36,19 +36,20 @@ Page({
       {id:13,name:'狂欢棱镜球',color:'#f472b6',count:0,rate:'狂欢系+70%',price:800},
       {id:14,name:'变幻球',color:'#06b6d4',count:0,rate:'提升对应属性50%捕捉概率',price:3000},
       {id:15,name:'绝缘球',color:'#8b5cf6',count:0,rate:'绝缘精灵+45%',price:3000},
-      {id:16,name:'调温球',color:'#f97316',count:0,rate:'提升对应属性50%捕捉概率',price:3000}
+      {id:16,name:'调温球',color:'#f97316',count:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:17,name:'淘沙球',color:'#d4a017',count:0,rate:'提升对应属性50%捕捉概率',price:3000}
     ],
     selectedBall: null, selectedBallCount: 0,
-    totalCatches: 0, successCatches: 0, successRate: 0, pityCount: 0, pityHint: '基础概率', history: [], result: '', expanded: false,
+    totalCatches: 0, successCatches: 0, successRate: 0, pityCount: 0, pityHint: '基础概率', history: [], result: '',
     initialWealth: 0, totalGains: 0, totalCosts: 0, accumulatedWealth: 0, totalWealth: 0,
     coinInput: '', wealthSet: false,
     costInput: '', gainInput: '',
     petNameInput: '', catchCount: 1,
     encounterTab: 'luckybox', carnivalCount: 0, luckyBoxCount: 0,
     specialTab: 'buy', specialBall: '高级咕噜球',
-    specialBalls: ['美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','奇趣球','补光球','国王球','棱镜球','织梦棱镜球','狂欢棱镜球'],
-    craftBalls: ['国王球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','棱镜球'],
-    attributeBalls: ['美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球'],
+    specialBalls: ['美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','奇趣球','补光球','国王球','棱镜球','织梦棱镜球','狂欢棱镜球','淘沙球'],
+    craftBalls: ['国王球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','棱镜球','淘沙球'],
+    attributeBalls: ['美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','淘沙球'],
     specialCount: '', specialHistory: [],
     totalBallUsed: 0,
     activeBalls: [],
@@ -287,7 +288,6 @@ Page({
     wx.setClipboardData({ data: text, success: function() { wx.showToast({ title: '已复制到剪贴板', icon: 'success' }) } })
     this.setData({ result: '' })
   },
-  onToggle: function() { this.setData({ expanded: !this.data.expanded }) },
   onRecord: function() {
     var balls = this.data.balls, result = this.data.result
     var used = balls.filter(function(b){ return b.count > 0 })
@@ -654,8 +654,28 @@ Page({
     var record = { time: formatTime(), ball: ballName, remaining: remaining }
     var records = self.data.ballCheckRecords.concat([record])
     wx.setStorageSync('ball_check_records', records)
-    self.setData({ showBallCheckModal: false, ballCheckRecords: records })
-    wx.showToast({ title: '球剩余记录已保存', icon: 'success' })
+    var historyRecord = { time: formatTimeShort(), balls: '📋 ' + ballName + ' 剩余' + remaining, result: '盘点', total: 0, cost: 0, pet: '' }
+    var h = [historyRecord].concat(self.data.history).slice(0, 20)
+    wx.setStorageSync('catch_history', h)
+    var balls = self.data.balls.slice()
+    for (var i = 0; i < balls.length; i++) {
+      if (balls[i].name === ballName) {
+        balls[i].count = remaining
+        break
+      }
+    }
+    var totalBallUsed = 0
+    for (var j = 0; j < balls.length; j++) totalBallUsed += balls[j].count
+    var activeBalls = balls.filter(function(b){ return b.count > 0 })
+    self.setData({
+      showBallCheckModal: false,
+      ballCheckRecords: records,
+      history: h,
+      balls: balls,
+      activeBalls: activeBalls,
+      totalBallUsed: totalBallUsed
+    })
+    wx.showToast({ title: '已同步: ' + ballName + ' 剩余' + remaining, icon: 'success' })
   },
   onClearBallCheck: function() { wx.removeStorageSync('ball_check_records'); this.setData({ ballCheckRecords: [] }) },
   preventClose: function() {},
@@ -803,7 +823,7 @@ Page({
         break
       }
     }
-    var totalCost = ballPrice * v
+    var totalCost = t === '合成' ? 0 : ballPrice * v
     var newCosts = self.data.totalCosts + totalCost
     wx.setStorageSync('total_costs', newCosts)
     var accumulated = self.data.totalGains - newCosts
