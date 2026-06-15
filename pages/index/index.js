@@ -20,8 +20,10 @@ Page({
   onShow: function() {
     var self = this
     var n = new Date()
+    var subscribeConfig = wx.getStorageSync('subscribe_config') || { announcement: true, activity: true, system: true, merchant: true, interaction: true }
     self.setData({
-      buildTime: n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0') + '-' + String(n.getDate()).padStart(2,'0') + ' ' + String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0') + ':' + String(n.getSeconds()).padStart(2,'0')
+      buildTime: n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0') + '-' + String(n.getDate()).padStart(2,'0') + ' ' + String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0') + ':' + String(n.getSeconds()).padStart(2,'0'),
+      subscribeConfig: subscribeConfig
     })
     if (wx.cloud) db = wx.cloud.database()
     self.checkAdmin()
@@ -249,18 +251,21 @@ Page({
   checkSubscription: function() {
     var self = this
     if (!db) return
-    var openid = wx.getStorageSync('openid')
-    if (!openid) return
-    db.collection('subscribers').where({ openid: openid, type: 'announcement' }).get()
-      .then(function(res) {
-        if (res.data.length > 0) {
-          self.setData({
-            subscribedAnnouncement: res.data[0].status === 'active',
-            subscribeCount: res.data[0].count || 0
-          })
-        }
-      })
-      .catch(function() {})
+    wx.cloud.callFunction({ name: 'login' }).then(function(res) {
+      var openid = res.result.openid
+      if (!openid) return
+      wx.setStorageSync('openid', openid)
+      db.collection('subscribers').where({ openid: openid, type: 'announcement' }).get()
+        .then(function(res) {
+          if (res.data.length > 0) {
+            self.setData({
+              subscribedAnnouncement: res.data[0].status === 'active',
+              subscribeCount: res.data[0].count || 0
+            })
+          }
+        })
+        .catch(function() {})
+    }).catch(function() {})
   },
   toggleBannerModal: function() {
     var self = this

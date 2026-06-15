@@ -46,6 +46,8 @@ Page({
     var app = getApp()
     var saved = wx.getStorageSync('user_info')
     if (saved) app.globalData.userInfo = saved
+    var subscribeConfig = wx.getStorageSync('subscribe_config') || { announcement: true, activity: true, system: true, merchant: true, interaction: true }
+    this.setData({ subscribeConfig: subscribeConfig })
     this.checkLoginStatus()
     this.recordLoginDay()
     this.checkAdmin()
@@ -79,17 +81,21 @@ Page({
     app.globalData.level = level
   },
   syncLoginDays: function(loginDays) {
+    var self = this
     if (!wx.cloud) return
     var db = wx.cloud.database()
-    db.collection('users').get()
-      .then(function(res) {
-        if (res.data.length > 0) {
-          db.collection('users').doc(res.data[0]._id).update({
-            data: { loginDays: loginDays, updateTime: db.serverDate() }
-          })
-        }
-      })
-      .catch(function() {})
+    wx.cloud.callFunction({ name: 'login' }).then(function(res) {
+      var openid = res.result.openid
+      db.collection('users').where({ _openid: openid }).get()
+        .then(function(r) {
+          if (r.data.length > 0) {
+            db.collection('users').doc(r.data[0]._id).update({
+              data: { loginDays: loginDays, updateTime: db.serverDate() }
+            })
+          }
+        })
+        .catch(function() {})
+    }).catch(function() {})
   },
   calcLevel: function(days) {
     if (days >= 365) return 10
@@ -154,13 +160,16 @@ Page({
     if (uid && wx.cloud) {
       var db = wx.cloud.database()
       if (db) {
-        db.collection('users').where({ nickName: self.data.userInfo.nickName }).get()
-          .then(function(res) {
-            if (res.data.length > 0) {
-              db.collection('users').doc(res.data[0]._id).update({ data: { gameUid: uid } })
-            }
-          })
-          .catch(function() {})
+        wx.cloud.callFunction({ name: 'login' }).then(function(res) {
+          var openid = res.result.openid
+          db.collection('users').where({ _openid: openid }).get()
+            .then(function(r) {
+              if (r.data.length > 0) {
+                db.collection('users').doc(r.data[0]._id).update({ data: { gameUid: uid } })
+              }
+            })
+            .catch(function() {})
+        }).catch(function() {})
       }
     }
   },
@@ -254,22 +263,26 @@ Page({
     }
   },
   saveToCloud: function(db, userInfo, loginDays) {
-    var cloudData = {
-      nickName: userInfo.nickName,
-      avatarUrl: userInfo.avatarUrl,
-      loginDays: loginDays,
-      lastLogin: db.serverDate(),
-      updateTime: db.serverDate()
-    }
-    db.collection('users').where({ nickName: userInfo.nickName }).get()
-      .then(function(res) {
-        if (res.data.length > 0) {
-          db.collection('users').doc(res.data[0]._id).update({ data: cloudData })
-        } else {
-          db.collection('users').add({ data: cloudData })
-        }
-      })
-      .catch(function() {})
+    var self = this
+    wx.cloud.callFunction({ name: 'login' }).then(function(res) {
+      var openid = res.result.openid
+      var cloudData = {
+        nickName: userInfo.nickName,
+        avatarUrl: userInfo.avatarUrl,
+        loginDays: loginDays,
+        lastLogin: db.serverDate(),
+        updateTime: db.serverDate()
+      }
+      db.collection('users').where({ _openid: openid }).get()
+        .then(function(r) {
+          if (r.data.length > 0) {
+            db.collection('users').doc(r.data[0]._id).update({ data: cloudData })
+          } else {
+            db.collection('users').add({ data: cloudData })
+          }
+        })
+        .catch(function() {})
+    }).catch(function() {})
   },
   onLogout: function() {
     var self = this

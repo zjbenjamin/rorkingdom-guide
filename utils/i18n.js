@@ -1,6 +1,6 @@
 var i18n = {
   'zh': {
-    appName: '洛手助手攻略',
+    appName: '洛手助手BENJAMIN',
     home: '首页',
     pets: '图鉴',
     activity: '活动',
@@ -141,7 +141,7 @@ var i18n = {
     cny: '人民币'
   },
   'en': {
-    appName: 'Roco Kingdom Guide',
+    appName: 'BENJAMIN Helper',
     home: 'Home',
     pets: 'Handbook',
     activity: 'Events',

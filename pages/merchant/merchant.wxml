@@ -45,7 +45,7 @@
       </view>
 
       <!-- 订阅按钮 -->
-      <view class="card">
+      <view class="card" wx:if="{{subscribeConfig.merchant !== false}}">
         <view class="subscribe-row">
           <view class="subscribe-info">
             <text class="subscribe-title">远行商人提醒</text>

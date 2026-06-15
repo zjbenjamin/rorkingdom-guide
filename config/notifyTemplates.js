@@ -37,17 +37,17 @@
 
 module.exports = {
   // 公告通知模板ID
-  announcement: 'ZhxGKGtZi3uWIzFIQtxJrvfipuWgczL_tLwBRRKrdZ4',
+  announcement: 'ZhxGKGtZi3uWIzFIQtxJrjK5XXLlwjXpEo7M0rBrfEs',
   
   // 活动提醒模板ID
-  activity: 'Q3Z8_TsmfoPu3TiP24CYKYGISLFGiigaoUsYEIwpWzo',
+  activity: 'hsIV8UY3gEeJnK4KNov09qRSfL196CyS5NzotPxz8hc',
   
   // 系统消息模板ID
-  system: '46MLP0pv3NcTvZKAkrIAplKuo4hJhVMFDyPoGnjY7-o',
+  system: '46MLP0pv3NcTvZKAkrIApkj9DWvVQj_bR_mavRIzgf4',
   
   // 远行商人提醒模板ID
-  merchant: 'lNJaEuu3rrWx4iU3xtCfnqzJAsZ83ILBWs0VI63h8Ps',
+  merchant: 'lNJaEuu3rrWx4iU3xtCfnsAnlZzVf6lthZD8zraTw1Y',
   
   // 互动通知模板ID
-  interaction: '_m84sslh3ZvFj6UlEmDhlBzHSRzGUUr_qxRomEyQpds'
+  interaction: 'dfk9xCUuBSpqwJXHG0Cs_MkK9BQVxdYK_Cl3mzSAUi8'
 }

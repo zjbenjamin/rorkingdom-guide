@@ -165,24 +165,29 @@ function getSubscriptionStatus(callback) {
     callback(null, {})
     return
   }
-  var openid = wx.getStorageSync('openid')
-  if (!openid) {
+  wx.cloud.callFunction({ name: 'login' }).then(function(res) {
+    var openid = res.result.openid
+    if (!openid) {
+      callback(null, {})
+      return
+    }
+    wx.setStorageSync('openid', openid)
+    db.collection('subscribers').where({ openid: openid, status: 'active' }).get()
+      .then(function(res) {
+        var status = {}
+        for (var i = 0; i < res.data.length; i++) {
+          var sub = res.data[i]
+          status[sub.type] = true
+          status[sub.type + 'Count'] = sub.count || 0
+        }
+        callback(null, status)
+      })
+      .catch(function(err) {
+        callback(err, null)
+      })
+  }).catch(function() {
     callback(null, {})
-    return
-  }
-  db.collection('subscribers').where({ openid: openid, status: 'active' }).get()
-    .then(function(res) {
-      var status = {}
-      for (var i = 0; i < res.data.length; i++) {
-        var sub = res.data[i]
-        status[sub.type] = true
-        status[sub.type + 'Count'] = sub.count || 0
-      }
-      callback(null, status)
-    })
-    .catch(function(err) {
-      callback(err, null)
-    })
+  })
 }
 
 function requestAndSave(types, callback) {
@@ -236,8 +241,10 @@ function sendInteractionNotify(targetOpenid, type, data) {
   } else if (type === 'reply') {
     thing1 = data.userName + ' 回复了你'
   }
-  wx.cloud.callFunction({
-    name: 'sendSubscribe',
+  wx.request({
+    url: 'https://1442890784-28edxvn34i.ap-shanghai.tencentscf.com',
+    method: 'POST',
+    header: { 'Content-Type': 'application/json' },
     data: {
       touser: targetOpenid,
       templateId: templateId,
@@ -267,10 +274,22 @@ function getOpenidByNickname(nickname, callback) {
     callback(null)
     return
   }
-  db.collection('users').where({ nickName: nickname }).get()
+  db.collection('subscribers').where({ status: 'active' }).get()
     .then(function(res) {
-      if (res.data.length > 0 && res.data[0]._openid) {
-        callback(res.data[0]._openid)
+      if (res.data.length > 0) {
+        var openids = []
+        for (var i = 0; i < res.data.length; i++) {
+          openids.push(res.data[i].openid)
+        }
+        db.collection('users').where({ _openid: db.command.in(openids), nickName: nickname }).get()
+          .then(function(userRes) {
+            if (userRes.data.length > 0 && userRes.data[0]._openid) {
+              callback(userRes.data[0]._openid)
+            } else {
+              callback(null)
+            }
+          })
+          .catch(function() { callback(null) })
       } else {
         callback(null)
       }

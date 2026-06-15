@@ -8,6 +8,8 @@ Page({
   onShow: function() {
     this.setData({ theme: app.globalData.theme })
     if (wx.cloud) db = wx.cloud.database()
+    var subscribeConfig = wx.getStorageSync('subscribe_config') || { announcement: true, activity: true, system: true, merchant: true, interaction: true }
+    this.setData({ subscribeConfig: subscribeConfig })
     this.checkAdmin()
     this.checkSubscription()
   },
@@ -272,14 +274,17 @@ Page({
   checkSubscription: function() {
     var self = this
     if (!db) return
-    var openid = wx.getStorageSync('openid')
-    if (!openid) return
-    db.collection('subscribers').where({ openid: openid, type: 'activity' }).get()
-      .then(function(res) {
-        if (res.data.length > 0) {
-          self.setData({ subscribedActivity: res.data[0].status === 'active', subscribeCount: res.data[0].count || 0 })
-        }
-      })
-      .catch(function() {})
+    wx.cloud.callFunction({ name: 'login' }).then(function(res) {
+      var openid = res.result.openid
+      if (!openid) return
+      wx.setStorageSync('openid', openid)
+      db.collection('subscribers').where({ openid: openid, type: 'activity' }).get()
+        .then(function(res) {
+          if (res.data.length > 0) {
+            self.setData({ subscribedActivity: res.data[0].status === 'active', subscribeCount: res.data[0].count || 0 })
+          }
+        })
+        .catch(function() {})
+    }).catch(function() {})
   }
 })

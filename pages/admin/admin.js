@@ -2,6 +2,7 @@ var app = getApp()
 var db = null
 var notify = require('../../utils/notify')
 var cloudUrl = require('../../utils/cloudUrl')
+var { activitiesData } = require('../../data/pets')
 
 Page({
   data: {
@@ -51,10 +52,27 @@ Page({
     systemFormContent: '',
     systemFormVersion: '',
     systemFormType: 'feature',
-    systemSubmitting: false
+    systemSubmitting: false,
+    showActivityModal: false,
+    activityEditingItem: null,
+    activityFormTitle: '',
+    activityFormContent: '',
+    activityFormType: '活动',
+    activityFormStatus: '进行中',
+    activityFormStart: '',
+    activityFormEnd: '',
+    activityFormImage: '',
+    activitySubmitting: false,
+    adminActivities: [],
+    localActivities: [],
+    deletedLocalIds: [],
+    subscribers: [],
+    subscribeConfig: { announcement: true, activity: true, system: true, merchant: true, interaction: true }
   },
   onLoad: function() {
     if (wx.cloud) db = wx.cloud.database()
+    var deletedIds = wx.getStorageSync('deleted_local_activities') || []
+    this.setData({ deletedLocalIds: deletedIds })
     this.checkAdmin()
   },
   checkAdmin: function() {
@@ -101,6 +119,8 @@ Page({
     this.setData({ activeTab: tab })
     if (tab === 'announce') this.loadAnnouncements()
     else if (tab === 'system') this.loadSystemUpdates()
+    else if (tab === 'activity') this.loadAdminActivities()
+    else if (tab === 'subscribe') this.loadSubscribers()
     else if (tab === 'posts') this.loadPosts()
     else if (tab === 'users') this.loadUsers()
     else if (tab === 'stats') this.loadStats()
@@ -178,15 +198,7 @@ Page({
       self.setData({ systemSubmitting: false, showSystemModal: false, systemEditingItem: null })
       wx.showToast({ title: '操作成功', icon: 'success' })
       self.loadSystemUpdates()
-      wx.cloud.callFunction({
-        name: 'sendSubscribe',
-        data: {
-          type: 'system',
-          title: title,
-          content: content.substring(0, 20),
-          page: '/pages/index/index'
-        }
-      }).catch(function() {})
+      self.pushSubscribe('system', title, content.substring(0, 20))
     }).catch(function(err) {
       console.error('发布系统更新失败:', err)
       self.setData({ systemSubmitting: false })
@@ -660,15 +672,7 @@ Page({
       self.setData({ submitting: false, showModal: false, editingItem: null })
       wx.showToast({ title: '操作成功', icon: 'success' })
       self.loadAnnouncements()
-      wx.cloud.callFunction({
-        name: 'sendSubscribe',
-        data: {
-          type: 'announcement',
-          title: title,
-          content: (content || title).substring(0, 20),
-          page: '/pages/index/index'
-        }
-      }).catch(function() {})
+      self.pushSubscribe('announcement', title, (content || title).substring(0, 20))
     }).catch(function(err) {
       console.error('发布公告失败:', err)
       self.setData({ submitting: false })
@@ -682,12 +686,19 @@ Page({
       content: '确定删除该公告？',
       success: function(res) {
         if (res.confirm) {
-          db.collection('announcements').doc(item._id).remove()
-            .then(function() {
+          wx.cloud.callFunction({
+            name: 'deleteAnnouncement',
+            data: { docId: item._id }
+          }).then(function(result) {
+            if (result.result && result.result.success) {
               wx.showToast({ title: '已删除', icon: 'success' })
               self.loadAnnouncements()
-            })
-            .catch(function() { wx.showToast({ title: '删除失败', icon: 'none' }) })
+            } else {
+              wx.showToast({ title: result.result ? result.result.error : '删除失败', icon: 'none' })
+            }
+          }).catch(function() {
+            wx.showToast({ title: '删除失败', icon: 'none' })
+          })
         }
       }
     })
@@ -703,12 +714,19 @@ Page({
       content: '确定删除该帖子？',
       success: function(res) {
         if (res.confirm) {
-          db.collection('comments').doc(item._id).remove()
-            .then(function() {
+          wx.cloud.callFunction({
+            name: 'deletePost',
+            data: { postId: item._id }
+          }).then(function(result) {
+            if (result.result && result.result.success) {
               wx.showToast({ title: '已删除', icon: 'success' })
               self.loadPosts()
-            })
-            .catch(function() { wx.showToast({ title: '删除失败', icon: 'none' }) })
+            } else {
+              wx.showToast({ title: result.result ? result.result.error : '删除失败', icon: 'none' })
+            }
+          }).catch(function() {
+            wx.showToast({ title: '删除失败', icon: 'none' })
+          })
         }
       }
     })
@@ -745,12 +763,19 @@ Page({
       content: '确定删除该用户数据？',
       success: function(res) {
         if (res.confirm) {
-          db.collection('users').doc(item._id).remove()
-            .then(function() {
+          wx.cloud.callFunction({
+            name: 'deleteUser',
+            data: { userId: item._id }
+          }).then(function(result) {
+            if (result.result && result.result.success) {
               wx.showToast({ title: '已删除', icon: 'success' })
               self.loadUsers()
-            })
-            .catch(function() { wx.showToast({ title: '删除失败', icon: 'none' }) })
+            } else {
+              wx.showToast({ title: result.result ? result.result.error : '删除失败', icon: 'none' })
+            }
+          }).catch(function() {
+            wx.showToast({ title: '删除失败', icon: 'none' })
+          })
         }
       }
     })
@@ -794,9 +819,26 @@ Page({
     var tab = this.data.activeTab
     if (tab === 'announce') this.loadAnnouncements()
     else if (tab === 'system') this.loadSystemUpdates()
+    else if (tab === 'activity') this.loadAdminActivities()
+    else if (tab === 'subscribe') this.loadSubscribers()
     else if (tab === 'posts') this.loadPosts()
     else if (tab === 'users') this.loadUsers()
     else if (tab === 'stats') this.loadStats()
+  },
+  pushSubscribe: function(type, title, content) {
+    var db = wx.cloud.database()
+    db.collection('subscribers').where({ type: type, status: 'active' }).get()
+      .then(function(res) {
+        var subs = (res.data || []).map(function(s) { return { openid: s.openid } })
+        if (subs.length === 0) return
+        wx.request({
+          url: 'https://1442890784-28edxvn34i.ap-shanghai.tencentscf.com',
+          method: 'POST',
+          header: { 'Content-Type': 'application/json' },
+          data: { type: type, title: title, content: content, subscribers: subs }
+        }).catch(function() {})
+      })
+      .catch(function() {})
   },
   formatTime: function(date) {
     if (!date) return ''
@@ -805,5 +847,190 @@ Page({
     if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前'
     if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前'
     return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate()
+  },
+  loadAdminActivities: function() {
+    var self = this
+    var deletedIds = self.data.deletedLocalIds || []
+    var localList = activitiesData.filter(function(item) { return deletedIds.indexOf(item.id) === -1 })
+    var localMapped = localList.map(function(item) {
+      return { _id: 'local_' + item.id, localId: item.id, title: item.title, content: item.desc, type: item.type, pinned: item.status === '置顶', start: item.start, end: item.end, image: '', timeStr: '', isCloud: false }
+    })
+    if (!db) { self.setData({ adminActivities: localMapped, loading: false }); return }
+    db.collection('announcements').where({ type: 'event' }).orderBy('createTime', 'desc').limit(50).get()
+      .then(function(res) {
+        var cloudActivities = (res.data || []).map(function(item) {
+          return { _id: item._id, title: item.title, content: item.content, type: item.type || '活动', pinned: item.pinned, start: item.start || '', end: item.end || '', image: item.image || '', timeStr: self.formatTime(item.createTime), isCloud: true }
+        })
+        self.setData({ adminActivities: localMapped.concat(cloudActivities), loading: false })
+      })
+      .catch(function() {
+        self.setData({ adminActivities: localMapped, loading: false })
+      })
+  },
+  loadSubscribers: function() {
+    var self = this
+    var config = wx.getStorageSync('subscribe_config') || { announcement: true, activity: true, system: true, merchant: true, interaction: true }
+    self.setData({ subscribeConfig: config })
+    if (!db) return
+    db.collection('subscribers').orderBy('createTime', 'desc').limit(100).get()
+      .then(function(res) {
+        var list = res.data || []
+        for (var i = 0; i < list.length; i++) list[i].timeStr = self.formatTime(list[i].createTime)
+        self.setData({ subscribers: list, loading: false })
+      })
+      .catch(function() { self.setData({ loading: false }) })
+  },
+  toggleSubscribeType: function(e) {
+    var type = e.currentTarget.dataset.type
+    var config = this.data.subscribeConfig
+    config[type] = !config[type]
+    this.setData({ subscribeConfig: config })
+    wx.setStorageSync('subscribe_config', config)
+    wx.showToast({ title: config[type] ? '已开启' : '已关闭', icon: 'success' })
+  },
+  openActivityModal: function(e) {
+    var item = (e && e.currentTarget && e.currentTarget.dataset) ? e.currentTarget.dataset.item || null : null
+    this.setData({
+      showActivityModal: true,
+      activityEditingItem: item,
+      activityFormTitle: item ? item.title : '',
+      activityFormContent: item ? item.content : '',
+      activityFormType: item ? (item.type || '活动') : '活动',
+      activityFormStatus: item ? (item.pinned ? '置顶' : '进行中') : '进行中',
+      activityFormStart: item ? (item.start || '') : '',
+      activityFormEnd: item ? (item.end || '') : '',
+      activityFormImage: item ? (item.image || '') : ''
+    })
+  },
+  closeActivityModal: function() { this.setData({ showActivityModal: false }) },
+  onActivityTitleInput: function(e) { this.setData({ activityFormTitle: e.detail.value }) },
+  onActivityContentInput: function(e) { this.setData({ activityFormContent: e.detail.value }) },
+  onActivityTypeInput: function(e) { this.setData({ activityFormType: e.detail.value }) },
+  onActivityStartInput: function(e) { this.setData({ activityFormStart: e.detail.value }) },
+  onActivityEndInput: function(e) { this.setData({ activityFormEnd: e.detail.value }) },
+  onActivityStatusChange: function(e) { var statuses = ['进行中','即将开始','置顶']; this.setData({ activityFormStatus: statuses[e.detail.value] }) },
+  chooseActivityImage: function() {
+    var self = this
+    wx.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'],
+      success: function(res) {
+        var filePath = res.tempFilePaths[0]
+        wx.showLoading({ title: '上传中...' })
+        var ext = filePath.split('.').pop() || 'jpg'
+        wx.cloud.uploadFile({ cloudPath: 'activities/' + Date.now() + '.' + ext, filePath: filePath })
+          .then(function(r) { wx.hideLoading(); self.setData({ activityFormImage: r.fileID }) })
+          .catch(function() { wx.hideLoading(); wx.showToast({ title: '上传失败', icon: 'none' }) })
+      }
+    })
+  },
+  inputActivityImageUrl: function() {
+    var self = this
+    wx.showModal({ title: '输入图片链接', content: '', editable: true, placeholderText: '粘贴图片URL地址',
+      success: function(res) { if (res.confirm && res.content && res.content.trim()) self.setData({ activityFormImage: res.content.trim() }) }
+    })
+  },
+  removeActivityImage: function() { this.setData({ activityFormImage: '' }) },
+  previewActivityImage: function() { if (this.data.activityFormImage) wx.previewImage({ urls: [this.data.activityFormImage] }) },
+  submitActivity: function() {
+    var self = this
+    if (self.data.activitySubmitting) return
+    var title = self.data.activityFormTitle.trim()
+    var content = self.data.activityFormContent.trim()
+    if (!title) { wx.showToast({ title: '请输入标题', icon: 'none' }); return }
+    self.setData({ activitySubmitting: true })
+    var data = {
+      title: title, content: content, type: 'event',
+      pinned: self.data.activityFormStatus === '置顶',
+      start: self.data.activityFormStart, end: self.data.activityFormEnd,
+      image: self.data.activityFormImage, updateTime: db.serverDate()
+    }
+    var promise = self.data.activityEditingItem
+      ? db.collection('announcements').doc(self.data.activityEditingItem._id).update({ data: data })
+      : (data.createTime = db.serverDate(), data.author = app.globalData.userInfo ? app.globalData.userInfo.nickName : 'Admin', db.collection('announcements').add({ data: data }))
+    promise.then(function() {
+      self.setData({ activitySubmitting: false, showActivityModal: false, activityEditingItem: null })
+      wx.showToast({ title: '操作成功', icon: 'success' })
+      self.loadAdminActivities()
+      self.pushSubscribe('activity', title, content.substring(0, 20))
+    }).catch(function() { self.setData({ activitySubmitting: false }); wx.showToast({ title: '操作失败', icon: 'none' }) })
+  },
+  toggleActivityPinned: function(e) {
+    var self = this, item = e.currentTarget.dataset.item
+    if (!item.isCloud) { wx.showToast({ title: '本地活动无法置顶', icon: 'none' }); return }
+    db.collection('announcements').doc(item._id).update({ data: { pinned: !item.pinned } }).then(function() { self.loadAdminActivities() }).catch(function() { wx.showToast({ title: '操作失败', icon: 'none' }) })
+  },
+  deleteActivity: function(e) {
+    var self = this, item = e.currentTarget.dataset.item
+    var label = item.isCloud ? '该云端活动' : '该本地活动'
+    wx.showModal({ title: '删除活动', content: '确定删除' + label + '？',
+      success: function(res) {
+        if (res.confirm) {
+          if (item.isCloud) {
+            db.collection('announcements').doc(item._id).remove()
+              .then(function() { wx.showToast({ title: '已删除', icon: 'success' }); self.loadAdminActivities() })
+              .catch(function() { wx.showToast({ title: '删除失败', icon: 'none' }) })
+          } else {
+            var deletedIds = self.data.deletedLocalIds.concat([item.localId])
+            self.setData({ deletedLocalIds: deletedIds })
+            wx.setStorageSync('deleted_local_activities', deletedIds)
+            wx.showToast({ title: '已删除', icon: 'success' })
+            self.loadAdminActivities()
+          }
+        }
+      }
+    })
+  },
+  deleteSubscriber: function(e) {
+    var self = this, item = e.currentTarget.dataset.item
+    wx.showModal({ title: '删除订阅', content: '确定删除该订阅记录？',
+      success: function(res) {
+        if (res.confirm) {
+          db.collection('subscribers').doc(item._id).remove()
+            .then(function() { wx.showToast({ title: '已删除', icon: 'success' }); self.loadSubscribers() })
+            .catch(function() { wx.showToast({ title: '删除失败', icon: 'none' }) })
+        }
+      }
+    })
+  },
+  testPush: function(e) {
+    var type = e.currentTarget.dataset.type
+    var names = { announcement: '公告', activity: '活动', system: '系统', merchant: '商人' }
+    var self = this
+    wx.showModal({ title: '测试推送', content: '发送一条测试' + names[type] + '推送？',
+      success: function(res) {
+        if (res.confirm) {
+          wx.showLoading({ title: '发送中...' })
+          var db = wx.cloud.database()
+          db.collection('subscribers').where({ type: type, status: 'active' }).get()
+            .then(function(subRes) {
+              var subs = (subRes.data || []).map(function(s) { return { openid: s.openid } })
+              if (subs.length === 0) {
+                wx.hideLoading()
+                wx.showToast({ title: '该类型无订阅者', icon: 'none' })
+                return
+              }
+              wx.request({
+                url: 'https://1442890784-28edxvn34i.ap-shanghai.tencentscf.com',
+                method: 'POST',
+                header: { 'Content-Type': 'application/json' },
+                data: { type: type, title: '测试推送', content: '这是一条测试推送消息', subscribers: subs },
+                success: function(httpRes) {
+                  wx.hideLoading()
+                  var result = httpRes.data
+                  var msg = result && result.sent > 0 ? '发送成功(' + result.sent + '条)' : '发送失败'
+                  wx.showToast({ title: msg, icon: 'none' })
+                },
+                fail: function() {
+                  wx.hideLoading()
+                  wx.showToast({ title: '发送失败', icon: 'none' })
+                }
+              })
+            })
+            .catch(function() {
+              wx.hideLoading()
+              wx.showToast({ title: '查询订阅者失败', icon: 'none' })
+            })
+        }
+      }
+    })
   }
 })

@@ -150,7 +150,7 @@
         <view class="ep ep5"></view>
         <view class="ep ep6"></view>
       </view>
-      <text class="empty-title">洛手助手社区</text>
+      <text class="empty-title">洛手助手BENJAMIN社区</text>
       <text class="empty-desc">{{activeTab === 'mine' ? '你还没有发布过内容' : '暂无动态，快来发表第一条吧'}}</text>
     </view>
 

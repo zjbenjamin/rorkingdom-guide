@@ -47,6 +47,8 @@ Page({
   onShow: function() {
     this.setData({ t: i18n.i18n[i18n.getLanguage()] || i18n.i18n['zh'] })
     if (wx.cloud) db = wx.cloud.database()
+    var subscribeConfig = wx.getStorageSync('subscribe_config') || { announcement: true, activity: true, system: true, merchant: true, interaction: true }
+    this.setData({ subscribeConfig: subscribeConfig })
     this.checkAdmin()
     this.loadConfig()
     this.checkSubscription()
@@ -417,6 +419,22 @@ Page({
     var next = (self.data.newItemsPage + 1) % len
     self.setData({ newItemsAnim: true, newItemsPage: next })
     setTimeout(function() { self.setData({ newItemsAnim: false }) }, 500)
+  },
+  checkSubscription: function() {
+    var self = this
+    if (!db) return
+    wx.cloud.callFunction({ name: 'login' }).then(function(res) {
+      var openid = res.result.openid
+      if (!openid) return
+      wx.setStorageSync('openid', openid)
+      db.collection('subscribers').where({ openid: openid, type: 'merchant' }).get()
+        .then(function(res) {
+          if (res.data.length > 0) {
+            self.setData({ subscribedMerchant: res.data[0].status === 'active', subscribeCount: res.data[0].count || 0 })
+          }
+        })
+        .catch(function() {})
+    }).catch(function() {})
   },
   subscribeMerchant: function() {
     var self = this

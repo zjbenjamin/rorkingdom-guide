@@ -1,90 +1,61 @@
 const cloud = require('wx-server-sdk')
+const https = require('https')
+
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
-function formatTime() {
-  var d = new Date()
-  var y = d.getFullYear()
-  var m = String(d.getMonth() + 1).padStart(2, '0')
-  var day = String(d.getDate()).padStart(2, '0')
-  var h = String(d.getHours()).padStart(2, '0')
-  var min = String(d.getMinutes()).padStart(2, '0')
-  return y + '-' + m + '-' + day + ' ' + h + ':' + min
+const SCF_URL = 'https://1442890784-28edxvn34i.ap-shanghai.tencentscf.com'
+
+function httpsPost(url, body) {
+  return new Promise((resolve, reject) => {
+    const postData = JSON.stringify(body)
+    const urlObj = new URL(url)
+    const options = {
+      hostname: urlObj.hostname,
+      path: urlObj.pathname + urlObj.search,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(postData) }
+    }
+    const req = https.request(options, (res) => {
+      let data = ''
+      res.on('data', (chunk) => data += chunk)
+      res.on('end', () => {
+        try { resolve(JSON.parse(data)) } catch (e) { resolve({ raw: data }) }
+      })
+    })
+    req.on('error', reject)
+    req.write(postData)
+    req.end()
+  })
 }
 
 exports.main = async (event, context) => {
   const { type, title, content, touser, templateId, data, page } = event
-  const wxContext = cloud.getWXContext()
 
-  const TEMPLATE_IDS = {
-    announcement: 'ZhxGKGtZi3uWIzFIQtxJrvfipuWgczL_tLwBRRKrdZ4',
-    activity: 'Q3Z8_TsmfoPu3TiP24CYKYGISLFGiigaoUsYEIwpWzo',
-    system: '46MLP0pv3NcTvZKAkrIAplKuo4hJhVMFDyPoGnjY7-o',
-    merchant: 'lNJaEuu3rrWx4iU3xtCfnqzJAsZ83ILBWs0VI63h8Ps',
-    interaction: '_m84sslh3ZvFj6UlEmDhlBzHSRzGUUr_qxRomEyQpds'
-  }
+  const db = cloud.database()
 
   if (touser && templateId) {
     try {
-      await cloud.openapi.subscribeMessage.send({
-        touser: touser,
-        templateId: templateId,
-        page: page || '/pages/index/index',
-        data: data || {
-          thing1: { value: title || '新通知' },
-          thing2: { value: content || '点击查看' },
-          time3: { value: formatTime() }
-        }
-      })
-      return { success: true, sent: 1 }
+      const res = await httpsPost(SCF_URL, { touser, templateId, title, content, page, data })
+      return res
     } catch (e) {
       return { success: false, error: e.message }
     }
   }
 
-  const sendTemplateId = TEMPLATE_IDS[type]
-  if (!sendTemplateId) return { success: false, error: '未知类型' }
-
   try {
-    const db = cloud.database()
     const subscribers = await db.collection('subscribers')
       .where({ type: type, status: 'active' })
       .limit(100)
       .get()
 
-    let sent = 0
-    let failed = 0
-
-    const defaultPage = type === 'announcement' ? '/pages/index/index' : 
-                        type === 'activity' ? '/pages/activity/activity' :
-                        type === 'system' ? '/pages/index/index' :
-                        type === 'merchant' ? '/pages/merchant/merchant' : 
-                        type === 'interaction' ? '/pages/community/community' :
-                        '/pages/index/index'
-
-    for (const sub of subscribers.data) {
-      try {
-        await cloud.openapi.subscribeMessage.send({
-          touser: sub.openid,
-          templateId: sendTemplateId,
-          page: page || defaultPage,
-          data: data || {
-            thing1: { value: title || '新通知' },
-            thing2: { value: content || '点击查看详细内容' },
-            time3: { value: formatTime() }
-          }
-        })
-        sent++
-      } catch (e) {
-        failed++
-        if (e.errCode === 43101) {
-          await db.collection('subscribers').doc(sub._id).update({
-            data: { status: 'expired' }
-          })
-        }
-      }
+    if (subscribers.data.length === 0) {
+      return { success: true, sent: 0, total: 0, message: '没有订阅者' }
     }
 
-    return { success: true, sent, failed, total: subscribers.data.length }
+    const subscriberList = subscribers.data.map(function(s) { return { openid: s.openid } })
+
+    const res = await httpsPost(SCF_URL, { type, title, content, page, subscribers: subscriberList })
+    return res
   } catch (e) {
     return { success: false, error: e.message }
   }

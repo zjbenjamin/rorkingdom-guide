@@ -4,7 +4,7 @@
       <view class="logo-box">
         <image class="logo-image" src="/images/logo.png" mode="aspectFill"></image>
       </view>
-      <text class="app-name">洛手助手攻略</text>
+      <text class="app-name">洛手助手BENJAMIN</text>
       <text class="app-desc">全面攻略 · 精灵图鉴 · 道具图鉴</text>
     </view>
 
@@ -93,7 +93,7 @@
           <text class="notify-title-text">通知设置</text>
           <text class="notify-title-hint">点击 + 增加推送次数，最多99条</text>
         </view>
-        <view class="notify-item">
+        <view class="notify-item" wx:if="{{notifyConfigured.announcement && subscribeConfig.announcement !== false}}">
           <view class="notify-info">
             <text class="notify-name">公告通知</text>
             <text class="notify-desc">接收最新公告和公告更新</text>
@@ -110,7 +110,7 @@
             <view wx:else class="notify-na">暂未开放</view>
           </view>
         </view>
-        <view class="notify-item">
+        <view class="notify-item" wx:if="{{notifyConfigured.activity && subscribeConfig.activity !== false}}">
           <view class="notify-info">
             <text class="notify-name">活动提醒</text>
             <text class="notify-desc">活动开始前推送提醒</text>
@@ -127,7 +127,7 @@
             <view wx:else class="notify-na">暂未开放</view>
           </view>
         </view>
-        <view class="notify-item">
+        <view class="notify-item" wx:if="{{notifyConfigured.system && subscribeConfig.system !== false}}">
           <view class="notify-info">
             <text class="notify-name">系统消息</text>
             <text class="notify-desc">系统更新和维护通知</text>
@@ -144,7 +144,7 @@
             <view wx:else class="notify-na">暂未开放</view>
           </view>
         </view>
-        <view class="notify-item">
+        <view class="notify-item" wx:if="{{notifyConfigured.merchant && subscribeConfig.merchant !== false}}">
           <view class="notify-info">
             <text class="notify-name">商人提醒</text>
             <text class="notify-desc">远行商人新商品上架推送</text>
@@ -161,7 +161,7 @@
             <view wx:else class="notify-na">暂未开放</view>
           </view>
         </view>
-        <view class="notify-item">
+        <view class="notify-item" wx:if="{{notifyConfigured.interaction && subscribeConfig.interaction !== false}}">
           <view class="notify-info">
             <text class="notify-name">互动通知</text>
             <text class="notify-desc">收到点赞和回复时推送</text>
@@ -227,7 +227,7 @@
       <text class="notice-text">• 我们不会向任何服务器上传您的个人信息</text>
     </view>
 
-    <text class="version">洛手助手版本 v1.0.6F 体验版</text>
+    <text class="version">洛手助手BENJAMIN v1.0.7A 体验版</text>
   </view>
 
   <!-- UID编辑弹窗 -->

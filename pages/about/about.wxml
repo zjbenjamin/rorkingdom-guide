@@ -3,8 +3,8 @@
     <view class="about-header">
       <view class="header-glow"></view>
       <text class="about-icon">🏰</text>
-      <text class="about-name">{{aboutData.appName || '洛手攻略'}}</text>
-      <text class="about-ver">{{aboutData.version || '版本 v1.0.6'}}</text>
+      <text class="about-name">{{aboutData.appName || '洛手助手BENJAMIN'}}</text>
+      <text class="about-ver">{{aboutData.version || '版本 v1.0.7A'}}</text>
       <view class="header-tags">
         <view class="header-tag">离线可用</view>
         <view class="header-tag">数据安全</view>
@@ -47,13 +47,14 @@
     <view class="card">
       <view class="card-title">免费福利</view>
       <view class="gift-list">
-        <view class="gift-item" bindtap="onEdit" data-field="gift1" data-value="{{aboutData.gift1 || '免费领一测、二测、三测鸭蛋'}}">
+        <view class="gift-item" wx:for="{{aboutData.gifts}}" wx:key="index">
           <text class="gift-icon">🎁</text>
-          <text class="gift-text">{{aboutData.gift1 || '免费领一测、二测、三测鸭蛋'}}</text>
+          <text class="gift-text">{{item}}</text>
+          <view class="gift-del" catchtap="deleteGift" data-idx="{{index}}">✕</view>
         </view>
-        <view class="gift-item" bindtap="onEdit" data-field="gift2" data-value="{{aboutData.gift2 || '赐福奇袭固执罗隐'}}">
-          <text class="gift-icon">🎁</text>
-          <text class="gift-text">{{aboutData.gift2 || '赐福奇袭固执罗隐'}}</text>
+        <view class="gift-add" catchtap="addGift" wx:if="{{isAdmin}}">
+          <text class="gift-add-icon">+</text>
+          <text class="gift-add-text">添加福利</text>
         </view>
       </view>
     </view>
@@ -165,7 +166,33 @@
       <view class="card-title">更新日志</view>
       <view class="changelog-list">
         <view class="changelog-item">
-          <view class="changelog-ver">v1.0.6</view>
+          <view class="changelog-ver">v1.0.7A</view>
+          <view class="changelog-date">2026-06-15</view>
+          <view class="changelog-content">
+            <text class="changelog-add">新增：订阅消息推送系统（公告/活动/系统/商人/互动五种类型）</text>
+            <text class="changelog-add">新增：管理后台订阅管理（开关控制、测试推送、用户列表）</text>
+            <text class="changelog-add">新增：管理后台活动管理（新增/编辑/删除/置顶）</text>
+            <text class="changelog-add">新增：管理后台活动页面管理员可直接编辑</text>
+            <text class="changelog-add">新增：首页/活动页/商人页订阅按钮支持管理后台统一开关</text>
+            <text class="changelog-add">新增：捕获按钮动画效果（涟漪扩散+脉冲+文字弹跳）</text>
+            <text class="changelog-add">新增：捕捉统计初始洛克贝支持设为0</text>
+            <text class="changelog-add">新增：管理后台用户列表自动检测并删除重复用户</text>
+            <text class="changelog-add">新增：云函数deletePost/deleteAnnouncement/deleteUser管理员权限验证</text>
+            <text class="changelog-fix">修复：社区头像和图片无法显示问题（非云存储URL自动修复）</text>
+            <text class="changelog-fix">修复：订阅消息推送失败（-604101模板不存在）改用腾讯云SCF发送</text>
+            <text class="changelog-fix">修复：管理后台删除帖子/公告/用户权限问题（改用云函数）</text>
+            <text class="changelog-fix">修复：关于页面管理员编辑保存失败问题</text>
+            <text class="changelog-fix">修复：登录同步用户数据重复问题（改用openid唯一标识）</text>
+            <text class="changelog-fix">修复：暗字问题（时间戳、占位符、空状态等）</text>
+            <text class="changelog-fix">修复：首页头图编辑弹窗位置偏下问题（添加cursor-spacing）</text>
+            <text class="changelog-fix">修复：活动页面本地活动无法在管理后台显示和删除</text>
+            <text class="changelog-opt">优化：捕获按钮名称从"出异色"改为"✨ 捕获"</text>
+            <text class="changelog-opt">优化：全局命名统一为"洛手助手BENJAMIN"</text>
+            <text class="changelog-opt">优化：订阅推送改用腾讯云SCF函数（免费额度，无需升级云开发）</text>
+          </view>
+        </view>
+        <view class="changelog-item">
+          <view class="changelog-ver">v1.0.6F</view>
           <view class="changelog-date">2026-06-14</view>
           <view class="changelog-content">
             <text class="changelog-add">新增：精灵图鉴、道具图鉴、孵蛋查询</text>
@@ -213,7 +240,7 @@
     </view>
 
     <view class="about-foot">
-      <text class="foot-text">© 2026 浙里本杰明</text>
+      <text class="foot-text">© 2026 洛手助手BENJAMIN</text>
       <text class="foot-text">更新：{{buildTime}}</text>
     </view>
 
@@ -227,10 +254,10 @@
   <view class="modal-mask" wx:if="{{showModal}}" bindtap="closeModal">
     <view class="modal-box" catchtap="preventClose">
       <view class="modal-header">
-        <text class="modal-title">编辑{{editingField === 'devName' ? '开发者名称' : editingField === 'uid' ? 'UID' : editingField === 'contact' ? '邮箱' : editingField === 'gift1' ? '福利1' : '福利2'}}</text>
+        <text class="modal-title">{{editModalTitle}}</text>
         <text class="modal-close" bindtap="closeModal">✕</text>
       </view>
-      <input class="modal-input" placeholder="请输入内容" value="{{editValue}}" bindinput="onEditInput" />
+      <input class="modal-input" placeholder="请输入内容" value="{{editValue}}" bindinput="onEditInput" maxlength="50" />
       <view class="modal-footer">
         <button class="modal-cancel" bindtap="closeModal">取消</button>
         <button class="modal-save" bindtap="saveEdit" disabled="{{submitting}}">{{submitting ? '保存中...' : '保存'}}</button>

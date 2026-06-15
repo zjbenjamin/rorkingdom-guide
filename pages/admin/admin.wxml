@@ -23,6 +23,8 @@
       <view class="admin-tabs">
         <view class="admin-tab {{activeTab === 'announce' ? 'on' : ''}}" bindtap="switchTab" data-tab="announce">公告</view>
         <view class="admin-tab {{activeTab === 'system' ? 'on' : ''}}" bindtap="switchTab" data-tab="system">系统</view>
+        <view class="admin-tab {{activeTab === 'activity' ? 'on' : ''}}" bindtap="switchTab" data-tab="activity">活动</view>
+        <view class="admin-tab {{activeTab === 'subscribe' ? 'on' : ''}}" bindtap="switchTab" data-tab="subscribe">订阅</view>
         <view class="admin-tab {{activeTab === 'posts' ? 'on' : ''}}" bindtap="switchTab" data-tab="posts">帖子</view>
         <view class="admin-tab {{activeTab === 'users' ? 'on' : ''}}" bindtap="switchTab" data-tab="users">用户</view>
         <view class="admin-tab {{activeTab === 'pages' ? 'on' : ''}}" bindtap="switchTab" data-tab="pages">页面</view>
@@ -75,6 +77,119 @@
           </view>
         </view>
         <view class="empty" wx:if="{{systemUpdates.length === 0}}"><text class="empty-text">暂无系统更新，点击上方 + 发布</text></view>
+      </view>
+
+      <!-- 活动管理 -->
+      <view wx:if="{{activeTab === 'activity'}}">
+        <view class="section-header">
+          <text class="section-title">活动列表</text>
+          <view class="add-btn" bindtap="openActivityModal"><text>+ 新增</text></view>
+        </view>
+        <view class="card-item" wx:for="{{adminActivities}}" wx:key="_id">
+          <view class="card-top">
+            <view class="tag tag-event">{{item.type || '活动'}}</view>
+            <view class="pin-tag {{item.pinned ? 'on' : ''}}" bindtap="toggleActivityPinned" data-item="{{item}}">{{item.pinned ? '已置顶' : '置顶'}}</view>
+          </view>
+          <text class="card-title">{{item.title}}</text>
+          <text class="card-desc">{{item.content}}</text>
+          <view class="card-bottom">
+            <text class="card-time">{{item.timeStr}}</text>
+            <view class="card-actions">
+              <view class="btn-edit" wx:if="{{item.isCloud}}" bindtap="openActivityModal" data-item="{{item}}">编辑</view>
+              <view class="btn-delete" bindtap="deleteActivity" data-item="{{item}}">删除</view>
+            </view>
+          </view>
+        </view>
+        <view class="empty" wx:if="{{adminActivities.length === 0}}"><text class="empty-text">暂无活动</text></view>
+      </view>
+
+      <!-- 订阅管理 -->
+      <view wx:if="{{activeTab === 'subscribe'}}">
+        <view class="sub-section">
+          <view class="sub-section-title">
+            <text class="sub-section-icon">🔔</text>
+            <text>订阅开关</text>
+          </view>
+          <text class="sub-section-hint">关闭后用户端不显示该订阅按钮</text>
+          <view class="sub-grid">
+            <view class="sub-toggle-card {{subscribeConfig['announcement'] ? 'active' : ''}}" catchtap="toggleSubscribeType" data-type="announcement">
+              <text class="sub-toggle-icon">📢</text>
+              <text class="sub-toggle-name">公告</text>
+              <view class="toggle {{subscribeConfig['announcement'] ? 'on' : ''}}"><view class="toggle-dot"></view></view>
+            </view>
+            <view class="sub-toggle-card {{subscribeConfig['activity'] ? 'active' : ''}}" catchtap="toggleSubscribeType" data-type="activity">
+              <text class="sub-toggle-icon">📅</text>
+              <text class="sub-toggle-name">活动</text>
+              <view class="toggle {{subscribeConfig['activity'] ? 'on' : ''}}"><view class="toggle-dot"></view></view>
+            </view>
+            <view class="sub-toggle-card {{subscribeConfig['system'] ? 'active' : ''}}" catchtap="toggleSubscribeType" data-type="system">
+              <text class="sub-toggle-icon">⚙️</text>
+              <text class="sub-toggle-name">系统</text>
+              <view class="toggle {{subscribeConfig['system'] ? 'on' : ''}}"><view class="toggle-dot"></view></view>
+            </view>
+            <view class="sub-toggle-card {{subscribeConfig['merchant'] ? 'active' : ''}}" catchtap="toggleSubscribeType" data-type="merchant">
+              <text class="sub-toggle-icon">🛒</text>
+              <text class="sub-toggle-name">商人</text>
+              <view class="toggle {{subscribeConfig['merchant'] ? 'on' : ''}}"><view class="toggle-dot"></view></view>
+            </view>
+            <view class="sub-toggle-card {{subscribeConfig['interaction'] ? 'active' : ''}}" catchtap="toggleSubscribeType" data-type="interaction">
+              <text class="sub-toggle-icon">💬</text>
+              <text class="sub-toggle-name">互动</text>
+              <view class="toggle {{subscribeConfig['interaction'] ? 'on' : ''}}"><view class="toggle-dot"></view></view>
+            </view>
+          </view>
+        </view>
+
+        <view class="sub-section">
+          <view class="sub-section-title">
+            <text class="sub-section-icon">🧪</text>
+            <text>测试推送</text>
+          </view>
+          <view class="sub-test-grid">
+            <view class="sub-test-btn" catchtap="testPush" data-type="announcement">
+              <text class="sub-test-icon">📢</text>
+              <text class="sub-test-text">测试公告</text>
+            </view>
+            <view class="sub-test-btn" catchtap="testPush" data-type="activity">
+              <text class="sub-test-icon">📅</text>
+              <text class="sub-test-text">测试活动</text>
+            </view>
+            <view class="sub-test-btn" catchtap="testPush" data-type="system">
+              <text class="sub-test-icon">⚙️</text>
+              <text class="sub-test-text">测试系统</text>
+            </view>
+            <view class="sub-test-btn" catchtap="testPush" data-type="merchant">
+              <text class="sub-test-icon">🛒</text>
+              <text class="sub-test-text">测试商人</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="sub-section">
+          <view class="sub-section-title">
+            <text class="sub-section-icon">👥</text>
+            <text>订阅用户</text>
+            <view class="sub-refresh-btn" catchtap="loadSubscribers"><text>刷新</text></view>
+          </view>
+          <view class="sub-user-list" wx:if="{{subscribers.length > 0}}">
+            <view class="sub-user-item" wx:for="{{subscribers}}" wx:key="_id">
+              <view class="sub-user-left">
+                <view class="sub-user-type-tag {{item.type}}">{{item.type === 'announcement' ? '公告' : item.type === 'activity' ? '活动' : item.type === 'system' ? '系统' : item.type === 'merchant' ? '商人' : '互动'}}</view>
+                <view class="sub-user-info">
+                  <text class="sub-user-count">订阅 {{item.count || 0}} 次</text>
+                  <text class="sub-user-time">{{item.timeStr}}</text>
+                </view>
+              </view>
+              <view class="sub-user-right">
+                <view class="sub-user-status {{item.status === 'active' ? 'active' : 'expired'}}">{{item.status === 'active' ? '有效' : '过期'}}</view>
+                <view class="sub-user-del" catchtap="deleteSubscriber" data-item="{{item}}">删除</view>
+              </view>
+            </view>
+          </view>
+          <view class="sub-empty" wx:if="{{subscribers.length === 0}}">
+            <text class="sub-empty-text">暂无订阅用户</text>
+          </view>
+        </view>
       </view>
 
       <!-- 帖子管理 -->
@@ -322,6 +437,68 @@
         <view class="modal-footer">
           <text class="notify-hint">发布后将自动推送通知给所有订阅用户</text>
           <button class="modal-submit" catchtap="submitSystemUpdate" disabled="{{systemSubmitting}}">{{systemSubmitting ? '提交中...' : (systemEditingItem ? '更新' : '发布并推送')}}</button>
+        </view>
+      </view>
+    </view>
+
+    <!-- 活动编辑弹窗 -->
+    <view class="modal-mask" wx:if="{{showActivityModal}}" bindtap="closeActivityModal">
+      <view class="modal-box" catchtap="preventClose">
+        <view class="modal-header">
+          <text class="modal-title">{{activityEditingItem ? '编辑活动' : '新增活动'}}</text>
+          <text class="modal-close" catchtap="closeActivityModal">✕</text>
+        </view>
+        <view class="modal-body">
+          <view class="form-group">
+            <text class="form-label">标题</text>
+            <input class="form-input" placeholder="活动标题" value="{{activityFormTitle}}" bindinput="onActivityTitleInput" maxlength="50" />
+          </view>
+          <view class="form-group">
+            <text class="form-label">类型</text>
+            <input class="form-input" placeholder="如：限时活动、日常活动" value="{{activityFormType}}" bindinput="onActivityTypeInput" />
+          </view>
+          <view class="form-group">
+            <text class="form-label">状态</text>
+            <picker class="form-picker" range="{{['进行中','即将开始','置顶']}}" bindchange="onActivityStatusChange">
+              <text class="picker-text">{{activityFormStatus}} ▾</text>
+            </picker>
+          </view>
+          <view class="form-group">
+            <text class="form-label">描述</text>
+            <textarea class="form-textarea" placeholder="活动描述..." value="{{activityFormContent}}" bindinput="onActivityContentInput" maxlength="500" cursor-spacing="120" />
+          </view>
+          <view class="form-row">
+            <view class="form-group half">
+              <text class="form-label">开始日期</text>
+              <input class="form-input" placeholder="2026-01-01" value="{{activityFormStart}}" bindinput="onActivityStartInput" />
+            </view>
+            <view class="form-group half">
+              <text class="form-label">结束日期</text>
+              <input class="form-input" placeholder="2026-01-31" value="{{activityFormEnd}}" bindinput="onActivityEndInput" />
+            </view>
+          </view>
+          <view class="form-group">
+            <text class="form-label">图片（可选）</text>
+            <view class="image-section">
+              <view class="image-preview" wx:if="{{activityFormImage}}" catchtap="previewActivityImage">
+                <image class="preview-img" src="{{activityFormImage}}" mode="aspectFill" />
+                <view class="image-remove" catchtap="removeActivityImage">✕</view>
+              </view>
+              <view class="image-actions" wx:if="{{!activityFormImage}}">
+                <view class="image-action-btn" catchtap="chooseActivityImage">
+                  <text class="action-icon">📷</text>
+                  <text class="action-text">相册</text>
+                </view>
+                <view class="image-action-btn" catchtap="inputActivityImageUrl">
+                  <text class="action-icon">🔗</text>
+                  <text class="action-text">链接</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view class="modal-footer">
+          <button class="modal-submit" catchtap="submitActivity" disabled="{{activitySubmitting}}">{{activitySubmitting ? '提交中...' : (activityEditingItem ? '更新' : '发布并推送')}}</button>
         </view>
       </view>
     </view>

@@ -140,33 +140,36 @@ Page({
     var self = this
     if (!app.globalData.userInfo || !app.globalData.userInfo.nickName) return
     if (!db) return
-    db.collection('users').where({ nickName: app.globalData.userInfo.nickName }).get()
-      .then(function(res) {
-        if (res.data.length > 0 && res.data[0].avatarUrl) {
-          var cloudAvatar = res.data[0].avatarUrl
-          var userInfo = app.globalData.userInfo
-          if (cloudAvatar.indexOf('cloud://') === 0) {
-            userInfo._cloudAvatar = cloudAvatar
-            wx.cloud.getTempFileURL({ fileList: [cloudAvatar] })
-              .then(function(urlRes) {
-                if (urlRes.fileList && urlRes.fileList[0] && urlRes.fileList[0].tempFileURL) {
-                  var tempUrl = urlRes.fileList[0].tempFileURL
-                  userInfo.avatarUrl = tempUrl
-                  app.globalData.userInfo = userInfo
-                  wx.setStorageSync('user_info', userInfo)
-                  self.setData({ userInfo: userInfo })
-                }
-              })
-          } else {
-            userInfo.avatarUrl = cloudAvatar
-            userInfo._cloudAvatar = cloudAvatar
-            app.globalData.userInfo = userInfo
-            wx.setStorageSync('user_info', userInfo)
-            self.setData({ userInfo: userInfo })
+    wx.cloud.callFunction({ name: 'login' }).then(function(res) {
+      var openid = res.result.openid
+      db.collection('users').where({ _openid: openid }).get()
+        .then(function(r) {
+          if (r.data.length > 0 && r.data[0].avatarUrl) {
+            var cloudAvatar = r.data[0].avatarUrl
+            var userInfo = app.globalData.userInfo
+            if (cloudAvatar.indexOf('cloud://') === 0) {
+              userInfo._cloudAvatar = cloudAvatar
+              wx.cloud.getTempFileURL({ fileList: [cloudAvatar] })
+                .then(function(urlRes) {
+                  if (urlRes.fileList && urlRes.fileList[0] && urlRes.fileList[0].tempFileURL) {
+                    var tempUrl = urlRes.fileList[0].tempFileURL
+                    userInfo.avatarUrl = tempUrl
+                    app.globalData.userInfo = userInfo
+                    wx.setStorageSync('user_info', userInfo)
+                    self.setData({ userInfo: userInfo })
+                  }
+                })
+            } else {
+              userInfo.avatarUrl = cloudAvatar
+              userInfo._cloudAvatar = cloudAvatar
+              app.globalData.userInfo = userInfo
+              wx.setStorageSync('user_info', userInfo)
+              self.setData({ userInfo: userInfo })
+            }
           }
-        }
-      })
-      .catch(function() {})
+        })
+        .catch(function() {})
+    }).catch(function() {})
   },
   loadAdminConfig: function() {
     var self = this
@@ -315,6 +318,8 @@ Page({
           hasMore: list.length >= self.data.pageSize
         })
         self.loadInlineReplies()
+        self.fixNonCloudAvatars(comments)
+        self.fixNonCloudImages(comments)
         var allFileIDs = []
         var imageRefs = []
         for (var p = 0; p < comments.length; p++) {
@@ -356,6 +361,90 @@ Page({
       this.loadComments(false)
     }
   },
+  fixNonCloudAvatars: function(comments) {
+    var self = this
+    if (!db || !comments || comments.length === 0) return
+    var namesToLookup = []
+    var seenNames = {}
+    for (var i = 0; i < comments.length; i++) {
+      var c = comments[i]
+      if (c.userAvatar && c.userAvatar.indexOf('cloud://') !== 0 && c.userAvatar.indexOf('/images/') !== 0) {
+        if (!seenNames[c.userName]) {
+          seenNames[c.userName] = true
+          namesToLookup.push(c.userName)
+        }
+      }
+    }
+    if (namesToLookup.length === 0) return
+    db.collection('users').where({ nickName: db.command.in(namesToLookup) }).get()
+      .then(function(res) {
+        var avatarMap = {}
+        var list = res.data || []
+        for (var j = 0; j < list.length; j++) {
+          if (list[j].avatarUrl && list[j].avatarUrl.indexOf('cloud://') === 0) {
+            avatarMap[list[j].nickName] = list[j].avatarUrl
+          }
+        }
+        if (Object.keys(avatarMap).length === 0) return
+        var cloudIDs = []
+        for (var name in avatarMap) cloudIDs.push(avatarMap[name])
+        wx.cloud.getTempFileURL({ fileList: cloudIDs }).then(function(urlRes) {
+          var urlMap = {}
+          if (urlRes.fileList) {
+            for (var k = 0; k < urlRes.fileList.length; k++) {
+              if (urlRes.fileList[k].tempFileURL) urlMap[urlRes.fileList[k].fileID] = urlRes.fileList[k].tempFileURL
+            }
+          }
+          var updated = self.data.comments
+          for (var m = 0; m < updated.length; m++) {
+            var newUrl = urlMap[avatarMap[updated[m].userName]]
+            if (newUrl) updated[m].userAvatar = newUrl
+          }
+          self.setData({ comments: updated })
+        }).catch(function() {})
+      })
+      .catch(function() {})
+  },
+  fixNonCloudImages: function(comments) {
+    var self = this
+    if (!comments || comments.length === 0) return
+    var imageRefs = []
+    for (var i = 0; i < comments.length; i++) {
+      if (comments[i].images) {
+        for (var j = 0; j < comments[i].images.length; j++) {
+          var img = comments[i].images[j]
+          if (img && img.indexOf('cloud://') === 0) {
+            imageRefs.push({ ci: i, ii: j, fid: img })
+          }
+        }
+      }
+    }
+    if (imageRefs.length === 0) return
+    var uniqueIDs = []
+    var seen = {}
+    for (var k = 0; k < imageRefs.length; k++) {
+      if (!seen[imageRefs[k].fid]) {
+        seen[imageRefs[k].fid] = true
+        uniqueIDs.push(imageRefs[k].fid)
+      }
+    }
+    wx.cloud.getTempFileURL({ fileList: uniqueIDs }).then(function(urlRes) {
+      var urlMap = {}
+      if (urlRes.fileList) {
+        for (var m = 0; m < urlRes.fileList.length; m++) {
+          if (urlRes.fileList[m].tempFileURL) urlMap[urlRes.fileList[m].fileID] = urlRes.fileList[m].tempFileURL
+        }
+      }
+      var updated = self.data.comments
+      for (var n = 0; n < imageRefs.length; n++) {
+        var ref = imageRefs[n]
+        if (urlMap[ref.fid] && updated[ref.ci] && updated[ref.ci].images) {
+          updated[ref.ci].images[ref.ii] = urlMap[ref.fid]
+        }
+      }
+      self.setData({ comments: updated })
+    }).catch(function() {})
+  },
   loadInlineReplies: function() {
     var self = this
     if (!db) return
@@ -382,8 +471,17 @@ Page({
         }
         self.setData({ comments: updated })
         var avatarIDs = []
+        var nonCloudNames = []
+        var seenNonCloud = {}
         for (var m = 0; m < replies.length; m++) {
-          if (cloudUrl.isCloudUrl(replies[m].userAvatar)) avatarIDs.push(replies[m].userAvatar)
+          if (cloudUrl.isCloudUrl(replies[m].userAvatar)) {
+            avatarIDs.push(replies[m].userAvatar)
+          } else if (replies[m].userAvatar && replies[m].userAvatar.indexOf('/images/') !== 0) {
+            if (!seenNonCloud[replies[m].userName]) {
+              seenNonCloud[replies[m].userName] = true
+              nonCloudNames.push(replies[m].userName)
+            }
+          }
         }
         if (avatarIDs.length > 0) {
           var uniqueIDs = []
@@ -404,6 +502,40 @@ Page({
             }
             self.setData({ comments: cur })
           })
+        }
+        if (nonCloudNames.length > 0) {
+          db.collection('users').where({ nickName: db.command.in(nonCloudNames) }).get().then(function(userRes) {
+            var avatarMap = {}
+            var ulist = userRes.data || []
+            for (var x = 0; x < ulist.length; x++) {
+              if (ulist[x].avatarUrl && ulist[x].avatarUrl.indexOf('cloud://') === 0) {
+                avatarMap[ulist[x].nickName] = ulist[x].avatarUrl
+              }
+            }
+            if (Object.keys(avatarMap).length === 0) return
+            var cloudIDs = []
+            for (var name in avatarMap) cloudIDs.push(avatarMap[name])
+            wx.cloud.getTempFileURL({ fileList: cloudIDs }).then(function(urlRes2) {
+              var urlMap2 = {}
+              if (urlRes2.fileList) {
+                for (var y = 0; y < urlRes2.fileList.length; y++) {
+                  if (urlRes2.fileList[y].tempFileURL) urlMap2[urlRes2.fileList[y].fileID] = urlRes2.fileList[y].tempFileURL
+                }
+              }
+              var cur2 = self.data.comments.slice()
+              for (var z = 0; z < cur2.length; z++) {
+                if (cur2[z].inlineReplies) {
+                  var newReplies2 = cur2[z].inlineReplies.slice()
+                  for (var w = 0; w < newReplies2.length; w++) {
+                    var newUrl = urlMap2[avatarMap[newReplies2[w].userName]]
+                    if (newUrl) newReplies2[w] = Object.assign({}, newReplies2[w], { userAvatar: newUrl })
+                  }
+                  cur2[z] = Object.assign({}, cur2[z], { inlineReplies: newReplies2 })
+                }
+              }
+              self.setData({ comments: cur2 })
+            }).catch(function() {})
+          }).catch(function() {})
         }
       })
       .catch(function() {})
@@ -707,17 +839,20 @@ Page({
     var color = e.currentTarget.dataset.color
     if (!db || !app.globalData.userInfo) return
     self.setData({ showTitlePicker: false })
-    db.collection('users').where({ nickName: app.globalData.userInfo.nickName }).get()
-      .then(function(res) {
-        if (res.data.length > 0) {
-          db.collection('users').doc(res.data[0]._id).update({
-            data: { title: title, titleColor: color }
-          }).then(function() {
-            wx.showToast({ title: '头衔已更新', icon: 'success' })
-            self.loadUserRoles()
-          })
-        }
-      })
+    wx.cloud.callFunction({ name: 'login' }).then(function(res) {
+      var openid = res.result.openid
+      db.collection('users').where({ _openid: openid }).get()
+        .then(function(r) {
+          if (r.data.length > 0) {
+            db.collection('users').doc(r.data[0]._id).update({
+              data: { title: title, titleColor: color }
+            }).then(function() {
+              wx.showToast({ title: '头衔已更新', icon: 'success' })
+              self.loadUserRoles()
+            })
+          }
+        })
+    }).catch(function() {})
   },
   formatTime: function(date) {
     if (!date) return ''

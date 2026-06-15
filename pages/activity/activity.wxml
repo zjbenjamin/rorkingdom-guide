@@ -4,7 +4,7 @@
       <text class="admin-text">管理员模式</text>
       <view class="admin-btn" bindtap="onAddActivity"><text>+ 新增活动</text></view>
     </view>
-    <view class="card subscribe-card">
+    <view class="card subscribe-card" wx:if="{{subscribeConfig.activity !== false}}">
       <view class="subscribe-row">
         <view class="subscribe-info">
           <text class="subscribe-title">活动提醒</text>
@@ -54,29 +54,23 @@
     </view>
     <view class="act-list">
       <view class="act-card" wx:for="{{filtered}}" wx:key="id" wx:if="{{item.status!=='置顶'}}">
-        <view class="act-header" bindtap="onExpand" data-id="{{item.id}}">
-          <view class="act-badges">
-            <view class="badge badge-go" wx:if="{{item.status==='进行中'}}">进行中</view>
-            <view class="badge badge-soon" wx:if="{{item.status==='即将开始'}}">即将开始</view>
-            <view class="badge badge-type" wx:if="{{item.type}}">{{item.type}}</view>
-          </view>
-          <text class="act-title">{{item.title}}</text>
-          <text class="expand-hint" wx:if="{{expandedId!==item.id}}">点击展开全文 ›</text>
-          <text class="expand-hint" wx:if="{{expandedId===item.id}}">‹ 收起</text>
+        <view class="act-badges">
+          <view class="badge badge-go" wx:if="{{item.status==='进行中'}}">进行中</view>
+          <view class="badge badge-soon" wx:if="{{item.status==='即将开始'}}">即将开始</view>
+          <view class="badge badge-type" wx:if="{{item.type}}">{{item.type}}</view>
         </view>
-        <view class="act-body" wx:if="{{expandedId===item.id}}">
-          <image class="act-image" wx:if="{{item.image}}" src="{{item.image}}" mode="widthFix" />
-          <text class="act-desc">{{item.desc}}</text>
-          <view class="act-footer" wx:if="{{item.rewards.length > 0 || item.start}}">
-            <view class="act-rewards" wx:if="{{item.rewards.length > 0}}">
-              <text class="act-reward" wx:for="{{item.rewards}}" wx:for-item="r" wx:key="*this">{{r}}</text>
-            </view>
-            <text class="act-date" wx:if="{{item.start}}">{{item.start}}~{{item.end}}</text>
+        <text class="act-title">{{item.title}}</text>
+        <image class="act-image" wx:if="{{item.image}}" src="{{item.image}}" mode="widthFix" />
+        <text class="act-desc">{{item.desc}}</text>
+        <view class="act-footer" wx:if="{{item.rewards.length > 0 || item.start}}">
+          <view class="act-rewards" wx:if="{{item.rewards.length > 0}}">
+            <text class="act-reward" wx:for="{{item.rewards}}" wx:for-item="r" wx:key="*this">{{r}}</text>
           </view>
-          <view class="act-admin-btns" wx:if="{{isAdmin}}">
-            <view class="act-admin-btn edit" catchtap="onEditActivity" data-item="{{item}}">编辑</view>
-            <view class="act-admin-btn del" catchtap="onDeleteActivity" data-item="{{item}}" wx:if="{{item.isCloud}}">删除</view>
-          </view>
+          <text class="act-date" wx:if="{{item.start}}">{{item.start}}~{{item.end}}</text>
+        </view>
+        <view class="act-admin-btns" wx:if="{{isAdmin}}">
+          <view class="act-admin-btn edit" catchtap="onEditActivity" data-item="{{item}}">编辑</view>
+          <view class="act-admin-btn del" catchtap="onDeleteActivity" data-item="{{item}}" wx:if="{{item.isCloud}}">删除</view>
         </view>
       </view>
     </view>

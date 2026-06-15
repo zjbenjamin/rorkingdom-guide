@@ -65,9 +65,8 @@
           <text class="action-icon">🌟</text>
           <text class="action-text">狂欢 +1</text>
         </view>
-        <view class="action-btn success" bindtap="onResult" data-r="success">
-          <text class="action-icon">✅</text>
-          <text class="action-text">出异色</text>
+        <view class="action-btn success capture-btn {{captureAnim ? 'capture-active' : ''}}" bindtap="onResult" data-r="success">
+          <text class="action-text">✨ 捕获</text>
         </view>
         <view class="action-btn danger" bindtap="onResult" data-r="miss">
           <text class="action-icon">😵</text>
@@ -225,7 +224,7 @@
   <view class="modal-mask" wx:if="{{showResultBallModal}}" bindtap="closeResultBallModal">
     <view class="modal-box" catchtap="preventClose">
       <view class="modal-header">
-        <text class="modal-title">{{resultType === 'success' ? '🎉 出异色了' : '😵 歪了'}} - 记录使用球</text>
+        <text class="modal-title">{{resultType === 'success' ? '✨ 捕获成功' : '😵 歪了'}} - 记录使用球</text>
         <text class="modal-close" catchtap="closeResultBallModal">✕</text>
       </view>
       <view class="modal-body">

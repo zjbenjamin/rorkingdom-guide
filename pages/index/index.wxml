@@ -25,7 +25,7 @@
               <text class="action-icon">📷</text>
               <text class="action-text">相册选择</text>
             </view>
-            <input class="banner-input" placeholder="或粘贴图片URL链接" placeholder-style="color:rgba(255,255,255,0.35)" value="{{bannerInput}}" bindinput="onBannerInput" />
+            <input class="banner-input" placeholder="或粘贴图片URL链接" placeholder-style="color:rgba(255,255,255,0.35)" value="{{bannerInput}}" bindinput="onBannerInput" cursor-spacing="120" />
           </view>
         </view>
         <view class="modal-footer">
@@ -92,7 +92,7 @@
         <view class="empty-notice-btn" bindtap="goAdmin">去发布</view>
       </view>
       <!-- 订阅按钮 -->
-      <view class="announce-footer">
+      <view class="announce-footer" wx:if="{{subscribeConfig.announcement !== false}}">
         <view class="sub-link {{subscribedAnnouncement ? 'on' : ''}}" catchtap="subscribeAnnouncement">
           <text class="sub-icon">{{subscribedAnnouncement ? '🔔' : '🔕'}}</text>
           <text class="sub-text">{{subscribedAnnouncement ? '已开启推送通知' + (subscribeCount > 0 ? ' (' + subscribeCount + '次)' : '') : '开启推送通知'}}</text>

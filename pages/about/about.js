@@ -8,20 +8,21 @@ Page({
     contact: 'flyzccboard@yeah.net',
     uid: '476200',
     aboutData: {
-      appName: '洛手攻略',
-      version: '版本 v1.0.6F 体验版',
+      appName: '洛手助手BENJAMIN',
+      version: '版本 v1.0.7A 体验版',
       devName: '浙里本杰明',
       devAvatar: '/images/avatar.jpg',
       uid: '476200',
       contact: 'flyzccboard@yeah.net',
-      gift1: '免费领一测、二测、三测鸭蛋',
-      gift2: '赐福奇袭固执罗隐'
+      gifts: ['免费领一测、二测、三测鸭蛋', '赐福奇袭固执罗隐']
     },
     isAdmin: false,
     showModal: false,
     editingField: '',
     editValue: '',
-    submitting: false
+    submitting: false,
+    editModalTitle: '',
+    editMode: ''
   },
   onLoad() {
     if (wx.cloud) db = wx.cloud.database()
@@ -39,12 +40,16 @@ Page({
     var self = this
     if (!db) return
     db.collection('about_config').doc('main').get()
-      .then(res => {
+      .then(function(res) {
         var defaults = self.data.aboutData
         var cloudData = res.data || {}
         var merged = {}
         for (var key in defaults) {
-          merged[key] = cloudData[key] !== undefined ? cloudData[key] : defaults[key]
+          if (key === 'gifts') {
+            merged[key] = cloudData[key] || defaults[key]
+          } else {
+            merged[key] = cloudData[key] !== undefined ? cloudData[key] : defaults[key]
+          }
         }
         self.setData({ aboutData: merged })
         if (cloudUrl.isCloudUrl(merged.devAvatar)) {
@@ -53,7 +58,7 @@ Page({
           })
         }
       })
-      .catch(() => {})
+      .catch(function() {})
   },
   checkAdmin() {
     var self = this
@@ -62,26 +67,53 @@ Page({
     var saved = wx.getStorageSync('user_info')
     if (!userInfo && saved) userInfo = saved
     if (!userInfo) return
-    db.collection('admin_config').doc('admin').get()
-      .then(res => {
-        var adminOpenid = res.data.openid
-        db.collection('users').get()
-          .then(userRes => {
-            for (var i = 0; i < userRes.data.length; i++) {
-              if (userRes.data[i]._openid === adminOpenid) {
-                self.setData({ isAdmin: true })
-                return
-              }
-            }
-          })
-      })
-      .catch(() => {})
+    wx.cloud.callFunction({ name: 'login' }).then(function(res) {
+      var openid = res.result.openid
+      if (!openid) return
+      db.collection('admin_config').doc('admin').get()
+        .then(function(adminRes) {
+          var adminOpenid = adminRes.data.openid
+          if (openid === adminOpenid) {
+            self.setData({ isAdmin: true })
+          }
+        })
+        .catch(function() {})
+    }).catch(function() {})
   },
   onEdit(e) {
     if (!this.data.isAdmin) return
     var field = e.currentTarget.dataset.field
     var value = e.currentTarget.dataset.value || ''
-    this.setData({ showModal: true, editingField: field, editValue: value })
+    var title = field === 'devName' ? '编辑开发者名称' : field === 'uid' ? '编辑UID' : '编辑邮箱'
+    this.setData({ showModal: true, editingField: field, editValue: value, editModalTitle: title, editMode: 'field' })
+  },
+  addGift() {
+    this.setData({ showModal: true, editingField: 'gift', editValue: '', editModalTitle: '添加福利', editMode: 'addGift' })
+  },
+  deleteGift(e) {
+    var self = this
+    var idx = e.currentTarget.dataset.idx
+    var gifts = (self.data.aboutData.gifts || []).slice()
+    gifts.splice(idx, 1)
+    self.setData({ 'aboutData.gifts': gifts })
+    self.saveGifts(gifts)
+  },
+  saveGifts(gifts) {
+    var self = this
+    if (!db) return
+    db.collection('about_config').doc('main').get()
+      .then(function() {
+        return db.collection('about_config').doc('main').update({ data: { gifts: gifts, updateTime: db.serverDate() } })
+      })
+      .catch(function() {
+        return db.collection('about_config').add({ data: { _id: 'main', gifts: gifts, updateTime: db.serverDate() } })
+      })
+      .then(function() {
+        wx.showToast({ title: '已保存', icon: 'success' })
+      })
+      .catch(function() {
+        wx.showToast({ title: '保存失败', icon: 'none' })
+      })
   },
   onEditInput(e) {
     this.setData({ editValue: e.detail.value })
@@ -96,16 +128,34 @@ Page({
       return
     }
     self.setData({ submitting: true })
+
+    if (self.data.editMode === 'addGift') {
+      var gifts = (self.data.aboutData.gifts || []).concat([value])
+      self.setData({ 'aboutData.gifts': gifts })
+      self.saveGifts(gifts)
+      self.setData({ submitting: false, showModal: false })
+      return
+    }
+
     var updateData = {}
     updateData[self.data.editingField] = value
     updateData.updateTime = db.serverDate()
-    db.collection('about_config').doc('main').update({ data: updateData })
-      .then(() => {
+
+    db.collection('about_config').doc('main').get()
+      .then(function() {
+        return db.collection('about_config').doc('main').update({ data: updateData })
+      })
+      .catch(function() {
+        updateData._id = 'main'
+        return db.collection('about_config').add({ data: updateData })
+      })
+      .then(function() {
         self.setData({ submitting: false, showModal: false })
         wx.showToast({ title: '保存成功', icon: 'success' })
         self.loadAboutData()
       })
-      .catch(() => {
+      .catch(function(err) {
+        console.error('保存失败详情:', err)
         self.setData({ submitting: false })
         wx.showToast({ title: '保存失败', icon: 'none' })
       })
@@ -135,5 +185,5 @@ Page({
       }
     })
   },
-  onShareAppMessage() { return { title: '洛手攻略', path: '/pages/index/index' } }
+  onShareAppMessage() { return { title: '洛手助手BENJAMIN', path: '/pages/index/index' } }
 })

@@ -72,7 +72,8 @@ Page({
     ballCheckCount: '',
     ballCheckRecords: [],
     ballCheckMode: 'select',
-    ballCheckCustomName: ''
+    ballCheckCustomName: '',
+    captureAnim: false
   },
   onShow: function() {
     var n = new Date()
@@ -141,6 +142,10 @@ Page({
   onResult: function(e) {
     var r = e.currentTarget.dataset.r
     var self = this
+    if (r === 'success') {
+      self.setData({ captureAnim: true })
+      setTimeout(function() { self.setData({ captureAnim: false }) }, 600)
+    }
     var ballList = []
     for (var i = 0; i < self.data.balls.length; i++) {
       if (self.data.balls[i].count > 0) {
@@ -257,7 +262,7 @@ Page({
     self.updateSuccessRate()
     self.updateGemCost()
     var toastMsg = totalBallCost > 0 ? '✅ 记录成功 消耗💵' + totalBallCost : '✅ 记录成功'
-    if (isShiny) toastMsg = '出异色啦！消耗💵' + totalBallCost
+    if (isShiny) toastMsg = '✨ 捕获成功！消耗💵' + totalBallCost
     wx.showToast({ title: toastMsg, icon: 'none' })
   },
   onRecordClear: function() {
@@ -352,7 +357,7 @@ Page({
     }
     var totalEncounters = this.data.carnivalCount + this.data.luckyBoxCount
     var petInfo = this.data.petNameInput ? '\n精灵名称：' + this.data.petNameInput : ''
-    var text = '🎯 洛手助手捕捉记录\n' +
+    var text = '🎯 洛手助手BENJAMIN捕捉记录\n' +
       '时间：' + formatTime() + '\n' +
       '结果：' + resultText + '\n' +
       '使用球：' + ballText + '\n' +
@@ -414,7 +419,7 @@ Page({
     
     var toastMsg = totalBallCost > 0 ? '✅ 记录成功 消耗💵'+totalBallCost+'洛克贝' : '✅ 记录成功';
     if (isShiny) {
-      toastMsg = '出异色啦！评价：' + luckText + (totalBallCost > 0 ? ' 消耗💵'+totalBallCost : '');
+      toastMsg = '✨ 捕获成功！评价：' + luckText + (totalBallCost > 0 ? ' 消耗💵'+totalBallCost : '');
     }
     wx.showToast({ title: toastMsg, icon: 'none' })
   },
@@ -825,7 +830,7 @@ Page({
       return
     }
     var v = parseInt(self.data.coinInput)
-    if (!v || v < 0) return
+    if (isNaN(v) || v < 0) return
     wx.setStorageSync('initial_wealth', v)
     wx.setStorageSync('total_gains', 0)
     wx.setStorageSync('total_costs', 0)
