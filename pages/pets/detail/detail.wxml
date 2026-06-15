@@ -1,7 +1,8 @@
 <view class="page" wx:if="{{pet}}">
   <view class="container">
     <view class="detail-header">
-      <view class="detail-avatar" style="background:linear-gradient(135deg,#ff6900,#ff8533)">{{pet.name[0]}}</view>
+      <image class="detail-img" wx:if="{{imgUrl}}" src="{{imgUrl}}" mode="aspectFit" />
+      <view class="detail-avatar" wx:if="{{!imgUrl}}" style="background:linear-gradient(135deg,#ff6900,#ff8533)">{{pet.name[0]}}</view>
       <text class="detail-name">{{pet.name}}</text>
       <text class="detail-meta">{{pet.type}} | {{pet.stage}} | 种族值{{pet.total}}</text>
     </view>

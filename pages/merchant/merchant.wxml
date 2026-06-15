@@ -44,26 +44,6 @@
         </view>
       </view>
 
-      <!-- 订阅按钮 -->
-      <view class="card" wx:if="{{subscribeConfig.merchant !== false}}">
-        <view class="subscribe-row">
-          <view class="subscribe-info">
-            <text class="subscribe-title">远行商人提醒</text>
-            <text class="subscribe-desc">{{subscribedMerchant ? '已开启推送通知' + (subscribeCount > 0 ? ' (' + subscribeCount + '次)' : '') : '开启后可收到商人更新推送'}}</text>
-          </view>
-          <view class="subscribe-right">
-            <view class="notify-counter" catchtap="subscribeMerchant">
-              <view class="counter-btn">
-                <text class="counter-plus">+</text>
-              </view>
-              <view class="counter-badge" wx:if="{{subscribeCount > 0}}">
-                <text class="counter-num">{{subscribeCount}}</text>
-              </view>
-            </view>
-          </view>
-        </view>
-      </view>
-
       <view class="card" wx:if="{{merchantAway}}">
         <view class="merchant-tip">
           <text class="tip-icon">🛒</text>

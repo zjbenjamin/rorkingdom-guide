@@ -15,7 +15,9 @@ Page({
     showModal: false,
     editingField: '',
     editValue: '',
-    submitting: false
+    submitting: false,
+    queryType: '',
+    queryResults: []
   },
   onShow: function() {
     if (wx.cloud) db = wx.cloud.database()
@@ -126,5 +128,20 @@ Page({
   },
   closeModal: function() { this.setData({ showModal: false }) },
   preventClose: function() {},
+  queryEggType: function(e) {
+    var type = e.currentTarget.dataset.type
+    if (type === this.data.queryType) {
+      this.setData({ queryType: '', queryResults: [] })
+      return
+    }
+    var pets = this.data.pets
+    var results = []
+    for (var i = 0; i < pets.length; i++) {
+      if (pets[i].type1 === type || pets[i].type2 === type) {
+        results.push(pets[i])
+      }
+    }
+    this.setData({ queryType: type, queryResults: results })
+  },
   go: function(e) { wx.navigateTo({ url: e.currentTarget.dataset.url }) }
 })

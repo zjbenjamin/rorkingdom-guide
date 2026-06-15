@@ -1,6 +1,8 @@
 var app = getApp()
+var i18n = require('../../utils/i18n')
 var notify = require('../../utils/notify')
 var templateConfig = require('../../config/notifyTemplates')
+var levelUtil = require('../../utils/level')
 
 Page({
   data: {
@@ -12,12 +14,17 @@ Page({
     tempNickName: '',
     loginDays: 0,
     level: 1,
-    todayLogin: false,
+    levelName: '小洛克',
+    levelColor: { bg: 'rgba(255,255,255,0.1)', text: 'rgba(255,255,255,0.5)', border: 'rgba(255,255,255,0.2)' },
+    levelIcon: '🐣',
     nextLevelDays: 3,
+    nextXP: 50,
+    hasUid: false,
     isAdmin: false,
     gameUid: '',
     showUidModal: false,
     uidInput: '',
+    userRole: '',
     notifyStatus: {
       announcement: false,
       activity: false,
@@ -40,7 +47,8 @@ Page({
       interaction: false
     },
     notifyLoading: false,
-    notifyAdding: false
+    notifyAdding: false,
+    userRole: ''
   },
   onLoad: function() {
     var app = getApp()
@@ -53,6 +61,29 @@ Page({
     this.checkAdmin()
     this.loadNotifyStatus()
     this.checkNotifyConfig()
+    this.loadUserRole()
+  },
+  onShow: function() {
+    this.loadUserRole()
+  },
+  loadUserRole: function() {
+    var self = this
+    if (!wx.cloud) return
+    var db = wx.cloud.database()
+    var app = getApp()
+    var userInfo = app.globalData.userInfo
+    if (!userInfo) return
+    wx.cloud.callFunction({ name: 'login' }).then(function(res) {
+      var openid = res.result.openid
+      if (!openid) return
+      db.collection('users').where({ _openid: openid }).get()
+        .then(function(r) {
+          if (r.data.length > 0 && r.data[0].role) {
+            self.setData({ userRole: r.data[0].role })
+          }
+        })
+        .catch(function() {})
+    }).catch(function() {})
   },
   recordLoginDay: function() {
     var today = new Date()
@@ -68,17 +99,31 @@ Page({
       this.syncLoginDays(loginDays)
     }
     var totalDays = loginDays.length
-    var level = this.calcLevel(totalDays)
-    var nextDays = this.nextLevelDays(level)
+    var gameUid = wx.getStorageSync('game_uid') || ''
+    var captureCount = wx.getStorageSync('total_catches') || 0
+    var hasUid = !!gameUid
+    var level = levelUtil.calcLevel(totalDays, hasUid, captureCount)
+    var levelInfo = levelUtil.getLevelColor(level)
+    var levelName = levelUtil.getLevelName(level)
+    var levelIcon = levelUtil.getLevelIcon(level)
+    var nextDays = levelUtil.calcNextLevelDays(level)
+    var nextXP = levelUtil.getNextXP(captureCount)
     this.setData({
       loginDays: totalDays,
       level: level,
+      levelName: levelName,
+      levelColor: levelInfo,
+      levelIcon: levelIcon,
       todayLogin: todayLogin,
-      nextLevelDays: nextDays
+      nextLevelDays: nextDays,
+      nextXP: nextXP,
+      hasUid: hasUid,
+      gameUid: gameUid
     })
     var app = getApp()
     app.globalData.loginDays = totalDays
     app.globalData.level = level
+    this.syncLevel(level)
   },
   syncLoginDays: function(loginDays) {
     var self = this
@@ -97,22 +142,21 @@ Page({
         .catch(function() {})
     }).catch(function() {})
   },
-  calcLevel: function(days) {
-    if (days >= 365) return 10
-    if (days >= 180) return 9
-    if (days >= 120) return 8
-    if (days >= 90) return 7
-    if (days >= 60) return 6
-    if (days >= 30) return 5
-    if (days >= 15) return 4
-    if (days >= 7) return 3
-    if (days >= 3) return 2
-    return 1
-  },
-  nextLevelDays: function(level) {
-    var thresholds = [3, 7, 15, 30, 60, 90, 120, 180, 365]
-    if (level >= 10) return 0
-    return thresholds[level - 1] || 3
+  syncLevel: function(level) {
+    if (!wx.cloud) return
+    var db = wx.cloud.database()
+    wx.cloud.callFunction({ name: 'login' }).then(function(res) {
+      var openid = res.result.openid
+      db.collection('users').where({ _openid: openid }).get()
+        .then(function(r) {
+          if (r.data.length > 0) {
+            db.collection('users').doc(r.data[0]._id).update({
+              data: { level: level, updateTime: db.serverDate() }
+            })
+          }
+        })
+        .catch(function() {})
+    }).catch(function() {})
   },
   checkLoginStatus: function() {
     var self = this
@@ -375,6 +419,44 @@ Page({
   },
   onNotifySetting: function() {
     wx.openSetting({})
+  },
+  onResetSubscribe: function(e) {
+    var self = this
+    var type = e.currentTarget.dataset.type
+    var names = { announcement: '公告', activity: '活动', system: '系统', merchant: '商人', interaction: '互动' }
+    wx.showModal({
+      title: '重置订阅',
+      content: '确定重置「' + names[type] + '」订阅？重置后需重新授权',
+      success: function(res) {
+        if (res.confirm) {
+          if (!db) return
+          wx.cloud.callFunction({ name: 'login' }).then(function(loginRes) {
+            var openid = loginRes.result.openid
+            db.collection('subscribers').where({ openid: openid, type: type }).get()
+              .then(function(subRes) {
+                if (subRes.data.length > 0) {
+                  return db.collection('subscribers').doc(subRes.data[0]._id).update({
+                    data: { status: 'expired', count: 0, updateTime: db.serverDate() }
+                  })
+                }
+              })
+              .then(function() {
+                self.setData({ ['notifyCount.' + type]: 0 })
+                self.loadNotifyStatus()
+                wx.showToast({ title: '已重置', icon: 'success' })
+                notify.requestAndSave([type], function(err, result) {
+                  if (!err && result && result[type] === 'accept') {
+                    self.setData({ ['notifyCount.' + type]: 1 })
+                    self.loadNotifyStatus()
+                    wx.showToast({ title: '已重新授权', icon: 'success' })
+                  }
+                })
+              })
+              .catch(function() { wx.showToast({ title: '重置失败', icon: 'none' }) })
+          }).catch(function() {})
+        }
+      }
+    })
   },
   onNotifyAdd: function(e) {
     var self = this

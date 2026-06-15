@@ -5,17 +5,12 @@ var cloudUrl = require('../../utils/cloudUrl')
 
 Page({
   data: {
-    buildTime: '',
-    announcements: [],
     bannerUrl: '',
-    isAdmin: false,
-    subscribedAnnouncement: false,
-    subscribeCount: 0,
-    showBannerModal: false,
-    bannerInput: '',
-    bannerSaving: false,
+    announcements: [],
     hotPosts: [],
-    expandedIndex: -1
+    subscribeConfig: {},
+    buildTime: '',
+    showCommunity: true
   },
   onShow: function() {
     var self = this
@@ -31,6 +26,7 @@ Page({
     self.loadBanner()
     self.checkSubscription()
     self.loadHotPosts()
+    self.loadCommunityConfig()
   },
   checkAdmin: function() {
     var self = this
@@ -53,6 +49,17 @@ Page({
           })
       })
       .catch(function() {})
+  },
+  loadCommunityConfig: function() {
+    var self = this
+    if (!db) return
+    db.collection('page_config').doc('community').get()
+      .then(function(res) {
+        self.setData({ showCommunity: !res.data.maintenance })
+      })
+      .catch(function() {
+        self.setData({ showCommunity: true })
+      })
   },
   loadBanner: function() {
     var self = this

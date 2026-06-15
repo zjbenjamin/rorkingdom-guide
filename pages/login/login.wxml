@@ -49,11 +49,19 @@
       <view class="user-header">
         <view class="avatar-wrap">
           <image class="user-avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill"></image>
-          <view class="level-tag">Lv.{{level}}</view>
+          <view class="level-tag" style="background: {{levelColor.bg}}; color: {{levelColor.text}}; border-color: {{levelColor.border}};">
+            <text class="level-icon">{{levelIcon}}</text>
+            <text class="level-num">Lv.{{level}}</text>
+          </view>
         </view>
         <view class="user-detail">
-          <text class="user-name">{{userInfo.nickName}}</text>
-          <text class="user-exp">累计登录 {{loginDays}} 天{{loginDays < nextLevelDays ? '，还需 ' + (nextLevelDays - loginDays) + ' 天升级' : ''}}</text>
+          <view class="user-name-row">
+            <text class="user-name">{{userInfo.nickName}}</text>
+            <view class="role-tag editor" wx:if="{{userRole === 'editor'}}">小编</view>
+            <view class="role-tag developer" wx:if="{{userRole === 'developer'}}">开发者</view>
+          </view>
+          <text class="user-title-text" style="color: {{levelColor.border}};">{{levelName}}</text>
+          <text class="user-exp">累计登录 {{loginDays}} 天{{loginDays < nextLevelDays ? '，还需 ' + (nextLevelDays - loginDays) + ' 天升级' : ''}} · 捕捉还需 {{nextXP}} 次升级</text>
           <view class="exp-bar">
             <view class="exp-fill" style="width: {{loginDays >= nextLevelDays ? 100 : (loginDays / nextLevelDays * 100)}}%"></view>
           </view>
@@ -108,6 +116,7 @@
               </view>
             </view>
             <view wx:else class="notify-na">暂未开放</view>
+            <view class="notify-reset" catchtap="onResetSubscribe" data-type="announcement">重置</view>
           </view>
         </view>
         <view class="notify-item" wx:if="{{notifyConfigured.activity && subscribeConfig.activity !== false}}">
@@ -125,6 +134,7 @@
               </view>
             </view>
             <view wx:else class="notify-na">暂未开放</view>
+            <view class="notify-reset" catchtap="onResetSubscribe" data-type="activity">重置</view>
           </view>
         </view>
         <view class="notify-item" wx:if="{{notifyConfigured.system && subscribeConfig.system !== false}}">
@@ -142,6 +152,7 @@
               </view>
             </view>
             <view wx:else class="notify-na">暂未开放</view>
+            <view class="notify-reset" catchtap="onResetSubscribe" data-type="system">重置</view>
           </view>
         </view>
         <view class="notify-item" wx:if="{{notifyConfigured.merchant && subscribeConfig.merchant !== false}}">
@@ -159,6 +170,7 @@
               </view>
             </view>
             <view wx:else class="notify-na">暂未开放</view>
+            <view class="notify-reset" catchtap="onResetSubscribe" data-type="merchant">重置</view>
           </view>
         </view>
         <view class="notify-item" wx:if="{{notifyConfigured.interaction && subscribeConfig.interaction !== false}}">
@@ -176,6 +188,7 @@
               </view>
             </view>
             <view wx:else class="notify-na">暂未开放</view>
+            <view class="notify-reset" catchtap="onResetSubscribe" data-type="interaction">重置</view>
           </view>
         </view>
         <view class="notify-tip" bindtap="onNotifySetting">

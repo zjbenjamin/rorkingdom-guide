@@ -4,24 +4,6 @@
       <text class="admin-text">管理员模式</text>
       <view class="admin-btn" bindtap="onAddActivity"><text>+ 新增活动</text></view>
     </view>
-    <view class="card subscribe-card" wx:if="{{subscribeConfig.activity !== false}}">
-      <view class="subscribe-row">
-        <view class="subscribe-info">
-          <text class="subscribe-title">活动提醒</text>
-          <text class="subscribe-desc">{{subscribedActivity ? '已开启推送通知' + (subscribeCount > 0 ? ' (' + subscribeCount + '次)' : '') : '开启后可收到活动更新推送'}}</text>
-        </view>
-        <view class="subscribe-right">
-          <view class="notify-counter" catchtap="subscribeActivity">
-            <view class="counter-btn">
-              <text class="counter-plus">+</text>
-            </view>
-            <view class="counter-badge" wx:if="{{subscribeCount > 0}}">
-              <text class="counter-num">{{subscribeCount}}</text>
-            </view>
-          </view>
-        </view>
-      </view>
-    </view>
     <view class="tabs">
       <view class="tab {{status===item?'on':''}}" wx:for="{{statuses}}" wx:key="*this" bindtap="onStatus" data-s="{{item}}">{{item}}</view>
     </view>
@@ -33,8 +15,11 @@
             <view class="badge badge-official" wx:if="{{item.type==='官方权威信息'}}">官方权威信息</view>
           </view>
           <text class="act-title headline-title">{{item.title}}</text>
-          <text class="act-summary">{{item.desc}}</text>
+          <text class="act-summary" wx:if="{{item.richContent && item.richContent.length > 0}}">{{item.content}}</text>
+          <rich-text wx:if="{{item.richContent && item.richContent.length > 0}}" class="act-rich-content" nodes="{{item.content}}"></rich-text>
+          <text class="act-summary" wx:else>{{item.desc}}</text>
         </view>
+        <view class="act-source" wx:if="{{item.source}}">来源：{{item.source}}</view>
         <view class="act-footer" wx:if="{{item.rewards.length > 0 || item.start}}">
           <view class="act-rewards" wx:if="{{item.rewards.length > 0}}">
             <text class="act-reward" wx:for="{{item.rewards}}" wx:for-item="r" wx:key="*this">{{r}}</text>
@@ -61,7 +46,10 @@
         </view>
         <text class="act-title">{{item.title}}</text>
         <image class="act-image" wx:if="{{item.image}}" src="{{item.image}}" mode="widthFix" />
-        <text class="act-desc">{{item.desc}}</text>
+        <text class="act-desc" wx:if="{{item.richContent && item.richContent.length > 0}}">{{item.content}}</text>
+        <rich-text wx:if="{{item.richContent && item.richContent.length > 0}}" class="act-rich-content" nodes="{{item.content}}"></rich-text>
+        <text class="act-desc" wx:else>{{item.desc}}</text>
+        <view class="act-source" wx:if="{{item.source}}">来源：{{item.source}}</view>
         <view class="act-footer" wx:if="{{item.rewards.length > 0 || item.start}}">
           <view class="act-rewards" wx:if="{{item.rewards.length > 0}}">
             <text class="act-reward" wx:for="{{item.rewards}}" wx:for-item="r" wx:key="*this">{{r}}</text>
@@ -149,7 +137,7 @@
 
   <view class="navbar">
     <view class="nav-item" bindtap="go" data-url="/pages/index/index"><text class="nav-icon">🏠</text><text class="nav-text">首页</text></view>
-    <view class="nav-item" bindtap="go" data-url="/pages/community/community"><text class="nav-icon">👥</text><text class="nav-text">社区</text></view>
+    <view class="nav-item" wx:if="{{showCommunity}}" bindtap="go" data-url="/pages/community/community"><text class="nav-icon">👥</text><text class="nav-text">社区</text></view>
     <view class="nav-item on"><text class="nav-icon">📅</text><text class="nav-text">活动</text></view>
     <view class="nav-item" bindtap="go" data-url="/pages/login/login"><text class="nav-icon">👤</text><text class="nav-text">我的</text></view>
   </view>

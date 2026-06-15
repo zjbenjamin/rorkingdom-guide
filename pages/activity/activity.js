@@ -4,7 +4,7 @@ var cloudUrl = require('../../utils/cloudUrl')
 var notify = require('../../utils/notify')
 var db = null
 Page({
-  data: { theme: 'light', activities: [], filtered: [], status: '全部', statuses: ['全部','进行中','置顶'], expandedId: -1, isAdmin: false, showEditModal: false, editingItem: null, editTitle: '', editDesc: '', editStatus: '进行中', editType: '', editRewards: '', editStart: '', editEnd: '', editImage: '', subscribedActivity: false, subscribeCount: 0 },
+  data: { theme: 'light', activities: [], filtered: [], status: '全部', statuses: ['全部','进行中','置顶'], expandedId: -1, isAdmin: false, showEditModal: false, editingItem: null, editTitle: '', editDesc: '', editStatus: '进行中', editType: '', editRewards: '', editStart: '', editEnd: '', editImage: '', subscribedActivity: false, subscribeCount: 0, showCommunity: true },
   onShow: function() {
     this.setData({ theme: app.globalData.theme })
     if (wx.cloud) db = wx.cloud.database()
@@ -12,6 +12,12 @@ Page({
     this.setData({ subscribeConfig: subscribeConfig })
     this.checkAdmin()
     this.checkSubscription()
+    var self = this
+    if (db) {
+      db.collection('page_config').doc('community').get()
+        .then(function(res) { self.setData({ showCommunity: !res.data.maintenance }) })
+        .catch(function() {})
+    }
   },
   checkAdmin: function() {
     var self = this
@@ -227,15 +233,7 @@ Page({
       self.setData({ submitting: false, showEditModal: false, editingItem: null })
       wx.showToast({ title: '操作成功', icon: 'success' })
       self.sortActivities()
-      wx.cloud.callFunction({
-        name: 'sendSubscribe',
-        data: {
-          type: 'activity',
-          title: title,
-          content: desc.substring(0, 20),
-          page: '/pages/activity/activity'
-        }
-      }).catch(function() {})
+      notify.pushToSubscribers('activity', title, desc, '/pages/activity/activity')
     }).catch(function() { self.setData({ submitting: false }); wx.showToast({ title: '操作失败', icon: 'none' }) })
   },
   onDeleteActivity: function(e) {

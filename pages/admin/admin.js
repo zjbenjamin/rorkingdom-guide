@@ -22,6 +22,8 @@ Page({
     formType: 'notice',
     formPinned: false,
     formImage: '',
+    formStartDate: '',
+    formEndDate: '',
     formRichContent: [],
     formSource: '',
     submitting: false,
@@ -52,6 +54,8 @@ Page({
     systemFormContent: '',
     systemFormVersion: '',
     systemFormType: 'feature',
+    systemFormStartDate: '',
+    systemFormEndDate: '',
     systemSubmitting: false,
     showActivityModal: false,
     activityEditingItem: null,
@@ -62,7 +66,16 @@ Page({
     activityFormStart: '',
     activityFormEnd: '',
     activityFormImage: '',
+    activityFormSource: '',
     activitySubmitting: false,
+    activityEditorMode: 'simple',
+    activityFontWeight: 'normal',
+    activityFontStyle: 'normal',
+    activityFontSize: 28,
+    activityFontColor: '#ffffff',
+    activityRichContent: [],
+    showActivitySizePicker: false,
+    showActivityColorPicker: false,
     adminActivities: [],
     localActivities: [],
     deletedLocalIds: [],
@@ -156,7 +169,9 @@ Page({
       systemFormTitle: item ? item.title : '',
       systemFormContent: item ? item.content : '',
       systemFormVersion: item ? (item.version || '') : '',
-      systemFormType: item ? (item.updateType || 'feature') : 'feature'
+      systemFormType: item ? (item.updateType || 'feature') : 'feature',
+      systemFormStartDate: item ? (item.startDate || '') : '',
+      systemFormEndDate: item ? (item.endDate || '') : ''
     })
   },
   closeSystemModal: function() {
@@ -165,6 +180,8 @@ Page({
   onSystemTitleInput: function(e) { this.setData({ systemFormTitle: e.detail.value }) },
   onSystemContentInput: function(e) { this.setData({ systemFormContent: e.detail.value }) },
   onSystemVersionInput: function(e) { this.setData({ systemFormVersion: e.detail.value }) },
+  onSystemStartDateChange: function(e) { this.setData({ systemFormStartDate: e.detail.value }) },
+  onSystemEndDateChange: function(e) { this.setData({ systemFormEndDate: e.detail.value }) },
   onSystemTypeChange: function(e) {
     var types = ['feature', 'fix', 'improve', 'notice']
     this.setData({ systemFormType: types[e.detail.value] })
@@ -184,6 +201,8 @@ Page({
       version: self.data.systemFormVersion.trim(),
       updateType: self.data.systemFormType,
       type: 'system',
+      startDate: self.data.systemFormStartDate,
+      endDate: self.data.systemFormEndDate,
       updateTime: db.serverDate()
     }
     var promise
@@ -330,7 +349,8 @@ Page({
     if (!db) return
     var pageList = [
       { id: 'merchant', name: '远行商人', icon: '🛒', maintenance: false, useCustom: false },
-      { id: 'egg', name: '孵蛋查询', icon: '🥚', maintenance: false, useCustom: false }
+      { id: 'egg', name: '孵蛋查询', icon: '🥚', maintenance: false, useCustom: false },
+      { id: 'community', name: '社区入口', icon: '👥', maintenance: false, useCustom: false, isNav: true }
     ]
     var done = 0
     for (var i = 0; i < pageList.length; i++) {
@@ -407,6 +427,8 @@ Page({
       formImage: item ? (item.image || '') : '',
       formRichContent: richContent,
       formSource: source,
+      formStartDate: item ? (item.startDate || '') : '',
+      formEndDate: item ? (item.endDate || '') : '',
       editorMode: 'simple'
     })
   },
@@ -418,6 +440,8 @@ Page({
   onContentInput: function(e) { this.setData({ formContent: e.detail.value }) },
   onImageInput: function(e) { this.setData({ formImage: e.detail.value }) },
   onSourceInput: function(e) { this.setData({ formSource: e.detail.value }) },
+  onStartDateChange: function(e) { this.setData({ formStartDate: e.detail.value }) },
+  onEndDateChange: function(e) { this.setData({ formEndDate: e.detail.value }) },
   onTypeChange: function(e) { var types = ['notice', 'update', 'event', 'tip']; this.setData({ formType: types[e.detail.value] }) },
   togglePinned: function() { this.setData({ formPinned: !this.data.formPinned }) },
   switchEditorMode: function() {
@@ -658,6 +682,8 @@ Page({
       type: self.data.formType,
       pinned: self.data.formPinned,
       image: self.data.formImage.trim(),
+      startDate: self.data.formStartDate,
+      endDate: self.data.formEndDate,
       updateTime: db.serverDate()
     }
     var promise
@@ -787,7 +813,7 @@ Page({
       content: '确定将该用户设为小编？',
       success: function(res) {
         if (res.confirm) {
-          db.collection('users').doc(item._id).update({ data: { role: 'editor' } })
+          db.collection('users').doc(item._id).update({ data: { role: 'editor', title: '🌟 小编', titleColor: '#00d4ff' } })
             .then(function() {
               wx.showToast({ title: '已设为小编', icon: 'success' })
               self.loadUsers()
@@ -804,7 +830,7 @@ Page({
       content: '确定取消该用户的小编身份？',
       success: function(res) {
         if (res.confirm) {
-          db.collection('users').doc(item._id).update({ data: { role: '' } })
+          db.collection('users').doc(item._id).update({ data: { role: '', title: '', titleColor: '' } })
             .then(function() {
               wx.showToast({ title: '已取消', icon: 'success' })
               self.loadUsers()
@@ -826,19 +852,14 @@ Page({
     else if (tab === 'stats') this.loadStats()
   },
   pushSubscribe: function(type, title, content) {
-    var db = wx.cloud.database()
-    db.collection('subscribers').where({ type: type, status: 'active' }).get()
-      .then(function(res) {
-        var subs = (res.data || []).map(function(s) { return { openid: s.openid } })
-        if (subs.length === 0) return
-        wx.request({
-          url: 'https://1442890784-28edxvn34i.ap-shanghai.tencentscf.com',
-          method: 'POST',
-          header: { 'Content-Type': 'application/json' },
-          data: { type: type, title: title, content: content, subscribers: subs }
-        }).catch(function() {})
-      })
-      .catch(function() {})
+    var pages = {
+      announcement: '/pages/index/index',
+      activity: '/pages/activity/activity',
+      system: '/pages/index/index',
+      merchant: '/pages/merchant/merchant',
+      interaction: '/pages/community/community'
+    }
+    notify.pushToSubscribers(type, title, content, pages[type] || '/pages/index/index')
   },
   formatTime: function(date) {
     if (!date) return ''
@@ -890,6 +911,16 @@ Page({
   },
   openActivityModal: function(e) {
     var item = (e && e.currentTarget && e.currentTarget.dataset) ? e.currentTarget.dataset.item || null : null
+    var richContent = []
+    var source = ''
+    if (item && item.richContent) {
+      richContent = item.richContent
+    } else if (item && item.content) {
+      richContent = [{ type: 'text', content: item.content, style: 'normal', weight: 'normal', size: 28, color: '#ffffff' }]
+    }
+    if (item && item.source) {
+      source = item.source
+    }
     this.setData({
       showActivityModal: true,
       activityEditingItem: item,
@@ -899,7 +930,10 @@ Page({
       activityFormStatus: item ? (item.pinned ? '置顶' : '进行中') : '进行中',
       activityFormStart: item ? (item.start || '') : '',
       activityFormEnd: item ? (item.end || '') : '',
-      activityFormImage: item ? (item.image || '') : ''
+      activityFormImage: item ? (item.image || '') : '',
+      activityFormSource: source,
+      activityRichContent: richContent,
+      activityEditorMode: 'simple'
     })
   },
   closeActivityModal: function() { this.setData({ showActivityModal: false }) },
@@ -908,7 +942,100 @@ Page({
   onActivityTypeInput: function(e) { this.setData({ activityFormType: e.detail.value }) },
   onActivityStartInput: function(e) { this.setData({ activityFormStart: e.detail.value }) },
   onActivityEndInput: function(e) { this.setData({ activityFormEnd: e.detail.value }) },
+  onActivityStartChange: function(e) { this.setData({ activityFormStart: e.detail.value }) },
+  onActivityEndChange: function(e) { this.setData({ activityFormEnd: e.detail.value }) },
+  onActivitySourceInput: function(e) { this.setData({ activityFormSource: e.detail.value }) },
   onActivityStatusChange: function(e) { var statuses = ['进行中','即将开始','置顶']; this.setData({ activityFormStatus: statuses[e.detail.value] }) },
+  switchActivityEditorMode: function() {
+    var newMode = this.data.activityEditorMode === 'simple' ? 'rich' : 'simple'
+    this.setData({ activityEditorMode: newMode })
+  },
+  toggleActivityBold: function() {
+    var newWeight = this.data.activityFontWeight === 'normal' ? 'bold' : 'normal'
+    this.setData({ activityFontWeight: newWeight })
+  },
+  toggleActivityItalic: function() {
+    var newStyle = this.data.activityFontStyle === 'normal' ? 'italic' : 'normal'
+    this.setData({ activityFontStyle: newStyle })
+  },
+  showActivityFontSizePicker: function() {
+    this.setData({ showActivitySizePicker: !this.data.showActivitySizePicker, showActivityColorPicker: false })
+  },
+  showActivityFontColorPicker: function() {
+    this.setData({ showActivityColorPicker: !this.data.showActivityColorPicker, showActivitySizePicker: false })
+  },
+  setActivityFontSize: function(e) {
+    var size = e.currentTarget.dataset.size
+    this.setData({ activityFontSize: size, showActivitySizePicker: false })
+  },
+  setActivityFontColor: function(e) {
+    var color = e.currentTarget.dataset.color
+    this.setData({ activityFontColor: color, showActivityColorPicker: false })
+  },
+  addActivityRichTextBlock: function() {
+    var content = this.data.activityFormContent.trim()
+    if (!content) {
+      wx.showToast({ title: '请输入内容', icon: 'none' })
+      return
+    }
+    var block = {
+      type: 'text',
+      content: content,
+      style: this.data.activityFontStyle,
+      weight: this.data.activityFontWeight,
+      size: this.data.activityFontSize,
+      color: this.data.activityFontColor
+    }
+    var richContent = this.data.activityRichContent.concat([block])
+    this.setData({
+      activityRichContent: richContent,
+      activityFormContent: '',
+      activityFontStyle: 'normal',
+      activityFontWeight: 'normal',
+      activityFontSize: 28,
+      activityFontColor: '#ffffff'
+    })
+  },
+  addActivityRichQuoteBlock: function() {
+    var content = this.data.activityFormContent.trim()
+    if (!content) {
+      wx.showToast({ title: '请输入引用内容', icon: 'none' })
+      return
+    }
+    var block = {
+      type: 'quote',
+      content: content,
+      style: 'normal',
+      weight: 'normal',
+      size: 26,
+      color: 'rgba(255,255,255,0.7)'
+    }
+    var richContent = this.data.activityRichContent.concat([block])
+    this.setData({
+      activityRichContent: richContent,
+      activityFormContent: ''
+    })
+  },
+  removeActivityRichBlock: function(e) {
+    var idx = e.currentTarget.dataset.idx
+    var richContent = this.data.activityRichContent
+    richContent.splice(idx, 1)
+    this.setData({ activityRichContent: richContent })
+  },
+  editActivityRichBlock: function(e) {
+    var idx = e.currentTarget.dataset.idx
+    var block = this.data.activityRichContent[idx]
+    var richContent = this.data.activityRichContent
+    richContent.splice(idx, 1)
+    this.setData({
+      activityRichContent: richContent,
+      activityFormContent: block.content,
+      activityFontStyle: block.style || 'normal',
+      activityFontWeight: block.weight || 'normal',
+      activityFontSize: block.size || 28,
+      activityFontColor: block.color || '#ffffff'
+    })
+  },
   chooseActivityImage: function() {
     var self = this
     wx.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'],
@@ -937,11 +1064,38 @@ Page({
     var content = self.data.activityFormContent.trim()
     if (!title) { wx.showToast({ title: '请输入标题', icon: 'none' }); return }
     self.setData({ activitySubmitting: true })
+    var finalContent = content
+    var richContent = []
+    if (self.data.activityEditorMode === 'rich') {
+      if (content) {
+        richContent = self.data.activityRichContent.concat([{
+          type: 'text', content: content, style: self.data.activityFontStyle,
+          weight: self.data.activityFontWeight, size: self.data.activityFontSize, color: self.data.activityFontColor
+        }])
+      } else {
+        richContent = self.data.activityRichContent
+      }
+      var htmlParts = []
+      for (var i = 0; i < richContent.length; i++) {
+        var block = richContent[i]
+        if (block.type === 'quote') {
+          htmlParts.push('<blockquote style="border-left:4rpx solid rgba(0,212,255,0.3);padding-left:12rpx;color:rgba(255,255,255,0.7);font-size:26rpx;margin:12rpx 0;">' + block.content + '</blockquote>')
+        } else {
+          var style = 'font-size:' + block.size + 'rpx;color:' + block.color + ';'
+          if (block.weight === 'bold') style += 'font-weight:bold;'
+          if (block.style === 'italic') style += 'font-style:italic;'
+          htmlParts.push('<p style="' + style + '">' + block.content + '</p>')
+        }
+      }
+      finalContent = htmlParts.join('')
+    }
     var data = {
-      title: title, content: content, type: 'event',
+      title: title, content: finalContent, type: 'event',
       pinned: self.data.activityFormStatus === '置顶',
       start: self.data.activityFormStart, end: self.data.activityFormEnd,
-      image: self.data.activityFormImage, updateTime: db.serverDate()
+      image: self.data.activityFormImage, source: self.data.activityFormSource,
+      richContent: self.data.activityEditorMode === 'rich' ? richContent : [],
+      updateTime: db.serverDate()
     }
     var promise = self.data.activityEditingItem
       ? db.collection('announcements').doc(self.data.activityEditingItem._id).update({ data: data })

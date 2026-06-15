@@ -231,6 +231,24 @@ function requestAndSave(types, callback) {
   })
 }
 
+function pushToSubscribers(type, title, content, page) {
+  var db = null
+  if (wx.cloud) db = wx.cloud.database()
+  if (!db) return
+  db.collection('subscribers').where({ type: type, status: 'active' }).get()
+    .then(function(res) {
+      var subs = (res.data || []).map(function(s) { return { openid: s.openid } })
+      if (subs.length === 0) return
+      wx.request({
+        url: 'https://1442890784-28edxvn34i.ap-shanghai.tencentscf.com',
+        method: 'POST',
+        header: { 'Content-Type': 'application/json' },
+        data: { type: type, title: title, content: (content || '').substring(0, 20), subscribers: subs, page: page || '/pages/index/index' }
+      }).catch(function() {})
+    })
+    .catch(function() {})
+}
+
 function sendInteractionNotify(targetOpenid, type, data) {
   if (!targetOpenid) return
   var templateId = TEMPLATES.interaction
@@ -251,7 +269,8 @@ function sendInteractionNotify(targetOpenid, type, data) {
       data: {
         thing1: { value: thing1.substring(0, 20) },
         thing2: { value: (data.postContent || data.content || '查看帖子').substring(0, 20) },
-        time3: { value: formatNotifyTime(new Date()) }
+        thing3: { value: '点击查看' },
+        time4: { value: formatNotifyTime(new Date()) }
       },
       page: '/pages/community/community'
     }
@@ -274,17 +293,14 @@ function getOpenidByNickname(nickname, callback) {
     callback(null)
     return
   }
-  db.collection('subscribers').where({ status: 'active' }).get()
-    .then(function(res) {
-      if (res.data.length > 0) {
-        var openids = []
-        for (var i = 0; i < res.data.length; i++) {
-          openids.push(res.data[i].openid)
-        }
-        db.collection('users').where({ _openid: db.command.in(openids), nickName: nickname }).get()
-          .then(function(userRes) {
-            if (userRes.data.length > 0 && userRes.data[0]._openid) {
-              callback(userRes.data[0]._openid)
+  db.collection('users').where({ nickName: nickname }).get()
+    .then(function(userRes) {
+      if (userRes.data.length > 0 && userRes.data[0]._openid) {
+        var openid = userRes.data[0]._openid
+        db.collection('subscribers').where({ openid: openid, status: 'active', type: 'interaction' }).get()
+          .then(function(subRes) {
+            if (subRes.data.length > 0) {
+              callback(openid)
             } else {
               callback(null)
             }
@@ -308,5 +324,6 @@ module.exports = {
   getSubscriptionStatus: getSubscriptionStatus,
   requestAndSave: requestAndSave,
   sendInteractionNotify: sendInteractionNotify,
-  getOpenidByNickname: getOpenidByNickname
+  getOpenidByNickname: getOpenidByNickname,
+  pushToSubscribers: pushToSubscribers
 }

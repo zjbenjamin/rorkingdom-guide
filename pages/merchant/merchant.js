@@ -1,6 +1,7 @@
 var app = getApp()
-var merchantData = require('../../data/merchant')
 var i18n = require('../../utils/i18n')
+var merchantData = require('../../data/merchant')
+var cloudUrl = require('../../utils/cloudUrl')
 var notify = require('../../utils/notify')
 var db = null
 
@@ -204,15 +205,7 @@ Page({
         self.setData({ submitting: false, showModal: false })
         wx.showToast({ title: '保存成功', icon: 'success' })
         self.loadConfig()
-        wx.cloud.callFunction({
-          name: 'sendSubscribe',
-          data: {
-            type: 'merchant',
-            title: '商人信息更新',
-            content: value.substring(0, 20),
-            page: '/pages/merchant/merchant'
-          }
-        }).catch(function() {})
+        notify.pushToSubscribers('merchant', '商人信息更新', value, '/pages/merchant/merchant')
       })
       .catch(function() {
         self.setData({ submitting: false })
@@ -342,15 +335,7 @@ Page({
       self.setData({ sellingSubmitting: false, showSellingModal: false, currentSelling: parsed, currentSellingText: text, currentSellingImage: image, sellingMode: mode })
       wx.showToast({ title: '保存成功', icon: 'success' })
       var notifyContent = mode === 'image' ? '在售商品图片已更新' : (parsed.length > 0 ? '在售物品已更新，共' + parsed.length + '件' : '在售信息已更新')
-      wx.cloud.callFunction({
-        name: 'sendSubscribe',
-        data: {
-          type: 'merchant',
-          title: '商人上架更新',
-          content: notifyContent,
-          page: '/pages/merchant/merchant'
-        }
-      }).catch(function() {})
+      notify.pushToSubscribers('merchant', '商人上架更新', notifyContent, '/pages/merchant/merchant')
     }).catch(function() {
       self.setData({ sellingSubmitting: false })
       wx.showToast({ title: '保存失败', icon: 'none' })
@@ -411,6 +396,10 @@ Page({
       clearInterval(this.newItemsTimer)
       this.newItemsTimer = null
     }
+    if (this.newItemsAnimTimer) {
+      clearTimeout(this.newItemsAnimTimer)
+      this.newItemsAnimTimer = null
+    }
   },
   slideNewItems: function() {
     var self = this
@@ -418,7 +407,7 @@ Page({
     if (len < 2) return
     var next = (self.data.newItemsPage + 1) % len
     self.setData({ newItemsAnim: true, newItemsPage: next })
-    setTimeout(function() { self.setData({ newItemsAnim: false }) }, 500)
+    self.newItemsAnimTimer = setTimeout(function() { self.setData({ newItemsAnim: false }) }, 500)
   },
   checkSubscription: function() {
     var self = this
@@ -582,15 +571,7 @@ Page({
   },
   notifySubscribers: function(item) {
     if (!db) return
-    wx.cloud.callFunction({
-      name: 'sendSubscribe',
-      data: {
-        type: 'merchant',
-        title: '新商品上架',
-        content: item.name + ' - ' + item.price + '洛克贝',
-        page: '/pages/merchant/merchant'
-      }
-    }).catch(function() {})
+    notify.pushToSubscribers('merchant', '新商品上架', item.name + ' - ' + item.price + '洛克贝', '/pages/merchant/merchant')
   },
   deleteMerchantItem: function(e) {
     var self = this

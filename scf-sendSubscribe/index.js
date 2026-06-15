@@ -100,7 +100,13 @@ const TEMPLATE_FIELDS = {
 }
 
 exports.main_handler = async (event, context) => {
-  const { type, title, content, touser, templateId, data, page, subscribers: subscriberList } = event
+  console.log('原始event:', JSON.stringify(event))
+  var parsedEvent = event
+  if (typeof event.body === 'string') {
+    try { parsedEvent = JSON.parse(event.body) } catch (e) { console.log('解析body失败:', e) }
+  }
+  console.log('解析后:', JSON.stringify(parsedEvent))
+  const { type, title, content, touser, templateId, data, page, subscribers: subscriberList } = parsedEvent
 
   const defaultPages = {
     announcement: '/pages/index/index',

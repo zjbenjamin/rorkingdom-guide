@@ -248,13 +248,14 @@
             <view class="page-icon">{{item.icon}}</view>
             <view class="card-user-info">
               <text class="card-author">{{item.name}}</text>
-              <text class="card-meta">状态：{{item.maintenance ? '维护中（已下线）' : '运行中'}}</text>
+              <text class="card-meta" wx:if="{{item.isNav}}">状态：{{item.maintenance ? '已隐藏' : '显示中'}}</text>
+              <text class="card-meta" wx:else>状态：{{item.maintenance ? '维护中（已下线）' : '运行中'}}</text>
             </view>
             <view class="toggle {{item.maintenance ? 'on' : ''}}" catchtap="togglePageMaintenance" data-id="{{item.id}}">
               <view class="toggle-dot"></view>
             </view>
           </view>
-          <view class="page-actions">
+          <view class="page-actions" wx:if="{{!item.isNav}}">
             <view class="btn-edit" catchtap="togglePageCustom" data-id="{{item.id}}">自定义：{{item.useCustom ? '开' : '关'}}</view>
           </view>
         </view>
@@ -399,6 +400,20 @@
               </view>
             </view>
           </view>
+          <view class="form-row">
+            <view class="form-group half">
+              <text class="form-label">开始日期</text>
+              <picker class="form-picker" mode="date" value="{{formStartDate}}" bindchange="onStartDateChange">
+                <text class="picker-text">{{formStartDate || '选择日期'}} ▾</text>
+              </picker>
+            </view>
+            <view class="form-group half">
+              <text class="form-label">结束日期</text>
+              <picker class="form-picker" mode="date" value="{{formEndDate}}" bindchange="onEndDateChange">
+                <text class="picker-text">{{formEndDate || '选择日期'}} ▾</text>
+              </picker>
+            </view>
+          </view>
         </view>
         <view class="modal-footer">
           <text class="char-count">{{formContent.length}}/500</text>
@@ -433,6 +448,20 @@
             <text class="form-label">更新内容</text>
             <textarea class="form-textarea" placeholder="输入更新内容详情..." value="{{systemFormContent}}" bindinput="onSystemContentInput" maxlength="1000" cursor-spacing="120" />
           </view>
+          <view class="form-row">
+            <view class="form-group half">
+              <text class="form-label">开始日期</text>
+              <picker class="form-picker" mode="date" value="{{systemFormStartDate}}" bindchange="onSystemStartDateChange">
+                <text class="picker-text">{{systemFormStartDate || '选择日期'}} ▾</text>
+              </picker>
+            </view>
+            <view class="form-group half">
+              <text class="form-label">结束日期</text>
+              <picker class="form-picker" mode="date" value="{{systemFormEndDate}}" bindchange="onSystemEndDateChange">
+                <text class="picker-text">{{systemFormEndDate || '选择日期'}} ▾</text>
+              </picker>
+            </view>
+          </view>
         </view>
         <view class="modal-footer">
           <text class="notify-hint">发布后将自动推送通知给所有订阅用户</text>
@@ -464,17 +493,76 @@
             </picker>
           </view>
           <view class="form-group">
-            <text class="form-label">描述</text>
-            <textarea class="form-textarea" placeholder="活动描述..." value="{{activityFormContent}}" bindinput="onActivityContentInput" maxlength="500" cursor-spacing="120" />
+            <view class="form-label-row">
+              <text class="form-label">描述</text>
+              <view class="editor-mode-btn" catchtap="switchActivityEditorMode">
+                <text class="mode-icon">{{activityEditorMode === 'simple' ? '✏️' : '📝'}}</text>
+                <text class="mode-text">{{activityEditorMode === 'simple' ? '切换排版模式' : '切换简易模式'}}</text>
+              </view>
+            </view>
+            <!-- 富文本编辑工具栏 -->
+            <view class="rich-toolbar" wx:if="{{activityEditorMode === 'rich'}}">
+              <view class="toolbar-row">
+                <view class="tool-btn {{activityFontWeight === 'bold' ? 'active' : ''}}" catchtap="toggleActivityBold">
+                  <text class="tool-icon" style="font-weight:bold;">B</text>
+                </view>
+                <view class="tool-btn {{activityFontStyle === 'italic' ? 'active' : ''}}" catchtap="toggleActivityItalic">
+                  <text class="tool-icon" style="font-style:italic;">I</text>
+                </view>
+                <view class="tool-btn" catchtap="showActivityFontSizePicker">
+                  <text class="tool-icon">Aa</text>
+                </view>
+                <view class="tool-btn" catchtap="showActivityFontColorPicker">
+                  <view class="color-preview" style="background:{{activityFontColor}};"></view>
+                </view>
+                <view class="tool-btn" catchtap="addActivityRichTextBlock">
+                  <text class="tool-icon">+</text>
+                  <text class="tool-text">添加</text>
+                </view>
+                <view class="tool-btn" catchtap="addActivityRichQuoteBlock">
+                  <text class="tool-icon">❝</text>
+                  <text class="tool-text">引用</text>
+                </view>
+              </view>
+              <view class="size-picker" wx:if="{{showActivitySizePicker}}">
+                <view class="size-option {{activityFontSize === item ? 'active' : ''}}" wx:for="{{fontSizeOptions}}" wx:key="*this" catchtap="setActivityFontSize" data-size="{{item}}">
+                  <text style="font-size:{{item}}rpx;">{{item}}</text>
+                </view>
+              </view>
+              <view class="color-picker" wx:if="{{showActivityColorPicker}}">
+                <view class="color-option {{activityFontColor === item.value ? 'active' : ''}}" wx:for="{{fontColorOptions}}" wx:key="value" catchtap="setActivityFontColor" data-color="{{item.value}}">
+                  <view class="color-dot" style="background:{{item.value}};"></view>
+                  <text class="color-name">{{item.name}}</text>
+                </view>
+              </view>
+            </view>
+            <!-- 已添加的富文本块 -->
+            <view class="rich-blocks" wx:if="{{activityEditorMode === 'rich' && activityRichContent.length > 0}}">
+              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}}" wx:for="{{activityRichContent}}" wx:key="index">
+                <view class="block-content">
+                  <text wx:if="{{item.type === 'quote'}}" class="block-quote-icon">❝</text>
+                  <text class="block-text" style="font-size:{{item.size}}rpx;color:{{item.color}};font-weight:{{item.weight}};font-style:{{item.style}};">{{item.content}}</text>
+                </view>
+                <view class="block-actions">
+                  <view class="block-btn" catchtap="editActivityRichBlock" data-idx="{{index}}">编辑</view>
+                  <view class="block-btn delete" catchtap="removeActivityRichBlock" data-idx="{{index}}">删除</view>
+                </view>
+              </view>
+            </view>
+            <textarea class="form-textarea" placeholder="{{activityEditorMode === 'rich' ? '输入内容后点击工具栏按钮添加...' : '活动描述...'}}" value="{{activityFormContent}}" bindinput="onActivityContentInput" maxlength="500" cursor-spacing="120" />
           </view>
           <view class="form-row">
             <view class="form-group half">
               <text class="form-label">开始日期</text>
-              <input class="form-input" placeholder="2026-01-01" value="{{activityFormStart}}" bindinput="onActivityStartInput" />
+              <picker class="form-picker" mode="date" value="{{activityFormStart}}" bindchange="onActivityStartChange">
+                <text class="picker-text">{{activityFormStart || '选择日期'}} ▾</text>
+              </picker>
             </view>
             <view class="form-group half">
               <text class="form-label">结束日期</text>
-              <input class="form-input" placeholder="2026-01-31" value="{{activityFormEnd}}" bindinput="onActivityEndInput" />
+              <picker class="form-picker" mode="date" value="{{activityFormEnd}}" bindchange="onActivityEndChange">
+                <text class="picker-text">{{activityFormEnd || '选择日期'}} ▾</text>
+              </picker>
             </view>
           </view>
           <view class="form-group">
@@ -495,6 +583,10 @@
                 </view>
               </view>
             </view>
+          </view>
+          <view class="form-group">
+            <text class="form-label">来源（可选）</text>
+            <input class="form-input" placeholder="  输入引用来源或出处" value="{{activityFormSource}}" bindinput="onActivitySourceInput" maxlength="100" />
           </view>
         </view>
         <view class="modal-footer">

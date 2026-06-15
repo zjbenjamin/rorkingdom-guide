@@ -83,6 +83,10 @@
           <text class="source-text">道具图鉴：洛克王国手游WIKI（CC BY-NC-SA 4.0）</text>
         </view>
         <view class="source-item">
+          <text class="source-icon">🥚</text>
+          <text class="source-text">蛋组数据：洛克王国WIKI（CC BY-NC-SA 4.0）</text>
+        </view>
+        <view class="source-item">
           <text class="source-icon">📅</text>
           <text class="source-text">活动动态：洛克王国世界微信公众号</text>
         </view>
@@ -93,6 +97,73 @@
         <view class="source-item">
           <text class="source-icon">🎨</text>
           <text class="source-text">页面图片：ChatGPT / 腾讯元宝 AI生成</text>
+        </view>
+        <view class="source-item">
+          <text class="source-icon">🔗</text>
+          <text class="source-text">数据来源：https://wiki.biligame.com/rocom</text>
+        </view>
+        <view class="source-item">
+          <text class="source-icon">📋</text>
+          <text class="source-text">授权协议：CC BY-NC-SA 4.0</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">等级系统</view>
+      <view class="level-rules">
+        <view class="level-rule-item">
+          <text class="level-rule-icon">🐣</text>
+          <view class="level-rule-info">
+            <text class="level-rule-name">Lv.1 小洛克</text>
+            <text class="level-rule-desc">初始等级</text>
+          </view>
+        </view>
+        <view class="level-rule-item">
+          <text class="level-rule-icon">🎓</text>
+          <view class="level-rule-info">
+            <text class="level-rule-name">Lv.2 见习魔法生</text>
+            <text class="level-rule-desc">累计登录3天</text>
+          </view>
+        </view>
+        <view class="level-rule-item">
+          <text class="level-rule-icon">✨</text>
+          <view class="level-rule-info">
+            <text class="level-rule-name">Lv.4 高级魔法生</text>
+            <text class="level-rule-desc">累计登录15天</text>
+          </view>
+        </view>
+        <view class="level-rule-item">
+          <text class="level-rule-icon">📖</text>
+          <view class="level-rule-info">
+            <text class="level-rule-name">Lv.6 精灵研究员</text>
+            <text class="level-rule-desc">累计登录60天</text>
+          </view>
+        </view>
+        <view class="level-rule-item">
+          <text class="level-rule-icon">🔮</text>
+          <view class="level-rule-info">
+            <text class="level-rule-name">Lv.8 魔法大师</text>
+            <text class="level-rule-desc">累计登录120天</text>
+          </view>
+        </view>
+        <view class="level-rule-item">
+          <text class="level-rule-icon">🏰</text>
+          <view class="level-rule-info">
+            <text class="level-rule-name">Lv.10 王国守护者</text>
+            <text class="level-rule-desc">累计登录365天</text>
+          </view>
+        </view>
+        <view class="level-rule-item">
+          <text class="level-rule-icon">👑</text>
+          <view class="level-rule-info">
+            <text class="level-rule-name">Lv.15 至尊洛克</text>
+            <text class="level-rule-desc">累计登录365天+UID+250次捕捉</text>
+          </view>
+        </view>
+        <view class="level-rule-tip">
+          <text class="level-rule-tip-icon">💡</text>
+          <text class="level-rule-tip-text">额外加成：设置洛克王国UID +1级，每50次捕捉 +1级（最高20级）</text>
         </view>
       </view>
     </view>
@@ -130,11 +201,11 @@
           <text class="privacy-icon">💾</text>
           <text class="privacy-text">本地存储：偏好设置、捕捉统计等数据仅保存在设备本地</text>
         </view>
-        <view class="privacy-item">
+        <view class="privacy-item" wx:if="{{showCommunity}}">
           <text class="privacy-icon">☁️</text>
           <text class="privacy-text">云端同步：登录信息、社区帖子等数据安全存储在微信云环境</text>
         </view>
-        <view class="privacy-item">
+        <view class="privacy-item" wx:if="{{showCommunity}}">
           <text class="privacy-icon">📱</text>
           <text class="privacy-text">社区展示：发帖自动记录手机品牌和IP归属省份（开发者除外）</text>
         </view>
@@ -165,6 +236,25 @@
     <view class="card">
       <view class="card-title">更新日志</view>
       <view class="changelog-list">
+        <view class="changelog-item">
+          <view class="changelog-ver">v1.0.7B</view>
+          <view class="changelog-date">2026-06-15</view>
+          <view class="changelog-content">
+            <text class="changelog-add">新增：精灵图鉴精灵立绘图片显示（WIKI数据源）</text>
+            <text class="changelog-add">新增：精灵图鉴三列网格布局+分页加载优化</text>
+            <text class="changelog-add">新增：道具图鉴三列网格布局+emoji图标显示</text>
+            <text class="changelog-add">新增：地图工具数据（8大分类地图点位）</text>
+            <text class="changelog-add">新增：捕捉统计咕噜球emoji图标样式</text>
+            <text class="changelog-add">新增：孵蛋查询功能（蛋组计算器入口）</text>
+            <text class="changelog-add">新增：管理员后台社区入口隐藏/显示开关</text>
+            <text class="changelog-add">新增：隐私政策更新（社区隐藏时自动同步描述）</text>
+            <text class="changelog-fix">修复：精灵图鉴属性选择栏水平滚动问题</text>
+            <text class="changelog-fix">修复：远行商人页面定时器销毁后报错问题</text>
+            <text class="changelog-fix">修复：道具图鉴数据与WIKI同步更新</text>
+            <text class="changelog-fix">修复：蛋组计算器顶部显示神奇的蛋图片</text>
+            <text class="changelog-note">数据来源：洛克王国手游WIKI（CC BY-NC-SA 4.0）</text>
+          </view>
+        </view>
         <view class="changelog-item">
           <view class="changelog-ver">v1.0.7A</view>
           <view class="changelog-date">2026-06-15</view>

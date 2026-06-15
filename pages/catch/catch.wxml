@@ -146,7 +146,7 @@
       <view class="ball-detail-title">咕噜球明细 <text class="clear-link" bindtap="onResetBalls">重置</text></view>
       <view wx:for="{{balls}}" wx:key="id" wx:if="{{item.count > 0}}">
         <view class="ball-row {{selectedBall===index?'selected':''}}" bindtap="onSelectBall" data-i="{{index}}">
-          <view class="ball-dot" style="background:{{item.color}}"></view>
+          <text class="ball-icon">{{item.icon}}</text>
           <view class="ball-info">
             <text class="ball-name">{{item.name}}</text>
             <text class="ball-rate">{{item.rate}}</text>

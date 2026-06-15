@@ -2,6 +2,8 @@ var app = getApp()
 var db = null
 var notify = require('../../utils/notify')
 var cloudUrl = require('../../utils/cloudUrl')
+var levelUtil = require('../../utils/level')
+var musicUtil = require('../../utils/music')
 
 function getDeviceModel() {
   try {
@@ -69,7 +71,12 @@ Page({
     deviceModel: '',
     province: '',
     showLocationTip: false,
-    showCommunityNotice: true
+    showCommunityNotice: true,
+    isEditor: false,
+    userLevel: 1,
+    userLevelName: '小洛克',
+    userLevelIcon: '🐣',
+    userLevelColor: { bg: 'rgba(255,255,255,0.1)', text: 'rgba(255,255,255,0.5)', border: 'rgba(255,255,255,0.2)' }
   },
   onLoad: function() {
     var noticeClosed = wx.getStorageSync('community_notice_closed')
@@ -85,6 +92,7 @@ Page({
       self.setData({ deviceModel: getDeviceModel() })
     }
     self.refreshUserAvatar()
+    self.loadUserLevel()
     if (!self.data.dataReady) {
       self.loadAdminConfig()
     } else {
@@ -96,6 +104,23 @@ Page({
     } else if (locationAuth !== 'denied') {
       self.setData({ showLocationTip: true })
     }
+  },
+  loadUserLevel: function() {
+    var self = this
+    var loginDays = wx.getStorageSync('login_days') || []
+    var gameUid = wx.getStorageSync('game_uid') || ''
+    var captureCount = wx.getStorageSync('total_catches') || 0
+    var hasUid = !!gameUid
+    var level = levelUtil.calcLevel(loginDays.length, hasUid, captureCount)
+    var levelInfo = levelUtil.getLevelColor(level)
+    var levelName = levelUtil.getLevelName(level)
+    var levelIcon = levelUtil.getLevelIcon(level)
+    self.setData({
+      userLevel: level,
+      userLevelName: levelName,
+      userLevelIcon: levelIcon,
+      userLevelColor: levelInfo
+    })
   },
   onLocationAllow: function() {
     var self = this
@@ -295,6 +320,11 @@ Page({
           list[i].titleColor = titleColors[list[i].userName] || ''
           list[i].gameUid = uids[list[i].userName] || ''
           list[i].userBanned = !!banned[list[i].userName]
+          var parsed = musicUtil.parseNeteaseMusic(list[i].content)
+          list[i].displayText = parsed.text
+          list[i].musicList = parsed.musicList
+          var urlMusics = musicUtil.parseUrl(list[i].content)
+          if (urlMusics.length > 0) list[i].musicList = list[i].musicList.concat(urlMusics)
           if (list[i].likes && app.globalData.userInfo) {
             for (var j = 0; j < list[i].likes.length; j++) {
               if (list[i].likes[j] === app.globalData.userInfo.nickName) {
@@ -742,13 +772,16 @@ Page({
     if (self.data.replying) return
     var content = self.data.replyContent.trim()
     if (!content) { wx.showToast({ title: '请输入回复内容', icon: 'none' }); return }
-    if (!db || !app.globalData.userInfo || !self.data.activeReplyPostId) return
+    if (!db || !app.globalData.userInfo || !self.data.activeReplyPostId) {
+      wx.showToast({ title: '回复失败：无目标帖子', icon: 'none' })
+      return
+    }
     var postId = self.data.activeReplyPostId
     var post = null
     for (var i = 0; i < self.data.comments.length; i++) {
       if (self.data.comments[i]._id === postId) { post = self.data.comments[i]; break }
     }
-    if (!post) return
+    if (!post) { wx.showToast({ title: '回复失败：找不到帖子', icon: 'none' }); return }
     self.setData({ replying: true })
     var roles = self.data.userRoles
     var userRole = roles[app.globalData.userInfo.nickName] || ''
@@ -844,7 +877,12 @@ Page({
       db.collection('users').where({ _openid: openid }).get()
         .then(function(r) {
           if (r.data.length > 0) {
-            db.collection('users').doc(r.data[0]._id).update({
+            var user = r.data[0]
+            if (user.role === 'editor') {
+              wx.showToast({ title: '小编头衔由管理员设置，无法自行修改', icon: 'none', duration: 2000 })
+              return
+            }
+            db.collection('users').doc(user._id).update({
               data: { title: title, titleColor: color }
             }).then(function() {
               wx.showToast({ title: '头衔已更新', icon: 'success' })
@@ -880,7 +918,7 @@ Page({
   checkManager: function() {
     if (!app.globalData.userInfo) return
     var role = this.data.userRoles[app.globalData.userInfo.nickName] || ''
-    this.setData({ isManager: role === 'developer' || role === 'editor' })
+    this.setData({ isManager: role === 'developer' || role === 'editor', isEditor: role === 'editor' })
   },
   togglePin: function(e) {
     var self = this

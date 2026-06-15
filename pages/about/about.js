@@ -9,7 +9,7 @@ Page({
     uid: '476200',
     aboutData: {
       appName: '洛手助手BENJAMIN',
-      version: '版本 v1.0.7A 体验版',
+      version: '版本 v1.0.7B 体验版',
       devName: '浙里本杰明',
       devAvatar: '/images/avatar.jpg',
       uid: '476200',
@@ -22,7 +22,8 @@ Page({
     editValue: '',
     submitting: false,
     editModalTitle: '',
-    editMode: ''
+    editMode: '',
+    showCommunity: true
   },
   onLoad() {
     if (wx.cloud) db = wx.cloud.database()
@@ -35,6 +36,11 @@ Page({
     })
     self.loadAboutData()
     self.checkAdmin()
+    if (db) {
+      db.collection('page_config').doc('community').get()
+        .then(function(res) { self.setData({ showCommunity: !res.data.maintenance }) })
+        .catch(function() {})
+    }
   },
   loadAboutData() {
     var self = this

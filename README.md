@@ -237,9 +237,13 @@ rorkingdom-guide/
 | 来源 | 内容 | 协议 |
 |------|------|------|
 | 洛克王国手游WIKI | 精灵图鉴、道具图鉴、技能数据、商人物品 | CC BY-NC-SA 4.0 |
+| 洛克王国WIKI | 蛋组数据、精灵蛋池 | CC BY-NC-SA 4.0 |
 | 洛克王国世界官方客服 | 捕捉规则、异色获取方式 | 官方信息 |
 | 洛克王国世界微信公众号 | 活动动态 | 官方信息 |
 | ChatGPT / 腾讯元宝 | 页面图片（banner、logo等） | AI生成素材 |
+
+数据来源链接：https://wiki.biligame.com/rocom
+授权协议：[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans)
 
 ## 隐私声明
 

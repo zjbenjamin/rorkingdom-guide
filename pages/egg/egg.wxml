@@ -9,6 +9,18 @@
 
     <!-- 正常内容 -->
     <view wx:if="{{!maintenance}}">
+      <!-- 蛋组计算器入口 -->
+      <view class="card egg-calc-entry" bindtap="go" data-url="/pages/eggCalc/eggCalc">
+        <view class="egg-calc-entry-content">
+          <text class="egg-calc-entry-icon">🧮</text>
+          <view class="egg-calc-entry-info">
+            <text class="egg-calc-entry-title">蛋组计算器</text>
+            <text class="egg-calc-entry-desc">查询精灵蛋组，筛选孵蛋目标</text>
+          </view>
+          <text class="egg-calc-entry-arrow">›</text>
+        </view>
+      </view>
+
       <!-- 自定义模式 -->
       <view wx:if="{{useCustom}}">
         <view class="card">

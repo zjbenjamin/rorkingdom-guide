@@ -91,25 +91,10 @@
         <text class="empty-notice-text">暂无公告，请前往管理后台发布</text>
         <view class="empty-notice-btn" bindtap="goAdmin">去发布</view>
       </view>
-      <!-- 订阅按钮 -->
-      <view class="announce-footer" wx:if="{{subscribeConfig.announcement !== false}}">
-        <view class="sub-link {{subscribedAnnouncement ? 'on' : ''}}" catchtap="subscribeAnnouncement">
-          <text class="sub-icon">{{subscribedAnnouncement ? '🔔' : '🔕'}}</text>
-          <text class="sub-text">{{subscribedAnnouncement ? '已开启推送通知' + (subscribeCount > 0 ? ' (' + subscribeCount + '次)' : '') : '开启推送通知'}}</text>
-        </view>
-        <view class="sub-counter" catchtap="subscribeAnnouncement">
-          <view class="sub-counter-btn">
-            <text class="sub-counter-plus">+</text>
-          </view>
-          <view class="sub-counter-badge" wx:if="{{subscribeCount > 0}}">
-            <text class="sub-counter-num">{{subscribeCount}}</text>
-          </view>
-        </view>
-      </view>
     </view>
 
     <!-- 热门榜单 -->
-    <view class="card" wx:if="{{hotPosts.length > 0}}">
+    <view class="card" wx:if="{{hotPosts.length > 0 && showCommunity}}">
       <view class="stitle">🔥 热门榜单</view>
       <view class="hot-list">
         <view class="hot-item" wx:for="{{hotPosts}}" wx:key="_id" bindtap="go" data-url="/pages/community/community">
@@ -131,7 +116,7 @@
 
   <view class="navbar">
     <view class="nav-item on"><text class="nav-icon">🏠</text><text class="nav-text">首页</text></view>
-    <view class="nav-item" bindtap="go" data-url="/pages/community/community"><text class="nav-icon">👥</text><text class="nav-text">社区</text></view>
+    <view class="nav-item" wx:if="{{showCommunity}}" bindtap="go" data-url="/pages/community/community"><text class="nav-icon">👥</text><text class="nav-text">社区</text></view>
     <view class="nav-item" bindtap="go" data-url="/pages/activity/activity"><text class="nav-icon">📅</text><text class="nav-text">活动</text></view>
     <view class="nav-item" bindtap="go" data-url="/pages/login/login"><text class="nav-icon">👤</text><text class="nav-text">我的</text></view>
   </view>

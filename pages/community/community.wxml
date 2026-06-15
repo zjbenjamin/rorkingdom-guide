@@ -32,9 +32,9 @@
 
     <!-- 头衔选择 -->
     <view class="title-bar" wx:if="{{userInfo}}">
-      <view class="title-bar-left" bindtap="toggleTitlePicker">
-        <text class="title-bar-label">我的头衔</text>
-        <text class="title-bar-value">选择/更换头衔 ›</text>
+      <view class="title-bar-left">
+        <text class="title-bar-label">我的等级</text>
+        <text class="title-bar-value" style="color: {{userLevelColor.border}};">{{userLevelIcon}} Lv.{{userLevel}} {{userLevelName}}</text>
       </view>
       <view class="location-toggle" bindtap="toggleLocationSetting">
         <text class="location-toggle-icon">📍</text>
@@ -130,14 +130,6 @@
           <view class="badge-pin" wx:if="{{item.pinned}}">📌 置顶</view>
           <view class="badge-feat" wx:if="{{item.featured}}">⭐ 精选</view>
         </view>
-        <!-- 管理员用户操作（仅管理员可见） -->
-        <view class="user-manage-bar" wx:if="{{isManager && userRoles[item.userName] !== 'developer' && userInfo.nickName !== item.userName}}">
-          <text class="manage-label">用户管理：</text>
-          <view class="manage-btn" catchtap="banUser" data-item="{{item}}" wx:if="{{!item.userBanned}}">封禁</view>
-          <view class="manage-btn" catchtap="unbanUser" data-item="{{item}}" wx:if="{{item.userBanned}}">解封</view>
-          <view class="manage-btn" catchtap="setEditor" data-item="{{item}}" wx:if="{{userRoles[item.userName] !== 'editor'}}">设为小编</view>
-          <view class="manage-btn" catchtap="removeEditor" data-item="{{item}}" wx:if="{{userRoles[item.userName] === 'editor'}}">取消小编</view>
-        </view>
       </view>
     </view>
 
@@ -206,8 +198,14 @@
         <text class="title-picker-title">选择头衔</text>
         <text class="title-picker-close" bindtap="toggleTitlePicker">✕</text>
       </view>
-      <view class="title-option" wx:for="{{titleOptions}}" wx:key="name" bindtap="selectTitle" data-title="{{item.name}}" data-color="{{item.color}}">
-        <text class="title-option-name" style="color: {{item.color}}">{{item.name}}</text>
+      <view wx:if="{{isEditor}}" class="editor-title-locked">
+        <text class="editor-title-locked-icon">🔒</text>
+        <text class="editor-title-locked-text">小编头衔由管理员设置，无法自行修改</text>
+      </view>
+      <view wx:else>
+        <view class="title-option" wx:for="{{titleOptions}}" wx:key="name" bindtap="selectTitle" data-title="{{item.name}}" data-color="{{item.color}}">
+          <text class="title-option-name" style="color: {{item.color}}">{{item.name}}</text>
+        </view>
       </view>
       <text class="title-tip">头衔根据捕捉数据自动计算，也可手动选择</text>
     </view>

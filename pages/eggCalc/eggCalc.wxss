@@ -1,0 +1,66 @@
+/* 数据来源 */
+.egg-source { padding: 16rpx 24rpx; background: rgba(0,212,255,0.05); border: 1rpx solid rgba(0,212,255,0.1); border-radius: 12rpx; margin-bottom: 20rpx; }
+.egg-source-text { font-size: 22rpx; color: rgba(255,255,255,0.5); display: block; }
+.egg-source-link { font-size: 20rpx; color: #00d4ff; display: block; margin-top: 4rpx; }
+
+/* 蛋组计算器 */
+.egg-card { background: linear-gradient(145deg, rgba(20,25,60,0.9), rgba(15,18,45,0.95)); border: 1rpx solid rgba(0,212,255,0.1); border-radius: 20rpx; overflow: hidden; }
+
+/* 头部 */
+.egg-head { display: flex; align-items: center; gap: 24rpx; padding: 32rpx; background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(255,171,64,0.05)); border-bottom: 1rpx solid rgba(0,212,255,0.08); }
+.egg-icon-wrap { width: 96rpx; height: 96rpx; display: flex; align-items: center; justify-content: center; background: rgba(0,212,255,0.1); border-radius: 50%; border: 2rpx solid rgba(0,212,255,0.2); overflow: hidden; }
+.egg-icon-img { width: 80rpx; height: 80rpx; }
+.egg-icon-text { font-size: 56rpx; }
+.egg-title { flex: 1; }
+.egg-label { font-size: 24rpx; color: rgba(255,255,255,0.5); display: block; margin-bottom: 8rpx; }
+.egg-subtitle { font-size: 36rpx; font-weight: 700; color: #fff; display: block; margin-bottom: 12rpx; }
+.egg-groups { display: flex; flex-wrap: wrap; gap: 8rpx; }
+.egg-group-tag { padding: 4rpx 16rpx; background: rgba(0,212,255,0.15); border: 1rpx solid rgba(0,212,255,0.3); border-radius: 20rpx; font-size: 22rpx; color: #00d4ff; }
+
+/* 搜索区域 */
+.egg-search { padding: 24rpx; background: rgba(0,0,0,0.2); border-bottom: 1rpx solid rgba(0,212,255,0.06); position: relative; }
+.egg-search-row { display: flex; gap: 16rpx; }
+.egg-search-input { flex: 1; height: 72rpx; background: rgba(0,0,0,0.4); border: 1rpx solid rgba(0,212,255,0.2); border-radius: 16rpx; padding: 0 24rpx; font-size: 28rpx; color: #fff; }
+.egg-search-input:focus { border-color: #00d4ff; }
+.egg-search-clear { height: 72rpx; line-height: 72rpx; padding: 0 24rpx; background: rgba(255,71,87,0.15); border: 1rpx solid rgba(255,71,87,0.3); border-radius: 16rpx; font-size: 24rpx; color: #ff4757; }
+
+/* 搜索建议 */
+.egg-suggest { position: absolute; left: 24rpx; right: 24rpx; top: 100%; z-index: 100; background: rgba(20,25,60,0.98); border: 1rpx solid rgba(0,212,255,0.2); border-radius: 16rpx; max-height: 400rpx; overflow-y: auto; box-shadow: 0 16rpx 32rpx rgba(0,0,0,0.4); }
+.egg-suggest-item { display: flex; justify-content: space-between; align-items: center; padding: 20rpx 24rpx; border-bottom: 1rpx solid rgba(0,212,255,0.06); }
+.egg-suggest-item:active { background: rgba(0,212,255,0.1); }
+.egg-suggest-name { font-size: 28rpx; font-weight: 600; color: #fff; }
+.egg-suggest-groups { font-size: 22rpx; color: rgba(255,255,255,0.4); }
+
+/* 蛋组筛选标签 */
+.egg-filter { padding: 16rpx 24rpx; }
+.egg-filter-scroll { white-space: nowrap; }
+.egg-filter-tags { display: inline-flex; gap: 12rpx; }
+.egg-tag { display: inline-flex; align-items: center; gap: 8rpx; padding: 12rpx 20rpx; background: rgba(0,0,0,0.3); border: 1rpx solid rgba(0,212,255,0.1); border-radius: 24rpx; font-size: 24rpx; color: rgba(255,255,255,0.6); white-space: nowrap; }
+.egg-tag.active { background: rgba(255,171,64,0.2); border-color: rgba(255,171,64,0.5); color: #ffab40; font-weight: 600; }
+.egg-tag-dot { width: 12rpx; height: 12rpx; border-radius: 50%; }
+.egg-tag-count { font-size: 20rpx; color: rgba(255,255,255,0.4); margin-left: 4rpx; }
+
+/* 精灵列表 */
+.egg-list { padding: 24rpx; }
+.egg-list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20rpx; }
+.egg-list-title { font-size: 30rpx; font-weight: 700; color: #fff; }
+.egg-list-count { font-size: 24rpx; color: rgba(255,255,255,0.4); }
+.egg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16rpx; }
+.egg-pet-card { background: rgba(0,0,0,0.3); border: 1rpx solid rgba(0,212,255,0.08); border-radius: 16rpx; padding: 20rpx 12rpx; text-align: center; transition: all 0.2s; }
+.egg-pet-card:active { transform: scale(0.96); border-color: rgba(0,212,255,0.3); }
+.egg-pet-art { height: 80rpx; display: flex; align-items: center; justify-content: center; margin-bottom: 8rpx; }
+.egg-pet-img { width: 72rpx; height: 72rpx; }
+.egg-pet-emoji { font-size: 56rpx; }
+.egg-pet-name { font-size: 24rpx; font-weight: 600; color: #fff; display: block; margin-bottom: 6rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.egg-pet-type { font-size: 20rpx; font-weight: 600; display: block; margin-bottom: 8rpx; }
+.egg-pet-groups { display: flex; flex-wrap: wrap; gap: 4rpx; justify-content: center; }
+.egg-pet-group { padding: 2rpx 8rpx; background: rgba(0,212,255,0.1); border: 1rpx solid rgba(0,212,255,0.15); border-radius: 8rpx; font-size: 18rpx; color: rgba(0,212,255,0.7); }
+
+/* 空状态 */
+.egg-empty { text-align: center; padding: 60rpx 0; }
+.egg-empty-icon { font-size: 64rpx; display: block; margin-bottom: 16rpx; }
+.egg-empty-text { font-size: 26rpx; color: rgba(255,255,255,0.4); }
+
+/* 加载状态 */
+.egg-loading { text-align: center; padding: 60rpx 0; }
+.egg-loading-text { font-size: 26rpx; color: rgba(0,212,255,0.5); }
