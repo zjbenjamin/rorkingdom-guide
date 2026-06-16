@@ -102,3 +102,57 @@ button::after { border: none; }
 /* 输入框 */
 input { color: #fff; }
 input::placeholder { color: rgba(255,255,255,0.35); }
+
+/* 富文本排版块公共样式 */
+.rich-text-block { font-size: 26rpx; color: rgba(255,255,255,0.7); line-height: 1.8; display: block; margin: 12rpx 0; word-break: break-all; }
+.rich-quote-block { border-left: 4rpx solid rgba(0,212,255,0.3); padding: 8rpx 16rpx; color: rgba(255,255,255,0.6); font-size: 26rpx; margin: 16rpx 0; background: rgba(0,0,0,0.15); border-radius: 0 12rpx 12rpx 0; }
+.rich-music-block { display: flex; align-items: center; background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(153,69,255,0.08)); border: 1rpx solid rgba(0,212,255,0.25); border-radius: 16rpx; padding: 18rpx 24rpx; margin: 20rpx 0; position: relative; overflow: hidden; box-shadow: 0 4px 12px rgba(0,212,255,0.08); }
+.rich-music-block::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0,212,255,0.15), transparent); animation: musicBtnShine 3s ease-in-out infinite; }
+@keyframes musicBtnShine { 0% { left: -100%; } 40%, 100% { left: 100%; } }
+.music-icon { font-size: 40rpx; margin-right: 18rpx; flex-shrink: 0; }
+.music-info { flex: 1; min-width: 0; }
+.music-name { font-size: 28rpx; color: #fff; font-weight: bold; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.music-url { font-size: 20rpx; color: rgba(0,212,255,0.5); display: block; margin-top: 4rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.music-play-btn { font-size: 22rpx; color: #00d4ff; padding: 8rpx 20rpx; background: rgba(0,212,255,0.15); border: 1rpx solid rgba(0,212,255,0.3); border-radius: 8rpx; font-weight: 500; flex-shrink: 0; margin-left: 16rpx; text-shadow: 0 0 4px rgba(0,212,255,0.3); }
+
+/* 编辑器后台音乐块特殊标记 */
+.music-block-item { border: 1rpx dashed rgba(0,212,255,0.4) !important; background: rgba(0,212,255,0.05) !important; }
+.block-music-icon { font-size: 32rpx; margin-right: 12rpx; color: #00d4ff; }
+.music-text-info { color: #00d4ff !important; font-weight: bold; }
+
+/* 富文本排版块 iframe 网页插件样式 */
+.rich-iframe-block { display: flex; align-items: center; background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(0,230,118,0.05)); border: 1rpx solid rgba(0,212,255,0.2); border-radius: 16rpx; padding: 18rpx 24rpx; margin: 20rpx 0; box-shadow: 0 4px 12px rgba(0,212,255,0.06); }
+.iframe-icon { font-size: 40rpx; margin-right: 18rpx; flex-shrink: 0; color: #00e676; }
+.iframe-info { flex: 1; min-width: 0; }
+.iframe-name { font-size: 28rpx; color: #fff; font-weight: bold; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.iframe-url { font-size: 20rpx; color: rgba(255,255,255,0.4); display: block; margin-top: 4rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.iframe-actions { display: flex; gap: 10rpx; flex-shrink: 0; margin-left: 16rpx; }
+.iframe-btn { font-size: 22rpx; padding: 8rpx 20rpx; border-radius: 8rpx; font-weight: 500; text-align: center; }
+.iframe-btn.open { background: rgba(0,230,118,0.15); border: 1rpx solid rgba(0,230,118,0.3); color: #00e676; }
+.iframe-btn.copy { background: rgba(0,212,255,0.15); border: 1rpx solid rgba(0,212,255,0.3); color: #00d4ff; }
+
+/* 后台编辑器 iframe 网页插件预览 */
+.iframe-block-item { border: 1rpx dashed rgba(0,230,118,0.4) !important; background: rgba(0,230,118,0.05) !important; }
+.block-iframe-icon { font-size: 32rpx; margin-right: 12rpx; color: #00e676; }
+.iframe-text-info { color: #00e676 !important; font-weight: bold; }
+
+/* 音乐播放状态与动画 */
+.music-icon.rotating {
+  animation: musicRotate 4s linear infinite;
+  display: inline-block;
+}
+@keyframes musicRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.rich-music-block.playing {
+  background: linear-gradient(135deg, rgba(153,69,255,0.15), rgba(0,212,255,0.12));
+  border-color: rgba(153,69,255,0.4);
+  box-shadow: 0 4px 16px rgba(153,69,255,0.15);
+}
+.rich-music-block.playing .music-play-btn {
+  color: #9945ff;
+  background: rgba(153,69,255,0.15);
+  border-color: rgba(153,69,255,0.3);
+  text-shadow: 0 0 4px rgba(153,69,255,0.3);
+}

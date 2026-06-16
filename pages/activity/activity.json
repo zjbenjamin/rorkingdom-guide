@@ -1,1 +1,1 @@
-{ "usingComponents": {} }
+{ "usingComponents": { "dock": "/components/dock/dock" }, "navigationStyle": "custom" }

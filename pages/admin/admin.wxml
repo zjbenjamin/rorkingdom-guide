@@ -25,7 +25,6 @@
         <view class="admin-tab {{activeTab === 'system' ? 'on' : ''}}" bindtap="switchTab" data-tab="system">系统</view>
         <view class="admin-tab {{activeTab === 'activity' ? 'on' : ''}}" bindtap="switchTab" data-tab="activity">活动</view>
         <view class="admin-tab {{activeTab === 'subscribe' ? 'on' : ''}}" bindtap="switchTab" data-tab="subscribe">订阅</view>
-        <view class="admin-tab {{activeTab === 'posts' ? 'on' : ''}}" bindtap="switchTab" data-tab="posts">帖子</view>
         <view class="admin-tab {{activeTab === 'users' ? 'on' : ''}}" bindtap="switchTab" data-tab="users">用户</view>
         <view class="admin-tab {{activeTab === 'pages' ? 'on' : ''}}" bindtap="switchTab" data-tab="pages">页面</view>
         <view class="admin-tab {{activeTab === 'stats' ? 'on' : ''}}" bindtap="switchTab" data-tab="stats">统计</view>
@@ -122,20 +121,10 @@
               <text class="sub-toggle-name">活动</text>
               <view class="toggle {{subscribeConfig['activity'] ? 'on' : ''}}"><view class="toggle-dot"></view></view>
             </view>
-            <view class="sub-toggle-card {{subscribeConfig['system'] ? 'active' : ''}}" catchtap="toggleSubscribeType" data-type="system">
-              <text class="sub-toggle-icon">⚙️</text>
-              <text class="sub-toggle-name">系统</text>
-              <view class="toggle {{subscribeConfig['system'] ? 'on' : ''}}"><view class="toggle-dot"></view></view>
-            </view>
             <view class="sub-toggle-card {{subscribeConfig['merchant'] ? 'active' : ''}}" catchtap="toggleSubscribeType" data-type="merchant">
               <text class="sub-toggle-icon">🛒</text>
               <text class="sub-toggle-name">商人</text>
               <view class="toggle {{subscribeConfig['merchant'] ? 'on' : ''}}"><view class="toggle-dot"></view></view>
-            </view>
-            <view class="sub-toggle-card {{subscribeConfig['interaction'] ? 'active' : ''}}" catchtap="toggleSubscribeType" data-type="interaction">
-              <text class="sub-toggle-icon">💬</text>
-              <text class="sub-toggle-name">互动</text>
-              <view class="toggle {{subscribeConfig['interaction'] ? 'on' : ''}}"><view class="toggle-dot"></view></view>
             </view>
           </view>
         </view>
@@ -154,10 +143,6 @@
               <text class="sub-test-icon">📅</text>
               <text class="sub-test-text">测试活动</text>
             </view>
-            <view class="sub-test-btn" catchtap="testPush" data-type="system">
-              <text class="sub-test-icon">⚙️</text>
-              <text class="sub-test-text">测试系统</text>
-            </view>
             <view class="sub-test-btn" catchtap="testPush" data-type="merchant">
               <text class="sub-test-icon">🛒</text>
               <text class="sub-test-text">测试商人</text>
@@ -174,7 +159,7 @@
           <view class="sub-user-list" wx:if="{{subscribers.length > 0}}">
             <view class="sub-user-item" wx:for="{{subscribers}}" wx:key="_id">
               <view class="sub-user-left">
-                <view class="sub-user-type-tag {{item.type}}">{{item.type === 'announcement' ? '公告' : item.type === 'activity' ? '活动' : item.type === 'system' ? '系统' : item.type === 'merchant' ? '商人' : '互动'}}</view>
+                <view class="sub-user-type-tag {{item.type}}">{{item.type === 'announcement' ? '公告' : item.type === 'activity' ? '活动' : item.type === 'merchant' ? '商人' : (item.type === 'system' ? '系统' : (item.type === 'interaction' ? '互动' : item.type))}}</view>
                 <view class="sub-user-info">
                   <text class="sub-user-count">订阅 {{item.count || 0}} 次</text>
                   <text class="sub-user-time">{{item.timeStr}}</text>
@@ -192,28 +177,7 @@
         </view>
       </view>
 
-      <!-- 帖子管理 -->
-      <view wx:if="{{activeTab === 'posts'}}">
-        <view class="section-header"><text class="section-title">帖子列表 (可管理所有帖子)</text></view>
-        <view class="card-item" wx:for="{{posts}}" wx:key="_id">
-          <view class="card-top">
-            <image class="card-avatar" src="{{item.userAvatar || '/images/default-avatar.png'}}" mode="aspectFill" />
-            <text class="card-author">{{item.userName}}</text>
-            <view class="pin-tag {{item.pinned ? 'on' : ''}}" bindtap="togglePostPinned" data-item="{{item}}">{{item.pinned ? '已置顶' : '置顶'}}</view>
-          </view>
-          <text class="card-desc" wx:if="{{item.content}}">{{item.content}}</text>
-          <view class="card-images" wx:if="{{item.images && item.images.length > 0}}">
-            <image class="card-img" wx:for="{{item.images}}" wx:for-item="img" wx:key="*this" src="{{img}}" mode="aspectFill" />
-          </view>
-          <view class="card-bottom">
-            <text class="card-time">{{item.timeStr}} · ❤ {{item.likes ? item.likes.length : 0}} · 💬 {{item.replyCount || 0}}</text>
-            <view class="card-actions">
-              <view class="btn-delete" bindtap="deletePost" data-item="{{item}}">删除</view>
-            </view>
-          </view>
-        </view>
-        <view class="empty" wx:if="{{posts.length === 0}}"><text class="empty-text">暂无帖子</text></view>
-      </view>
+
 
       <!-- 用户管理 -->
       <view wx:if="{{activeTab === 'users'}}">
@@ -268,14 +232,6 @@
           <view class="stat-card">
             <text class="stat-num">{{stats.totalUsers}}</text>
             <text class="stat-label">总用户数</text>
-          </view>
-          <view class="stat-card">
-            <text class="stat-num">{{stats.totalPosts}}</text>
-            <text class="stat-label">总帖子数</text>
-          </view>
-          <view class="stat-card">
-            <text class="stat-num">{{stats.todayPosts}}</text>
-            <text class="stat-label">今日发帖</text>
           </view>
           <view class="stat-card">
             <text class="stat-num">{{announcements.length}}</text>
@@ -335,6 +291,10 @@
                   <text class="tool-icon">❝</text>
                   <text class="tool-text">引用</text>
                 </view>
+                <view class="tool-btn" catchtap="showMusicDialog">
+                  <text class="tool-icon">🎵</text>
+                  <text class="tool-text">音乐</text>
+                </view>
               </view>
               
               <!-- 字号选择器 -->
@@ -355,13 +315,17 @@
             
             <!-- 已添加的富文本块 -->
             <view class="rich-blocks" wx:if="{{editorMode === 'rich' && formRichContent.length > 0}}">
-              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}}" wx:for="{{formRichContent}}" wx:key="index">
+              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}} {{item.type === 'music' ? 'music-block-item' : ''}}" wx:for="{{formRichContent}}" wx:key="index">
                 <view class="block-content">
                   <text wx:if="{{item.type === 'quote'}}" class="block-quote-icon">❝</text>
-                  <text class="block-text" style="font-size:{{item.size}}rpx;color:{{item.color}};font-weight:{{item.weight}};font-style:{{item.style}};">{{item.content}}</text>
+                  <block wx:elif="{{item.type === 'music'}}">
+                    <text class="block-music-icon">🎵</text>
+                    <text class="block-text music-text-info">{{item.name}} ({{item.url}})</text>
+                  </block>
+                  <text wx:else class="block-text" style="font-size:{{item.size}}rpx;color:{{item.color}};font-weight:{{item.weight}};font-style:{{item.style}};">{{item.content}}</text>
                 </view>
                 <view class="block-actions">
-                  <view class="block-btn" catchtap="editRichBlock" data-idx="{{index}}">编辑</view>
+                  <view class="block-btn" wx:if="{{item.type !== 'music'}}" catchtap="editRichBlock" data-idx="{{index}}">编辑</view>
                   <view class="block-btn delete" catchtap="removeRichBlock" data-idx="{{index}}">删除</view>
                 </view>
               </view>
@@ -523,6 +487,10 @@
                   <text class="tool-icon">❝</text>
                   <text class="tool-text">引用</text>
                 </view>
+                <view class="tool-btn" catchtap="showActivityMusicDialog">
+                  <text class="tool-icon">🎵</text>
+                  <text class="tool-text">音乐</text>
+                </view>
               </view>
               <view class="size-picker" wx:if="{{showActivitySizePicker}}">
                 <view class="size-option {{activityFontSize === item ? 'active' : ''}}" wx:for="{{fontSizeOptions}}" wx:key="*this" catchtap="setActivityFontSize" data-size="{{item}}">
@@ -538,13 +506,17 @@
             </view>
             <!-- 已添加的富文本块 -->
             <view class="rich-blocks" wx:if="{{activityEditorMode === 'rich' && activityRichContent.length > 0}}">
-              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}}" wx:for="{{activityRichContent}}" wx:key="index">
+              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}} {{item.type === 'music' ? 'music-block-item' : ''}}" wx:for="{{activityRichContent}}" wx:key="index">
                 <view class="block-content">
                   <text wx:if="{{item.type === 'quote'}}" class="block-quote-icon">❝</text>
-                  <text class="block-text" style="font-size:{{item.size}}rpx;color:{{item.color}};font-weight:{{item.weight}};font-style:{{item.style}};">{{item.content}}</text>
+                  <block wx:elif="{{item.type === 'music'}}">
+                    <text class="block-music-icon">🎵</text>
+                    <text class="block-text music-text-info">{{item.name}} ({{item.url}})</text>
+                  </block>
+                  <text wx:else class="block-text" style="font-size:{{item.size}}rpx;color:{{item.color}};font-weight:{{item.weight}};font-style:{{item.style}};">{{item.content}}</text>
                 </view>
                 <view class="block-actions">
-                  <view class="block-btn" catchtap="editActivityRichBlock" data-idx="{{index}}">编辑</view>
+                  <view class="block-btn" wx:if="{{item.type !== 'music'}}" catchtap="editActivityRichBlock" data-idx="{{index}}">编辑</view>
                   <view class="block-btn delete" catchtap="removeActivityRichBlock" data-idx="{{index}}">删除</view>
                 </view>
               </view>

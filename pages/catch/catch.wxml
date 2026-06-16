@@ -16,170 +16,263 @@
     <view class="circus-glow"></view>
   </view>
   <view class="container">
-    <!-- 异色统计 -->
-    <view class="card">
-      <view class="card-title">异色统计 <text class="clear-link" bindtap="onClearEncounter">清除</text></view>
-      <view wx:if="{{!canStartCapture}}" class="setup-hint">
-        <text class="setup-icon">🎮</text>
-        <text class="setup-text">请先设置初始洛克贝并购买/合成咕噜球后开始统计</text>
-      </view>
-      <block wx:if="{{canStartCapture}}">
-      <view class="encounter-stats">
-        <view class="enc-item enc-carnival"><text class="enc-num">{{carnivalCount}}</text><text class="enc-label">狂欢时刻</text></view>
-        <view class="enc-item enc-luckybox"><text class="enc-num">{{luckyBoxCount}}</text><text class="enc-label">惊喜幸运盒</text></view>
-        <view class="enc-item enc-total"><text class="enc-num">{{carnivalCount+luckyBoxCount}}</text><text class="enc-label">触发奇遇事件次数</text></view>
+    <!-- 异色捕捉主监控屏 -->
+     <view class="premium-card monitor-panel tint-blue">
+      <!-- 动效可视化动态条 -->
+      <view class="visual-bars">
+        <view class="v-bar"></view>
+        <view class="v-bar"></view>
+        <view class="v-bar"></view>
+        <view class="v-bar"></view>
+        <view class="v-bar"></view>
       </view>
 
-      <view class="pity-box">
-        <view class="pity-header">
-          <text class="pity-title">保底进度</text>
-          <text class="pity-val">{{pityCount}}/80</text>
+      <view class="panel-header">
+        <view class="panel-title">
+          <text class="title-main">异色捕捉实时监测</text>
+          <text class="title-sub">系统运行状态：良好 v1.0.8D</text>
         </view>
-        <view class="particle-bar">
-          <view class="particle-track">
-            <view class="particle-fill" style="width: {{pityCount / 80 * 100}}%">
-              <view class="particle-glow"></view>
-              <view class="particle-spark spark-1" wx:if="{{pityCount > 20}}"></view>
-              <view class="particle-spark spark-2" wx:if="{{pityCount > 40}}"></view>
-              <view class="particle-spark spark-3" wx:if="{{pityCount > 60}}"></view>
-              <view class="particle-spark spark-4" wx:if="{{pityCount > 70}}"></view>
-            </view>
-            <view class="particle-markers">
-              <view class="marker" style="left: 50%"><text class="marker-text">40</text></view>
-              <view class="marker" style="left: 87.5%"><text class="marker-text">70</text></view>
-            </view>
+        <view class="panel-ops">
+          <view class="capsule-btn warning" bindtap="onClearEncounter">
+            <text>重置数据</text>
           </view>
         </view>
-        <view class="pity-hint-row">
-          <text class="pity-emoji">{{pityEmoji}}</text>
-          <text class="pity-hint">{{pityHint}}</text>
+      </view>
+
+      <view wx:if="{{!canStartCapture}}" class="init-loading">
+        <view class="radar-scan"></view>
+        <view class="init-icon">📡</view>
+        <view class="init-text">
+          <text class="glitch-text">等待系统同步...</text>
+          <text class="init-sub">请先初始化洛克贝资产并购买咕噜球</text>
         </view>
       </view>
 
-      <view class="action-grid">
-        <view class="action-btn primary" bindtap="onAddLuckyBox" bindlongpress="onLuckyBoxLongPress">
-          <text class="action-icon">🎁</text>
-          <text class="action-text">幸运盒 +1</text>
+      <block wx:if="{{canStartCapture}}">
+        <view class="stats-grid">
+          <view class="stat-card total">
+            <text class="stat-label">累计奇遇次数</text>
+            <text class="stat-value">{{carnivalCount+luckyBoxCount}}</text>
+          </view>
+          <view class="stat-card carnival">
+            <text class="stat-label">狂欢时刻</text>
+            <text class="stat-value">{{carnivalCount}}</text>
+          </view>
+          <view class="stat-card lucky">
+            <text class="stat-label">惊喜幸运盒</text>
+            <text class="stat-value">{{luckyBoxCount}}</text>
+          </view>
         </view>
-        <view class="action-btn primary" bindtap="onAddCarnival" bindlongpress="onCarnivalLongPress">
-          <text class="action-icon">🌟</text>
-          <text class="action-text">狂欢 +1</text>
+
+        <view class="progress-section">
+          <view class="section-meta">
+            <view class="section-title-group" style="display:flex; align-items:center;">
+              <text>保底进度监测</text>
+              <view class="mode-tag {{autoResetPity?'active':''}}" bindtap="toggleAutoResetPity" style="margin-left:20rpx;">
+                <view class="tag-dot"></view>
+                <text>{{autoResetPity?'自动重置':'手动重置'}}</text>
+              </view>
+            </view>
+            <text class="meta-val">{{pityCount}} / 80</text>
+          </view>
+          <view class="pity-bar-wrapper">
+            <view class="pity-track">
+              <view class="pity-fill {{pityCount >= 70 ? 'danger' : pityCount >= 40 ? 'warning' : ''}}" style="width: {{pityCount / 80 * 100}}%"></view>
+            </view>
+          </view>
+          <view class="pity-status" bindtap="onClearPity">
+            <text class="status-emoji">{{pityEmoji}}</text>
+            <text class="status-text">{{pityHint}}</text>
+            <text class="manual-reset-hint" wx:if="{{!autoResetPity}}" style="font-size:18rpx; color:rgba(255,255,255,0.3); margin-left:10rpx;">(点击重置)</text>
+          </view>
         </view>
-        <view class="action-btn success capture-btn {{captureAnim ? 'capture-active' : ''}}" bindtap="onResult" data-r="success">
-          <text class="action-text">✨ 捕获</text>
+
+        <view class="control-grid">
+          <view class="visual-action-btn box-btn" bindtap="onAddLuckyBox" bindlongpress="onLuckyBoxLongPress">
+            <text class="btn-icon">🎁</text>
+            <text class="btn-text">幸运盒 +1</text>
+          </view>
+          <view class="visual-action-btn carnival-btn" bindtap="onAddCarnival" bindlongpress="onCarnivalLongPress">
+            <text class="btn-icon">🌟</text>
+            <text class="btn-text">狂欢 +1</text>
+          </view>
+          <view class="visual-action-btn capture-btn" bindtap="onResult" bindlongpress="onLongResult" data-r="success">
+            <text class="btn-icon">✨</text>
+            <text class="btn-text">捕获成功</text>
+          </view>
+          <view class="visual-action-btn miss-btn" bindtap="onResult" bindlongpress="onLongResult" data-r="miss">
+            <text class="btn-icon">💫</text>
+            <text class="btn-text">这次歪了</text>
+          </view>
         </view>
-        <view class="action-btn danger" bindtap="onResult" data-r="miss">
-          <text class="action-icon">😵</text>
-          <text class="action-text">歪了</text>
-        </view>
-      </view>
-        <text class="result-hint">数据仅供参考，以游戏内实际为准</text>
+        <view class="help-hint">※ 长按按钮可进入手动精细化记录模式</view>
       </block>
     </view>
 
-    <!-- 洛克贝记录 -->
-    <view class="card">
-      <view class="card-title">洛克贝记录</view>
-      <view class="coin-row">
-        <text class="coin-label">初始值</text>
-        <text class="coin-val">💵{{initialWealth}}</text>
+    <!-- 洛克贝核心资产看板 -->
+    <view class="premium-card wealth-panel tint-warm">
+      <view class="panel-header">
+        <text class="panel-title">洛克贝资产看板</text>
+        <view class="mode-tag {{quickRecordMode?'active':''}}" bindtap="toggleQuickRecord">
+          <view class="tag-dot"></view>
+          <text>自动记录模式</text>
+        </view>
       </view>
-      <view class="coin-input-row">
-        <input class="coin-input" placeholder="输入初始洛克贝" type="number" value="{{coinInput}}" bindinput="onWealthInput" disabled="{{wealthSet}}" />
-        <view class="coin-btn {{wealthSet?'disabled':''}}" bindtap="onSetWealth">设置</view>
+      
+      <view class="init-form" wx:if="{{!wealthSet}}">
+        <input class="premium-input" placeholder="输入初始洛克贝数量" type="number" value="{{coinInput}}" bindinput="onWealthInput" style="background:rgba(0,0,0,0.3); padding:24rpx; border-radius:16rpx; margin-bottom:20rpx; border:1rpx solid rgba(255,255,255,0.1);" />
+        <view class="visual-btn-primary" bindtap="onSetWealth">初始化资产</view>
       </view>
-      <view class="reset-row" wx:if="{{wealthSet}}">
-        <text class="reset-link" bindtap="onResetWealth">撤销</text>
+
+      <view class="wealth-main" wx:if="{{wealthSet}}">
+        <view class="wealth-label-group">
+          <text class="label-main">当前剩余资产</text>
+          <text class="label-sub">初始存量: {{initialWealth}}</text>
+        </view>
+        <view class="wealth-display">
+          <view class="value-group">
+            <text class="amount">{{totalWealth}}</text>
+          </view>
+        </view>
       </view>
-      <view class="coin-row total-row">
-        <text class="coin-label">累计洛克贝</text>
-        <text class="coin-val {{accumulatedWealth>=0?'':'negative'}}">💵{{accumulatedWealth}}</text>
+
+      <view class="profit-summary" wx:if="{{wealthSet}}">
+        <view class="summary-item">
+          <text class="item-label">净盈亏变动</text>
+          <text class="item-val {{accumulatedWealth>=0?'pos':'neg'}}">{{accumulatedWealth>=0?'+':''}}{{accumulatedWealth}}</text>
+        </view>
+        <view class="summary-divider"></view>
+        <view class="summary-item">
+          <text class="item-label">盈亏收益率</text>
+          <text class="rate-tag {{accumulatedWealth>=0?'pos':'neg'}}">{{accumulatedWealth>=0?'+':''}}{{profitRate}}%</text>
+        </view>
       </view>
-      <view class="coin-row final-row">
-        <text class="coin-label">当前洛克贝</text>
-        <text class="coin-val total">💵{{totalWealth}}</text>
-      </view>
-      <view class="coin-input-row" style="margin-top:12rpx">
-        <input class="coin-input" placeholder="记录回顾洛克贝" type="number" value="{{gainInput}}" bindinput="onGainInput" />
-        <view class="coin-btn" bindtap="onRecordGain">记录</view>
+
+      <view class="action-footer" wx:if="{{wealthSet}}">
+        <view class="visual-btn-text" bindtap="onResetWealth">重置资产</view>
+        <view class="capsule-btn" bindtap="openWealthAdjustModal">
+          <text>💰 资产微调</text>
+        </view>
       </view>
     </view>
 
-    <!-- 特殊事件统计 -->
-    <view class="card">
-      <view class="card-title">特殊事件统计</view>
-      <view class="sub-tabs">
-        <view class="sub-tab {{specialTab==='buy'?'on':''}}" bindtap="onSpecialTab" data-t="buy">购买球</view>
-        <view class="sub-tab {{specialTab==='craft'?'on':''}}" bindtap="onSpecialTab" data-t="craft">合成球</view>
-      </view>
-      <view class="ball-total-row">
-        <text class="ball-total-label">剩余球总数</text>
-        <text class="ball-total-val">{{totalBallUsed}}</text>
-      </view>
-      <view class="ball-total-row">
-        <text class="ball-total-label">使用球总数</text>
-        <text class="ball-total-val">{{usedBallTotal}}</text>
-      </view>
-      <view class="special-row">
-        <picker class="special-picker" bindchange="onSpecialBall" range="{{specialBalls}}" mode="selector">
-          <view class="picker-content">
-            <text class="picker-text">{{specialBall}}</text>
-            <text class="picker-arrow">▼</text>
-          </view>
-        </picker>
-        <input class="special-count" placeholder="数量" type="number" value="{{specialCount}}" bindinput="onSpecialCount" />
-        <view class="special-btn" bindtap="onAddSpecial">确定</view>
-      </view>
-      <view class="history-row" wx:for="{{specialHistory}}" wx:key="index">
-        <view class="hbadge">{{item.type}}</view>
-        <text class="hname">{{item.ball}}</text>
-        <text class="hcount">x{{item.count}}</text>
-        <text class="hcost" wx:if="{{item.cost>0}}">💵{{item.cost}}</text>
-        <text class="hcost free" wx:elif="{{item.type==='合成'}}">💵免费</text>
-        <text class="htime">{{item.time}}</text>
-      </view>
-      <view class="clear-row" wx:if="{{specialHistory.length>0}}">
-        <text class="clear-link" bindtap="onClearSpecial">清空</text>
+    <!-- 咕噜球仓库与操作 -->
+    <view class="premium-card ball-panel tint-purple">
+      <view class="panel-header">
+        <view class="panel-title">
+          <text class="title-main">咕噜球仓库</text>
+          <text class="title-sub">库存明细与采购</text>
+        </view>
+        <view class="capsule-btn danger" bindtap="onResetBalls">重置球库</view>
       </view>
 
-      <!-- 咕噜球明细 -->
-      <view class="ball-detail-title">咕噜球明细 <text class="clear-link" bindtap="onResetBalls">重置</text></view>
-      <view wx:for="{{balls}}" wx:key="id" wx:if="{{item.count > 0}}">
-        <view class="ball-row {{selectedBall===index?'selected':''}}" bindtap="onSelectBall" data-i="{{index}}">
-          <text class="ball-icon">{{item.icon}}</text>
-          <view class="ball-info">
-            <text class="ball-name">{{item.name}}</text>
-            <text class="ball-rate">{{item.rate}}</text>
-          </view>
-          <view class="ball-price-group">
-            <text class="ball-price" wx:if="{{item.count - item.freeCount > 0 && item.price > 0}}">购买💵{{item.price}}×{{item.count - item.freeCount}}</text>
-            <text class="ball-price free" wx:if="{{item.freeCount > 0}}">合成💵免费×{{item.freeCount}}</text>
-            <text class="ball-price" wx:if="{{item.freeCount === 0 && item.count - item.freeCount > 0 && item.price > 0}}">💵{{item.price}}</text>
-            <text class="ball-price free" wx:if="{{item.freeCount === 0 && item.price === 0}}">免费</text>
-          </view>
-          <text class="ball-count">{{item.count}}</text>
+      <view class="sub-tabs-premium">
+        <view class="sub-tab-p {{specialTab==='buy'?'on':''}}" bindtap="onSpecialTab" data-t="buy">购买新球</view>
+        <view class="sub-tab-p {{specialTab==='craft'?'on':''}}" bindtap="onSpecialTab" data-t="craft">合成新球</view>
+      </view>
+
+      <view class="inventory-stats">
+        <view class="inv-item">
+          <text class="inv-label">库存总数</text>
+          <text class="inv-val">{{totalBallUsed}}</text>
+        </view>
+        <view class="inv-item">
+          <text class="inv-label">历史消耗</text>
+          <text class="inv-val used" style="color:#ff4757;">{{usedBallTotal}}</text>
         </view>
       </view>
-      <view class="ball-use-row" wx:if="{{selectedBall!==null && balls[selectedBall].count > 0}}">
-        <text class="ball-use-label">使用 {{balls[selectedBall].name}}</text>
-        <input class="ball-use-input" placeholder="数量" type="number" value="{{selectedBallCount}}" bindinput="onBallCountInput" />
-        <view class="ball-use-btn" bindtap="onUseBall">确认</view>
-      </view>
-      <view wx:if="{{!hasActiveBalls}}" class="empty-ball">
-        <text class="empty-hint">暂无已购买/合成的球</text>
+
+      <!-- 快速采购/合成按钮区 -->
+      <view class="quick-add-row">
+        <picker class="premium-picker" bindchange="onSpecialBall" range="{{specialBalls}}" mode="selector">
+          <view class="picker-inner">
+            <text>{{specialBall}}</text>
+            <text class="arrow" style="color:rgba(255,255,255,0.3); font-size:16rpx;">▼</text>
+          </view>
+        </picker>
+        <input class="premium-count-input" placeholder="数量" type="number" value="{{specialCount}}" bindinput="onSpecialCount" />
+        <view class="visual-btn-add" bindtap="onAddSpecial">入库</view>
       </view>
 
-      <!-- 捕捉记录 -->
-      <view class="ball-detail-title">捕捉记录 <text class="clear-link" bindtap="onClearHistory">清空</text></view>
-      <view wx:for="{{history}}" wx:key="index" class="history-row">
-        <view class="hbadge {{item.result.indexOf('成功')>=0?'ok':item.result==='歪了'?'miss':'pause'}}">{{item.result.indexOf('成功')>=0?'✅':item.result==='歪了'?'😵':'⏸️'}}</view>
-        <text class="hname">{{item.balls}}</text>
-        <text class="hpet" wx:if="{{item.pet}}">【{{item.pet}}】</text>
-        <text class="hcount" wx:if="{{item.total > 0}}">x{{item.total}}</text>
-        <text class="hcost" wx:if="{{item.cost>0}}">-💵{{item.cost}}</text>
-        <text class="htime">{{item.time}}</text>
+      <!-- 入库记录 -->
+      <view class="special-history-list" wx:if="{{specialHistory.length > 0}}">
+        <view class="history-item-mini" wx:for="{{specialHistory}}" wx:key="index">
+          <text class="h-type {{item.type === '购买' ? 'buy' : 'craft'}}">{{item.type}}</text>
+          <text class="h-name">{{item.ball}}</text>
+          <text class="h-count">x{{item.count}}</text>
+          <text class="h-cost" wx:if="{{item.cost > 0}}">💵{{item.cost}}</text>
+          <text class="h-time">{{item.time}}</text>
+        </view>
       </view>
-      <text wx:if="{{history.length===0}}" class="empty">暂无记录</text>
+
+      <!-- 咕噜球列表按钮化 -->
+      <view class="ball-visual-list">
+        <view wx:for="{{balls}}" wx:key="id" wx:if="{{item.count > 0}}">
+          <view class="ball-item-card {{selectedBall===index?'selected':''}} {{pinnedBallIndex===index?'pinned':''}}" bindtap="onSelectBall" data-i="{{index}}">
+            <view class="ball-icon-circle">{{item.icon}}</view>
+            <view class="ball-info-main">
+              <text class="ball-name-txt">{{item.name}}</text>
+              <view class="ball-meta-tags">
+                <text class="tag buy" wx:if="{{item.count - item.freeCount > 0}}">购 x{{item.count - item.freeCount}}</text>
+                <text class="tag free" wx:if="{{item.freeCount > 0}}">赠 x{{item.freeCount}}</text>
+              </view>
+            </view>
+            <view class="ball-count-display">
+              <text class="num">{{item.count}}</text>
+              <text class="unit">个</text>
+            </view>
+            <view class="pinned-indicator" wx:if="{{pinnedBallIndex===index}}">首选</view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 选中后的操作区 -->
+      <view class="selected-op-panel" wx:if="{{selectedBall!==null && balls[selectedBall].count > 0}}">
+        <text class="op-label">使用 {{balls[selectedBall].name}}</text>
+        <view class="op-input-group">
+          <input class="op-input" type="number" value="{{selectedBallCount}}" bindinput="onBallCountInput" />
+          <view class="visual-btn-confirm" bindtap="onUseBall">确认消耗</view>
+        </view>
+      </view>
+      
+      <view wx:if="{{!hasActiveBalls}}" class="empty-status">
+        <text class="empty-icon">📦</text>
+        <text>库存清空，请先采购咕噜球</text>
+      </view>
+    </view>
+
+    <!-- 捕捉历史日志 -->
+    <view class="premium-card history-panel">
+      <view class="panel-header">
+        <view class="panel-title">
+          <text class="title-main">捕捉行动日志</text>
+          <text class="title-sub">最近 20 条记录</text>
+        </view>
+        <view class="history-ops" style="display:flex; gap:12rpx;">
+          <view class="capsule-btn warning" bindtap="onUndo" wx:if="{{history.length > 0}}">撤销</view>
+          <view class="capsule-btn danger" bindtap="onClearHistory">清空</view>
+        </view>
+      </view>
+
+      <view class="history-log-list">
+        <view wx:for="{{history}}" wx:key="index" class="log-item">
+          <view class="log-badge {{item.result.indexOf('成功')>=0?'ok':item.result==='歪了'?'miss':'other'}}">
+            {{item.result.indexOf('成功')>=0?'成功':item.result==='歪了'?'歪了':'事件'}}
+          </view>
+          <view class="log-content">
+            <text class="log-ball">{{item.balls}}</text>
+            <text class="log-pet" wx:if="{{item.pet}}">目标: {{item.pet}}</text>
+            <view class="log-details">
+              <text class="log-cost" wx:if="{{item.cost>0}}">消耗: 💵{{item.cost}}</text>
+              <text class="log-time">{{item.time}}</text>
+            </view>
+          </view>
+        </view>
+        <view wx:if="{{history.length===0}}" class="empty-status">
+          <text class="empty-icon">📋</text>
+          <text>暂无捕捉记录</text>
+        </view>
+      </view>
     </view>
 
     <view class="foot">更新：{{buildTime}}</view>
@@ -228,7 +321,7 @@
         <text class="modal-close" catchtap="closeResultBallModal">✕</text>
       </view>
       <view class="modal-body">
-        <view class="check-hint">请选择本次使用的球类型和数量</view>
+        <view class="check-hint">请确认本次捕捉后的球剩余数量</view>
         <view class="form-group">
           <text class="form-label">球类型</text>
           <picker class="form-picker" range="{{resultBallList}}" bindchange="onResultBallChange">
@@ -236,12 +329,16 @@
           </picker>
         </view>
         <view class="form-group">
-          <text class="form-label">使用数量</text>
-          <input class="form-input" type="number" placeholder="输入使用数量" value="{{resultBallCount}}" bindinput="onResultBallCountInput" />
+          <text class="form-label">剩余数量</text>
+          <input class="form-input" type="number" placeholder="输入剩余球数量" value="{{resultBallCount}}" bindinput="onResultBallCountInput" />
         </view>
         <view class="form-group">
           <text class="form-label">回顾洛克贝（正数盈利，负数亏损）</text>
           <input class="form-input" type="number" placeholder="输入洛克贝数量（可正可负）" value="{{resultGainInput}}" bindinput="onResultGainInput" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">备注</text>
+          <input class="form-input" placeholder="输入备注信息（选填）" value="{{resultRemark}}" bindinput="onResultRemarkInput" />
         </view>
       </view>
       <view class="modal-footer">
@@ -250,4 +347,34 @@
       </view>
     </view>
   </view>
+
+  <!-- 资产微调弹窗 -->
+  <view class="modal-mask" wx:if="{{showWealthAdjustModal}}" bindtap="closeWealthAdjustModal">
+    <view class="modal-box" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">💰 资产微调</text>
+        <text class="modal-close" catchtap="closeWealthAdjustModal">✕</text>
+      </view>
+      <view class="modal-body">
+        <view class="check-mode-tabs">
+          <view class="check-mode-tab {{adjustType === 'add' ? 'on' : ''}}" catchtap="onAdjustTypeSwitch" data-type="add">增加资产</view>
+          <view class="check-mode-tab {{adjustType === 'sub' ? 'on' : ''}}" catchtap="onAdjustTypeSwitch" data-type="sub">减少资产</view>
+        </view>
+        <view class="form-group">
+          <text class="form-label">调整金额</text>
+          <input class="form-input" type="number" placeholder="输入调整金额" value="{{adjustAmount}}" bindinput="onAdjustAmountInput" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">备注</text>
+          <input class="form-input" placeholder="例如：任务获得、掉线补偿" value="{{adjustRemark}}" bindinput="onAdjustRemarkInput" />
+        </view>
+      </view>
+      <view class="modal-footer">
+        <button class="modal-cancel" catchtap="closeWealthAdjustModal">取消</button>
+        <button class="modal-save" catchtap="onConfirmAdjustWealth">确认调整</button>
+      </view>
+    </view>
+  </view>
+
+  <dock current="catch" />
 </view>

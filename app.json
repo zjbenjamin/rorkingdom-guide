@@ -2,32 +2,82 @@
   "pages": [
     "pages/index/index",
     "pages/login/login",
-    "pages/pets/pets",
-    "pages/pets/detail/detail",
-    "pages/items/items",
-    "pages/skills/skills",
-    "pages/guides/guides",
-    "pages/activity/activity",
-    "pages/catch/catch",
-    "pages/egg/egg",
-    "pages/merchant/merchant",
-    "pages/about/about",
-    "pages/community/community",
-    "pages/admin/admin",
-    "pages/webview/webview",
-    "pages/eggCalc/eggCalc"
+    "pages/about/about"
+  ],
+  "subpackages": [
+    {
+      "root": "pages/skills",
+      "name": "skills",
+      "pages": [
+        "skills"
+      ]
+    },
+    {
+      "root": "pages/activity",
+      "name": "activity",
+      "pages": [
+        "activity"
+      ]
+    },
+    {
+      "root": "pages/catch",
+      "name": "catch",
+      "pages": [
+        "catch"
+      ]
+    },
+    {
+      "root": "pages/egg",
+      "name": "egg",
+      "pages": [
+        "egg"
+      ]
+    },
+    {
+      "root": "pages/eggCalc",
+      "name": "eggCalc",
+      "pages": [
+        "eggCalc"
+      ]
+    },
+    {
+      "root": "pages/merchant",
+      "name": "merchant",
+      "pages": [
+        "merchant"
+      ]
+    },
+    {
+      "root": "pages/admin",
+      "name": "admin",
+      "pages": [
+        "admin"
+      ]
+    },
+    {
+      "root": "pages/webview",
+      "name": "webview",
+      "pages": [
+        "webview"
+      ]
+    },
+    {
+      "root": "pages/privacy",
+      "name": "privacy",
+      "pages": [
+        "privacy"
+      ]
+    }
   ],
   "window": {
     "navigationBarBackgroundColor": "#0a0e27",
-    "navigationBarTitleText": "洛手助手BENJAMIN",
+    "navigationBarTitleText": "洛手助手",
     "navigationBarTextStyle": "white",
     "backgroundColor": "#0a0e27"
   },
+  "requiredBackgroundModes": [
+    "audio"
+  ],
   "style": "v2",
-  "lazyCodeLoading": "requiredComponents",
-  "permission": {
-    "scope.userLocation": {
-      "desc": "用于显示帖子发布位置"
-    }
-  }
+  "lazyCodeLoading": "requiredComponents"
 }

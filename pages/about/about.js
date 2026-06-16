@@ -9,21 +9,22 @@ Page({
     uid: '476200',
     aboutData: {
       appName: '洛手助手BENJAMIN',
-      version: '版本 v1.0.7B 体验版',
+      version: '版本 v1.0.8E 体验版',
       devName: '浙里本杰明',
       devAvatar: '/images/avatar.jpg',
       uid: '476200',
       contact: 'flyzccboard@yeah.net',
-      gifts: ['免费领一测、二测、三测鸭蛋', '赐福奇袭固执罗隐']
+      icp: '浙ICP备2026043884号',
+      gifts: ['免费领一测、二测、三测鸭蛋', '赐福奇袭固执罗隐'],
+      platforms: [
+        { name: 'QQ音乐', url: 'https://y.qq.com/' },
+        { name: '网易云音乐', url: 'https://music.163.com/' }
+      ]
     },
-    isAdmin: false,
-    showModal: false,
-    editingField: '',
-    editValue: '',
-    submitting: false,
-    editModalTitle: '',
     editMode: '',
-    showCommunity: true
+    showModal: false,
+    platformName: '',
+    platformUrl: ''
   },
   onLoad() {
     if (wx.cloud) db = wx.cloud.database()
@@ -36,11 +37,27 @@ Page({
     })
     self.loadAboutData()
     self.checkAdmin()
-    if (db) {
-      db.collection('page_config').doc('community').get()
-        .then(function(res) { self.setData({ showCommunity: !res.data.maintenance }) })
-        .catch(function() {})
+  },
+  parseChangelog(content) {
+    if (!content) return []
+    var lines = content.split('\n')
+    var result = []
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].trim()
+      if (!line) continue
+      var type = 'opt'
+      if (line.indexOf('新增：') === 0 || line.indexOf('+') === 0) {
+        type = 'add'
+      } else if (line.indexOf('下线：') === 0 || line.indexOf('-') === 0) {
+        type = 'del'
+      } else if (line.indexOf('优化：') === 0 || line.indexOf('*') === 0) {
+        type = 'opt'
+      } else if (line.indexOf('修复：') === 0) {
+        type = 'fix'
+      }
+      result.push({ text: line, type: type })
     }
+    return result
   },
   loadAboutData() {
     var self = this
@@ -51,13 +68,16 @@ Page({
         var cloudData = res.data || {}
         var merged = {}
         for (var key in defaults) {
-          if (key === 'gifts') {
+          if (key === 'gifts' || key === 'platforms') {
             merged[key] = cloudData[key] || defaults[key]
           } else {
             merged[key] = cloudData[key] !== undefined ? cloudData[key] : defaults[key]
           }
         }
-        self.setData({ aboutData: merged })
+        self.setData({ 
+          aboutData: merged,
+          changelogLines: self.parseChangelog(merged.changelogContent || self.data.defaultChangelog)
+        })
         if (cloudUrl.isCloudUrl(merged.devAvatar)) {
           cloudUrl.convertList([merged], 'devAvatar', function(converted) {
             self.setData({ 'aboutData.devAvatar': converted[0].devAvatar })
@@ -121,6 +141,56 @@ Page({
         wx.showToast({ title: '保存失败', icon: 'none' })
       })
   },
+  addPlatform() {
+    this.setData({
+      showModal: true,
+      editingField: 'platform',
+      platformName: '',
+      platformUrl: '',
+      editModalTitle: '添加应用平台',
+      editMode: 'addPlatform'
+    })
+  },
+  deletePlatform(e) {
+    var self = this
+    var idx = e.currentTarget.dataset.idx
+    var platforms = (self.data.aboutData.platforms || []).slice()
+    platforms.splice(idx, 1)
+    self.setData({ 'aboutData.platforms': platforms })
+    self.savePlatforms(platforms)
+  },
+  savePlatforms(platforms) {
+    var self = this
+    if (!db) return
+    db.collection('about_config').doc('main').get()
+      .then(function() {
+        return db.collection('about_config').doc('main').update({ data: { platforms: platforms, updateTime: db.serverDate() } })
+      })
+      .catch(function() {
+        return db.collection('about_config').add({ data: { _id: 'main', platforms: platforms, updateTime: db.serverDate() } })
+      })
+      .then(function() {
+        wx.showToast({ title: '已保存', icon: 'success' })
+      })
+      .catch(function() {
+        wx.showToast({ title: '保存失败', icon: 'none' })
+      })
+  },
+  onPlatformNameInput(e) {
+    this.setData({ platformName: e.detail.value })
+  },
+  onPlatformUrlInput(e) {
+    this.setData({ platformUrl: e.detail.value })
+  },
+  copyPlatformUrl(e) {
+    var item = e.currentTarget.dataset.item
+    wx.setClipboardData({
+      data: item.url,
+      success() {
+        wx.showToast({ title: '平台链接已复制', icon: 'success' })
+      }
+    })
+  },
   onEditInput(e) {
     this.setData({ editValue: e.detail.value })
   },
@@ -128,12 +198,34 @@ Page({
     var self = this
     if (self.data.submitting) return
     if (!db) { wx.showToast({ title: '云环境未就绪', icon: 'none' }); return }
-    var value = self.data.editValue.trim()
-    if (!value) {
-      wx.showToast({ title: '请输入内容', icon: 'none' })
+    self.setData({ submitting: true })
+
+    if (self.data.editMode === 'addPlatform') {
+      var name = (self.data.platformName || '').trim()
+      var url = (self.data.platformUrl || '').trim()
+      if (!name || !url) {
+        wx.showToast({ title: '名称或链接不能为空', icon: 'none' })
+        self.setData({ submitting: false })
+        return
+      }
+      if (url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) {
+        wx.showToast({ title: '链接以http://或https://开头', icon: 'none' })
+        self.setData({ submitting: false })
+        return
+      }
+      var platforms = (self.data.aboutData.platforms || []).concat([{ name: name, url: url }])
+      self.setData({ 'aboutData.platforms': platforms })
+      self.savePlatforms(platforms)
+      self.setData({ submitting: false, showModal: false })
       return
     }
-    self.setData({ submitting: true })
+
+    var value = self.data.editValue ? self.data.editValue.trim() : ''
+    if (!value) {
+      wx.showToast({ title: '请输入内容', icon: 'none' })
+      self.setData({ submitting: false })
+      return
+    }
 
     if (self.data.editMode === 'addGift') {
       var gifts = (self.data.aboutData.gifts || []).concat([value])
@@ -191,5 +283,6 @@ Page({
       }
     })
   },
-  onShareAppMessage() { return { title: '洛手助手BENJAMIN', path: '/pages/index/index' } }
+  onShareAppMessage() { return { title: '洛手助手BENJAMIN', path: '/pages/index/index', imageUrl: '/images/banner1.png' } },
+  onShareTimeline() { return { title: '洛手助手BENJAMIN - 洛克王国攻略工具', imageUrl: '/images/banner1.png' } }
 })

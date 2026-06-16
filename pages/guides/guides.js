@@ -1,6 +1,8 @@
-var app = getApp()
 Page({
-  data: { theme: 'light' },
-  onShow: function() { this.setData({ theme: app.globalData.theme }) },
-  go: function(e) { wx.navigateTo({ url: e.currentTarget.dataset.url }) }
-})
+  onLoad: function() {
+    console.log("检测到访问已删除的页面，自动重定向至首页...");
+    wx.reLaunch({
+      url: '/pages/index/index'
+    });
+  }
+});

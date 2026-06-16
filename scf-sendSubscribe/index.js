@@ -6,9 +6,7 @@ const APP_SECRET = process.env.APP_SECRET
 const TEMPLATE_IDS = {
   announcement: 'ZhxGKGtZi3uWIzFIQtxJrjK5XXLlwjXpEo7M0rBrfEs',
   activity: 'hsIV8UY3gEeJnK4KNov09qRSfL196CyS5NzotPxz8hc',
-  system: '46MLP0pv3NcTvZKAkrIApkj9DWvVQj_bR_mavRIzgf4',
-  merchant: 'lNJaEuu3rrWx4iU3xtCfnsAnlZzVf6lthZD8zraTw1Y',
-  interaction: 'dfk9xCUuBSpqwJXHG0Cs_MkK9BQVxdYK_Cl3mzSAUi8'
+  merchant: 'lNJaEuu3rrWx4iU3xtCfnsAnlZzVf6lthZD8zraTw1Y'
 }
 
 function formatTime() {
@@ -78,93 +76,63 @@ const TEMPLATE_FIELDS = {
     time3: { value: formatTime() },
     time4: { value: formatTime() }
   }),
-  system: (t, c) => ({
-    thing1: { value: '洛手助手BENJAMIN' },
-    thing2: { value: (c || t || '系统更新').substring(0, 20) },
-    time3: { value: formatTime() },
-    time4: { value: formatTime() },
-    thing5: { value: '功能更新' },
-    thing6: { value: '请更新至最新版本' }
-  }),
   merchant: (t, c) => ({
     thing1: { value: (t || '商品上架').substring(0, 20) },
     time2: { value: formatTime() },
     thing3: { value: (c || '前往查看').substring(0, 20) }
-  }),
-  interaction: (t, c) => ({
-    thing1: { value: (t || '社区互动').substring(0, 20) },
-    thing2: { value: (c || '有人回复了你').substring(0, 20) },
-    thing3: { value: '点击查看' },
-    time4: { value: formatTime() }
   })
 }
 
+const makeRes = (data) => ({
+  isBase64Encoded: false,
+  statusCode: 200,
+  headers: { 
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST,GET,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type'
+  },
+  body: JSON.stringify(data)
+})
+
 exports.main_handler = async (event, context) => {
-  console.log('原始event:', JSON.stringify(event))
-  var parsedEvent = event
-  if (typeof event.body === 'string') {
-    try { parsedEvent = JSON.parse(event.body) } catch (e) { console.log('解析body失败:', e) }
-  }
-  console.log('解析后:', JSON.stringify(parsedEvent))
-  const { type, title, content, touser, templateId, data, page, subscribers: subscriberList } = parsedEvent
+  if (event.httpMethod === 'OPTIONS') return makeRes({ message: 'ok' })
 
-  const defaultPages = {
-    announcement: '/pages/index/index',
-    activity: '/pages/activity/activity',
-    system: '/pages/index/index',
-    merchant: '/pages/merchant/merchant',
-    interaction: '/pages/community/community'
+  console.log('接收到请求')
+  let body = event;
+  if (event.body) {
+    try { body = JSON.parse(event.body) } catch(e) { console.error('解析Body失败') }
   }
-
-  if (touser && templateId) {
-    try {
-      const token = await getAccessToken()
-      const url = `https://api.weixin.qq.com/cgi-bin/message/subscribe/send?access_token=${token}`
-      const res = await httpsPost(url, {
-        touser, template_id: templateId,
-        page: page || '/pages/index/index',
-        data: data || { thing1: { value: title || '新通知' }, thing2: { value: content || '点击查看' }, time3: { value: formatTime() } }
-      })
-      return { success: res.errcode === 0, sent: 1, result: res }
-    } catch (e) {
-      return { success: false, error: e.message }
-    }
-  }
-
-  const sendTemplateId = TEMPLATE_IDS[type]
-  const buildData = TEMPLATE_FIELDS[type]
-  if (!sendTemplateId || !buildData) return { success: false, error: '未知类型: ' + type }
-  if (!subscriberList || subscriberList.length === 0) return { success: true, sent: 0, total: 0, message: '没有订阅者' }
+  const { type, title, content, subscribers: subscriberList } = body
 
   try {
     const token = await getAccessToken()
-    let sent = 0, failed = 0
-    let failDetails = []
+    const sendTemplateId = TEMPLATE_IDS[type]
+    const buildData = TEMPLATE_FIELDS[type]
+    
+    if (!sendTemplateId || !buildData) return makeRes({ success: false, error: '未知类型: ' + type })
+    if (!subscriberList || subscriberList.length === 0) return makeRes({ success: true, sent: 0, total: 0 })
+
     const msgData = buildData(title, content)
+    const url = `https://api.weixin.qq.com/cgi-bin/message/subscribe/send?access_token=${token}`
 
-    for (const sub of subscriberList) {
-      try {
-        const url = `https://api.weixin.qq.com/cgi-bin/message/subscribe/send?access_token=${token}`
-        const res = await httpsPost(url, {
-          touser: sub.openid,
-          template_id: sendTemplateId,
-          page: page || defaultPages[type] || '/pages/index/index',
-          data: msgData
-        })
-        if (res.errcode === 0) {
-          sent++
-        } else {
-          failed++
-          failDetails.push({ openid: sub.openid, errCode: res.errcode, errMsg: res.errmsg })
-        }
-      } catch (e) {
-        failed++
-        failDetails.push({ openid: sub.openid, errCode: -1, errMsg: e.message })
-      }
-    }
+    // 并发发送，提高效率，减少超时风险
+    const tasks = subscriberList.map(sub => {
+      return httpsPost(url, {
+        touser: sub.openid,
+        template_id: sendTemplateId,
+        page: '/pages/index/index',
+        data: msgData
+      }).catch(e => ({ errcode: -1, errmsg: e.message }))
+    })
 
-    return { success: true, sent, failed, total: subscriberList.length, failDetails }
+    const results = await Promise.all(tasks)
+    const sent = results.filter(r => r.errcode === 0).length
+    const failed = results.length - sent
+
+    return makeRes({ success: true, sent, failed, total: subscriberList.length })
   } catch (e) {
-    return { success: false, error: e.message }
+    console.error('执行失败:', e)
+    return makeRes({ success: false, error: e.message })
   }
 }

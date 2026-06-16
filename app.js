@@ -9,10 +9,15 @@ App({
     userInfo: null,
     loginDays: 0,
     level: 1,
-    notifyEnabled: false
+    notifyEnabled: false,
+    statusBarHeight: 0
   },
   onLaunch: function() {
     var self = this
+    try {
+      var sys = wx.getSystemInfoSync()
+      self.globalData.statusBarHeight = sys.statusBarHeight || 20
+    } catch(e) {}
     try {
       var res = wx.getAppBaseInfo()
       self.globalData.theme = res.theme || 'light'

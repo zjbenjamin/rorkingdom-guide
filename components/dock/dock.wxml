@@ -1,0 +1,16 @@
+<view class="dock">
+  <view class="dock-inner">
+    <navigator class="dock-item {{current==='index'?'active':''}}" url="/pages/index/index" open-type="redirect" catchtap="">
+      <text class="dock-icon">🏠</text>
+    </navigator>
+    <navigator class="dock-item {{current==='activity'?'active':''}}" url="/pages/activity/activity" open-type="redirect" catchtap="">
+      <text class="dock-icon">📅</text>
+    </navigator>
+    <navigator class="dock-item {{current==='catch'?'active':''}}" url="/pages/catch/catch" open-type="redirect" catchtap="">
+      <text class="dock-icon">📊</text>
+    </navigator>
+    <navigator class="dock-item {{current==='login'?'active':''}}" url="/pages/login/login" open-type="redirect" catchtap="">
+      <text class="dock-icon">👤</text>
+    </navigator>
+  </view>
+</view>

@@ -1,4 +1,6 @@
 {
-  "usingComponents": {},
-  "navigationBarTitleText": "登录"
+  "usingComponents": {
+    "dock": "/components/dock/dock"
+  },
+  "navigationStyle": "custom"
 }

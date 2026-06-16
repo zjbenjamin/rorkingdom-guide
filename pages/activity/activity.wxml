@@ -16,7 +16,37 @@
           </view>
           <text class="act-title headline-title">{{item.title}}</text>
           <text class="act-summary" wx:if="{{item.richContent && item.richContent.length > 0}}">{{item.content}}</text>
-          <rich-text wx:if="{{item.richContent && item.richContent.length > 0}}" class="act-rich-content" nodes="{{item.content}}"></rich-text>
+          <block wx:if="{{item.richContent && item.richContent.length > 0}}">
+            <view class="act-rich-content">
+              <block wx:for="{{item.richContent}}" wx:for-item="block" wx:key="index">
+                <view wx:if="{{block.type === 'music'}}" class="rich-music-block {{currentPlayUrl === block.url && isPlaying ? 'playing' : ''}}" catchtap="playSong" data-url="{{block.url}}" data-name="{{block.name || '推荐单曲'}}">
+                  <text class="music-icon {{currentPlayUrl === block.url && isPlaying ? 'rotating' : ''}}">🎵</text>
+                  <view class="music-info">
+                    <text class="music-name">{{block.name || '推荐单曲'}}</text>
+                    <text class="music-url">{{block.url}}</text>
+                  </view>
+                  <text class="music-play-btn">{{currentPlayUrl === block.url && isPlaying ? '暂停' : '点我听歌'}}</text>
+                </view>
+                <view wx:elif="{{block.type === 'iframe'}}" class="rich-iframe-block">
+                  <text class="iframe-icon">🌐</text>
+                  <view class="iframe-info">
+                    <text class="iframe-name">{{block.name || '外部网页'}}</text>
+                    <text class="iframe-url">{{block.url}}</text>
+                  </view>
+                  <view class="iframe-actions">
+                    <view class="iframe-btn open" catchtap="openIframe" data-url="{{block.url}}">打开</view>
+                    <view class="iframe-btn copy" catchtap="copyIframe" data-url="{{block.url}}">复制</view>
+                  </view>
+                </view>
+                <view wx:elif="{{block.type === 'quote'}}" class="rich-quote-block">
+                  <text class="quote-text">{{block.content}}</text>
+                </view>
+                <view wx:else class="rich-text-block" style="font-size:{{block.size}}rpx;color:{{block.color}};font-weight:{{block.weight || 'normal'}};font-style:{{block.style || 'normal'}};">
+                  {{block.content}}
+                </view>
+              </block>
+            </view>
+          </block>
           <text class="act-summary" wx:else>{{item.desc}}</text>
         </view>
         <view class="act-source" wx:if="{{item.source}}">来源：{{item.source}}</view>
@@ -47,7 +77,37 @@
         <text class="act-title">{{item.title}}</text>
         <image class="act-image" wx:if="{{item.image}}" src="{{item.image}}" mode="widthFix" />
         <text class="act-desc" wx:if="{{item.richContent && item.richContent.length > 0}}">{{item.content}}</text>
-        <rich-text wx:if="{{item.richContent && item.richContent.length > 0}}" class="act-rich-content" nodes="{{item.content}}"></rich-text>
+        <block wx:if="{{item.richContent && item.richContent.length > 0}}">
+          <view class="act-rich-content">
+            <block wx:for="{{item.richContent}}" wx:for-item="block" wx:key="index">
+              <view wx:if="{{block.type === 'music'}}" class="rich-music-block {{currentPlayUrl === block.url && isPlaying ? 'playing' : ''}}" catchtap="playSong" data-url="{{block.url}}" data-name="{{block.name || '推荐单曲'}}">
+                <text class="music-icon {{currentPlayUrl === block.url && isPlaying ? 'rotating' : ''}}">🎵</text>
+                <view class="music-info">
+                  <text class="music-name">{{block.name || '推荐单曲'}}</text>
+                  <text class="music-url">{{block.url}}</text>
+                </view>
+                <text class="music-play-btn">{{currentPlayUrl === block.url && isPlaying ? '暂停' : '点我听歌'}}</text>
+              </view>
+              <view wx:elif="{{block.type === 'iframe'}}" class="rich-iframe-block">
+                <text class="iframe-icon">🌐</text>
+                <view class="iframe-info">
+                  <text class="iframe-name">{{block.name || '外部网页'}}</text>
+                  <text class="iframe-url">{{block.url}}</text>
+                </view>
+                <view class="iframe-actions">
+                  <view class="iframe-btn open" catchtap="openIframe" data-url="{{block.url}}">打开</view>
+                  <view class="iframe-btn copy" catchtap="copyIframe" data-url="{{block.url}}">复制</view>
+                </view>
+              </view>
+              <view wx:elif="{{block.type === 'quote'}}" class="rich-quote-block">
+                <text class="quote-text">{{block.content}}</text>
+              </view>
+              <view wx:else class="rich-text-block" style="font-size:{{block.size}}rpx;color:{{block.color}};font-weight:{{block.weight || 'normal'}};font-style:{{block.style || 'normal'}};">
+                {{block.content}}
+              </view>
+            </block>
+          </view>
+        </block>
         <text class="act-desc" wx:else>{{item.desc}}</text>
         <view class="act-source" wx:if="{{item.source}}">来源：{{item.source}}</view>
         <view class="act-footer" wx:if="{{item.rewards.length > 0 || item.start}}">
@@ -135,10 +195,5 @@
     </view>
   </view>
 
-  <view class="navbar">
-    <view class="nav-item" bindtap="go" data-url="/pages/index/index"><text class="nav-icon">🏠</text><text class="nav-text">首页</text></view>
-    <view class="nav-item" wx:if="{{showCommunity}}" bindtap="go" data-url="/pages/community/community"><text class="nav-icon">👥</text><text class="nav-text">社区</text></view>
-    <view class="nav-item on"><text class="nav-icon">📅</text><text class="nav-text">活动</text></view>
-    <view class="nav-item" bindtap="go" data-url="/pages/login/login"><text class="nav-icon">👤</text><text class="nav-text">我的</text></view>
-  </view>
+  <dock current="activity" />
 </view>

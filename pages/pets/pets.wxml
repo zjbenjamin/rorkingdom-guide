@@ -1,30 +1,3 @@
-<view class="page">
-  <view class="container">
-    <view class="search-box">
-      <text class="search-icon">🔍</text>
-      <input class="search-input" placeholder="搜索精灵名称/属性" value="{{search}}" bindinput="onSearch" />
-    </view>
-    <scroll-view scroll-x class="filter-bar">
-      <view class="filter-tag {{type==='全部'?'active':''}}" bindtap="onType" data-t="全部">全部</view>
-      <view class="filter-tag {{type===item?'active':''}}" wx:for="{{types}}" wx:key="*this" wx:if="{{item!=='全部'}}" bindtap="onType" data-t="{{item}}">{{item}}</view>
-    </scroll-view>
-    <view class="pet-grid">
-      <view class="pet-card" wx:for="{{displayList}}" wx:key="id" bindtap="goDetail" data-id="{{item.id}}">
-        <image class="pet-img" src="{{item.imgUrl}}" mode="aspectFill" lazy-load binderror="onImgError" data-idx="{{index}}" />
-        <view class="pet-name">{{item.name}}</view>
-        <view class="pet-types">
-          <text class="pet-type-badge" wx:for="{{item.typeArr}}" wx:for-item="t" wx:key="*this">{{t}}</text>
-        </view>
-      </view>
-    </view>
-    <view wx:if="{{!hasMore && displayList.length > 0}}" class="no-more">已加载全部精灵</view>
-    <view class="empty" wx:if="{{displayList.length===0}}">没有找到匹配的精灵</view>
-    <view class="source">数据来源：洛克王国手游WIKI（CC BY-NC-SA 4.0）https://wiki.biligame.com/rocom/精灵图鉴</view>
-  </view>
-  <view class="navbar">
-    <view class="nav-item" bindtap="go" data-url="/pages/index/index"><text class="nav-icon">🏠</text><text class="nav-text">首页</text></view>
-    <view class="nav-item" wx:if="{{showCommunity}}" bindtap="go" data-url="/pages/community/community"><text class="nav-icon">👥</text><text class="nav-text">社区</text></view>
-    <view class="nav-item" bindtap="go" data-url="/pages/activity/activity"><text class="nav-icon">📅</text><text class="nav-text">活动</text></view>
-    <view class="nav-item" bindtap="go" data-url="/pages/login/login"><text class="nav-icon">👤</text><text class="nav-text">我的</text></view>
-  </view>
+<view style="display:flex;justify-content:center;align-items:center;height:100vh;background-color:#0a0e27;color:#fff;">
+  <text>正在返回首页...</text>
 </view>

@@ -1,14 +1,16 @@
 var app = getApp()
-var i18n = require('../../utils/i18n')
 var notify = require('../../utils/notify')
 var templateConfig = require('../../config/notifyTemplates')
 var levelUtil = require('../../utils/level')
+var db = null
 
 Page({
   data: {
     userInfo: null,
     hasUserInfo: false,
     isLogging: false,
+    isAgreed: false,
+    showWechatPrivacyModal: false,
     loginExpire: '',
     tempAvatar: '',
     tempNickName: '',
@@ -47,21 +49,30 @@ Page({
       interaction: false
     },
     notifyLoading: false,
-    notifyAdding: false,
-    userRole: ''
+    notifyAdding: false
   },
   onLoad: function() {
+    var self = this
     var app = getApp()
+    if (wx.cloud) db = wx.cloud.database()
     var saved = wx.getStorageSync('user_info')
     if (saved) app.globalData.userInfo = saved
     var subscribeConfig = wx.getStorageSync('subscribe_config') || { announcement: true, activity: true, system: true, merchant: true, interaction: true }
-    this.setData({ subscribeConfig: subscribeConfig })
-    this.checkLoginStatus()
-    this.recordLoginDay()
-    this.checkAdmin()
-    this.loadNotifyStatus()
-    this.checkNotifyConfig()
-    this.loadUserRole()
+    self.setData({ subscribeConfig: subscribeConfig })
+    self.checkLoginStatus()
+    self.recordLoginDay()
+    self.checkAdmin()
+    self.loadNotifyStatus()
+    self.checkNotifyConfig()
+    self.loadUserRole()
+
+    // 监听微信官方隐私授权触发
+    if (wx.onNeedPrivacyAuthorization) {
+      wx.onNeedPrivacyAuthorization(function(resolve) {
+        self.resolvePrivacyAuthorization = resolve
+        self.setData({ showWechatPrivacyModal: true })
+      })
+    }
   },
   onShow: function() {
     this.loadUserRole()
@@ -218,9 +229,31 @@ Page({
     }
   },
   preventClose: function() {},
+  onAgreeChange: function(e) {
+    this.setData({ isAgreed: e.detail.value.indexOf('agree') >= 0 })
+  },
+  handleAgreePrivacy: function(e) {
+    this.setData({ showWechatPrivacyModal: false })
+    if (this.resolvePrivacyAuthorization) {
+      this.resolvePrivacyAuthorization({ event: 'agree', buttonId: 'agree-btn' })
+      this.resolvePrivacyAuthorization = null
+    }
+  },
+  handleDisagreePrivacy: function() {
+    this.setData({ showWechatPrivacyModal: false })
+    if (this.resolvePrivacyAuthorization) {
+      this.resolvePrivacyAuthorization({ event: 'disagree' })
+      this.resolvePrivacyAuthorization = null
+    }
+    wx.showToast({ title: '拒绝隐私指引将无法进行登录授权', icon: 'none' })
+  },
   onLogin: function() {
     var self = this
     if (self.data.isLogging) return
+    if (!self.data.isAgreed) {
+      wx.showToast({ title: '请先勾选同意《用户协议》和《隐私政策》', icon: 'none' })
+      return
+    }
     var avatar = self.data.tempAvatar
     var nickName = self.data.tempNickName.trim()
     if (!avatar) {
@@ -243,7 +276,7 @@ Page({
     self.syncToCloud(userInfo)
     wx.showModal({
       title: '数据同步说明',
-      content: '为提供更好体验，登录后将同步以下数据到云端：\n\n• 头像和昵称 — 社区发帖/评论身份标识\n• 累计登录天数 — 等级系统计算\n• 用户偏好设置 — 多设备同步\n\n数据仅用于本应用功能，不会向第三方共享。',
+      content: '为提供更好体验，登录后将同步以下数据到云端：\n\n• 头像和昵称 — 评论身份标识\n• 累计登录天数 — 等级系统计算\n• 用户偏好设置 — 多设备同步\n\n数据仅用于本应用功能，不会向第三方共享。',
       showCancel: false,
       confirmText: '我知道了'
     })
@@ -335,15 +368,56 @@ Page({
       content: '确定要退出登录吗？',
       success: function(res) {
         if (res.confirm) {
-          wx.removeStorageSync('user_info')
-          wx.removeStorageSync('login_time')
-          var app = getApp()
-          app.globalData.userInfo = null
-          self.setData({ userInfo: null, hasUserInfo: false, loginExpire: '' })
+          self.clearLocalUserData()
           wx.showToast({ title: '已退出', icon: 'success' })
         }
       }
     })
+  },
+  onDeleteAccount: function() {
+    var self = this
+    wx.showModal({
+      title: '注销账户',
+      content: '注销后将永久删除您在云端的头像、昵称、积分等级及全部设置数据，注销操作无法恢复。确定要注销吗？',
+      confirmColor: '#ff4757',
+      success: function(res) {
+        if (res.confirm) {
+          wx.showLoading({ title: '注销中...' })
+          if (!wx.cloud) {
+            wx.hideLoading()
+            self.clearLocalUserData()
+            wx.showToast({ title: '本地注销成功', icon: 'success' })
+            return
+          }
+          var db = wx.cloud.database()
+          wx.cloud.callFunction({ name: 'login' }).then(function(loginRes) {
+            var openid = loginRes.result.openid
+            db.collection('users').where({ _openid: openid }).remove()
+              .then(function() {
+                wx.hideLoading()
+                self.clearLocalUserData()
+                wx.showToast({ title: '账户已注销', icon: 'success' })
+              })
+              .catch(function(e) {
+                console.error('云端数据注销失败:', e)
+                wx.hideLoading()
+                wx.showToast({ title: '注销失败，请重试', icon: 'none' })
+              })
+          }).catch(function(e) {
+            console.error('获取 openid 失败:', e)
+            wx.hideLoading()
+            wx.showToast({ title: '网络错误，请重试', icon: 'none' })
+          })
+        }
+      }
+    })
+  },
+  clearLocalUserData: function() {
+    wx.removeStorageSync('user_info')
+    wx.removeStorageSync('login_time')
+    var app = getApp()
+    app.globalData.userInfo = null
+    this.setData({ userInfo: null, hasUserInfo: false, loginExpire: '' })
   },
   loadNotifyStatus: function() {
     var self = this
@@ -423,7 +497,7 @@ Page({
   onResetSubscribe: function(e) {
     var self = this
     var type = e.currentTarget.dataset.type
-    var names = { announcement: '公告', activity: '活动', system: '系统', merchant: '商人', interaction: '互动' }
+    var names = { announcement: '公告', activity: '活动', merchant: '商人' }
     wx.showModal({
       title: '重置订阅',
       content: '确定重置「' + names[type] + '」订阅？重置后需重新授权',
@@ -458,10 +532,11 @@ Page({
       }
     })
   },
+  _notifyAddingLock: false,
   onNotifyAdd: function(e) {
     var self = this
     var type = e.currentTarget.dataset.type
-    if (self.data.notifyAdding) return
+    if (self.data.notifyAdding || self._notifyAddingLock) return
     if (!app.globalData.userInfo) {
       wx.showToast({ title: '请先登录', icon: 'none' })
       return
@@ -471,53 +546,78 @@ Page({
       wx.showToast({ title: '已达上限99条', icon: 'none' })
       return
     }
+    self._notifyAddingLock = true
     self.setData({ notifyAdding: true })
-    notify.requestAndSave([type], function(err, result) {
-      self.setData({ notifyAdding: false })
-      if (err) {
-        if (!err.noConfig) {
-          console.error('订阅失败详情:', err)
-          if (err.errMsg && err.errMsg.indexOf('openid') >= 0) {
-            wx.showToast({ title: '请先登录后再设置', icon: 'none' })
-          } else {
-            wx.showToast({ title: '设置失败，请重试', icon: 'none' })
-          }
-        }
-        return
+    
+    var unlockTimer = setTimeout(function() {
+      if (self.data.notifyAdding) {
+        console.warn('[onNotifyAdd] Force unlock notifyAdding due to timeout')
+        self._notifyAddingLock = false
+        self.setData({ notifyAdding: false })
       }
-      if (result[type] === 'accept') {
-        var newCount = currentCount + 1
-        self.setData({
-          ['notifyStatus.' + type]: true,
-          ['notifyCount.' + type]: newCount
-        })
-        wx.showToast({ title: '已添加(' + newCount + '/99)', icon: 'success' })
-      } else if (result[type] === 'reject') {
-        wx.showToast({ title: '已拒绝', icon: 'none' })
-      } else if (result[type] === 'ban') {
-        wx.showModal({
-          title: '通知已关闭',
-          content: '您已关闭该类通知，请在小程序设置中手动开启',
-          confirmText: '去设置',
-          success: function(modalRes) {
-            if (modalRes.confirm) {
-              wx.openSetting({})
+    }, 4000)
+
+    try {
+      notify.requestAndSave([type], function(err, result) {
+        clearTimeout(unlockTimer)
+        self._notifyAddingLock = false
+        self.setData({ notifyAdding: false })
+        if (err) {
+          if (!err.noConfig) {
+            console.error('订阅失败详情:', err)
+            if (err.errMsg && err.errMsg.indexOf('openid') >= 0) {
+              wx.showToast({ title: '请先登录后再设置', icon: 'none' })
+            } else {
+              wx.showToast({ title: '设置失败：' + (err.errMsg || '请重试'), icon: 'none' })
             }
           }
-        })
-      }
-    })
+          return
+        }
+        if (!result) {
+          wx.showToast({ title: '订阅请求已发送', icon: 'none' })
+          return
+        }
+        if (result[type] === 'accept') {
+          var newCount = currentCount + 1
+          var notifyCount = self.data.notifyCount || {}
+          notifyCount[type] = newCount
+          var notifyStatus = self.data.notifyStatus || {}
+          notifyStatus[type] = true
+          self.setData({
+            notifyCount: notifyCount,
+            notifyStatus: notifyStatus
+          })
+          wx.showToast({ title: '已添加(' + newCount + '/99)', icon: 'success' })
+          self.loadNotifyStatus()
+        } else if (result[type] === 'reject') {
+          wx.showToast({ title: '已拒绝', icon: 'none' })
+        } else if (result[type] === 'ban') {
+          wx.showModal({
+            title: '通知已关闭',
+            content: '您已关闭该类通知，请在小程序设置中手动开启',
+            confirmText: '去设置',
+            success: function(modalRes) {
+              if (modalRes.confirm) {
+                wx.openSetting({})
+              }
+            }
+          })
+        }
+      })
+    } catch (ex) {
+      clearTimeout(unlockTimer)
+      self._notifyAddingLock = false
+      self.setData({ notifyAdding: false })
+      console.error('[onNotifyAdd] Exception caught:', ex)
+      wx.showToast({ title: '异常：' + (ex.message || '请重试'), icon: 'none' })
+    }
   },
   go: function(e) { wx.navigateTo({ url: e.currentTarget.dataset.url }) },
   showAgreement: function() {
-    wx.showModal({
-      title: '用户协议',
-      content: '1. 本应用为非官方攻略工具。\n2. 仅供学习交流使用，请勿用于商业用途。\n3. 尊重原创，数据版权归原作者所有。',
-      showCancel: false
-    })
+    wx.navigateTo({ url: '/pages/privacy/privacy?type=agreement' })
   },
   showPrivacy: function() {
-    wx.navigateTo({ url: '/pages/about/about' })
+    wx.navigateTo({ url: '/pages/privacy/privacy?type=privacy' })
   },
   checkAdmin: function() {
     var self = this
@@ -529,19 +629,13 @@ Page({
     db.collection('admin_config').doc('admin').get()
       .then(function(res) {
         var adminOpenid = res.data.openid
-        console.log('管理员openid:', adminOpenid)
-        db.collection('users').get()
+        db.collection('users').where({ _openid: adminOpenid }).get()
           .then(function(userRes) {
-            console.log('用户记录:', userRes.data)
-            for (var i = 0; i < userRes.data.length; i++) {
-              console.log('用户' + i + '的_openid:', userRes.data[i]._openid)
-              if (userRes.data[i]._openid === adminOpenid) {
-                self.setData({ isAdmin: true })
-                console.log('验证通过，已设置为管理员')
-                break
-              }
+            if (userRes.data.length > 0) {
+              self.setData({ isAdmin: true })
             }
           })
+          .catch(function() {})
       })
       .catch(function(e) {
         console.log('检查管理员失败:', e)
@@ -549,5 +643,11 @@ Page({
   },
   goAdmin: function() {
     wx.navigateTo({ url: '/pages/admin/admin' })
+  },
+  onShareAppMessage: function() {
+    return { title: '洛手助手BENJAMIN - 个人中心', path: '/pages/index/index', imageUrl: '/images/banner1.png' }
+  },
+  onShareTimeline: function() {
+    return { title: '洛手助手BENJAMIN - 精灵图鉴·捕捉统计·活动日历', imageUrl: '/images/banner1.png' }
   }
 })

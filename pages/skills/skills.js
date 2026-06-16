@@ -1,16 +1,7 @@
 var app = getApp()
 var skillsData = require('../../data/skills').skillsData
 Page({
-  data: { skills: skillsData, filtered: skillsData, search: '', type: '全部', types: ['全部','普通','火','水','草','冰','电','地','翼','幽','恶','光','武','机械','幻','毒','虫'], showCommunity: true },
-  onLoad: function() {
-    var self = this
-    if (wx.cloud) {
-      var db = wx.cloud.database()
-      db.collection('page_config').doc('community').get()
-        .then(function(res) { self.setData({ showCommunity: !res.data.maintenance }) })
-        .catch(function() {})
-    }
-  },
+  data: { skills: skillsData, filtered: skillsData, search: '', type: '全部', types: ['全部','普通','火','水','草','冰','电','地','翼','幽','恶','光','武','机械','幻','毒','虫'] },
   onSearch: function(e) { this.setData({ search: e.detail.value }); this.filter() },
   onType: function(e) { this.setData({ type: e.currentTarget.dataset.t }); this.filter() },
   filter: function() {
@@ -23,5 +14,11 @@ Page({
     var s = e.currentTarget.dataset.s
     wx.showModal({ title: s.name, content: '【技能信息】\n属性: ' + s.type + '\n分类: ' + s.category + '\n威力: ' + (s.power > 0 ? s.power : '变化') + '\nPP: ' + s.pp + '\n\n【技能效果】\n' + s.desc + '\n\n【数据来源】\n洛克王国手游WIKI（CC BY-NC-SA 4.0）\nhttps://wiki.biligame.com/rocom/技能图鉴', showCancel: false })
   },
-  go: function(e) { wx.navigateTo({ url: e.currentTarget.dataset.url }) }
+  go: function(e) { wx.navigateTo({ url: e.currentTarget.dataset.url }) },
+  onShareAppMessage: function() {
+    return { title: '洛手助手 - 技能图鉴', path: '/pages/skills/skills', imageUrl: '/images/banner1.png' }
+  },
+  onShareTimeline: function() {
+    return { title: '洛手助手 - 洛克王国技能图鉴大全', imageUrl: '/images/banner1.png' }
+  }
 })

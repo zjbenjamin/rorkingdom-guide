@@ -1,6 +1,28 @@
 var app = getApp()
 var i18n = require('../../utils/i18n')
-var merchantData = require('../../data/merchant')
+var merchantData = {
+  items: [
+    { id: 1, name: '棱镜球', price: 3200000, effect: '100%捕捉成功率', rarity: '传说', source: '远行商人' },
+    { id: 2, name: '炫彩蛋', price: 1600000, effect: '有概率孵出闪光精灵', rarity: '传说', source: '远行商人' },
+    { id: 3, name: '祝福项坠', price: 800000, effect: '精灵装备后获得祝福效果', rarity: '史诗', source: '远行商人' },
+    { id: 4, name: '残缺魔镜', price: 480000, effect: '用于精灵觉醒的材料', rarity: '史诗', source: '远行商人' },
+    { id: 5, name: '首领血脉秘药', price: 320000, effect: '提升首领精灵血脉等级', rarity: '史诗', source: '远行商人' },
+    { id: 6, name: '适格钥匙', price: 320000, effect: '用于精灵进化的钥匙', rarity: '史诗', source: '远行商人' },
+    { id: 7, name: '国王球', price: 160000, effect: '100%捕捉成功率', rarity: '传说', source: '安妮商店' },
+    { id: 8, name: '血脉秘药', price: 160000, effect: '提升精灵血脉等级', rarity: '史诗', source: '远行商人' },
+    { id: 9, name: '奇异血脉秘药', price: 160000, effect: '提升精灵奇异血脉等级', rarity: '史诗', source: '远行商人' },
+    { id: 10, name: '能力钥匙', price: 160000, effect: '用于精灵能力提升', rarity: '稀有', source: '远行商人' },
+    { id: 11, name: '神奇的蛋', price: 36000, effect: '孵化出随机精灵', rarity: '稀有', source: '远行商人' },
+    { id: 12, name: '魔力果', price: 6000, effect: '精灵食用后增加大量经验值', rarity: '稀有', source: '远行商人' },
+    { id: 13, name: '黑晶琉璃', price: 1000, effect: '珍贵矿石，用于精灵进化', rarity: '稀有', source: '道具图鉴' },
+    { id: 14, name: '黄石榴石', price: 1000, effect: '珍贵矿石，用于精灵进化', rarity: '稀有', source: '道具图鉴' },
+    { id: 15, name: '蓝晶碧玺', price: 1000, effect: '珍贵矿石，用于精灵进化', rarity: '稀有', source: '道具图鉴' },
+    { id: 16, name: '紫莲刚玉', price: 1000, effect: '珍贵矿石，用于精灵进化', rarity: '稀有', source: '道具图鉴' },
+    { id: 17, name: '粉尘', price: 500, effect: '精灵进化基础材料', rarity: '普通', source: '道具图鉴' },
+    { id: 18, name: '可可果', price: 100, effect: '精灵食用后增加经验值', rarity: '普通', source: '道具图鉴' },
+    { id: 19, name: '无花果', price: 150, effect: '精灵食用后增加较多经验值', rarity: '普通', source: '道具图鉴' }
+  ]
+}
 var cloudUrl = require('../../utils/cloudUrl')
 var notify = require('../../utils/notify')
 var db = null
@@ -42,13 +64,14 @@ Page({
     newItemsPage: 0,
     newItemsAnim: false,
     showAddSellingItemModal: false,
-    addingSellingItem: false
+    addingSellingItem: false,
+    itemSubStatus: {}
   },
   newItemsTimer: null,
   onShow: function() {
     this.setData({ t: i18n.i18n[i18n.getLanguage()] || i18n.i18n['zh'] })
     if (wx.cloud) db = wx.cloud.database()
-    var subscribeConfig = wx.getStorageSync('subscribe_config') || { announcement: true, activity: true, system: true, merchant: true, interaction: true }
+    var subscribeConfig = wx.getStorageSync('subscribe_config') || { announcement: true, activity: true, merchant: true }
     this.setData({ subscribeConfig: subscribeConfig })
     this.checkAdmin()
     this.loadConfig()
@@ -334,8 +357,9 @@ Page({
     }).then(function() {
       self.setData({ sellingSubmitting: false, showSellingModal: false, currentSelling: parsed, currentSellingText: text, currentSellingImage: image, sellingMode: mode })
       wx.showToast({ title: '保存成功', icon: 'success' })
-      var notifyContent = mode === 'image' ? '在售商品图片已更新' : (parsed.length > 0 ? '在售物品已更新，共' + parsed.length + '件' : '在售信息已更新')
-      notify.pushToSubscribers('merchant', '商人上架更新', notifyContent, '/pages/merchant/merchant')
+      var itemNames = parsed.map(function(i) { return i.name })
+      var notifyContent = mode === 'image' ? '在售商品图片已更新' : (parsed.length > 0 ? '在售物品已更新: ' + itemNames.join('、').substring(0, 30) : '在售信息已更新')
+      notify.pushToSubscribers('merchant', '商人上架更新', notifyContent, '/pages/merchant/merchant', null, itemNames)
     }).catch(function() {
       self.setData({ sellingSubmitting: false })
       wx.showToast({ title: '保存失败', icon: 'none' })
@@ -345,7 +369,7 @@ Page({
     var self = this
     var index = e.currentTarget.dataset.index
     if (!self.data.isAdmin || !db) return
-    var items = self.data.currentSelling
+    var items = self.data.currentSelling.slice()
     items.splice(index, 1)
     var text = items.map(function(i) {
       return i.name + '|' + i.price + '|' + i.effect + '|' + i.rarity + '|' + i.source
@@ -412,18 +436,14 @@ Page({
   checkSubscription: function() {
     var self = this
     if (!db) return
-    wx.cloud.callFunction({ name: 'login' }).then(function(res) {
-      var openid = res.result.openid
-      if (!openid) return
-      wx.setStorageSync('openid', openid)
-      db.collection('subscribers').where({ openid: openid, type: 'merchant' }).get()
-        .then(function(res) {
-          if (res.data.length > 0) {
-            self.setData({ subscribedMerchant: res.data[0].status === 'active', subscribeCount: res.data[0].count || 0 })
-          }
-        })
-        .catch(function() {})
-    }).catch(function() {})
+    notify.getSubscriptionStatus(function(err, status) {
+      if (err) return
+      self.setData({
+        subscribedMerchant: status.merchant || false,
+        subscribeCount: status.merchantCount || 0,
+        itemSubStatus: status.merchant_item_items || {}
+      })
+    })
   },
   subscribeMerchant: function() {
     var self = this
@@ -437,37 +457,25 @@ Page({
       return
     }
     notify.requestAndSave(['merchant'], function(err, result) {
-      if (err) {
-        if (!err.noConfig) {
-          console.error('商人订阅失败:', err)
-          if (err.errMsg && err.errMsg.indexOf('openid') >= 0) {
-            wx.showToast({ title: '请先登录后再设置', icon: 'none' })
-          } else {
-            wx.showToast({ title: '设置失败，请重试', icon: 'none' })
-          }
-        }
-        return
-      }
+      if (err) return
       if (result.merchant === 'accept') {
-        var newCount = currentCount + 1
-        self.setData({
-          subscribedMerchant: true,
-          subscribeCount: newCount
-        })
-        wx.showToast({ title: '已添加(' + newCount + '/99)', icon: 'success' })
-      } else if (result.merchant === 'reject') {
-        wx.showToast({ title: '已拒绝通知', icon: 'none' })
-      } else if (result.merchant === 'ban') {
-        wx.showModal({
-          title: '通知已关闭',
-          content: '您已关闭该类通知，请在小程序设置中手动开启',
-          confirmText: '去设置',
-          success: function(modalRes) {
-            if (modalRes.confirm) {
-              wx.openSetting({})
-            }
-          }
-        })
+        wx.showToast({ title: '已订阅新上架', icon: 'success' })
+        self.checkSubscription()
+      }
+    })
+  },
+  subscribeItem: function(e) {
+    var self = this
+    var name = e.currentTarget.dataset.name
+    if (!app.globalData.userInfo) {
+      wx.showToast({ title: '请先登录', icon: 'none' })
+      return
+    }
+    notify.requestAndSaveItem('merchant_item', name, function(err, result) {
+      if (err) return
+      if (result.merchant_item === 'accept') {
+        wx.showToast({ title: '已订阅: ' + name, icon: 'success' })
+        self.checkSubscription()
       }
     })
   },
@@ -562,16 +570,12 @@ Page({
         self.markNewItems()
         self.startNewItemsTimer()
         wx.showToast({ title: '添加成功', icon: 'success' })
-        self.notifySubscribers(newItemData)
+        notify.pushToSubscribers('merchant', '新商品上架', newItemData.name + ' - ' + newItemData.price + '洛克贝', '/pages/merchant/merchant', newItemData.name)
       })
       .catch(function() {
         self.setData({ addingItem: false })
         wx.showToast({ title: '添加失败', icon: 'none' })
       })
-  },
-  notifySubscribers: function(item) {
-    if (!db) return
-    notify.pushToSubscribers('merchant', '新商品上架', item.name + ' - ' + item.price + '洛克贝', '/pages/merchant/merchant')
   },
   deleteMerchantItem: function(e) {
     var self = this
@@ -582,7 +586,7 @@ Page({
       content: '确定要删除该物品吗？',
       success: function(res) {
         if (res.confirm) {
-          var items = self.data.items
+          var items = self.data.items.slice()
           var deleted = items[index]
           items.splice(index, 1)
           var customItemsText = items.map(function(i) {
@@ -612,5 +616,11 @@ Page({
         }
       }
     })
+  },
+  onShareAppMessage: function() {
+    return { title: '洛手助手 - 远行商人', path: '/pages/merchant/merchant', imageUrl: '/images/banner1.png' }
+  },
+  onShareTimeline: function() {
+    return { title: '洛手助手 - 远行商人今日售卖物品及价格', imageUrl: '/images/banner1.png' }
   }
 })

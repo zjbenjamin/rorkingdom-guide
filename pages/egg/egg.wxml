@@ -1,23 +1,52 @@
 <view class="page">
   <view class="container">
     <!-- 维护模式提示 -->
-    <view class="maintain-card" wx:if="{{maintenance}}">
+    <view class="maintain-card" wx:if="{{maintenance && !isAdmin}}">
       <text class="maintain-icon">🚧</text>
       <text class="maintain-title">页面维护中</text>
       <text class="maintain-desc">该功能正在开发或维护中，请稍后再来</text>
     </view>
 
     <!-- 正常内容 -->
-    <view wx:if="{{!maintenance}}">
-      <!-- 蛋组计算器入口 -->
-      <view class="card egg-calc-entry" bindtap="go" data-url="/pages/eggCalc/eggCalc">
-        <view class="egg-calc-entry-content">
-          <text class="egg-calc-entry-icon">🧮</text>
-          <view class="egg-calc-entry-info">
-            <text class="egg-calc-entry-title">蛋组计算器</text>
-            <text class="egg-calc-entry-desc">查询精灵蛋组，筛选孵蛋目标</text>
+    <view wx:if="{{!maintenance || isAdmin}}">
+      <!-- 管理员管理面板 -->
+      <view class="card admin-bar" wx:if="{{isAdmin}}">
+        <view class="admin-bar-row">
+          <text class="admin-bar-label">管理员管理栏：</text>
+          <text class="admin-bar-text">自定义展示模式</text>
+          <view class="toggle {{useCustom ? 'on' : ''}}" bindtap="toggleMode">
+            <view class="toggle-dot"></view>
           </view>
-          <text class="egg-calc-entry-arrow">›</text>
+        </view>
+        <view class="admin-bar-row" style="margin-top: 16rpx;">
+          <text class="admin-bar-label">页面状态控制：</text>
+          <text class="admin-bar-text">{{maintenance ? '页面已下线(维护中)' : '页面正常上线'}}</text>
+          <view class="toggle {{maintenance ? 'on' : ''}}" bindtap="toggleMaintenance">
+            <view class="toggle-dot"></view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 顶部功能区 -->
+      <view class="egg-header-actions">
+        <!-- 蛋组计算器入口 -->
+        <view class="egg-calc-entry-mini" bindtap="go" data-url="/pages/eggCalc/eggCalc">
+          <text class="entry-mini-icon">🧮</text>
+          <text class="entry-mini-text">蛋组计算器</text>
+        </view>
+        <view class="egg-tabs">
+          <view class="egg-tab {{activeTab === 'rule' ? 'active' : ''}}" bindtap="switchTab" data-tab="rule">孵蛋规则</view>
+          <view class="egg-tab {{activeTab === 'pool' ? 'active' : ''}}" bindtap="switchTab" data-tab="pool">精灵蛋池</view>
+          <view class="egg-tab {{activeTab === 'lookup' ? 'active' : ''}}" bindtap="switchTab" data-tab="lookup">尺寸反查</view>
+          <view class="egg-tab {{activeTab === 'overview' ? 'active' : ''}}" bindtap="switchTab" data-tab="overview">概率说明</view>
+        </view>
+      </view>
+
+      <!-- 蛋池搜索栏 -->
+      <view class="search-bar-wrap" wx:if="{{activeTab === 'pool' && !useCustom}}">
+        <view class="search-bar">
+          <text class="search-icon">🔍</text>
+          <input class="search-input" placeholder="搜索精灵名称/属性/蛋池" value="{{search}}" bindinput="onSearch" />
         </view>
       </view>
 
@@ -39,60 +68,245 @@
       </view>
 
       <!-- 默认装修页 -->
-      <view wx:else>
-      <!-- 蛋类型 -->
-      <view class="card">
-        <view class="card-title">蛋类型</view>
-        <view class="egg-grid">
-          <view class="egg-card" wx:for="{{types}}" wx:key="id">
-            <text class="egg-icon">{{item.icon}}</text>
-            <text class="egg-name">{{item.name}}</text>
-            <text class="egg-prob">概率 {{item.prob}}</text>
-            <text class="egg-desc">{{item.desc}}</text>
-            <text class="egg-bonus" wx:if="{{item.bonus !== '无'}}">{{item.bonus}}</text>
+      <view class="page-default" wx:else>
+        <!-- 孵蛋规则标签页 -->
+        <view class="rule-tab-view" wx:if="{{activeTab === 'rule'}}">
+          <!-- 孵蛋核心规则 -->
+          <view class="card">
+            <view class="card-title">🥚 孵蛋核心规律</view>
+            <view class="rule-container">
+              <view class="rule-item-box">
+                <view class="rule-item-header">
+                  <text class="rule-item-badge female">母方</text>
+                  <text class="rule-item-title">决定子代物种</text>
+                </view>
+                <text class="rule-item-desc">配种后孵化出来的子代精灵，其种类与母方（女方）进化链的最基础阶段一致。如：极光迪莫(母) + 烈焰火羽(公) ＝ 迪莫(子代)。</text>
+              </view>
+              
+              <view class="rule-item-box">
+                <view class="rule-item-header">
+                  <text class="rule-item-badge male">父方</text>
+                  <text class="rule-item-title">决定遗传技能</text>
+                </view>
+                <text class="rule-item-desc">子代除了继承自身的升级技能外，还能额外继承父方（男方）所拥有的“遗传技能”（必须在同蛋组的前提下）。</text>
+              </view>
+            </view>
           </view>
-        </view>
-      </view>
 
-      <!-- 蛋体型 -->
-      <view class="card">
-        <view class="card-title">蛋体型</view>
-        <view class="egg-grid">
-          <view class="egg-card" wx:for="{{sizes}}" wx:key="id">
-            <text class="egg-icon">{{item.icon}}</text>
-            <text class="egg-name">{{item.name}}</text>
-            <text class="egg-prob">概率 {{item.prob}}</text>
-            <text class="egg-desc">{{item.desc}}</text>
-            <text class="egg-bonus" wx:if="{{item.bonus !== '无'}}">{{item.bonus}}</text>
-          </view>
-        </view>
-      </view>
+          <!-- 遗传锁定道具 -->
+          <view class="card">
+            <view class="card-title">💎 性格与个体锁定法则</view>
+            <view class="item-rules-grid">
+              <view class="item-rule-card">
+                <view class="item-rule-top">
+                  <text class="item-rule-emoji">🪨</text>
+                  <text class="item-rule-name">不变之石</text>
+                </view>
+                <text class="item-rule-effect">性格继承</text>
+                <text class="item-rule-detail">配种双方中任意一方携带【不变之石】，子代将 100% 继承该携带方的性格。若双方都携带，则各占 50% 继承概率。</text>
+              </view>
 
-      <!-- 精灵蛋池 -->
-      <view class="card">
-        <view class="card-title">精灵蛋池</view>
-        <view class="pet-list">
-          <view class="pet-item" wx:for="{{pets}}" wx:key="name">
-            <text class="pet-name">{{item.name}}</text>
-            <text class="pet-type type-{{item.type}}">{{item.type}}</text>
-            <text class="pet-egg">{{item.egg}}</text>
-            <text class="pet-loc">{{item.loc}}</text>
+              <view class="item-rule-card">
+                <view class="item-rule-top">
+                  <text class="item-rule-emoji">🥋</text>
+                  <text class="item-rule-name">力量系列道具</text>
+                </view>
+                <text class="item-rule-effect">个体值锁定</text>
+                <text class="item-rule-detail">配种中自然继承父母双方个体值中的随机 3 项。若携带【力量手环】、【力量腰带】等道具，可 100% 锁定并遗传对应的某项个体值。</text>
+              </view>
+            </view>
           </view>
-        </view>
-      </view>
 
-      <!-- 骑乘效果 -->
-      <view class="card">
-        <view class="card-title">骑乘效果</view>
-        <view class="mount-list">
-          <view class="mount-item" wx:for="{{mounts}}" wx:key="pet">
-            <text class="mount-pet">{{item.pet}}</text>
-            <text class="mount-name">{{item.mount}}</text>
-            <text class="mount-bonus">{{item.bonus}}</text>
-            <text class="mount-req">{{item.req}}</text>
+          <!-- 异色/闪光传递 -->
+          <view class="card">
+            <view class="card-title">✨ 异色（闪光）传递规律</view>
+            <view class="shiny-trans-box">
+              <view class="shiny-formula">
+                <view class="shiny-pet parent"><text class="shiny-emoji">🌈</text> 异色父母</view>
+                <text class="shiny-plus">+</text>
+                <view class="shiny-pet parent"><text class="shiny-emoji">🥚</text> 任意同组</view>
+                <text class="shiny-arrow">➔</text>
+                <view class="shiny-pet child"><text class="shiny-emoji">✨</text> 提升子代异色概率</view>
+              </view>
+              <view class="shiny-rules-list">
+                <text class="shiny-rule-text">• 只要参与配种的父母一方为异色（闪光）精灵，子代出生为异色的概率将显著提升。</text>
+                <text class="shiny-rule-text">• 若配种的父母双方均为异色，则子代异色的产出率将会达到最大（异色基因双重叠加）。</text>
+                <text class="shiny-rule-text">• 异色传递同样必须严格遵循【同蛋组】交配的前置原则。</text>
+              </view>
+            </view>
+          </view>
+          
+          <!-- 引用声明 -->
+          <view class="card source-declaration-card">
+            <view class="source-header-row">
+              <text class="source-dec-title">数据引用与版权声明</text>
+            </view>
+            <view class="source-dec-body">
+              <text class="source-dec-text">本页面所载之孵蛋规则、蛋组映射关系、体型加成及配种概率数据均参考和引用自：</text>
+              <text class="source-dec-link" bindtap="copySourceLink">洛克王国:手游WIKI（https://wiki.biligame.com/rocom）</text>
+              <text class="source-dec-license">基于 CC BY-NC-SA 4.0（署名-非商业性使用-相同方式共享）许可协议授权。特此致谢 WIKI 编辑团队的辛勤付出！</text>
+            </view>
           </view>
         </view>
-      </view>
+
+        <!-- 概率说明标签页 -->
+        <view wx:if="{{activeTab === 'overview'}}">
+          <!-- 蛋类型 -->
+          <view class="card">
+            <view class="card-title">蛋类型</view>
+            <view class="egg-grid">
+              <view class="egg-card" wx:for="{{types}}" wx:key="id">
+                <text class="egg-icon">{{item.icon}}</text>
+                <text class="egg-name">{{item.name}}</text>
+                <text class="egg-prob">概率 {{item.prob}}</text>
+                <text class="egg-desc">{{item.desc}}</text>
+                <text class="egg-bonus" wx:if="{{item.bonus !== '无'}}">{{item.bonus}}</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 蛋体型 -->
+          <view class="card">
+            <view class="card-title">蛋体型</view>
+            <view class="egg-grid">
+              <view class="egg-card" wx:for="{{sizes}}" wx:key="id">
+                <text class="egg-icon">{{item.icon}}</text>
+                <text class="egg-name">{{item.name}}</text>
+                <text class="egg-prob">概率 {{item.prob}}</text>
+                <text class="egg-desc">{{item.desc}}</text>
+                <text class="egg-bonus" wx:if="{{item.bonus !== '无'}}">{{item.bonus}}</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 骑乘效果 -->
+          <view class="card">
+            <view class="card-title">骑乘效果</view>
+            <view class="mount-list">
+              <view class="mount-item" wx:for="{{mounts}}" wx:key="pet">
+                <view class="mount-main">
+                  <text class="mount-pet">{{item.pet}}</text>
+                  <text class="mount-name">{{item.mount}}</text>
+                </view>
+                <text class="mount-bonus">{{item.bonus}}</text>
+                <text class="mount-req">{{item.req}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 尺寸反查标签页 -->
+        <view wx:if="{{activeTab === 'lookup'}}">
+          <view class="card lookup-card">
+            <view class="card-title">🔍 尺寸反查工具</view>
+            <view class="lookup-subtitle">输入蛋上标写的身高或体重，反查可能孵化出的精灵范围</view>
+            
+            <view class="lookup-form">
+              <!-- 身高输入 -->
+              <view class="lookup-form-item">
+                <text class="lookup-label">身高 (m)</text>
+                <input class="lookup-input" type="digit" placeholder="例如 0.24" value="{{lookupHeight}}" bindinput="onLookupHeightInput" />
+              </view>
+              
+              <!-- 体重输入 -->
+              <view class="lookup-form-item">
+                <text class="lookup-label">体重 (kg)</text>
+                <input class="lookup-input" type="digit" placeholder="例如 1.60" value="{{lookupWeight}}" bindinput="onLookupWeightInput" />
+              </view>
+              
+              <!-- 蛋池筛选 -->
+              <view class="lookup-form-item">
+                <text class="lookup-label">精灵蛋池</text>
+                <picker class="lookup-picker" bindchange="onLookupEggChange" value="{{lookupEggIndex}}" range="{{eggNameList}}">
+                  <view class="picker-value-wrap">
+                    <text class="picker-value">{{lookupEggName}}</text>
+                    <text class="picker-arrow">▼</text>
+                  </view>
+                </picker>
+              </view>
+            </view>
+
+            <view class="lookup-actions">
+              <button class="lookup-btn btn-clear" bindtap="onLookupClear">重置</button>
+              <button class="lookup-btn btn-submit" bindtap="onLookupSearch">开始反查</button>
+            </view>
+          </view>
+
+          <!-- 提示信息 -->
+          <view class="card lookup-tip-card">
+            <view class="tip-title">💡 使用小贴士</view>
+            <text class="tip-desc">• 身高和体重至少输入一项即可开始反查。</text>
+            <text class="tip-desc">• 每个精灵在孵出时会有大块头（偏大）、小块头（偏小）或普通体型的随机尺寸浮动。本工具已录入 WIKI 完整的尺寸浮动区间，以确保反查的准确性。</text>
+          </view>
+
+          <!-- 查询结果 -->
+          <view class="card no-padding" wx:if="{{hasSearched}}">
+            <view class="card-title" style="padding: 16px 16px 4px 16px;">🎯 反查结果 (共 {{lookupResults.length}} 个)</view>
+            
+            <view class="pet-pool-list" wx:if="{{lookupResults.length > 0}}">
+              <view class="pet-pool-item" wx:for="{{lookupResults}}" wx:key="name">
+                <view class="pet-pool-info">
+                  <view class="pet-pool-name-row">
+                    <text class="pet-pool-name">{{item.name}}</text>
+                    <view class="pet-pool-types">
+                      <text class="pet-pool-type type-{{item.type1_class}}">{{item.type1}}</text>
+                      <text class="pet-pool-type type-{{item.type2_class}}" wx:if="{{item.type2}}">{{item.type2}}</text>
+                    </view>
+                  </view>
+                  <view class="pet-pool-meta">
+                    <view class="meta-row">
+                      <text class="pet-pool-egg">所在蛋池：{{item.egg || '普通蛋'}}</text>
+                      <text class="pet-pool-group">蛋组：{{item.group[0] || '未知'}}</text>
+                    </view>
+                    <view class="meta-row size-range-row">
+                      <text class="size-range-text">身高范围：{{item.height || '未知'}} m</text>
+                      <text class="size-range-text">体重范围：{{item.weight || '未知'}} kg</text>
+                    </view>
+                  </view>
+                </view>
+                <view class="pet-pool-shiny" wx:if="{{item.hasShiny}}">
+                  <text class="shiny-tag">可闪光</text>
+                </view>
+              </view>
+            </view>
+            
+            <!-- 空状态 -->
+            <view class="empty-results" wx:else>
+              <text class="empty-results-icon">🤷</text>
+              <text class="empty-results-text">未找到符合该尺寸区间的精灵</text>
+              <text class="empty-results-sub">请尝试稍微调大或调小输入的身高/体重，或者切换蛋池条件</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 精灵蛋池标签页 -->
+        <view wx:if="{{activeTab === 'pool'}}">
+          <view class="card no-padding">
+            <view class="pet-pool-list">
+              <view class="pet-pool-item" wx:for="{{filteredPets}}" wx:key="name">
+                <view class="pet-pool-info">
+                  <view class="pet-pool-name-row">
+                    <text class="pet-pool-name">{{item.name}}</text>
+                    <view class="pet-pool-types">
+                      <text class="pet-pool-type type-{{item.type1_class}}">{{item.type1}}</text>
+                      <text class="pet-pool-type type-{{item.type2_class}}" wx:if="{{item.type2}}">{{item.type2}}</text>
+                    </view>
+                  </view>
+                  <view class="pet-pool-meta">
+                    <text class="pet-pool-egg">所在蛋池：{{item.egg || '暂无数据'}}</text>
+                    <text class="pet-pool-loc" wx:if="{{item.loc}}">获取地点：{{item.loc}}</text>
+                  </view>
+                </view>
+                <view class="pet-pool-shiny" wx:if="{{item.hasShiny}}">
+                  <text class="shiny-tag">可闪光</text>
+                </view>
+              </view>
+              <view class="empty-results" wx:if="{{filteredPets.length === 0}}">
+                <text class="empty-results-text">未找到相关精灵</text>
+              </view>
+            </view>
+          </view>
+        </view>
       </view>
     </view>
 
@@ -118,4 +332,5 @@
       </view>
     </view>
   </view>
+  <dock current="egg" />
 </view>

@@ -1,1 +1,1 @@
-{ "usingComponents": {}, "navigationBarTitleText": "技能图鉴" }
+{ "usingComponents": { "dock": "/components/dock/dock" }, "navigationBarTitleText": "技能图鉴" }

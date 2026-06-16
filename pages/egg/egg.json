@@ -1,1 +1,1 @@
-{ "usingComponents": {}, "navigationBarTitleText": "孵蛋查询" }
+{ "usingComponents": { "dock": "/components/dock/dock" }, "navigationBarTitleText": "孵蛋查询" }

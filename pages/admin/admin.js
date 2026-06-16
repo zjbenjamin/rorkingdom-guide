@@ -2,7 +2,142 @@ var app = getApp()
 var db = null
 var notify = require('../../utils/notify')
 var cloudUrl = require('../../utils/cloudUrl')
-var { activitiesData } = require('../../data/pets')
+var activitiesData = [
+  { id: 1, title: '异色获取方法', type: '官方权威信息', status: '置顶', start: '', end: '', rewards: [], desc: '通过赛季奇遇、大世界遭遇、生蛋孵蛋、赛季商店兑换等方式获取异色精灵。' }
+]
+
+function parseMusicShare(text) {
+  if (!text) return { url: null, name: null };
+  var url = null;
+  var srcRegex = /src\s*=\s*['"]([^'"]+)['"]/i;
+  var srcMatch = text.match(srcRegex);
+  if (srcMatch) {
+    url = srcMatch[1];
+    if (url.indexOf('//') === 0) url = 'https:' + url;
+  } else {
+    var urlRegex = /(https?:\/\/[^\s'"<>）)】\]》]+)/i;
+    var urlMatch = text.match(urlRegex);
+    url = urlMatch ? urlMatch[1] : null;
+  }
+
+  if (url) {
+    url = convertMusicUrl(url);
+  }
+
+  var name = null;
+
+  var dotSpaceDot = text.match(/^(.+?)[\s]*[·\-—][\s]*(.+?)[\s]*$/);
+  if (!dotSpaceDot) {
+    var patterns = [
+      /《([^》]+)》\s*[-\-—·]\s*(.+)/,
+      /([^-—·]+)[\s]*[·\-—][\s]*(.+)/
+    ];
+    for (var p = 0; p < patterns.length; p++) {
+      var m = text.match(patterns[p]);
+      if (m && m[1] && m[2]) {
+        var left = m[1].replace(/https?:\/\/[^\s]+/g, '').trim();
+        var right = m[2].replace(/https?:\/\/[^\s]+/g, '').trim();
+        if (left && right && left.length < 30 && right.length < 30) {
+          var isPlatform = /网易云|QQ音乐|酷狗|酷我|虾米|spotify|apple/i.test(left) || /网易云|QQ音乐|酷狗|酷我|虾米|spotify|apple/i.test(right);
+          if (!isPlatform) {
+            name = left + ' - ' + right;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  if (!name) {
+    var bracketPatterns = [
+      /《([^》]+)》/,
+      /【([^】]+)】/,
+      /「([^」]+)」/,
+      /\[([^\]]+)\]/
+    ];
+    for (var i = 0; i < bracketPatterns.length; i++) {
+      var match = text.match(bracketPatterns[i]);
+      if (match && match[1].trim() && match[1].trim().length < 40) {
+        name = match[1].trim();
+        break;
+      }
+    }
+  }
+
+  return { url: url, name: name };
+}
+
+function convertMusicUrl(url) {
+  if (!url) return url;
+  url = url.replace(/[,;!！。，；、]+$/, '');
+  var neteaseId = url.match(/(?:music\.163\.com\/.*[?&]id=|music\.163\.com\/song\/(?:media\/outer\/)?(?:\?id=)?|163cn\.tv\/\w+\/?.*?song\/?.*?[?&]id=|song\?id=)(\d+)/i);
+  if (neteaseId && neteaseId[1]) {
+    return 'https://music.163.com/song/media/outer/url?id=' + neteaseId[1] + '.mp3';
+  }
+  if (url.indexOf('163cn.tv') > -1 || url.indexOf('m.163.com') > -1) {
+    return url;
+  }
+  return url;
+}
+
+function parseGuessedName(text, url) {
+  if (!text) return '';
+  var cleanText = text;
+  if (url) {
+    cleanText = cleanText.replace(url, '');
+    var shortUrl = url.replace(/^https?:/, '');
+    cleanText = cleanText.replace(shortUrl, '');
+  }
+  cleanText = cleanText.replace(/<[^>]+>/g, '');
+
+  var keywords = [
+    /分享.*?的单曲/g,
+    /分享单曲/g,
+    /分享.*?的歌/g,
+    /来自@网易云音乐/g,
+    /来自@QQ音乐/g,
+    /来自@酷狗音乐/g,
+    /来自@酷我音乐/g,
+    /来自@/g,
+    /QQ音乐/g,
+    /网易云音乐/g,
+    /酷狗音乐/g,
+    /酷我音乐/g,
+    /抖音/g,
+    /快手/g,
+    /微博/g,
+    /朋友圈/g,
+    /\[.*?链接\]/g,
+    /\(.*?链接\)/g,
+    /\(.*?复制.*?\)/g,
+    /复制此链接/g,
+    /打开.*?直接播放/g,
+    /点击.*?听歌/g,
+    /http[^\s]+/g,
+    /\s*[-–—·]\s*网易云音乐/g,
+    /\s*[-–—·]\s*QQ音乐/g,
+    /\s*[-–—·]\s*酷狗音乐/g,
+    /\s*[-–—·]\s*酷我音乐/g,
+    /\[/g, /\]/g,
+    /【/g, /】/g,
+    /「/g, /」/g,
+    /《/g, /》/g,
+    /\(/g, /\)/g,
+    /（/g, /）/g,
+    /🎧/g, /🎵/g, /🎶/g, /🎸/g, /🎤/g, /🎼/g
+  ];
+  keywords.forEach(function(kw) {
+    cleanText = cleanText.replace(kw, '');
+  });
+  cleanText = cleanText.replace(/^[:：\s,，\-——+··]+/g, '');
+  cleanText = cleanText.replace(/[:：\s,，\-——+··]+$/g, '');
+  cleanText = cleanText.replace(/\s{2,}/g, ' ');
+  cleanText = cleanText.trim();
+  if (cleanText && cleanText.length > 0 && cleanText.length < 50) {
+    return cleanText;
+  }
+  return '';
+}
 
 Page({
   data: {
@@ -10,10 +145,8 @@ Page({
     loading: true,
     activeTab: 'announce',
     announcements: [],
-    systemUpdates: [],
-    posts: [],
     users: [],
-    stats: { totalUsers: 0, totalPosts: 0, todayPosts: 0 },
+    stats: { totalUsers: 0 },
     showModal: false,
     showBannerModal: false,
     editingItem: null,
@@ -48,15 +181,6 @@ Page({
     ],
     showColorPicker: false,
     showSizePicker: false,
-    showSystemModal: false,
-    systemEditingItem: null,
-    systemFormTitle: '',
-    systemFormContent: '',
-    systemFormVersion: '',
-    systemFormType: 'feature',
-    systemFormStartDate: '',
-    systemFormEndDate: '',
-    systemSubmitting: false,
     showActivityModal: false,
     activityEditingItem: null,
     activityFormTitle: '',
@@ -80,7 +204,7 @@ Page({
     localActivities: [],
     deletedLocalIds: [],
     subscribers: [],
-    subscribeConfig: { announcement: true, activity: true, system: true, merchant: true, interaction: true }
+    subscribeConfig: { announcement: true, activity: true, merchant: true }
   },
   onLoad: function() {
     if (wx.cloud) db = wx.cloud.database()
@@ -98,14 +222,12 @@ Page({
     db.collection('admin_config').doc('admin').get()
       .then(function(res) {
         var adminOpenid = res.data.openid
-        db.collection('users').get()
+        db.collection('users').where({ _openid: adminOpenid }).get()
           .then(function(userRes) {
-            for (var i = 0; i < userRes.data.length; i++) {
-              if (userRes.data[i]._openid === adminOpenid) {
-                self.setData({ isAdmin: true })
-                self.loadData()
-                return
-              }
+            if (userRes.data.length > 0) {
+              self.setData({ isAdmin: true })
+              self.loadData()
+              return
             }
             self.setData({ isAdmin: false, loading: false })
           })
@@ -114,7 +236,6 @@ Page({
   },
   loadData: function() {
     this.loadAnnouncements()
-    this.loadSystemUpdates()
     this.loadStats()
     this.loadBanner()
   },
@@ -131,10 +252,8 @@ Page({
     var tab = e.currentTarget.dataset.tab
     this.setData({ activeTab: tab })
     if (tab === 'announce') this.loadAnnouncements()
-    else if (tab === 'system') this.loadSystemUpdates()
     else if (tab === 'activity') this.loadAdminActivities()
     else if (tab === 'subscribe') this.loadSubscribers()
-    else if (tab === 'posts') this.loadPosts()
     else if (tab === 'users') this.loadUsers()
     else if (tab === 'stats') this.loadStats()
     else if (tab === 'pages') this.loadPageConfigs()
@@ -147,140 +266,6 @@ Page({
         var list = res.data || []
         for (var i = 0; i < list.length; i++) list[i].timeStr = self.formatTime(list[i].createTime)
         self.setData({ announcements: list, loading: false })
-      })
-      .catch(function() { self.setData({ loading: false }) })
-  },
-  loadSystemUpdates: function() {
-    var self = this
-    if (!db) return
-    db.collection('announcements').where({ type: 'system' }).orderBy('createTime', 'desc').limit(50).get()
-      .then(function(res) {
-        var list = res.data || []
-        for (var i = 0; i < list.length; i++) list[i].timeStr = self.formatTime(list[i].createTime)
-        self.setData({ systemUpdates: list })
-      })
-      .catch(function() {})
-  },
-  openSystemModal: function(e) {
-    var item = (e && e.currentTarget && e.currentTarget.dataset) ? e.currentTarget.dataset.item || null : null
-    this.setData({
-      showSystemModal: true,
-      systemEditingItem: item,
-      systemFormTitle: item ? item.title : '',
-      systemFormContent: item ? item.content : '',
-      systemFormVersion: item ? (item.version || '') : '',
-      systemFormType: item ? (item.updateType || 'feature') : 'feature',
-      systemFormStartDate: item ? (item.startDate || '') : '',
-      systemFormEndDate: item ? (item.endDate || '') : ''
-    })
-  },
-  closeSystemModal: function() {
-    this.setData({ showSystemModal: false })
-  },
-  onSystemTitleInput: function(e) { this.setData({ systemFormTitle: e.detail.value }) },
-  onSystemContentInput: function(e) { this.setData({ systemFormContent: e.detail.value }) },
-  onSystemVersionInput: function(e) { this.setData({ systemFormVersion: e.detail.value }) },
-  onSystemStartDateChange: function(e) { this.setData({ systemFormStartDate: e.detail.value }) },
-  onSystemEndDateChange: function(e) { this.setData({ systemFormEndDate: e.detail.value }) },
-  onSystemTypeChange: function(e) {
-    var types = ['feature', 'fix', 'improve', 'notice']
-    this.setData({ systemFormType: types[e.detail.value] })
-  },
-  submitSystemUpdate: function() {
-    var self = this
-    if (self.data.systemSubmitting) return
-    if (!db) { wx.showToast({ title: '云环境未就绪', icon: 'none' }); return }
-    var title = self.data.systemFormTitle.trim()
-    var content = self.data.systemFormContent.trim()
-    if (!title) { wx.showToast({ title: '请输入标题', icon: 'none' }); return }
-    if (!content) { wx.showToast({ title: '请输入内容', icon: 'none' }); return }
-    self.setData({ systemSubmitting: true })
-    var data = {
-      title: title,
-      content: content,
-      version: self.data.systemFormVersion.trim(),
-      updateType: self.data.systemFormType,
-      type: 'system',
-      startDate: self.data.systemFormStartDate,
-      endDate: self.data.systemFormEndDate,
-      updateTime: db.serverDate()
-    }
-    var promise
-    if (self.data.systemEditingItem) {
-      promise = db.collection('announcements').doc(self.data.systemEditingItem._id).update({ data: data })
-    } else {
-      data.createTime = db.serverDate()
-      data.author = app.globalData.userInfo ? app.globalData.userInfo.nickName : 'Admin'
-      promise = db.collection('announcements').add({ data: data })
-    }
-    promise.then(function() {
-      self.setData({ systemSubmitting: false, showSystemModal: false, systemEditingItem: null })
-      wx.showToast({ title: '操作成功', icon: 'success' })
-      self.loadSystemUpdates()
-      self.pushSubscribe('system', title, content.substring(0, 20))
-    }).catch(function(err) {
-      console.error('发布系统更新失败:', err)
-      self.setData({ systemSubmitting: false })
-      wx.showToast({ title: '操作失败', icon: 'none' })
-    })
-  },
-  deleteSystemUpdate: function(e) {
-    var self = this, item = e.currentTarget.dataset.item
-    wx.showModal({
-      title: '删除系统更新',
-      content: '确定删除该条系统更新？',
-      success: function(res) {
-        if (res.confirm) {
-          db.collection('announcements').doc(item._id).remove()
-            .then(function() {
-              wx.showToast({ title: '已删除', icon: 'success' })
-              self.loadSystemUpdates()
-            })
-            .catch(function() { wx.showToast({ title: '删除失败', icon: 'none' }) })
-        }
-      }
-    })
-  },
-  loadPosts: function() {
-    var self = this
-    if (!db) return
-    db.collection('comments').orderBy('createTime', 'desc').limit(50).get()
-      .then(function(res) {
-        var list = res.data || []
-        for (var i = 0; i < list.length; i++) {
-          list[i].timeStr = self.formatTime(list[i].createTime)
-          list[i].liked = false
-          if (list[i].likes && app.globalData.userInfo) {
-            for (var j = 0; j < list[i].likes.length; j++) {
-              if (list[i].likes[j] === app.globalData.userInfo.nickName) { list[i].liked = true; break }
-            }
-          }
-        }
-        self.setData({ posts: list, loading: false })
-        var allIDs = []
-        for (var p = 0; p < list.length; p++) {
-          if (cloudUrl.isCloudUrl(list[p].userAvatar)) allIDs.push(list[p].userAvatar)
-          if (list[p].images) {
-            for (var q = 0; q < list[p].images.length; q++) {
-              if (cloudUrl.isCloudUrl(list[p].images[q])) allIDs.push(list[p].images[q])
-            }
-          }
-        }
-        if (allIDs.length > 0) {
-          var uniqueIDs = []
-          var seen = {}
-          for (var r = 0; r < allIDs.length; r++) { if (!seen[allIDs[r]]) { seen[allIDs[r]] = true; uniqueIDs.push(allIDs[r]) } }
-          wx.cloud.getTempFileURL({ fileList: uniqueIDs }).then(function(urlRes) {
-            var urlMap = {}
-            if (urlRes.fileList) { for (var s = 0; s < urlRes.fileList.length; s++) { if (urlRes.fileList[s].tempFileURL) urlMap[urlRes.fileList[s].fileID] = urlRes.fileList[s].tempFileURL } }
-            var updated = self.data.posts
-            for (var t = 0; t < updated.length; t++) {
-              if (urlMap[updated[t].userAvatar]) updated[t].userAvatar = urlMap[updated[t].userAvatar]
-              if (updated[t].images) { for (var u = 0; u < updated[t].images.length; u++) { if (urlMap[updated[t].images[u]]) updated[t].images[u] = urlMap[updated[t].images[u]] } }
-            }
-            self.setData({ posts: updated })
-          })
-        }
       })
       .catch(function() { self.setData({ loading: false }) })
   },
@@ -304,14 +289,15 @@ Page({
   loadStats: function() {
     var self = this
     if (!db) return
-    var stats = { totalUsers: 0, totalPosts: 0, todayPosts: 0 }
-    var done = 0
-    db.collection('users').count().then(function(r) { stats.totalUsers = r.total; done++; if (done >= 3) self.setData({ stats: stats, loading: false }) }).catch(function() { done++; if (done >= 3) self.setData({ stats: stats, loading: false }) })
-    db.collection('comments').count().then(function(r) { stats.totalPosts = r.total; done++; if (done >= 3) self.setData({ stats: stats, loading: false }) }).catch(function() { done++; if (done >= 3) self.setData({ stats: stats, loading: false }) })
-    var today = new Date(); today.setHours(0,0,0,0)
-    db.collection('comments').where({ createTime: db.command.gte(today) }).count()
-      .then(function(r) { stats.todayPosts = r.total; done++; if (done >= 3) self.setData({ stats: stats, loading: false }) })
-      .catch(function() { done++; if (done >= 3) self.setData({ stats: stats, loading: false }) })
+    var stats = { totalUsers: 0 }
+    db.collection('users').count()
+      .then(function(r) {
+        stats.totalUsers = r.total
+        self.setData({ stats: stats, loading: false })
+      })
+      .catch(function() {
+        self.setData({ stats: stats, loading: false })
+      })
   },
   calcLevel: function(days) {
     if (days >= 365) return 10; if (days >= 180) return 9; if (days >= 120) return 8
@@ -349,8 +335,7 @@ Page({
     if (!db) return
     var pageList = [
       { id: 'merchant', name: '远行商人', icon: '🛒', maintenance: false, useCustom: false },
-      { id: 'egg', name: '孵蛋查询', icon: '🥚', maintenance: false, useCustom: false },
-      { id: 'community', name: '社区入口', icon: '👥', maintenance: false, useCustom: false, isNav: true }
+      { id: 'egg', name: '孵蛋查询', icon: '🥚', maintenance: false, useCustom: false }
     ]
     var done = 0
     for (var i = 0; i < pageList.length; i++) {
@@ -436,6 +421,68 @@ Page({
     this.setData({ showModal: false })
   },
   preventClose: function() {},
+  showMusicDialog: function() {
+    var self = this
+    wx.showModal({
+      title: '添加音乐',
+      content: '',
+      placeholderText: '粘贴歌曲分享文本（支持网易云/QQ音乐等）',
+      editable: true,
+      success: function(resShare) {
+        if (resShare.confirm && resShare.content && resShare.content.trim()) {
+          var shareText = resShare.content.trim()
+          var parsed = parseMusicShare(shareText)
+          
+          if (!parsed.url) {
+            var isUrl = /https?:\/\//i.test(shareText);
+            if (!isUrl && shareText.length < 50) {
+              wx.showModal({
+                title: '输入歌曲链接',
+                content: '',
+                placeholderText: '请粘贴音乐播放链接',
+                editable: true,
+                success: function(resUrl) {
+                  if (resUrl.confirm && resUrl.content && resUrl.content.trim()) {
+                    var url = convertMusicUrl(resUrl.content.trim())
+                    if (url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) {
+                      wx.showToast({ title: '链接需以 http 或 https 开头', icon: 'none' })
+                      return
+                    }
+                    self._addMusicBlock(self, { type: 'music', name: shareText, url: url })
+                  }
+                }
+              })
+            } else {
+              wx.showToast({ title: '未找到有效的音乐链接', icon: 'none' })
+            }
+            return
+          }
+          
+          if (parsed.name) {
+            self._addMusicBlock(self, { type: 'music', name: parsed.name, url: parsed.url })
+          } else {
+            var guessedName = parseGuessedName(shareText, parsed.url)
+            wx.showModal({
+              title: '输入歌曲名称',
+              content: guessedName || '',
+              placeholderText: '歌名 - 歌手',
+              editable: true,
+              success: function(resName) {
+                if (resName.confirm && resName.content && resName.content.trim()) {
+                  self._addMusicBlock(self, { type: 'music', name: resName.content.trim(), url: parsed.url })
+                }
+              }
+            })
+          }
+        }
+      }
+    })
+  },
+  _addMusicBlock: function(self, block) {
+    var richContent = (self.data.formRichContent || []).concat([block])
+    self.setData({ formRichContent: richContent })
+    wx.showToast({ title: '已添加: ' + block.name, icon: 'success' })
+  },
   onTitleInput: function(e) { this.setData({ formTitle: e.detail.value }) },
   onContentInput: function(e) { this.setData({ formContent: e.detail.value }) },
   onImageInput: function(e) { this.setData({ formImage: e.detail.value }) },
@@ -665,6 +712,8 @@ Page({
         var block = richContent[i]
         if (block.type === 'quote') {
           htmlParts.push('<blockquote style="border-left:4rpx solid rgba(0,212,255,0.3);padding-left:12rpx;color:rgba(255,255,255,0.7);font-size:26rpx;margin:12rpx 0;">' + block.content + '</blockquote>')
+        } else if (block.type === 'music') {
+          htmlParts.push('<p style="color:#00d4ff;font-size:26rpx;margin:12rpx 0;text-decoration:underline;">🎵 推荐单曲: ' + block.name + ' (' + block.url + ')</p>')
         } else {
           var style = 'font-size:' + block.size + 'rpx;color:' + block.color + ';'
           if (block.weight === 'bold') style += 'font-weight:bold;'
@@ -733,34 +782,7 @@ Page({
     var self = this, item = e.currentTarget.dataset.item
     db.collection('announcements').doc(item._id).update({ data: { pinned: !item.pinned } }).then(function() { self.loadAnnouncements() }).catch(function() { wx.showToast({ title: '操作失败', icon: 'none' }) })
   },
-  deletePost: function(e) {
-    var self = this, item = e.currentTarget.dataset.item
-    wx.showModal({
-      title: '删除帖子',
-      content: '确定删除该帖子？',
-      success: function(res) {
-        if (res.confirm) {
-          wx.cloud.callFunction({
-            name: 'deletePost',
-            data: { postId: item._id }
-          }).then(function(result) {
-            if (result.result && result.result.success) {
-              wx.showToast({ title: '已删除', icon: 'success' })
-              self.loadPosts()
-            } else {
-              wx.showToast({ title: result.result ? result.result.error : '删除失败', icon: 'none' })
-            }
-          }).catch(function() {
-            wx.showToast({ title: '删除失败', icon: 'none' })
-          })
-        }
-      }
-    })
-  },
-  togglePostPinned: function(e) {
-    var self = this, item = e.currentTarget.dataset.item
-    db.collection('comments').doc(item._id).update({ data: { pinned: !item.pinned } }).then(function() { self.loadPosts() }).catch(function() { wx.showToast({ title: '操作失败', icon: 'none' }) })
-  },
+
   banUser: function(e) {
     var self = this, item = e.currentTarget.dataset.item
     wx.showModal({
@@ -844,10 +866,8 @@ Page({
     this.setData({ loading: true })
     var tab = this.data.activeTab
     if (tab === 'announce') this.loadAnnouncements()
-    else if (tab === 'system') this.loadSystemUpdates()
     else if (tab === 'activity') this.loadAdminActivities()
     else if (tab === 'subscribe') this.loadSubscribers()
-    else if (tab === 'posts') this.loadPosts()
     else if (tab === 'users') this.loadUsers()
     else if (tab === 'stats') this.loadStats()
   },
@@ -855,9 +875,7 @@ Page({
     var pages = {
       announcement: '/pages/index/index',
       activity: '/pages/activity/activity',
-      system: '/pages/index/index',
-      merchant: '/pages/merchant/merchant',
-      interaction: '/pages/community/community'
+      merchant: '/pages/merchant/merchant'
     }
     notify.pushToSubscribers(type, title, content, pages[type] || '/pages/index/index')
   },
@@ -890,7 +908,7 @@ Page({
   },
   loadSubscribers: function() {
     var self = this
-    var config = wx.getStorageSync('subscribe_config') || { announcement: true, activity: true, system: true, merchant: true, interaction: true }
+    var config = wx.getStorageSync('subscribe_config') || { announcement: true, activity: true, merchant: true }
     self.setData({ subscribeConfig: config })
     if (!db) return
     db.collection('subscribers').orderBy('createTime', 'desc').limit(100).get()
@@ -937,6 +955,68 @@ Page({
     })
   },
   closeActivityModal: function() { this.setData({ showActivityModal: false }) },
+  showActivityMusicDialog: function() {
+    var self = this
+    wx.showModal({
+      title: '添加音乐',
+      content: '',
+      placeholderText: '粘贴歌曲分享文本（支持网易云/QQ音乐等）',
+      editable: true,
+      success: function(resShare) {
+        if (resShare.confirm && resShare.content && resShare.content.trim()) {
+          var shareText = resShare.content.trim()
+          var parsed = parseMusicShare(shareText)
+          
+          if (!parsed.url) {
+            var isUrl = /https?:\/\//i.test(shareText);
+            if (!isUrl && shareText.length < 50) {
+              wx.showModal({
+                title: '输入歌曲链接',
+                content: '',
+                placeholderText: '请粘贴音乐播放链接',
+                editable: true,
+                success: function(resUrl) {
+                  if (resUrl.confirm && resUrl.content && resUrl.content.trim()) {
+                    var url = convertMusicUrl(resUrl.content.trim())
+                    if (url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) {
+                      wx.showToast({ title: '链接需以 http 或 https 开头', icon: 'none' })
+                      return
+                    }
+                    self._addActivityMusicBlock(self, { type: 'music', name: shareText, url: url })
+                  }
+                }
+              })
+            } else {
+              wx.showToast({ title: '未找到有效的音乐链接', icon: 'none' })
+            }
+            return
+          }
+          
+          if (parsed.name) {
+            self._addActivityMusicBlock(self, { type: 'music', name: parsed.name, url: parsed.url })
+          } else {
+            var guessedName = parseGuessedName(shareText, parsed.url)
+            wx.showModal({
+              title: '输入歌曲名称',
+              content: guessedName || '',
+              placeholderText: '歌名 - 歌手',
+              editable: true,
+              success: function(resName) {
+                if (resName.confirm && resName.content && resName.content.trim()) {
+                  self._addActivityMusicBlock(self, { type: 'music', name: resName.content.trim(), url: parsed.url })
+                }
+              }
+            })
+          }
+        }
+      }
+    })
+  },
+  _addActivityMusicBlock: function(self, block) {
+    var richContent = (self.data.activityRichContent || []).concat([block])
+    self.setData({ activityRichContent: richContent })
+    wx.showToast({ title: '已添加: ' + block.name, icon: 'success' })
+  },
   onActivityTitleInput: function(e) { this.setData({ activityFormTitle: e.detail.value }) },
   onActivityContentInput: function(e) { this.setData({ activityFormContent: e.detail.value }) },
   onActivityTypeInput: function(e) { this.setData({ activityFormType: e.detail.value }) },
@@ -1080,6 +1160,8 @@ Page({
         var block = richContent[i]
         if (block.type === 'quote') {
           htmlParts.push('<blockquote style="border-left:4rpx solid rgba(0,212,255,0.3);padding-left:12rpx;color:rgba(255,255,255,0.7);font-size:26rpx;margin:12rpx 0;">' + block.content + '</blockquote>')
+        } else if (block.type === 'music') {
+          htmlParts.push('<p style="color:#00d4ff;font-size:26rpx;margin:12rpx 0;text-decoration:underline;">🎵 推荐单曲: ' + block.name + ' (' + block.url + ')</p>')
         } else {
           var style = 'font-size:' + block.size + 'rpx;color:' + block.color + ';'
           if (block.weight === 'bold') style += 'font-weight:bold;'
@@ -1147,42 +1229,28 @@ Page({
   },
   testPush: function(e) {
     var type = e.currentTarget.dataset.type
-    var names = { announcement: '公告', activity: '活动', system: '系统', merchant: '商人' }
+    var names = { announcement: '公告', activity: '活动', merchant: '商人' }
     var self = this
     wx.showModal({ title: '测试推送', content: '发送一条测试' + names[type] + '推送？',
       success: function(res) {
         if (res.confirm) {
           wx.showLoading({ title: '发送中...' })
-          var db = wx.cloud.database()
-          db.collection('subscribers').where({ type: type, status: 'active' }).get()
-            .then(function(subRes) {
-              var subs = (subRes.data || []).map(function(s) { return { openid: s.openid } })
-              if (subs.length === 0) {
-                wx.hideLoading()
-                wx.showToast({ title: '该类型无订阅者', icon: 'none' })
-                return
-              }
-              wx.request({
-                url: 'https://1442890784-28edxvn34i.ap-shanghai.tencentscf.com',
-                method: 'POST',
-                header: { 'Content-Type': 'application/json' },
-                data: { type: type, title: '测试推送', content: '这是一条测试推送消息', subscribers: subs },
-                success: function(httpRes) {
-                  wx.hideLoading()
-                  var result = httpRes.data
-                  var msg = result && result.sent > 0 ? '发送成功(' + result.sent + '条)' : '发送失败'
-                  wx.showToast({ title: msg, icon: 'none' })
-                },
-                fail: function() {
-                  wx.hideLoading()
-                  wx.showToast({ title: '发送失败', icon: 'none' })
-                }
-              })
-            })
-            .catch(function() {
-              wx.hideLoading()
-              wx.showToast({ title: '查询订阅者失败', icon: 'none' })
-            })
+          wx.cloud.callFunction({
+            name: 'sendSubscribe',
+            data: {
+              type: type,
+              title: '测试推送',
+              content: '这是一条测试推送消息'
+            }
+          }).then(function(httpRes) {
+            wx.hideLoading()
+            var result = httpRes.result
+            var msg = result && result.sent > 0 ? '发送成功(' + result.sent + '条)' : (result && result.total === 0 ? '该类型无订阅者' : '发送失败')
+            wx.showToast({ title: msg, icon: 'none' })
+          }).catch(function() {
+            wx.hideLoading()
+            wx.showToast({ title: '发送失败', icon: 'none' })
+          })
         }
       }
     })

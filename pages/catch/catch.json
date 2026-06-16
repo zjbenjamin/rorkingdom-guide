@@ -1,4 +1,6 @@
 {
-  "usingComponents": {},
-  "navigationBarTitleText": "捕捉统计"
+  "usingComponents": {
+    "dock": "/components/dock/dock"
+  },
+  "navigationStyle": "custom"
 }

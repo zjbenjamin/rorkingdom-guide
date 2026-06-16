@@ -287,16 +287,12 @@ var currentLang = 'zh'
 
 function getLang() {
   try {
-    var deviceInfo = wx.getDeviceInfo()
-    var lang = deviceInfo.language || 'zh'
-    if (lang.indexOf('zh') >= 0) {
-      return 'zh'
-    } else {
-      return 'en'
+    var saved = wx.getStorageSync('app_lang')
+    if (saved) {
+      return saved
     }
-  } catch (e) {
-    return 'zh'
-  }
+  } catch (e) {}
+  return 'zh'
 }
 
 function t(key) {

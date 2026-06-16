@@ -2,21 +2,25 @@ var app = getApp()
 var db = null
 var notify = require('../../utils/notify')
 var cloudUrl = require('../../utils/cloudUrl')
+var imageConfig = require('../../config/images')
 
 Page({
   data: {
     bannerUrl: '',
+    bannerFallback: '',
     announcements: [],
-    hotPosts: [],
     subscribeConfig: {},
     buildTime: '',
-    showCommunity: true
+    currentPlayUrl: '',
+    isPlaying: false,
+    icp: '浙ICP备2026043884号'
   },
   onShow: function() {
     var self = this
     var n = new Date()
     var subscribeConfig = wx.getStorageSync('subscribe_config') || { announcement: true, activity: true, system: true, merchant: true, interaction: true }
     self.setData({
+      bannerFallback: imageConfig.getCloudUrl ? imageConfig.getCloudUrl('/images/banner.png') : '',
       buildTime: n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0') + '-' + String(n.getDate()).padStart(2,'0') + ' ' + String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0') + ':' + String(n.getSeconds()).padStart(2,'0'),
       subscribeConfig: subscribeConfig
     })
@@ -24,42 +28,14 @@ Page({
     self.checkAdmin()
     self.loadAnnouncements()
     self.loadBanner()
+    self.loadIcp()
     self.checkSubscription()
-    self.loadHotPosts()
-    self.loadCommunityConfig()
   },
   checkAdmin: function() {
     var self = this
     if (!db) return
-    var userInfo = app.globalData.userInfo
-    var saved = wx.getStorageSync('user_info')
-    if (!userInfo && saved) userInfo = saved
-    if (!userInfo) return
-    db.collection('admin_config').doc('admin').get()
-      .then(function(res) {
-        var adminOpenid = res.data.openid
-        db.collection('users').get()
-          .then(function(userRes) {
-            for (var i = 0; i < userRes.data.length; i++) {
-              if (userRes.data[i]._openid === adminOpenid) {
-                self.setData({ isAdmin: true })
-                return
-              }
-            }
-          })
-      })
-      .catch(function() {})
-  },
-  loadCommunityConfig: function() {
-    var self = this
-    if (!db) return
-    db.collection('page_config').doc('community').get()
-      .then(function(res) {
-        self.setData({ showCommunity: !res.data.maintenance })
-      })
-      .catch(function() {
-        self.setData({ showCommunity: true })
-      })
+    var adminFlag = wx.getStorageSync('admin_logged_in')
+    self.setData({ isAdmin: !!adminFlag })
   },
   loadBanner: function() {
     var self = this
@@ -79,6 +55,17 @@ Page({
           } else {
             self.setData({ bannerUrl: res.data.url })
           }
+        }
+      })
+      .catch(function() {})
+  },
+  loadIcp: function() {
+    var self = this
+    if (!db) return
+    db.collection('about_config').doc('main').get()
+      .then(function(res) {
+        if (res.data && res.data.icp) {
+          self.setData({ icp: res.data.icp })
         }
       })
       .catch(function() {})
@@ -103,23 +90,6 @@ Page({
       })
       .catch(function() {})
   },
-  loadHotPosts: function() {
-    var self = this
-    if (!db) return
-    db.collection('comments')
-      .where({ replyTo: null })
-      .orderBy('likes', 'desc')
-      .limit(9)
-      .get()
-      .then(function(res) {
-        var list = res.data || []
-        for (var i = 0; i < list.length; i++) {
-          list[i].likeCount = list[i].likes ? list[i].likes.length : 0
-        }
-        self.setData({ hotPosts: list })
-      })
-      .catch(function() {})
-  },
   formatTime: function(date) {
     if (!date) return ''
     var d = new Date(date)
@@ -128,9 +98,24 @@ Page({
     if (diff < 86400000) return '今天'
     if (diff < 172800000) return '昨天'
     if (diff < 604800000) return Math.floor(diff / 86400000) + '天前'
-    return d.getMonth() + 1 + '/' + d.getDate()
+    return (d.getMonth() + 1) + '/' + d.getDate()
   },
-  go: function(e) { wx.navigateTo({ url: e.currentTarget.dataset.url }) },
+  go: function(e) {
+    var url = e.currentTarget.dataset.url
+    wx.navigateTo({
+      url: url,
+      fail: function(err) {
+        console.error("导航失败 navigateTo failed:", err)
+        // 尝试用 switchTab 兼容，以防某些页面被临时改为了 TabBar 页面
+        wx.switchTab({
+          url: url,
+          fail: function(tabErr) {
+            console.error("切换 TabBar 也失败 switchTab failed:", tabErr)
+          }
+        })
+      }
+    })
+  },
   goAdmin: function() { wx.navigateTo({ url: '/pages/admin/admin' }) },
   showAnnouncement: function(e) {
     var idx = e.currentTarget.dataset.i
@@ -178,12 +163,7 @@ Page({
         return
       }
       if (result.announcement === 'accept') {
-        var newCount = currentCount + 1
-        self.setData({
-          subscribedAnnouncement: true,
-          subscribeCount: newCount
-        })
-        wx.showToast({ title: '已添加(' + newCount + '/99)', icon: 'success' })
+        self.saveSubscription('announcement')
       } else if (result.announcement === 'reject') {
         wx.showToast({ title: '已拒绝通知', icon: 'none' })
       } else if (result.announcement === 'ban') {
@@ -232,8 +212,12 @@ Page({
         if (res.data.length > 0) {
           var sub = res.data[0]
           var newCount = (sub.count || 0) + 1
+          if (newCount > 99) newCount = 99
           return db.collection('subscribers').doc(sub._id).update({
             data: { count: newCount, status: 'active', updateTime: db.serverDate() }
+          }).then(function() {
+            wx.showToast({ title: '已添加(' + newCount + '/99)', icon: 'success' })
+            self.checkSubscription()
           })
         } else {
           return db.collection('subscribers').add({
@@ -244,15 +228,15 @@ Page({
               status: 'active',
               createTime: db.serverDate()
             }
+          }).then(function() {
+            wx.showToast({ title: '已添加(1/99)', icon: 'success' })
+            self.checkSubscription()
           })
         }
       })
-      .then(function() {
-        wx.showToast({ title: '订阅成功', icon: 'success' })
-        self.checkSubscription()
-      })
-      .catch(function() {
-        wx.showToast({ title: '订阅失败', icon: 'none' })
+      .catch(function(err) {
+        console.error('保存订阅失败:', err)
+        wx.showToast({ title: '保存失败，请重试', icon: 'none' })
       })
   },
   checkSubscription: function() {
@@ -325,5 +309,96 @@ Page({
         wx.showToast({ title: '保存失败', icon: 'none' })
       })
   },
-  preventClose: function() {}
+  preventClose: function() {},
+  playSong: function(e) {
+    var self = this
+    self._initBgAudio()
+    var url = e.currentTarget.dataset.url
+    var name = e.currentTarget.dataset.name || '推荐单曲'
+    
+    var directUrl = null
+    if (/\.(mp3|m4a|wav|aac|mp4|ogg)($|\?)/i.test(url)) {
+      directUrl = url
+    } else if (url.indexOf('163.com') > -1 || url.indexOf('163cn.tv') > -1) {
+      var idMatch = url.match(/(?:id=|song\/)(\d+)/)
+      if (idMatch && idMatch[1]) {
+        directUrl = 'https://music.163.com/song/media/outer/url?id=' + idMatch[1] + '.mp3'
+      }
+    }
+    
+    if (!directUrl) {
+      wx.setClipboardData({
+        data: url,
+        success: function() {
+          wx.showModal({
+            title: '听歌链接已复制',
+            content: '该平台暂不支持直接播放，已复制链接到剪贴板，请到浏览器或音乐App中打开！',
+            showCancel: false
+          })
+        }
+      })
+      return
+    }
+    
+    var bgAudio = wx.getBackgroundAudioManager()
+    
+    if (self.data.currentPlayUrl === url && self.data.isPlaying) {
+      bgAudio.pause()
+      self.setData({ isPlaying: false })
+      return
+    }
+    
+    self.setData({
+      currentPlayUrl: url,
+      isPlaying: true
+    })
+    
+    bgAudio.title = name
+    bgAudio.epname = '游戏原声'
+    bgAudio.singer = '群星'
+    bgAudio.src = directUrl
+  },
+  openIframe: function(e) {
+    var url = e.currentTarget.dataset.url
+    wx.navigateTo({
+      url: '/pages/webview/webview?url=' + encodeURIComponent(url),
+      fail: function() {
+        wx.showToast({ title: '无法直接打开，请复制链接', icon: 'none' })
+      }
+    })
+  },
+  copyIframe: function(e) {
+    var url = e.currentTarget.dataset.url
+    wx.setClipboardData({
+      data: url,
+      success: function() {
+        wx.showToast({ title: '链接已复制', icon: 'success' })
+      }
+    })
+  },
+  onShareAppMessage: function() {
+    return { title: '洛手助手BENJAMIN - 洛克王国攻略', path: '/pages/index/index', imageUrl: '/images/banner1.png' }
+  },
+  onShareTimeline: function() {
+    return { title: '洛手助手BENJAMIN - 精灵图鉴·捕捉统计·活动日历', imageUrl: '/images/banner1.png' }
+  },
+  _initBgAudio: function() {
+    var self = this
+    if (self._bgAudioInited) return
+    self._bgAudioInited = true
+    var bgAudio = wx.getBackgroundAudioManager()
+    bgAudio.onPlay(function() { self.setData({ isPlaying: true }) })
+    bgAudio.onPause(function() { self.setData({ isPlaying: false }) })
+    bgAudio.onStop(function() { self.setData({ isPlaying: false, currentPlayUrl: '' }) })
+    bgAudio.onEnded(function() { self.setData({ isPlaying: false, currentPlayUrl: '' }) })
+    bgAudio.onError(function(res) {
+      console.error('Audio play error:', res)
+      self.setData({ isPlaying: false, currentPlayUrl: '' })
+      wx.showModal({
+        title: '播放失败',
+        content: '音频加载失败(错误码 10001)。这可能是因为：\n1. 该歌曲属VIP或版权限制，无法直接播放外链；\n2. 微信开发者工具未开启"不校验合法域名"设置；\n建议复制链接到浏览器或音乐App中打开听歌。',
+        showCancel: false
+      })
+    })
+  }
 })

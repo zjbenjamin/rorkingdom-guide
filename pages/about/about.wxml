@@ -38,6 +38,7 @@
       <view class="uid-row" bindtap="onEdit" data-field="uid" data-value="{{aboutData.uid || '476200'}}">
         <view class="uid-info">
           <text class="uid-label">玩家UID</text>
+
           <text class="uid-val">{{aboutData.uid || '476200'}}</text>
         </view>
         <view class="uid-copy" catchtap="copyUID">复制</view>
@@ -50,11 +51,30 @@
         <view class="gift-item" wx:for="{{aboutData.gifts}}" wx:key="index">
           <text class="gift-icon">🎁</text>
           <text class="gift-text">{{item}}</text>
-          <view class="gift-del" catchtap="deleteGift" data-idx="{{index}}">✕</view>
+          <view class="gift-del" catchtap="deleteGift" data-idx="{{index}}" wx:if="{{isAdmin}}">✕</view>
         </view>
         <view class="gift-add" catchtap="addGift" wx:if="{{isAdmin}}">
           <text class="gift-add-icon">+</text>
           <text class="gift-add-text">添加福利</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-title">音乐/应用平台</view>
+      <view class="platform-list">
+        <view class="platform-item" wx:for="{{aboutData.platforms}}" wx:key="index" bindtap="copyPlatformUrl" data-item="{{item}}">
+          <text class="platform-icon">🎵</text>
+          <view class="platform-info">
+            <text class="platform-name">{{item.name}}</text>
+            <text class="platform-url">{{item.url}}</text>
+          </view>
+          <view class="platform-copy">复制</view>
+          <view class="platform-del" catchtap="deletePlatform" data-idx="{{index}}" wx:if="{{isAdmin}}">✕</view>
+        </view>
+        <view class="platform-add" catchtap="addPlatform" wx:if="{{isAdmin}}">
+          <text class="platform-add-icon">+</text>
+          <text class="platform-add-text">添加平台外链</text>
         </view>
       </view>
     </view>
@@ -201,14 +221,6 @@
           <text class="privacy-icon">💾</text>
           <text class="privacy-text">本地存储：偏好设置、捕捉统计等数据仅保存在设备本地</text>
         </view>
-        <view class="privacy-item" wx:if="{{showCommunity}}">
-          <text class="privacy-icon">☁️</text>
-          <text class="privacy-text">云端同步：登录信息、社区帖子等数据安全存储在微信云环境</text>
-        </view>
-        <view class="privacy-item" wx:if="{{showCommunity}}">
-          <text class="privacy-icon">📱</text>
-          <text class="privacy-text">社区展示：发帖自动记录手机品牌和IP归属省份（开发者除外）</text>
-        </view>
         <view class="privacy-item">
           <text class="privacy-icon">🔒</text>
           <text class="privacy-text">无第三方SDK：不存在数据共享和行为追踪</text>
@@ -237,93 +249,13 @@
       <view class="card-title">更新日志</view>
       <view class="changelog-list">
         <view class="changelog-item">
-          <view class="changelog-ver">v1.0.7B</view>
-          <view class="changelog-date">2026-06-15</view>
+          <view class="changelog-ver">v1.0.8D 稳定版</view>
+          <view class="changelog-date">2026-06-16</view>
           <view class="changelog-content">
-            <text class="changelog-add">新增：精灵图鉴精灵立绘图片显示（WIKI数据源）</text>
-            <text class="changelog-add">新增：精灵图鉴三列网格布局+分页加载优化</text>
-            <text class="changelog-add">新增：道具图鉴三列网格布局+emoji图标显示</text>
-            <text class="changelog-add">新增：地图工具数据（8大分类地图点位）</text>
-            <text class="changelog-add">新增：捕捉统计咕噜球emoji图标样式</text>
-            <text class="changelog-add">新增：孵蛋查询功能（蛋组计算器入口）</text>
-            <text class="changelog-add">新增：管理员后台社区入口隐藏/显示开关</text>
-            <text class="changelog-add">新增：隐私政策更新（社区隐藏时自动同步描述）</text>
-            <text class="changelog-fix">修复：精灵图鉴属性选择栏水平滚动问题</text>
-            <text class="changelog-fix">修复：远行商人页面定时器销毁后报错问题</text>
-            <text class="changelog-fix">修复：道具图鉴数据与WIKI同步更新</text>
-            <text class="changelog-fix">修复：蛋组计算器顶部显示神奇的蛋图片</text>
-            <text class="changelog-note">数据来源：洛克王国手游WIKI（CC BY-NC-SA 4.0）</text>
-          </view>
-        </view>
-        <view class="changelog-item">
-          <view class="changelog-ver">v1.0.7A</view>
-          <view class="changelog-date">2026-06-15</view>
-          <view class="changelog-content">
-            <text class="changelog-add">新增：订阅消息推送系统（公告/活动/系统/商人/互动五种类型）</text>
-            <text class="changelog-add">新增：管理后台订阅管理（开关控制、测试推送、用户列表）</text>
-            <text class="changelog-add">新增：管理后台活动管理（新增/编辑/删除/置顶）</text>
-            <text class="changelog-add">新增：管理后台活动页面管理员可直接编辑</text>
-            <text class="changelog-add">新增：首页/活动页/商人页订阅按钮支持管理后台统一开关</text>
-            <text class="changelog-add">新增：捕获按钮动画效果（涟漪扩散+脉冲+文字弹跳）</text>
-            <text class="changelog-add">新增：捕捉统计初始洛克贝支持设为0</text>
-            <text class="changelog-add">新增：管理后台用户列表自动检测并删除重复用户</text>
-            <text class="changelog-add">新增：云函数deletePost/deleteAnnouncement/deleteUser管理员权限验证</text>
-            <text class="changelog-fix">修复：社区头像和图片无法显示问题（非云存储URL自动修复）</text>
-            <text class="changelog-fix">修复：订阅消息推送失败（-604101模板不存在）改用腾讯云SCF发送</text>
-            <text class="changelog-fix">修复：管理后台删除帖子/公告/用户权限问题（改用云函数）</text>
-            <text class="changelog-fix">修复：关于页面管理员编辑保存失败问题</text>
-            <text class="changelog-fix">修复：登录同步用户数据重复问题（改用openid唯一标识）</text>
-            <text class="changelog-fix">修复：暗字问题（时间戳、占位符、空状态等）</text>
-            <text class="changelog-fix">修复：首页头图编辑弹窗位置偏下问题（添加cursor-spacing）</text>
-            <text class="changelog-fix">修复：活动页面本地活动无法在管理后台显示和删除</text>
-            <text class="changelog-opt">优化：捕获按钮名称从"出异色"改为"✨ 捕获"</text>
-            <text class="changelog-opt">优化：全局命名统一为"洛手助手BENJAMIN"</text>
-            <text class="changelog-opt">优化：订阅推送改用腾讯云SCF函数（免费额度，无需升级云开发）</text>
-          </view>
-        </view>
-        <view class="changelog-item">
-          <view class="changelog-ver">v1.0.6F</view>
-          <view class="changelog-date">2026-06-14</view>
-          <view class="changelog-content">
-            <text class="changelog-add">新增：精灵图鉴、道具图鉴、孵蛋查询</text>
-            <text class="changelog-add">新增：活动日历、捕捉统计、战斗模拟器</text>
-            <text class="changelog-add">新增：社区发帖功能（支持图片上传）</text>
-            <text class="changelog-add">新增：评论评分、点赞、回复功能</text>
-            <text class="changelog-add">新增：管理者后台（公告管理、帖子管理、用户管理）</text>
-            <text class="changelog-add">新增：累计登录天数等级系统</text>
-            <text class="changelog-add">新增：云端数据同步</text>
-            <text class="changelog-add">新增：用户头衔系统（8种头衔）</text>
-            <text class="changelog-add">新增：社区帖子显示开发者/小编标签</text>
-            <text class="changelog-add">新增：用户可自行选择/更换头衔</text>
-            <text class="changelog-add">新增：首页公告栏（有公告全员可见，无公告管理员可见）</text>
-            <text class="changelog-add">新增：关于页面支持开发者后台编辑</text>
-            <text class="changelog-add">新增：首页大图支持网络图片链接</text>
-            <text class="changelog-add">新增：活动页面管理员可编辑/新增/删除活动</text>
-            <text class="changelog-add">新增：保底进度条动态粒子效果</text>
-            <text class="changelog-add">新增：异色统计清除选项</text>
-            <text class="changelog-add">新增：管理后台发布公告支持图片上传和链接输入</text>
-            <text class="changelog-add">新增：活动管理员可为活动添加图片</text>
-            <text class="changelog-add">新增：远行商人和孵蛋查询支持管理员自定义编辑</text>
-            <text class="changelog-add">新增：公告和活动支持导入XML/DOCX文件自动解析</text>
-            <text class="changelog-add">新增：公告通知和远行商人页面支持订阅小程序推送</text>
-            <text class="changelog-add">新增：发布失败时显示具体错误信息便于排查</text>
-            <text class="changelog-add">新增：社区发帖/回复自动显示IP归属省份</text>
-            <text class="changelog-add">新增：数据来源页面标注（含AI生成素材声明）</text>
-            <text class="changelog-fix">修复：社区发帖弹窗输入法遮挡导致无法输入问题</text>
-            <text class="changelog-fix">修复：社区发帖选择图片后弹窗自动关闭问题</text>
-            <text class="changelog-fix">修复：管理后台发布公告弹窗输入法遮挡问题</text>
-            <text class="changelog-fix">修复：管理后台发布公告弹窗自动关闭无法发布问题</text>
-            <text class="changelog-fix">修复：未登录用户点击发布按钮无任何提示问题</text>
-            <text class="changelog-fix">修复：管理后台发布公告标题输入框显示异常问题</text>
-            <text class="changelog-fix">修复：关于页面管理员编辑器输入框显示异常问题</text>
-            <text class="changelog-fix">修复：首页大图显示比例异常</text>
-            <text class="changelog-fix">修复：云存储图片加载问题</text>
-            <text class="changelog-fix">修复：默认头像缺失问题</text>
-            <text class="changelog-fix">修复：管理后台JS语法错误</text>
-            <text class="changelog-fix">优化：登录页UI体验</text>
-            <text class="changelog-fix">优化：全局交互按钮增加流光特效</text>
-            <text class="changelog-fix">优化：按钮样式统一为蓝紫渐变</text>
-            <text class="changelog-add">更新：隐私政策补充云端数据存储、设备信息、归属地说明</text>
+            <text class="changelog-opt">优化：提升系统运行效率，优化响应速度</text>
+            <text class="changelog-opt">优化：完善界面交互细节，提升用户体验</text>
+            <text class="changelog-fix">修复：修复部分已知小问题，增强系统稳定性</text>
+            <text class="changelog-add">新增：多项功能细节优化，使用更便捷</text>
           </view>
         </view>
       </view>
@@ -332,6 +264,7 @@
     <view class="about-foot">
       <text class="foot-text">© 2026 洛手助手BENJAMIN</text>
       <text class="foot-text">更新：{{buildTime}}</text>
+      <text class="foot-text" wx:if="{{aboutData.icp}}">{{aboutData.icp}}</text>
     </view>
 
     <view class="feedback-btn" bindtap="onFeedback">
@@ -347,11 +280,17 @@
         <text class="modal-title">{{editModalTitle}}</text>
         <text class="modal-close" bindtap="closeModal">✕</text>
       </view>
-      <input class="modal-input" placeholder="请输入内容" value="{{editValue}}" bindinput="onEditInput" maxlength="50" />
+      <block wx:if="{{editMode === 'addPlatform'}}">
+        <input class="modal-input" placeholder="请输入平台名称（如：QQ音乐）" value="{{platformName}}" bindinput="onPlatformNameInput" maxlength="50" />
+        <input class="modal-input" placeholder="请输入平台外链 URL" value="{{platformUrl}}" bindinput="onPlatformUrlInput" maxlength="200" />
+      </block>
+      <textarea class="modal-textarea" wx:elif="{{editingField === 'changelogContent'}}" placeholder="请输入多行更新日志..." value="{{editValue}}" bindinput="onEditInput" maxlength="1000" />
+      <input class="modal-input" wx:else placeholder="请输入内容" value="{{editValue}}" bindinput="onEditInput" maxlength="50" />
       <view class="modal-footer">
         <button class="modal-cancel" bindtap="closeModal">取消</button>
         <button class="modal-save" bindtap="saveEdit" disabled="{{submitting}}">{{submitting ? '保存中...' : '保存'}}</button>
       </view>
     </view>
   </view>
+  <dock current="about" />
 </view>

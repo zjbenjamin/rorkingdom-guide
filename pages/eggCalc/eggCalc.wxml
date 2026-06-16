@@ -21,62 +21,156 @@
         </view>
       </view>
 
-      <!-- 搜索区域 -->
-      <view class="egg-search">
-        <view class="egg-search-row">
-          <input class="egg-search-input" placeholder="搜索精灵名称..." placeholder-style="color:rgba(255,255,255,0.3)" value="{{searchKeyword}}" bindinput="onSearchInput" />
-          <view class="egg-search-clear" wx:if="{{searchKeyword}}" catchtap="clearSearch">清除</view>
+      <!-- Tab 切换 -->
+      <view class="egg-tabs">
+        <view class="egg-tab-item {{activeTab === 'search' ? 'active' : ''}}" catchtap="switchTab" data-tab="search">
+          <text class="egg-tab-icon">🔍</text>
+          <text>蛋组查询</text>
         </view>
-        <!-- 搜索建议 -->
-        <view class="egg-suggest" wx:if="{{showSuggest && suggestList.length > 0}}">
-          <view class="egg-suggest-item" wx:for="{{suggestList}}" wx:key="name" catchtap="selectSuggest" data-item="{{item}}">
-            <text class="egg-suggest-name">{{item.name}}</text>
-            <text class="egg-suggest-groups">{{item.groupStr}}</text>
-          </view>
+        <view class="egg-tab-item {{activeTab === 'simulate' ? 'active' : ''}}" catchtap="switchTab" data-tab="simulate">
+          <text class="egg-tab-icon">🥚</text>
+          <text>配对模拟</text>
         </view>
       </view>
 
-      <!-- 蛋组筛选标签 -->
-      <view class="egg-filter">
-        <scroll-view scroll-x class="egg-filter-scroll">
-          <view class="egg-filter-tags">
-            <view class="egg-tag {{activeGroup === '' ? 'active' : ''}}" catchtap="selectGroup" data-group="">全部</view>
-            <view class="egg-tag {{activeGroup === item.name ? 'active' : ''}}" wx:for="{{groups}}" wx:key="name" catchtap="selectGroup" data-group="{{item.name}}">
-              <text class="egg-tag-dot" style="background:{{eggGroupColors[item.name] || '#999'}}"></text>
-              {{item.name}}
-              <text class="egg-tag-count">{{item.count}}</text>
+      <!-- Tab 1: 蛋组查询 -->
+      <block wx:if="{{activeTab === 'search'}}">
+        <!-- 蛋组筛选标签 -->
+        <view class="egg-filter">
+          <scroll-view scroll-x class="egg-filter-scroll">
+            <view class="egg-filter-tags">
+              <view class="egg-tag {{activeGroup === '' ? 'active' : ''}}" catchtap="selectGroup" data-group="">全部</view>
+              <view class="egg-tag {{activeGroup === item.name ? 'active' : ''}}" wx:for="{{groups}}" wx:key="name" catchtap="selectGroup" data-group="{{item.name}}">
+                <text class="egg-tag-dot" style="background:{{eggGroupColors[item.name] || '#999'}}"></text>
+                {{item.name}}
+                <text class="egg-tag-count">{{item.count}}</text>
+              </view>
             </view>
-          </view>
-        </scroll-view>
-      </view>
+          </scroll-view>
+        </view>
 
-      <!-- 精灵列表 -->
-      <view class="egg-list">
-        <view class="egg-list-header">
-          <text class="egg-list-title">{{activeGroup ? activeGroup : '全部精灵'}}</text>
-          <text class="egg-list-count">{{filteredPets.length}} 只</text>
-        </view>
-        <view class="egg-grid" wx:if="{{filteredPets.length > 0}}">
-          <view class="egg-pet-card" wx:for="{{filteredPets}}" wx:key="name" catchtap="selectPet" data-item="{{item}}">
-            <view class="egg-pet-art">
-              <image class="egg-pet-img" wx:if="{{item.imgUrl}}" src="{{item.imgUrl}}" mode="aspectFit" lazy-load />
-              <text class="egg-pet-emoji" wx:else>{{eggTypeEmoji[item.types[0]] || '🥚'}}</text>
-            </view>
-            <text class="egg-pet-name">{{item.name}}</text>
-            <text class="egg-pet-type" style="color:{{eggTypeColors[item.types[0]] || '#999'}}">{{item.types[0]}}</text>
-            <view class="egg-pet-groups">
-              <text class="egg-pet-group" wx:for="{{item.group}}" wx:for-item="g" wx:key="*this">{{g}}</text>
+        <!-- 精灵列表 -->
+        <view class="egg-list">
+          <view class="egg-list-header">
+            <text class="egg-list-title">{{activeGroup ? activeGroup : '全部精灵'}}</text>
+            <text class="egg-list-count">{{filteredPets.length}} 只</text>
+          </view>
+          <view class="egg-grid" wx:if="{{filteredPets.length > 0}}">
+            <view class="egg-pet-card {{selectedPet.name === item.name ? 'selected' : ''}}" wx:for="{{filteredPets}}" wx:key="name" catchtap="selectPet" data-item="{{item}}">
+              <view class="egg-pet-art">
+                <image class="egg-pet-img" wx:if="{{item.imgUrl}}" src="{{item.imgUrl}}" mode="aspectFit" lazy-load />
+                <text class="egg-pet-emoji" wx:else>{{eggTypeEmoji[item.types[0]] || '🥚'}}</text>
+              </view>
+              <text class="egg-pet-name">{{item.name}}</text>
+              <text class="egg-pet-type" style="color:{{eggTypeColors[item.types[0]] || '#999'}}">{{item.types[0]}}</text>
+              <view class="egg-pet-groups">
+                <text class="egg-pet-group" wx:for="{{item.group}}" wx:for-item="g" wx:key="*this">{{g}}</text>
+              </view>
             </view>
           </view>
+          <view class="egg-empty" wx:if="{{filteredPets.length === 0 && !loading}}">
+            <text class="egg-empty-icon">🔍</text>
+            <text class="egg-empty-text">没有找到匹配的精灵</text>
+          </view>
+          <view class="egg-loading" wx:if="{{loading}}">
+            <text class="egg-loading-text">加载中...</text>
+          </view>
         </view>
-        <view class="egg-empty" wx:if="{{filteredPets.length === 0 && !loading}}">
-          <text class="egg-empty-icon">🔍</text>
-          <text class="egg-empty-text">没有找到匹配的精灵</text>
+      </block>
+
+      <!-- Tab 2: 配对模拟 -->
+      <block wx:if="{{activeTab === 'simulate'}}">
+        <view class="sim-dashboard">
+          <!-- 两个槽位 -->
+          <view class="sim-slots">
+            <!-- 母方 -->
+            <picker mode="selector" range="{{pets}}" range-key="name" bindchange="onMotherPickerChange" style="width: 100%;">
+              <view class="sim-slot {{motherPet ? 'selected' : ''}}">
+                <text class="sim-slot-label">母方 (生蛋子代系列)</text>
+                <block wx:if="{{motherPet}}">
+                  <view class="sim-slot-pet">
+                    <image class="sim-pet-img" wx:if="{{motherPet.imgUrl}}" src="{{motherPet.imgUrl}}" mode="aspectFit" />
+                    <text class="sim-pet-emoji" wx:else>{{eggTypeEmoji[motherPet.types[0]] || '🥚'}}</text>
+                    <text class="sim-pet-name">{{motherPet.name}}</text>
+                    <view class="sim-pet-groups">
+                      <text class="sim-pet-group-tag" wx:for="{{motherPet.group}}" wx:key="*this">{{item}}</text>
+                    </view>
+                  </view>
+                  <view class="sim-slot-action" catchtap="removePet" data-role="mother">清除</view>
+                </block>
+                <block wx:else>
+                  <view class="sim-slot-placeholder">
+                    <text class="sim-add-icon">+</text>
+                    <text>点击滚动选择母方</text>
+                  </view>
+                </block>
+              </view>
+            </picker>
+
+            <!-- 父方 -->
+            <picker mode="selector" range="{{compatibleFathers}}" range-key="name" bindchange="onFatherPickerChange" disabled="{{!motherPet}}" style="width: 100%;">
+              <view class="sim-slot {{fatherPet ? 'selected' : ''}} {{!motherPet ? 'disabled' : ''}}">
+                <text class="sim-slot-label">父方 (提供遗传技能)</text>
+                <block wx:if="{{fatherPet}}">
+                  <view class="sim-slot-pet">
+                    <image class="sim-pet-img" wx:if="{{fatherPet.imgUrl}}" src="{{fatherPet.imgUrl}}" mode="aspectFit" />
+                    <text class="sim-pet-emoji" wx:else>{{eggTypeEmoji[fatherPet.types[0]] || '🥚'}}</text>
+                    <text class="sim-pet-name">{{fatherPet.name}}</text>
+                    <view class="sim-pet-groups">
+                      <text class="sim-pet-group-tag" wx:for="{{fatherPet.group}}" wx:key="*this">{{item}}</text>
+                    </view>
+                  </view>
+                  <view class="sim-slot-action" catchtap="removePet" data-role="father">清除</view>
+                </block>
+                <block wx:else>
+                  <view class="sim-slot-placeholder">
+                    <text class="sim-add-icon">+</text>
+                    <text>{{motherPet ? '点击滚动选择父方' : '先选择母方'}}</text>
+                  </view>
+                </block>
+              </view>
+            </picker>
+          </view>
+
+          <!-- 配对结果区 -->
+          <view class="sim-result-card" wx:if="{{motherPet && fatherPet}}">
+            <block wx:if="{{isCompatible}}">
+              <view class="sim-result-status success">
+                <text class="sim-status-icon">💚</text>
+                <text class="sim-status-text">配对成功 (可孵化)</text>
+              </view>
+              <view class="sim-result-details">
+                <view class="sim-offspring">
+                  <text class="sim-offspring-label">预期子代精灵：</text>
+                  <view class="sim-offspring-pet">
+                    <text class="sim-offspring-name">{{offspringName}}</text>
+                    <text class="sim-offspring-desc">（{{motherPet.name}} 的初级形态）</text>
+                  </view>
+                </view>
+                <view class="sim-shared-groups">
+                  <text class="sim-shared-label">匹配相同蛋组：</text>
+                  <view class="sim-shared-tags">
+                    <text class="sim-shared-tag" wx:for="{{sharedGroups}}" wx:key="*this">{{item}}</text>
+                  </view>
+                </view>
+                <view class="sim-tips">
+                  <text class="sim-tip-item">💡 子代会继承母方的种族和基础属性。</text>
+                  <text class="sim-tip-item">💡 子代可学习父方的遗传技能，大幅提升战斗多样性。</text>
+                </view>
+              </view>
+            </block>
+            <block wx:else>
+              <view class="sim-result-status fail">
+                <text class="sim-status-icon">💔</text>
+                <text class="sim-status-text">配对失败 (蛋组不匹配)</text>
+              </view>
+              <view class="sim-result-details">
+                <text class="sim-fail-desc">母方与父方没有相同的蛋组，无法进行培育孵化。</text>
+              </view>
+            </block>
+          </view>
         </view>
-        <view class="egg-loading" wx:if="{{loading}}">
-          <text class="egg-loading-text">加载中...</text>
-        </view>
-      </view>
+      </block>
     </view>
   </view>
 </view>

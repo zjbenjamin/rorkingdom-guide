@@ -59,10 +59,16 @@
         </view>
       </view>
 
-      <!-- 正在售卖 -->
       <view class="card selling-card">
         <view class="card-title-row">
-          <text class="card-title">🔥 正在售卖</text>
+          <view class="card-title-left">
+            <text class="card-title">🔥 正在售卖</text>
+            <view class="sub-badge {{subscribedMerchant ? 'on' : ''}}" catchtap="subscribeMerchant">
+              <text class="sub-badge-icon">{{subscribedMerchant ? '🔔' : '🔕'}}</text>
+              <text class="sub-badge-text">{{subscribedMerchant ? '已订阅新上架' : '订阅新上架'}}</text>
+              <text class="sub-badge-count" wx:if="{{subscribedMerchant && subscribeCount > 0}}">{{subscribeCount}}</text>
+            </view>
+          </view>
           <view class="selling-btns" wx:if="{{isAdmin}}">
             <view class="dev-add-btn" catchtap="openAddSellingItemModal">
               <text class="dev-add-icon">＋</text>
@@ -141,7 +147,12 @@
         </view>
         <view class="item-list">
           <view class="item-card" wx:for="{{items}}" wx:key="id">
-            <view class="item-badge badge-{{item.rarity==='普通'?'normal':item.rarity==='稀有'?'rare':item.rarity==='史诗'?'epic':'legend'}}">{{item.rarity}}</view>
+            <view class="item-card-header">
+              <view class="item-badge badge-{{item.rarity==='普通'?'normal':item.rarity==='稀有'?'rare':item.rarity==='史诗'?'epic':'legend'}}">{{item.rarity}}</view>
+              <view class="item-sub-btn {{itemSubStatus[item.name] ? 'on' : ''}}" catchtap="subscribeItem" data-name="{{item.name}}">
+                <text class="item-sub-icon">{{itemSubStatus[item.name] ? '🔔' : '➕'}}</text>
+              </view>
+            </view>
             <text class="item-name">{{item.name}}</text>
             <text class="item-price">{{item.price}}{{t.currency || '洛克贝'}}</text>
             <text class="item-effect">{{item.effect}}</text>
@@ -288,4 +299,5 @@
       </view>
     </view>
   </view>
+  <dock current="merchant" />
 </view>

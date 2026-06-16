@@ -22,7 +22,7 @@
 .egg-search-row { display: flex; gap: 16rpx; }
 .egg-search-input { flex: 1; height: 72rpx; background: rgba(0,0,0,0.4); border: 1rpx solid rgba(0,212,255,0.2); border-radius: 16rpx; padding: 0 24rpx; font-size: 28rpx; color: #fff; }
 .egg-search-input:focus { border-color: #00d4ff; }
-.egg-search-clear { height: 72rpx; line-height: 72rpx; padding: 0 24rpx; background: rgba(255,71,87,0.15); border: 1rpx solid rgba(255,71,87,0.3); border-radius: 16rpx; font-size: 24rpx; color: #ff4757; }
+.egg-search-clear { height: 72rpx; padding: 0 24rpx; background: rgba(255,71,87,0.1); border: 1rpx solid rgba(255,71,87,0.2); border-radius: 16rpx; font-size: 24rpx; color: #ff4757; display: flex; align-items: center; justify-content: center; text-align: center; }
 
 /* 搜索建议 */
 .egg-suggest { position: absolute; left: 24rpx; right: 24rpx; top: 100%; z-index: 100; background: rgba(20,25,60,0.98); border: 1rpx solid rgba(0,212,255,0.2); border-radius: 16rpx; max-height: 400rpx; overflow-y: auto; box-shadow: 0 16rpx 32rpx rgba(0,0,0,0.4); }
@@ -48,6 +48,14 @@
 .egg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16rpx; }
 .egg-pet-card { background: rgba(0,0,0,0.3); border: 1rpx solid rgba(0,212,255,0.08); border-radius: 16rpx; padding: 20rpx 12rpx; text-align: center; transition: all 0.2s; }
 .egg-pet-card:active { transform: scale(0.96); border-color: rgba(0,212,255,0.3); }
+.egg-pet-card.selected { 
+  background: rgba(0,212,255,0.15); 
+  border-color: #00d4ff; 
+  box-shadow: 0 0 16rpx rgba(0,212,255,0.2); 
+  transform: translateY(-4rpx);
+}
+.egg-pet-card.selected .egg-pet-name { color: #00d4ff; }
+
 .egg-pet-art { height: 80rpx; display: flex; align-items: center; justify-content: center; margin-bottom: 8rpx; }
 .egg-pet-img { width: 72rpx; height: 72rpx; }
 .egg-pet-emoji { font-size: 56rpx; }
@@ -64,3 +72,58 @@
 /* 加载状态 */
 .egg-loading { text-align: center; padding: 60rpx 0; }
 .egg-loading-text { font-size: 26rpx; color: rgba(0,212,255,0.5); }
+
+/* Tab 切换 */
+.egg-tabs { display: flex; background: rgba(0,0,0,0.25); border-bottom: 1rpx solid rgba(0,212,255,0.08); }
+.egg-tab-item { flex: 1; display: flex; align-items: center; justify-content: center; gap: 10rpx; padding: 24rpx 0; font-size: 28rpx; color: rgba(255,255,255,0.55); font-weight: 500; border-bottom: 4rpx solid transparent; transition: all 0.2s; }
+.egg-tab-item.active { color: #00d4ff; border-bottom-color: #00d4ff; font-weight: bold; background: rgba(0,212,255,0.05); }
+.egg-tab-icon { font-size: 30rpx; }
+
+/* 模拟器主容器 */
+.sim-dashboard { padding: 24rpx; }
+
+/* 插槽区 */
+.sim-slots { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20rpx; margin-bottom: 28rpx; }
+.sim-slot { background: rgba(0,0,0,0.4); border: 2rpx dashed rgba(0,212,255,0.15); border-radius: 16rpx; padding: 24rpx; min-height: 240rpx; display: flex; flex-direction: column; align-items: center; justify-content: space-between; position: relative; transition: all 0.25s; box-sizing: border-box; }
+.sim-slot.disabled { opacity: 0.45; border-color: rgba(255,255,255,0.08); }
+.sim-slot.selected { border: 2rpx solid rgba(0,212,255,0.35); background: rgba(0,212,255,0.05); }
+.sim-slot-label { font-size: 20rpx; color: rgba(255,255,255,0.4); text-align: center; display: block; margin-bottom: 12rpx; font-weight: 500; }
+.sim-slot-placeholder { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 24rpx; color: rgba(255,255,255,0.35); gap: 8rpx; }
+.sim-add-icon { font-size: 44rpx; color: rgba(0,212,255,0.5); font-weight: bold; }
+
+.sim-slot-pet { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.sim-pet-img { width: 90rpx; height: 90rpx; margin-bottom: 8rpx; }
+.sim-pet-emoji { font-size: 64rpx; margin-bottom: 8rpx; }
+.sim-pet-name { font-size: 26rpx; font-weight: bold; color: #fff; margin-bottom: 8rpx; }
+.sim-pet-groups { display: flex; gap: 4rpx; flex-wrap: wrap; justify-content: center; }
+.sim-pet-group-tag { font-size: 16rpx; padding: 2rpx 8rpx; background: rgba(0,212,255,0.15); border-radius: 6rpx; color: #00d4ff; }
+.sim-slot-action { font-size: 20rpx; color: #ff4757; padding: 4rpx 14rpx; background: rgba(255,71,87,0.1); border: 1rpx solid rgba(255,71,87,0.2); border-radius: 8rpx; margin-top: 12rpx; }
+
+/* 模拟结果卡片 */
+.sim-result-card { background: rgba(0,0,0,0.35); border: 1rpx solid rgba(0,212,255,0.15); border-radius: 16rpx; padding: 24rpx; margin-bottom: 32rpx; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+.sim-result-status { display: flex; align-items: center; gap: 12rpx; padding-bottom: 16rpx; border-bottom: 1rpx solid rgba(255,255,255,0.06); margin-bottom: 16rpx; }
+.sim-status-icon { font-size: 32rpx; }
+.sim-status-text { font-size: 28rpx; font-weight: bold; }
+.sim-result-status.success { color: #00e676; }
+.sim-result-status.fail { color: #ff4757; }
+
+.sim-result-details { font-size: 24rpx; color: rgba(255,255,255,0.7); }
+.sim-offspring { margin-bottom: 12rpx; display: flex; align-items: center; }
+.sim-offspring-label { color: rgba(255,255,255,0.55); }
+.sim-offspring-pet { font-weight: bold; }
+.sim-offspring-name { color: #ffab40; font-size: 26rpx; }
+.sim-offspring-desc { color: rgba(255,255,255,0.4); font-size: 22rpx; font-weight: normal; }
+
+.sim-shared-groups { margin-bottom: 16rpx; display: flex; align-items: center; }
+.sim-shared-label { color: rgba(255,255,255,0.55); }
+.sim-shared-tags { display: flex; gap: 8rpx; }
+.sim-shared-tag { padding: 2rpx 12rpx; background: rgba(0,230,118,0.15); border: 1rpx solid rgba(0,230,118,0.3); border-radius: 8rpx; color: #00e676; font-size: 20rpx; }
+.sim-fail-desc { font-size: 24rpx; color: rgba(255,255,255,0.5); line-height: 1.6; }
+
+.sim-tips { background: rgba(255,255,255,0.03); border-radius: 12rpx; padding: 16rpx; display: flex; flex-direction: column; gap: 8rpx; border-left: 4rpx solid #ffab40; }
+.sim-tip-item { font-size: 20rpx; color: rgba(255,255,255,0.5); line-height: 1.4; }
+
+/* 底部列表区 */
+.sim-selector-list { border-top: 1rpx solid rgba(255,255,255,0.06); padding-top: 24rpx; margin-top: 12rpx; }
+.sim-selector-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16rpx; }
+.sim-selector-title { font-size: 26rpx; color: rgba(0,212,255,0.85); font-weight: bold; }

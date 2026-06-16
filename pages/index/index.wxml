@@ -39,13 +39,9 @@
     <view class="card">
       <view class="stitle">快捷入口</view>
       <view class="actions">
-        <view class="act" bindtap="go" data-url="/pages/pets/pets"><view class="act-icon">📖</view><text>精灵图鉴</text></view>
-        <view class="act" bindtap="go" data-url="/pages/items/items"><view class="act-icon">🎒</view><text>道具图鉴</text></view>
         <view class="act" bindtap="go" data-url="/pages/egg/egg"><view class="act-icon">🥚</view><text>孵蛋查询</text></view>
         <view class="act" bindtap="go" data-url="/pages/merchant/merchant"><view class="act-icon">🛒</view><text>远行商人</text></view>
-        <view class="act" bindtap="go" data-url="/pages/activity/activity"><view class="act-icon">📅</view><text>活动日历</text></view>
         <view class="act" bindtap="go" data-url="/pages/catch/catch"><view class="act-icon">🎯</view><text>捕捉统计</text></view>
-        <view class="act" bindtap="go" data-url="/pages/guides/guides"><view class="act-icon">📝</view><text>攻略指南</text></view>
         <view class="act" bindtap="go" data-url="/pages/about/about"><view class="act-icon">ℹ️</view><text>关于我们</text></view>
       </view>
     </view>
@@ -67,7 +63,37 @@
             <view class="news-arrow {{expandedIndex === index ? 'expanded' : ''}}">›</view>
           </view>
           <view class="news-detail" wx:if="{{expandedIndex === index}}">
-            <rich-text wx:if="{{item.richContent && item.richContent.length > 0}}" class="news-detail-rich" nodes="{{item.content}}" />
+            <block wx:if="{{item.richContent && item.richContent.length > 0}}">
+              <view class="news-detail-rich" style="padding: 12rpx 16rpx; background: rgba(0,0,0,0.2); border-radius: 12rpx; border-left: 4rpx solid rgba(0,212,255,0.3); margin-bottom: 16rpx;">
+                <block wx:for="{{item.richContent}}" wx:for-item="block" wx:key="index">
+                  <view wx:if="{{block.type === 'music'}}" class="rich-music-block {{currentPlayUrl === block.url && isPlaying ? 'playing' : ''}}" catchtap="playSong" data-url="{{block.url}}" data-name="{{block.name || '推荐单曲'}}">
+                    <text class="music-icon {{currentPlayUrl === block.url && isPlaying ? 'rotating' : ''}}">🎵</text>
+                    <view class="music-info">
+                      <text class="music-name">{{block.name || '推荐单曲'}}</text>
+                      <text class="music-url">{{block.url}}</text>
+                    </view>
+                    <text class="music-play-btn">{{currentPlayUrl === block.url && isPlaying ? '暂停' : '点我听歌'}}</text>
+                  </view>
+                  <view wx:elif="{{block.type === 'iframe'}}" class="rich-iframe-block">
+                    <text class="iframe-icon">🌐</text>
+                    <view class="iframe-info">
+                      <text class="iframe-name">{{block.name || '外部网页'}}</text>
+                      <text class="iframe-url">{{block.url}}</text>
+                    </view>
+                    <view class="iframe-actions">
+                      <view class="iframe-btn open" catchtap="openIframe" data-url="{{block.url}}">打开</view>
+                      <view class="iframe-btn copy" catchtap="copyIframe" data-url="{{block.url}}">复制</view>
+                    </view>
+                  </view>
+                  <view wx:elif="{{block.type === 'quote'}}" class="rich-quote-block">
+                    <text class="quote-text">{{block.content}}</text>
+                  </view>
+                  <view wx:else class="rich-text-block" style="font-size:{{block.size}}rpx;color:{{block.color}};font-weight:{{block.weight || 'normal'}};font-style:{{block.style || 'normal'}};">
+                    {{block.content}}
+                  </view>
+                </block>
+              </view>
+            </block>
             <text wx:else class="news-detail-content">{{item.content}}</text>
             <view class="news-source" wx:if="{{item.source}}">
               <text class="source-label">来源：</text>
@@ -93,31 +119,10 @@
       </view>
     </view>
 
-    <!-- 热门榜单 -->
-    <view class="card" wx:if="{{hotPosts.length > 0 && showCommunity}}">
-      <view class="stitle">🔥 热门榜单</view>
-      <view class="hot-list">
-        <view class="hot-item" wx:for="{{hotPosts}}" wx:key="_id" bindtap="go" data-url="/pages/community/community">
-          <view class="hot-rank rank-{{index < 3 ? index + 1 : 'other'}}">{{index + 1}}</view>
-          <view class="hot-info">
-            <text class="hot-name">{{item.userName}}</text>
-            <text class="hot-content">{{item.content || '分享了图片'}}</text>
-          </view>
-          <view class="hot-likes">
-            <text class="hot-heart">❤</text>
-            <text class="hot-count">{{item.likeCount}}</text>
-          </view>
-        </view>
-      </view>
+    <view class="foot">
+      <text wx:if="{{icp}}">{{icp}}</text>
     </view>
-
-    <view class="foot">更新：{{buildTime}}</view>
   </view>
 
-  <view class="navbar">
-    <view class="nav-item on"><text class="nav-icon">🏠</text><text class="nav-text">首页</text></view>
-    <view class="nav-item" wx:if="{{showCommunity}}" bindtap="go" data-url="/pages/community/community"><text class="nav-icon">👥</text><text class="nav-text">社区</text></view>
-    <view class="nav-item" bindtap="go" data-url="/pages/activity/activity"><text class="nav-icon">📅</text><text class="nav-text">活动</text></view>
-    <view class="nav-item" bindtap="go" data-url="/pages/login/login"><text class="nav-icon">👤</text><text class="nav-text">我的</text></view>
-  </view>
+  <dock current="index" />
 </view>

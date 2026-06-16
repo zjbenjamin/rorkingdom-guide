@@ -1,1 +1,1 @@
-{ "usingComponents": {}, "navigationBarTitleText": "远行商人" }
+{ "usingComponents": { "dock": "/components/dock/dock" }, "navigationBarTitleText": "远行商人" }

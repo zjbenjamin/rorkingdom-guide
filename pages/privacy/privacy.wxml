@@ -1,0 +1,58 @@
+<view class="page">
+  <view class="privacy-container">
+    <!-- 隐私政策内容 -->
+    <block wx:if="{{type === 'privacy'}}">
+      <view class="p-section">
+        <text class="p-title">一、 我们如何收集和使用您的个人信息</text>
+        <text class="p-text">1. 基础登录：在您授权后，我们会收集您的微信头像、昵称，用于多设备数据同步。</text>
+        <text class="p-text">2. 数据存储：业务数据均存储在您的手机本地（LocalStorage），我们不具备获取您本地数据的技术手段。</text>
+        <text class="p-text">3. IP地址：根据法律要求，我们会收集您的公网IP地址以展示IP属地。</text>
+      </view>
+
+      <view class="p-section">
+        <text class="p-title">二、 我们如何共享您的个人信息</text>
+        <text class="p-text">我们不会向任何第三方公司、组织或个人共享您的个人信息，亦不接入任何可能窃取隐私的第三方SDK。</text>
+      </view>
+
+      <view class="p-section">
+        <text class="p-title">三、 您的权利</text>
+        <text class="p-text">您可以随时查阅您的个人信息，或通过删除小程序清除所有本地数据。如需注销账号，请联系开发者邮箱。</text>
+      </view>
+
+      <view class="p-section">
+        <text class="p-title">四、 免责声明</text>
+        <text class="p-text">1. 本应用为非官方资料查询工具，由个人开发，与腾讯魔方工作室群无关。</text>
+        <text class="p-text">2. 资料数据参考自公开资料，请以官方实际情况为准。</text>
+        <text class="p-text">3. 本工具仅供用户学习交流使用，请勿用于商业用途。</text>
+      </view>
+    </block>
+
+    <!-- 用户协议内容 -->
+    <block wx:else>
+      <view class="p-section">
+        <text class="p-title">一、 服务内容</text>
+        <text class="p-text">「洛手助手BENJAMIN」提供游戏资料查询、捕捉统计等辅助功能。本工具由个人开发，非官方出品。</text>
+      </view>
+
+      <view class="p-section">
+        <text class="p-title">二、 用户行为规范</text>
+        <text class="p-text">1. 遵守国家法律法规，不得传播违法违规信息。</text>
+        <text class="p-text">2. 严禁利用工具漏洞获取非法利益或对工具进行反向工程。</text>
+        <text class="p-text">3. 未经许可，不得将本工具用于任何形式的商业用途。</text>
+      </view>
+
+      <view class="p-section">
+        <text class="p-title">三、 免责条款</text>
+        <text class="p-text">1. 数据准确性：工具展示的数据仅供参考，不对游戏决策后果负责。</text>
+        <text class="p-text">2. 服务稳定性：不对因网络或政策调整导致的服务中断或数据丢失负责。</text>
+      </view>
+
+      <view class="p-section">
+        <text class="p-title">四、 知识产权</text>
+        <text class="p-text">本小程序所有权归开发者“浙里本杰明”所有。所引用的游戏素材版权归原版权方腾讯所有。</text>
+      </view>
+    </block>
+
+    <view class="foot">更新日期：2026-06-16</view>
+  </view>
+</view>

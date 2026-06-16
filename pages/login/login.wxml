@@ -36,10 +36,15 @@
 
       <button class="submit-btn" bindtap="onLogin" loading="{{isLogging}}" disabled="{{isLogging}}">登录</button>
 
-      <view class="agree-text">
-        <text>登录即表示同意</text>
+      <view class="agree-section">
+        <checkbox-group class="agree-checkbox-group" bindchange="onAgreeChange">
+          <label class="agree-label">
+            <checkbox class="agree-checkbox" value="agree" checked="{{isAgreed}}" />
+            <text class="agree-text-span">我已阅读并同意</text>
+          </label>
+        </checkbox-group>
         <text class="link" bindtap="showAgreement">《用户协议》</text>
-        <text>和</text>
+        <text class="agree-text-span">和</text>
         <text class="link" bindtap="showPrivacy">《隐私政策》</text>
       </view>
     </view>
@@ -75,7 +80,7 @@
         <view class="uid-left">
           <text class="uid-label">洛克王国UID</text>
           <text class="uid-value" wx:if="{{gameUid}}">{{gameUid}}</text>
-          <text class="uid-empty" wx:else>点击设置UID，展示在社区发帖中</text>
+          <text class="uid-empty" wx:else>点击设置UID</text>
         </view>
         <text class="uid-arrow">›</text>
       </view>
@@ -137,24 +142,6 @@
             <view class="notify-reset" catchtap="onResetSubscribe" data-type="activity">重置</view>
           </view>
         </view>
-        <view class="notify-item" wx:if="{{notifyConfigured.system && subscribeConfig.system !== false}}">
-          <view class="notify-info">
-            <text class="notify-name">系统消息</text>
-            <text class="notify-desc">系统更新和维护通知</text>
-          </view>
-          <view class="notify-right">
-            <view wx:if="{{notifyConfigured.system}}" class="notify-counter" data-type="system" catchtap="onNotifyAdd">
-              <view class="counter-btn">
-                <text class="counter-plus">+</text>
-              </view>
-              <view class="counter-badge" wx:if="{{notifyCount.system > 0}}">
-                <text class="counter-num">{{notifyCount.system}}</text>
-              </view>
-            </view>
-            <view wx:else class="notify-na">暂未开放</view>
-            <view class="notify-reset" catchtap="onResetSubscribe" data-type="system">重置</view>
-          </view>
-        </view>
         <view class="notify-item" wx:if="{{notifyConfigured.merchant && subscribeConfig.merchant !== false}}">
           <view class="notify-info">
             <text class="notify-name">商人提醒</text>
@@ -173,24 +160,6 @@
             <view class="notify-reset" catchtap="onResetSubscribe" data-type="merchant">重置</view>
           </view>
         </view>
-        <view class="notify-item" wx:if="{{notifyConfigured.interaction && subscribeConfig.interaction !== false}}">
-          <view class="notify-info">
-            <text class="notify-name">互动通知</text>
-            <text class="notify-desc">收到点赞和回复时推送</text>
-          </view>
-          <view class="notify-right">
-            <view wx:if="{{notifyConfigured.interaction}}" class="notify-counter" data-type="interaction" catchtap="onNotifyAdd">
-              <view class="counter-btn">
-                <text class="counter-plus">+</text>
-              </view>
-              <view class="counter-badge" wx:if="{{notifyCount.interaction > 0}}">
-                <text class="counter-num">{{notifyCount.interaction}}</text>
-              </view>
-            </view>
-            <view wx:else class="notify-na">暂未开放</view>
-            <view class="notify-reset" catchtap="onResetSubscribe" data-type="interaction">重置</view>
-          </view>
-        </view>
         <view class="notify-tip" bindtap="onNotifySetting">
           <text class="notify-tip-text">如需修改通知权限，请点击前往系统设置</text>
         </view>
@@ -202,6 +171,13 @@
             <text class="action-icon">⚙</text>
           </view>
           <text class="action-text">管理后台</text>
+          <text class="action-arrow">›</text>
+        </view>
+        <view class="action-item danger-item" bindtap="onDeleteAccount">
+          <view class="action-icon-wrap danger-icon-wrap">
+            <text class="action-icon">🗑️</text>
+          </view>
+          <text class="action-text danger-text">注销账号</text>
           <text class="action-arrow">›</text>
         </view>
         <view class="action-item danger-item" bindtap="onLogout">
@@ -240,7 +216,7 @@
       <text class="notice-text">• 我们不会向任何服务器上传您的个人信息</text>
     </view>
 
-    <text class="version">洛手助手BENJAMIN v1.0.7A 体验版</text>
+    <text class="version">洛手助手BENJAMIN v1.0.8D 稳定版</text>
   </view>
 
   <!-- UID编辑弹窗 -->
@@ -252,7 +228,7 @@
       </view>
       <view class="modal-body">
         <input class="modal-input" placeholder="输入您的洛克王国UID（纯数字）" placeholder-style="color:rgba(255,255,255,0.3)" value="{{uidInput}}" bindinput="onUidInput" type="number" />
-        <text class="modal-hint">设置后将显示在社区发帖名称旁</text>
+        <text class="modal-hint">设置后将显示在评论名称旁</text>
       </view>
       <view class="modal-footer">
         <button class="modal-cancel" bindtap="toggleUidModal">取消</button>
@@ -260,4 +236,24 @@
       </view>
     </view>
   </view>
+
+  <!-- 微信官方隐私授权弹窗 -->
+  <view class="privacy-modal-mask" wx:if="{{showWechatPrivacyModal}}" catchtouchmove="preventClose">
+    <view class="privacy-modal-box">
+      <view class="privacy-modal-header">
+        <text class="privacy-modal-title">用户隐私保护提示</text>
+      </view>
+      <view class="privacy-modal-body">
+        <text class="privacy-modal-desc">在使用登录及云端同步服务前，请阅读并同意</text>
+        <text class="privacy-modal-link-inline" bindtap="showPrivacy">《用户隐私保护指引》</text>
+        <text class="privacy-modal-desc">。我们非常重视您的个人隐私与数据安全，我们将严格保护您的数据安全。</text>
+      </view>
+      <view class="privacy-modal-footer">
+        <button class="privacy-btn-cancel" bindtap="handleDisagreePrivacy">拒绝</button>
+        <button class="privacy-btn-confirm" open-type="agreePrivacyAuthorization" id="agree-btn" bindagreeprivacyauthorization="handleAgreePrivacy">同意</button>
+      </view>
+    </view>
+  </view>
+
+  <dock current="login" />
 </view>

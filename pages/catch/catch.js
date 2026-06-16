@@ -63,6 +63,7 @@ Page({
     resultBallCount: '',
     resultBallList: [],
     resultGainInput: '',
+    resultRemark: '',
     costMode: 'auto',
     gemCost: 0,
     cnyCost: '0',
@@ -74,7 +75,13 @@ Page({
     ballCheckRecords: [],
     ballCheckMode: 'select',
     ballCheckCustomName: '',
-    captureAnim: false
+    captureAnim: false,
+    autoResetPity: false,
+    quickRecordMode: false,
+    showWealthAdjustModal: false,
+    adjustType: 'add',
+    adjustAmount: '',
+    adjustRemark: ''
   },
   onShow: function() {
     var n = new Date()
@@ -136,7 +143,10 @@ Page({
       userTitle: title.name,
       titleColor: title.color,
       ballCheckRecords: wx.getStorageSync('ball_check_records') || [],
-      usedBallTotal: wx.getStorageSync('used_ball_total') || 0
+      usedBallTotal: wx.getStorageSync('used_ball_total') || 0,
+      autoResetPity: wx.getStorageSync('auto_reset_pity') || false,
+      quickRecordMode: wx.getStorageSync('quick_record_mode') || false,
+      specialHistory: wx.getStorageSync('special_history') || []
     })
     this.updateGemCost()
   },
@@ -161,7 +171,8 @@ Page({
       resultType: r,
       resultBall: ballList[0],
       resultBallCount: '',
-      resultBallList: ballList
+      resultBallList: ballList,
+      resultRemark: ''
     })
   },
   onResultBallChange: function(e) {
@@ -173,6 +184,9 @@ Page({
   onResultGainInput: function(e) {
     this.setData({ resultGainInput: e.detail.value })
   },
+  onResultRemarkInput: function(e) {
+    this.setData({ resultRemark: e.detail.value })
+  },
   closeResultBallModal: function() {
     this.setData({ showResultBallModal: false })
   },
@@ -182,7 +196,7 @@ Page({
     var ballName = self.data.resultBall
     var usedCount = parseInt(self.data.resultBallCount) || 0
     var gainVal = parseInt(self.data.resultGainInput) || 0
-    self.setData({ showResultBallModal: false, result: r, resultGainInput: '' })
+    self.setData({ showResultBallModal: false, result: r, resultGainInput: '', resultRemark: '' })
     if (usedCount > 0) {
       var balls = self.data.balls.slice()
       for (var i = 0; i < balls.length; i++) {
@@ -241,6 +255,8 @@ Page({
     wx.setStorageSync('total_costs', newCosts)
     var accumulated = self.data.totalGains - newCosts
     var resultText = result === 'success' ? '成功' : '歪了'
+    var remark = self.data.resultRemark || ''
+    if (remark) resultText += '(' + remark + ')'
     var record = { time: formatTimeShort(), balls: used.map(function(b) { return b.name + 'x' + b.count }).join(', ') || '未使用球', result: resultText, total: catchCount, cost: totalBallCost, pet: '' }
     var h = [record].concat(self.data.history).slice(0, 20)
     wx.setStorageSync('catch_history', h)
@@ -282,6 +298,8 @@ Page({
     wx.setStorageSync('total_costs', newCosts)
     var accumulated = self.data.totalGains - newCosts
     var resultText = result === 'success' ? '成功' : '歪了'
+    var remark = self.data.resultRemark || ''
+    if (remark) resultText += '(' + remark + ')'
     var record = { time: formatTimeShort(), balls: used.map(function(b) { return b.name + 'x' + b.count }).join(', ') || '未使用球', result: resultText, total: catchCount, cost: totalBallCost, pet: '' }
     var h = [record].concat(self.data.history).slice(0, 20)
     wx.setStorageSync('catch_history', h)
@@ -844,6 +862,62 @@ Page({
     })
   },
   preventClose: function() {},
+  toggleAutoResetPity: function() {
+    var val = !this.data.autoResetPity
+    this.setData({ autoResetPity: val })
+    wx.setStorageSync('auto_reset_pity', val)
+    wx.showToast({ title: val ? '已开启自动重置' : '已切换手动重置', icon: 'none' })
+  },
+  toggleQuickRecord: function() {
+    var val = !this.data.quickRecordMode
+    this.setData({ quickRecordMode: val })
+    wx.setStorageSync('quick_record_mode', val)
+    wx.showToast({ title: val ? '自动记录已开启' : '自动记录已关闭', icon: 'none' })
+  },
+  openWealthAdjustModal: function() {
+    this.setData({ showWealthAdjustModal: true, adjustType: 'add', adjustAmount: '', adjustRemark: '' })
+  },
+  closeWealthAdjustModal: function() {
+    this.setData({ showWealthAdjustModal: false })
+  },
+  onAdjustTypeSwitch: function(e) {
+    this.setData({ adjustType: e.currentTarget.dataset.type })
+  },
+  onAdjustAmountInput: function(e) {
+    this.setData({ adjustAmount: e.detail.value })
+  },
+  onAdjustRemarkInput: function(e) {
+    this.setData({ adjustRemark: e.detail.value })
+  },
+  onConfirmAdjustWealth: function() {
+    var self = this
+    var amount = parseInt(self.data.adjustAmount)
+    if (isNaN(amount) || amount <= 0) {
+      wx.showToast({ title: '请输入有效金额', icon: 'none' })
+      return
+    }
+    var isAdd = self.data.adjustType === 'add'
+    var adjustVal = isAdd ? amount : -amount
+    var newGains = self.data.totalGains + (isAdd ? amount : 0)
+    var newCosts = self.data.totalCosts + (isAdd ? 0 : amount)
+    wx.setStorageSync('total_gains', newGains)
+    wx.setStorageSync('total_costs', newCosts)
+    var accumulated = newGains - newCosts
+    var remark = self.data.adjustRemark
+    var record = { time: formatTimeShort(), balls: (isAdd ? '📈 资产增加' : '📉 资产减少') + (remark ? '(' + remark + ')' : ''), result: '微调', total: 0, cost: isAdd ? 0 : amount, pet: '' }
+    var h = [record].concat(self.data.history).slice(0, 20)
+    wx.setStorageSync('catch_history', h)
+    self.setData({
+      showWealthAdjustModal: false,
+      totalGains: newGains,
+      totalCosts: newCosts,
+      accumulatedWealth: accumulated,
+      totalWealth: self.data.initialWealth + accumulated,
+      history: h
+    })
+    self.updateGemCost()
+    wx.showToast({ title: (isAdd ? '增加' : '减少') + ' 💵' + amount, icon: 'none' })
+  },
   onWealthInput: function(e) { this.setData({ coinInput: e.detail.value }) },
   onSetWealth: function() {
     var self = this
