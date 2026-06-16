@@ -741,6 +741,25 @@ Page({
   onEndDateChange: function(e) { this.setData({ formEndDate: e.detail.value }) },
   onTypeChange: function(e) { var types = ['notice', 'update', 'event', 'tip']; this.setData({ formType: types[e.detail.value] }) },
   togglePinned: function() { this.setData({ formPinned: !this.data.formPinned }) },
+  _autoCommitText: function(updates) {
+    var content = this.data.formContent.trim()
+    if (content) {
+      var block = {
+        type: 'text', content: content,
+        style: this.data.currentFontStyle,
+        weight: this.data.currentFontWeight,
+        size: this.data.currentFontSize,
+        color: this.data.currentFontColor,
+        fontFamily: this.data.currentFontFamily
+      }
+      var richContent = (this.data.formRichContent || []).concat([block])
+      var setData = { formRichContent: richContent, formContent: '' }
+      if (updates) { for (var k in updates) setData[k] = updates[k] }
+      this.setData(setData)
+    } else if (updates) {
+      this.setData(updates)
+    }
+  },
   toggleBold: function() {
     var newWeight = this.data.currentFontWeight === 'normal' ? 'bold' : 'normal'
     this._autoCommitText({ currentFontWeight: newWeight })
@@ -769,18 +788,6 @@ Page({
   },
   showFontFamilyPicker: function() {
     this.setData({ showFontFamilyPicker: !this.data.showFontFamilyPicker, showSizePicker: false, showColorPicker: false })
-  },
-  setFontFamily: function(e) {
-    var family = e.currentTarget.dataset.family
-    this.setData({ currentFontFamily: family, showFontFamilyPicker: false })
-  },
-  setFontSize: function(e) {
-    var size = e.currentTarget.dataset.size
-    this.setData({ currentFontSize: size, showSizePicker: false })
-  },
-  setFontColor: function(e) {
-    var color = e.currentTarget.dataset.color
-    this.setData({ currentFontColor: color, showColorPicker: false })
   },
   addRichTextBlock: function() {
     var content = this.data.formContent.trim()
@@ -830,7 +837,7 @@ Page({
   },
   removeRichBlock: function(e) {
     var idx = e.currentTarget.dataset.idx
-    var richContent = this.data.formRichContent
+    var richContent = this.data.formRichContent.slice()
     var block = richContent[idx]
     richContent.splice(idx, 1)
     var formContent = this.data.formContent
@@ -1351,12 +1358,6 @@ Page({
       }
     })
   },
-    var richContent = (self.data.activityRichContent || []).concat([block])
-    var formContent = self.data.activityFormContent
-    if (block.url) formContent = formContent.replace(block.url, '').replace(/\s{2,}/g, ' ').trim()
-    self.setData({ activityRichContent: richContent, activityFormContent: formContent })
-    wx.showToast({ title: '已添加: ' + block.name, icon: 'success' })
-  },
   _isImageUrl: function(url) {
     return /\.(jpg|jpeg|png|gif|webp|bmp|svg|ico)(\?|$)/i.test(url) || /^cloud:\/\//i.test(url) || /^https?:\/\/.*(img|image|photo|pic|picture)/i.test(url)
   },
@@ -1625,6 +1626,25 @@ Page({
   onActivityEndChange: function(e) { this.setData({ activityFormEnd: e.detail.value }) },
   onActivitySourceInput: function(e) { this.setData({ activityFormSource: e.detail.value }) },
   onActivityStatusChange: function(e) { var statuses = ['进行中','即将开始','置顶']; this.setData({ activityFormStatus: statuses[e.detail.value] }) },
+  _autoCommitActivityText: function(updates) {
+    var content = this.data.activityFormContent.trim()
+    if (content) {
+      var block = {
+        type: 'text', content: content,
+        style: this.data.activityFontStyle,
+        weight: this.data.activityFontWeight,
+        size: this.data.activityFontSize,
+        color: this.data.activityFontColor,
+        fontFamily: this.data.activityFontFamily
+      }
+      var richContent = (this.data.activityRichContent || []).concat([block])
+      var setData = { activityRichContent: richContent, activityFormContent: '' }
+      if (updates) { for (var k in updates) setData[k] = updates[k] }
+      this.setData(setData)
+    } else if (updates) {
+      this.setData(updates)
+    }
+  },
   toggleActivityBold: function() {
     var newWeight = this.data.activityFontWeight === 'normal' ? 'bold' : 'normal'
     this._autoCommitActivityText({ activityFontWeight: newWeight })
@@ -1644,10 +1664,6 @@ Page({
   setActivityFontFamily: function(e) {
     var family = e.currentTarget.dataset.family
     this._autoCommitActivityText({ activityFontFamily: family, showActivityFontFamilyPicker: false })
-  },
-  toggleActivityItalic: function() {
-    var newStyle = this.data.activityFontStyle === 'normal' ? 'italic' : 'normal'
-    this.setData({ activityFontStyle: newStyle })
   },
   showActivityFontSizePicker: function() {
     this.setData({ showActivitySizePicker: !this.data.showActivitySizePicker, showActivityColorPicker: false, showActivityFontFamilyPicker: false })
@@ -1718,7 +1734,7 @@ Page({
   },
   removeActivityRichBlock: function(e) {
     var idx = e.currentTarget.dataset.idx
-    var richContent = this.data.activityRichContent
+    var richContent = this.data.activityRichContent.slice()
     var block = richContent[idx]
     richContent.splice(idx, 1)
     var formContent = this.data.activityFormContent

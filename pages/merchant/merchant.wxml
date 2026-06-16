@@ -300,7 +300,7 @@
               <text class="action-icon">📷</text>
               <text class="action-text">相册上传</text>
             </view>
-            <view class="image-action-btn" catchtap="onSellingImageInput">
+            <view class="image-action-btn" catchtap="inputSellingImageUrl">
               <text class="action-icon">🔗</text>
               <text class="action-text">图床链接</text>
             </view>

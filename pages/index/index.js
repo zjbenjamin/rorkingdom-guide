@@ -446,32 +446,10 @@ Page({
       return
     }
 
-    // b23.tv 短链接：先跟随重定向获取真实 URL
+    // b23.tv 短链接：直接 webview 打开，服务器端自动重定向到视频页
     var shortMatch = url.match(/b23\.tv\/([a-zA-Z0-9]+)/)
     if (shortMatch) {
-      wx.showLoading({ title: '解析短链接...' })
-      wx.request({
-        url: url,
-        success: function(redirectRes) {
-          var finalUrl = redirectRes.request ? redirectRes.request.url || '' : ''
-          // 或从 header 中获取
-          if (!finalUrl && redirectRes.header && redirectRes.header.Location) {
-            finalUrl = redirectRes.header.Location
-          }
-          var matched = finalUrl.match(/BV[a-zA-Z0-9]{10,}/)
-          if (matched) {
-            wx.hideLoading()
-            fetchBilibiliStream(matched[0])
-          } else {
-            wx.hideLoading()
-            self._openVideoFallback(url)
-          }
-        },
-        fail: function() {
-          wx.hideLoading()
-          self._openVideoFallback(url)
-        }
-      })
+      self._openVideoFallback(url)
       return
     }
 

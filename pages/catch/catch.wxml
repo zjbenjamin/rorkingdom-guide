@@ -105,7 +105,6 @@
             <text class="btn-text">这次歪了</text>
           </view>
         </view>
-        <view class="help-hint">※ 长按按钮可进入手动精细化记录模式</view>
       </block>
     </view>
 

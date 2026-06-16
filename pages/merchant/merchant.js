@@ -317,6 +317,20 @@ Page({
       }
     })
   },
+  inputSellingImageUrl: function() {
+    var self = this
+    wx.showModal({
+      title: '输入图片链接',
+      content: '',
+      placeholderText: '粘贴图片URL地址',
+      editable: true,
+      success: function(res) {
+        if (res.confirm && res.content && res.content.trim()) {
+          self.setData({ currentSellingImage: res.content.trim() })
+        }
+      }
+    })
+  },
   onSellingImageInput: function(e) {
     this.setData({ currentSellingImage: e.detail.value })
   },
@@ -510,7 +524,7 @@ Page({
     if (!db) return
     wx.cloud.callFunction({ name: 'login' }).then(function(res) {
       var openid = res.result.openid
-      if (!openid) return
+      if (!openid) { wx.showToast({ title: '获取用户信息失败', icon: 'none' }); return }
       db.collection('subscribers').where({ openid: openid, type: 'merchant_item', itemName: name }).get()
         .then(function(subRes) {
           var tasks = []
@@ -741,8 +755,16 @@ Page({
         self.setData({ addingItem: false, showAddItemModal: false, editingItemIndex: null, items: items, customItems: customItemsText })
         wx.showToast({ title: '已更新', icon: 'success' })
       }).catch(function() {
-        self.setData({ addingItem: false })
-        wx.showToast({ title: '更新失败', icon: 'none' })
+        // 文档不存在时创建
+        db.collection('page_config').add({
+          data: { _id: 'merchant', useCustom: true, customItems: customItemsText, maintenance: false, updateTime: db.serverDate() }
+        }).then(function() {
+          self.setData({ addingItem: false, showAddItemModal: false, editingItemIndex: null, items: items, customItems: customItemsText })
+          wx.showToast({ title: '已更新', icon: 'success' })
+        }).catch(function() {
+          self.setData({ addingItem: false })
+          wx.showToast({ title: '更新失败', icon: 'none' })
+        })
       })
       return
     }
