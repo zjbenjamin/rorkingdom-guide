@@ -203,6 +203,21 @@ function parseTableInput(text) {
   return { headers: headers, rows: dataRows, rowCount: dataRows.length, colCount: headers.length }
 }
 
+function extractCleanURL(text) {
+  if (!text) return ''
+  text = text.replace(/[\r\n]+/g, ' ').trim()
+  var urlMatch = text.match(/(https?:\/\/[^\s'"<>）)】\]》《，,。;；!！?？]+)/i)
+  if (urlMatch) {
+    var url = urlMatch[1]
+    url = url.replace(/[,;.!?？)，,】\]》）;:：。、]+$/, '')
+    return url
+  }
+  if (/^https?:\/\//i.test(text)) {
+    return text.replace(/[,;.!?？)，,】\]》）;:：。、\s]+$/, '')
+  }
+  return text
+}
+
 Page({
   data: {
     isAdmin: false,
@@ -505,58 +520,65 @@ Page({
   preventClose: function() {},
   showMusicDialog: function() {
     var self = this
-    wx.showModal({
-      title: '添加音乐',
-      content: '',
-      placeholderText: '粘贴歌曲分享文本（支持网易云/QQ音乐等）',
-      editable: true,
-      success: function(resShare) {
-        if (resShare.confirm && resShare.content && resShare.content.trim()) {
-          var shareText = resShare.content.trim()
-          var parsed = parseMusicShare(shareText)
-          
-          if (!parsed.url) {
-            var isUrl = /https?:\/\//i.test(shareText);
-            if (!isUrl && shareText.length < 50) {
-              wx.showModal({
-                title: '输入歌曲链接',
-                content: '',
-                placeholderText: '请粘贴音乐播放链接',
-                editable: true,
-                success: function(resUrl) {
-                  if (resUrl.confirm && resUrl.content && resUrl.content.trim()) {
-                    var url = convertMusicUrl(resUrl.content.trim())
-                    if (url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) {
-                      wx.showToast({ title: '链接需以 http 或 https 开头', icon: 'none' })
-                      return
-                    }
-                    self._addMusicBlock(self, { type: 'music', name: shareText, url: url })
+    wx.getClipboardData({
+      success: function(cb) {
+        var clipText = (cb.data || '').trim()
+        var defaultContent = clipText ? clipText : ''
+        wx.showModal({
+          title: '添加音乐',
+          content: defaultContent,
+          placeholderText: '粘贴歌曲分享文本（支持网易云/QQ音乐等）',
+          editable: true,
+          success: function(resShare) {
+            if (resShare.confirm || (defaultContent && resShare.confirm !== false)) {
+              var shareText = (resShare.content || defaultContent).trim()
+              var parsed = parseMusicShare(shareText)
+              if (!parsed.url) {
+                var cleanedUrl = extractCleanURL(shareText)
+                if (cleanedUrl) {
+                  var url = convertMusicUrl(cleanedUrl)
+                  if (url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) {
+                    wx.showToast({ title: '链接需以 http 或 https 开头', icon: 'none' })
+                    return
                   }
+                  wx.showModal({
+                    title: '输入歌曲名称',
+                    content: '',
+                    placeholderText: '歌名 - 歌手',
+                    editable: true,
+                    success: function(nameRes) {
+                      var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
+                      if (!name && !resShare.confirm) name = shareText.substring(0, 20)
+                      self._addMusicBlock(self, { type: 'music', name: name || '音乐', url: url })
+                    }
+                  })
+                } else {
+                  wx.showToast({ title: '未找到有效的音乐链接', icon: 'none' })
                 }
-              })
-            } else {
-              wx.showToast({ title: '未找到有效的音乐链接', icon: 'none' })
-            }
-            return
-          }
-          
-          if (parsed.name) {
-            self._addMusicBlock(self, { type: 'music', name: parsed.name, url: parsed.url })
-          } else {
-            var guessedName = parseGuessedName(shareText, parsed.url)
-            wx.showModal({
-              title: '输入歌曲名称',
-              content: guessedName || '',
-              placeholderText: '歌名 - 歌手',
-              editable: true,
-              success: function(resName) {
-                if (resName.confirm && resName.content && resName.content.trim()) {
-                  self._addMusicBlock(self, { type: 'music', name: resName.content.trim(), url: parsed.url })
-                }
+                return
               }
-            })
+              if (parsed.name) {
+                self._addMusicBlock(self, { type: 'music', name: parsed.name, url: parsed.url })
+              } else {
+                var guessedName = parseGuessedName(shareText, parsed.url)
+                wx.showModal({
+                  title: '输入歌曲名称',
+                  content: guessedName || '',
+                  placeholderText: '歌名 - 歌手',
+                  editable: true,
+                  success: function(resName) {
+                    if (resName.confirm && resName.content && resName.content.trim()) {
+                      self._addMusicBlock(self, { type: 'music', name: resName.content.trim(), url: parsed.url })
+                    }
+                  }
+                })
+              }
+            }
           }
-        }
+        })
+      },
+      fail: function() {
+        self._showMusicDialogFallback()
       }
     })
   },
@@ -567,36 +589,96 @@ Page({
     self.setData({ formRichContent: richContent, formContent: formContent })
     wx.showToast({ title: '已添加: ' + block.name, icon: 'success' })
   },
-  showVideoDialog: function() {
+  _showMusicDialogFallback: function() {
     var self = this
     wx.showModal({
-      title: '添加视频',
+      title: '添加音乐',
       content: '',
-      placeholderText: '粘贴视频链接（支持微博/哔哩哔哩）',
+      placeholderText: '粘贴歌曲分享文本（支持网易云/QQ音乐等）',
       editable: true,
-      success: function(res) {
-        if (res.confirm && res.content && res.content.trim()) {
-          var url = res.content.trim()
-          var videoInfo = parseVideoUrl(url)
-          if (!videoInfo) {
-            wx.showToast({ title: '未识别视频链接，支持微博和哔哩哔哩', icon: 'none' })
-            return
+      success: function(resShare) {
+        if (resShare.confirm && resShare.content && resShare.content.trim()) {
+          var shareText = resShare.content.trim()
+          var cleanedUrl = extractCleanURL(shareText)
+          var isUrl = cleanedUrl && /^https?:\/\//i.test(cleanedUrl)
+          if (isUrl) {
+            var url = convertMusicUrl(cleanedUrl)
+            wx.showModal({
+              title: '输入歌曲名称',
+              content: '',
+              placeholderText: '歌名 - 歌手',
+              editable: true,
+              success: function(nameRes) {
+                var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : shareText.substring(0, 20)
+                self._addMusicBlock(self, { type: 'music', name: name || '音乐', url: url })
+              }
+            })
+          } else {
+            wx.showToast({ title: '未找到有效的音乐链接', icon: 'none' })
           }
-          wx.showModal({
-            title: '视频标题（可选）',
-            content: '',
-            placeholderText: '输入视频标题',
-            editable: true,
-            success: function(nameRes) {
-              var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
-              var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id }
-              var richContent = (self.data.formRichContent || []).concat([block])
-              var formContent = self.data.formContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
-              self.setData({ formRichContent: richContent, formContent: formContent })
-              wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
-            }
-          })
         }
+      }
+    })
+  },
+  showVideoDialog: function() {
+    var self = this
+    wx.getClipboardData({
+      success: function(cb) {
+        var clipText = (cb.data || '').trim()
+        var defaultContent = clipText ? extractCleanURL(clipText) : ''
+        wx.showModal({
+          title: '添加视频',
+          content: defaultContent,
+          placeholderText: '粘贴视频链接（支持微博/哔哩哔哩）',
+          editable: true,
+          success: function(res) {
+            var inputUrl = (res.confirm ? (res.content || defaultContent) : defaultContent).trim()
+            if (!inputUrl) return
+            if (!/^https?:\/\//i.test(inputUrl)) {
+              inputUrl = extractCleanURL(inputUrl)
+            }
+            if (!inputUrl) { wx.showToast({ title: '请输入有效链接', icon: 'none' }); return }
+            var videoInfo = parseVideoUrl(inputUrl)
+            if (!videoInfo) {
+              if (/^https?:\/\//i.test(inputUrl)) {
+                wx.showModal({
+                  title: '视频标题（可选）',
+                  content: '',
+                  placeholderText: '输入视频标题',
+                  editable: true,
+                  success: function(nameRes) {
+                    var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
+                    var block = { type: 'video', platform: 'other', platformName: '其他', name: name, url: inputUrl, vid: '' }
+                    var richContent = (self.data.formRichContent || []).concat([block])
+                    var formContent = self.data.formContent.replace(inputUrl, '').replace(/\s{2,}/g, ' ').trim()
+                    self.setData({ formRichContent: richContent, formContent: formContent })
+                    wx.showToast({ title: '已添加视频', icon: 'success' })
+                  }
+                })
+              } else {
+                wx.showToast({ title: '未识别视频链接', icon: 'none' })
+              }
+              return
+            }
+            wx.showModal({
+              title: '视频标题（可选）',
+              content: '',
+              placeholderText: '输入视频标题',
+              editable: true,
+              success: function(nameRes) {
+                var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
+                var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id }
+                var richContent = (self.data.formRichContent || []).concat([block])
+                var formContent = self.data.formContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
+                self.setData({ formRichContent: richContent, formContent: formContent })
+                wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
+              }
+            })
+          }
+        })
+      },
+      fail: function() {
+        self._showVideoDialogFallback()
       }
     })
   },
@@ -1167,58 +1249,64 @@ Page({
   closeActivityModal: function() { this.setData({ showActivityModal: false }) },
   showActivityMusicDialog: function() {
     var self = this
-    wx.showModal({
-      title: '添加音乐',
-      content: '',
-      placeholderText: '粘贴歌曲分享文本（支持网易云/QQ音乐等）',
-      editable: true,
-      success: function(resShare) {
-        if (resShare.confirm && resShare.content && resShare.content.trim()) {
-          var shareText = resShare.content.trim()
-          var parsed = parseMusicShare(shareText)
-          
-          if (!parsed.url) {
-            var isUrl = /https?:\/\//i.test(shareText);
-            if (!isUrl && shareText.length < 50) {
+    wx.getClipboardData({
+      success: function(cb) {
+        var clipText = (cb.data || '').trim()
+        wx.showModal({
+          title: '添加音乐',
+          content: clipText || '',
+          placeholderText: '粘贴歌曲分享文本（支持网易云/QQ音乐等）',
+          editable: true,
+          success: function(resShare) {
+            var shareText = (resShare.confirm ? resShare.content : clipText).trim()
+            if (!shareText) return
+            var cleanedUrl = extractCleanURL(shareText)
+            if (cleanedUrl) {
+              var url = convertMusicUrl(cleanedUrl)
               wx.showModal({
-                title: '输入歌曲链接',
+                title: '输入歌曲名称',
                 content: '',
-                placeholderText: '请粘贴音乐播放链接',
+                placeholderText: '歌名 - 歌手',
                 editable: true,
-                success: function(resUrl) {
-                  if (resUrl.confirm && resUrl.content && resUrl.content.trim()) {
-                    var url = convertMusicUrl(resUrl.content.trim())
-                    if (url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) {
-                      wx.showToast({ title: '链接需以 http 或 https 开头', icon: 'none' })
-                      return
-                    }
-                    self._addActivityMusicBlock(self, { type: 'music', name: shareText, url: url })
-                  }
+                success: function(nameRes) {
+                  var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : shareText.substring(0, 20)
+                  self._addActivityMusicBlock(self, { type: 'music', name: name || '音乐', url: url })
                 }
               })
             } else {
               wx.showToast({ title: '未找到有效的音乐链接', icon: 'none' })
             }
-            return
           }
-          
-          if (parsed.name) {
-            self._addActivityMusicBlock(self, { type: 'music', name: parsed.name, url: parsed.url })
-          } else {
-            var guessedName = parseGuessedName(shareText, parsed.url)
-            wx.showModal({
-              title: '输入歌曲名称',
-              content: guessedName || '',
-              placeholderText: '歌名 - 歌手',
-              editable: true,
-              success: function(resName) {
-                if (resName.confirm && resName.content && resName.content.trim()) {
-                  self._addActivityMusicBlock(self, { type: 'music', name: resName.content.trim(), url: parsed.url })
-                }
+        })
+      },
+      fail: function() {
+        wx.showModal({
+          title: '添加音乐',
+          content: '',
+          placeholderText: '粘贴歌曲分享文本',
+          editable: true,
+          success: function(resShare) {
+            if (resShare.confirm && resShare.content && resShare.content.trim()) {
+              var shareText = resShare.content.trim()
+              var cleanedUrl = extractCleanURL(shareText)
+              if (cleanedUrl) {
+                var url = convertMusicUrl(cleanedUrl)
+                wx.showModal({
+                  title: '输入歌曲名称',
+                  content: '',
+                  placeholderText: '歌名 - 歌手',
+                  editable: true,
+                  success: function(nameRes) {
+                    var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : shareText.substring(0, 20)
+                    self._addActivityMusicBlock(self, { type: 'music', name: name || '音乐', url: url })
+                  }
+                })
+              } else {
+                wx.showToast({ title: '未找到有效的音乐链接', icon: 'none' })
               }
-            })
+            }
           }
-        }
+        })
       }
     })
   },
@@ -1229,12 +1317,86 @@ Page({
     self.setData({ activityRichContent: richContent, activityFormContent: formContent })
     wx.showToast({ title: '已添加: ' + block.name, icon: 'success' })
   },
+  _showVideoDialogFallback: function() {
+    var self = this
+    wx.showModal({
+      title: '添加视频',
+      content: '',
+      placeholderText: '粘贴视频链接（支持微博/哔哩哔哩）',
+      editable: true,
+      success: function(res) {
+        if (res.confirm && res.content && res.content.trim()) {
+          var url = extractCleanURL(res.content.trim())
+          if (!url) { wx.showToast({ title: '请输入有效链接', icon: 'none' }); return }
+          var videoInfo = parseVideoUrl(url)
+          if (!videoInfo) {
+            wx.showToast({ title: '未识别视频链接', icon: 'none' })
+            return
+          }
+          wx.showModal({
+            title: '视频标题（可选）',
+            content: '',
+            placeholderText: '输入视频标题',
+            editable: true,
+            success: function(nameRes) {
+              var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
+              var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id }
+              var richContent = (self.data.formRichContent || []).concat([block])
+              var formContent = self.data.formContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
+              self.setData({ formRichContent: richContent, formContent: formContent })
+              wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
+            }
+          })
+        }
+      }
+    })
+  },
+    var richContent = (self.data.activityRichContent || []).concat([block])
+    var formContent = self.data.activityFormContent
+    if (block.url) formContent = formContent.replace(block.url, '').replace(/\s{2,}/g, ' ').trim()
+    self.setData({ activityRichContent: richContent, activityFormContent: formContent })
+    wx.showToast({ title: '已添加: ' + block.name, icon: 'success' })
+  },
+  _isImageUrl: function(url) {
+    return /\.(jpg|jpeg|png|gif|webp|bmp|svg|ico)(\?|$)/i.test(url) || /^cloud:\/\//i.test(url) || /^https?:\/\/.*(img|image|photo|pic|picture)/i.test(url)
+  },
   showImageBlockDialog: function() {
     var self = this
     wx.showActionSheet({
-      itemList: ['从相册选择', '拍照', '输入图片链接'],
+      itemList: ['从相册选择', '拍照', '从剪贴板粘贴', '输入图片链接'],
       success: function(res) {
         if (res.tapIndex === 2) {
+          wx.getClipboardData({
+            success: function(cb) {
+              var text = (cb.data || '').trim()
+              if (text && self._isImageUrl(text)) {
+                var block = { type: 'image', url: text }
+                var richContent = (self.data.formRichContent || []).concat([block])
+                self.setData({ formRichContent: richContent })
+                wx.showToast({ title: '已添加图片', icon: 'success' })
+              } else if (text) {
+                wx.showModal({
+                  title: '剪贴板内容',
+                  content: text.substring(0, 60),
+                  confirmText: '添加',
+                  success: function(mr) {
+                    if (mr.confirm) {
+                      var block = { type: 'image', url: text }
+                      var richContent = (self.data.formRichContent || []).concat([block])
+                      self.setData({ formRichContent: richContent })
+                      wx.showToast({ title: '已添加图片', icon: 'success' })
+                    }
+                  }
+                })
+              } else {
+                wx.showToast({ title: '剪贴板无内容', icon: 'none' })
+              }
+            },
+            fail: function() {
+              wx.showToast({ title: '读取剪贴板失败', icon: 'none' })
+            }
+          })
+        } else if (res.tapIndex === 3) {
           wx.showModal({
             title: '输入图片链接',
             content: '',
@@ -1281,9 +1443,40 @@ Page({
   showActivityImageBlockDialog: function() {
     var self = this
     wx.showActionSheet({
-      itemList: ['从相册选择', '拍照', '输入图片链接'],
+      itemList: ['从相册选择', '拍照', '从剪贴板粘贴', '输入图片链接'],
       success: function(res) {
         if (res.tapIndex === 2) {
+          wx.getClipboardData({
+            success: function(cb) {
+              var text = (cb.data || '').trim()
+              if (text && self._isImageUrl(text)) {
+                var block = { type: 'image', url: text }
+                var richContent = (self.data.activityRichContent || []).concat([block])
+                self.setData({ activityRichContent: richContent })
+                wx.showToast({ title: '已添加图片', icon: 'success' })
+              } else if (text) {
+                wx.showModal({
+                  title: '剪贴板内容',
+                  content: text.substring(0, 60),
+                  confirmText: '添加',
+                  success: function(mr) {
+                    if (mr.confirm) {
+                      var block = { type: 'image', url: text }
+                      var richContent = (self.data.activityRichContent || []).concat([block])
+                      self.setData({ activityRichContent: richContent })
+                      wx.showToast({ title: '已添加图片', icon: 'success' })
+                    }
+                  }
+                })
+              } else {
+                wx.showToast({ title: '剪贴板无内容', icon: 'none' })
+              }
+            },
+            fail: function() {
+              wx.showToast({ title: '读取剪贴板失败', icon: 'none' })
+            }
+          })
+        } else if (res.tapIndex === 3) {
           wx.showModal({
             title: '输入图片链接',
             content: '',
@@ -1329,34 +1522,90 @@ Page({
   },
   showActivityVideoDialog: function() {
     var self = this
-    wx.showModal({
-      title: '添加视频',
-      content: '',
-      placeholderText: '粘贴视频链接（支持微博/哔哩哔哩）',
-      editable: true,
-      success: function(res) {
-        if (res.confirm && res.content && res.content.trim()) {
-          var url = res.content.trim()
-          var videoInfo = parseVideoUrl(url)
-          if (!videoInfo) {
-            wx.showToast({ title: '未识别视频链接，支持微博和哔哩哔哩', icon: 'none' })
-            return
-          }
-          wx.showModal({
-            title: '视频标题（可选）',
-            content: '',
-            placeholderText: '输入视频标题',
-            editable: true,
-            success: function(nameRes) {
-              var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
-              var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id }
-              var richContent = (self.data.activityRichContent || []).concat([block])
-              var formContent = self.data.activityFormContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
-              self.setData({ activityRichContent: richContent, activityFormContent: formContent })
-              wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
+    wx.getClipboardData({
+      success: function(cb) {
+        var clipText = (cb.data || '').trim()
+        var defaultContent = clipText ? extractCleanURL(clipText) : ''
+        wx.showModal({
+          title: '添加视频',
+          content: defaultContent,
+          placeholderText: '粘贴视频链接（支持微博/哔哩哔哩）',
+          editable: true,
+          success: function(res) {
+            var inputUrl = (res.confirm ? (res.content || defaultContent) : defaultContent).trim()
+            if (!inputUrl) return
+            if (!/^https?:\/\//i.test(inputUrl)) {
+              inputUrl = extractCleanURL(inputUrl)
             }
-          })
-        }
+            if (!inputUrl) { wx.showToast({ title: '请输入有效链接', icon: 'none' }); return }
+            var videoInfo = parseVideoUrl(inputUrl)
+            if (!videoInfo) {
+              if (/^https?:\/\//i.test(inputUrl)) {
+                wx.showModal({
+                  title: '视频标题（可选）',
+                  content: '',
+                  placeholderText: '输入视频标题',
+                  editable: true,
+                  success: function(nameRes) {
+                    var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
+                    var block = { type: 'video', platform: 'other', platformName: '其他', name: name, url: inputUrl, vid: '' }
+                    var richContent = (self.data.activityRichContent || []).concat([block])
+                    var formContent = self.data.activityFormContent.replace(inputUrl, '').replace(/\s{2,}/g, ' ').trim()
+                    self.setData({ activityRichContent: richContent, activityFormContent: formContent })
+                    wx.showToast({ title: '已添加视频', icon: 'success' })
+                  }
+                })
+              } else {
+                wx.showToast({ title: '未识别视频链接', icon: 'none' })
+              }
+              return
+            }
+            wx.showModal({
+              title: '视频标题（可选）',
+              content: '',
+              placeholderText: '输入视频标题',
+              editable: true,
+              success: function(nameRes) {
+                var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
+                var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id }
+                var richContent = (self.data.activityRichContent || []).concat([block])
+                var formContent = self.data.activityFormContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
+                self.setData({ activityRichContent: richContent, activityFormContent: formContent })
+                wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
+              }
+            })
+          }
+        })
+      },
+      fail: function() {
+        wx.showModal({
+          title: '添加视频',
+          content: '',
+          placeholderText: '粘贴视频链接（支持微博/哔哩哔哩）',
+          editable: true,
+          success: function(res) {
+            if (res.confirm && res.content && res.content.trim()) {
+              var url = extractCleanURL(res.content.trim())
+              if (!url) { wx.showToast({ title: '请输入有效链接', icon: 'none' }); return }
+              var videoInfo = parseVideoUrl(url)
+              if (!videoInfo) { wx.showToast({ title: '未识别视频链接', icon: 'none' }); return }
+              wx.showModal({
+                title: '视频标题（可选）',
+                content: '',
+                placeholderText: '输入视频标题',
+                editable: true,
+                success: function(nameRes) {
+                  var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
+                  var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id }
+                  var richContent = (self.data.activityRichContent || []).concat([block])
+                  var formContent = self.data.activityFormContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
+                  self.setData({ activityRichContent: richContent, activityFormContent: formContent })
+                  wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
+                }
+              })
+            }
+          }
+        })
       }
     })
   },
