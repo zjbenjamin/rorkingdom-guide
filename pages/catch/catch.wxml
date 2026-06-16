@@ -275,7 +275,7 @@
       </view>
     </view>
 
-    <view class="foot">更新：{{buildTime}}</view>
+    <view class="foot">浙ICP备2026043884号</view>
   </view>
 
   <!-- 球剩余记录弹窗 -->

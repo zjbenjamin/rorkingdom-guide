@@ -245,17 +245,41 @@
       </view>
     </view>
 
-    <view class="card">
+      <view class="card">
       <view class="card-title">更新日志</view>
       <view class="changelog-list">
         <view class="changelog-item">
-          <view class="changelog-ver">v1.0.8D 稳定版</view>
+          <view class="changelog-ver">v1.0.8F 体验版</view>
+          <view class="changelog-date">2026-06-17</view>
+          <view class="changelog-content">
+            <text class="changelog-add">新增：编辑器类微信公众号体验，格式化按钮即时转块，去掉模式切换</text>
+            <text class="changelog-add">新增：编辑器支持视频链接（B站/微博自动解析+首页内联播放含封面UP主）</text>
+            <text class="changelog-add">新增：编辑器支持表格（粘贴式输入斑马纹渲染）和图文混排</text>
+            <text class="changelog-add">新增：编辑器字体样式选择（衬线/等宽/楷体/圆体）和16色扩展</text>
+            <text class="changelog-add">新增：远行商人商品批量编辑（滚动选择快速切换编辑）</text>
+            <text class="changelog-add">新增：远行商人商品补货订阅（点击+自动加入，已订阅列表管理）</text>
+            <text class="changelog-add">新增：远行商人单个商品卡片点击编辑（价格/图片/名称等全面编辑）</text>
+            <text class="changelog-add">新增：编辑器字数上限从500提升至5000字</text>
+            <text class="changelog-opt">优化：首页公告栏排版格式完整渲染（视频/表格/图片/字体/颜色）</text>
+            <text class="changelog-opt">优化：远行商人管理员按钮统一Liquid Glass风格并列排版</text>
+            <text class="changelog-opt">优化：远行商人商品编辑改为卡片点击，去掉原始文本编辑</text>
+            <text class="changelog-opt">优化：关于/登录/隐私页添加ICP备案号，删除更新时间</text>
+            <text class="changelog-opt">优化：远行商人数据来源改为开发者维护说明</text>
+            <text class="changelog-fix">修复：管理后台公告/活动/用户/页面/统计CSS丢失（v1.0.8E误删）</text>
+            <text class="changelog-fix">修复：关于页面CSS丢失（卡片/列表/等级/日志/弹窗等板块恢复）</text>
+            <text class="changelog-fix">修复：Dock栏遮挡所有页面弹窗（z-index统一升至10000）</text>
+            <text class="changelog-fix">修复：编辑器文字和排版块重复输出问题</text>
+            <text class="changelog-fix">修复：远行商人管理员面板CSS丢失</text>
+            <text class="changelog-fix">修复：远行商人订阅「功能配置中」错误</text>
+          </view>
+        </view>
+        <view class="changelog-item">
+          <view class="changelog-ver">v1.0.8E 体验版</view>
           <view class="changelog-date">2026-06-16</view>
           <view class="changelog-content">
-            <text class="changelog-opt">优化：提升系统运行效率，优化响应速度</text>
-            <text class="changelog-opt">优化：完善界面交互细节，提升用户体验</text>
-            <text class="changelog-fix">修复：修复部分已知小问题，增强系统稳定性</text>
-            <text class="changelog-add">新增：多项功能细节优化，使用更便捷</text>
+            <text class="changelog-opt">优化：全局采用 iOS 26 Liquid Glass 设计语言</text>
+            <text class="changelog-opt">优化：Dock导航栏+页面切换动画</text>
+            <text class="changelog-add">新增：隐私政策及用户协议更新</text>
           </view>
         </view>
       </view>
@@ -263,7 +287,6 @@
 
     <view class="about-foot">
       <text class="foot-text">© 2026 洛手助手BENJAMIN</text>
-      <text class="foot-text">更新：{{buildTime}}</text>
       <text class="foot-text" wx:if="{{aboutData.icp}}">{{aboutData.icp}}</text>
     </view>
 

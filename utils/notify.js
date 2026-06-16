@@ -3,7 +3,9 @@ var templateConfig = require('../config/notifyTemplates')
 var TEMPLATES = {
   announcement: templateConfig.announcement || 'TEMPLATE_ID_ANNOUNCEMENT',
   activity: templateConfig.activity || 'TEMPLATE_ID_ACTIVITY',
-  merchant: templateConfig.merchant || 'TEMPLATE_ID_MERCHANT'
+  merchant: templateConfig.merchant || 'TEMPLATE_ID_MERCHANT',
+  merchant_item: templateConfig.merchant || 'TEMPLATE_ID_MERCHANT',
+  interaction: templateConfig.interaction || 'TEMPLATE_ID_INTERACTION'
 }
 
 function isValidTemplateId(id) {

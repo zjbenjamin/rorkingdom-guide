@@ -56,7 +56,8 @@ Page({
       price: '',
       effect: '',
       rarity: '普通',
-      source: '远行商人'
+      source: '远行商人',
+      image: ''
     },
     rarityOptions: ['普通', '稀有', '史诗', '传说'],
     addingItem: false,
@@ -147,7 +148,8 @@ Page({
           price: parseInt(parts[1]) || 0,
           effect: parts[2].trim(),
           rarity: parts[3].trim() || '普通',
-          source: parts[4] ? parts[4].trim() : '远行商人'
+          source: parts[4] ? parts[4].trim() : '远行商人',
+          image: parts[5] ? parts[5].trim() : ''
         })
       }
     }
@@ -228,7 +230,8 @@ Page({
         self.setData({ submitting: false, showModal: false })
         wx.showToast({ title: '保存成功', icon: 'success' })
         self.loadConfig()
-        notify.pushToSubscribers('merchant', '商人信息更新', value, '/pages/merchant/merchant')
+        var pushLabel = self.data.editingField === 'customTitle' ? '标题' : self.data.editingField === 'customDesc' ? '描述' : '数据'
+        notify.pushToSubscribers('merchant', '商人信息更新', value.substring(0, 20), '/pages/merchant/merchant')
       })
       .catch(function() {
         self.setData({ submitting: false })
@@ -358,8 +361,8 @@ Page({
       self.setData({ sellingSubmitting: false, showSellingModal: false, currentSelling: parsed, currentSellingText: text, currentSellingImage: image, sellingMode: mode })
       wx.showToast({ title: '保存成功', icon: 'success' })
       var itemNames = parsed.map(function(i) { return i.name })
-      var notifyContent = mode === 'image' ? '在售商品图片已更新' : (parsed.length > 0 ? '在售物品已更新: ' + itemNames.join('、').substring(0, 30) : '在售信息已更新')
-      notify.pushToSubscribers('merchant', '商人上架更新', notifyContent, '/pages/merchant/merchant', null, itemNames)
+      var notifyContent = mode === 'image' ? '在售商品图片已更新' : (parsed.length > 0 ? parsed.map(function(i) { return i.name }).join('、').substring(0, 20) : '在售信息已更新')
+      notify.pushToSubscribers('merchant', '商人商品更新', notifyContent, '/pages/merchant/merchant', null, itemNames)
     }).catch(function() {
       self.setData({ sellingSubmitting: false })
       wx.showToast({ title: '保存失败', icon: 'none' })
@@ -394,15 +397,21 @@ Page({
     if (valid.length !== recent.length) wx.setStorageSync('merchant_new_items', valid)
     var items = self.data.items || []
     var matched = []
+    var newNames = {}
     for (var j = 0; j < valid.length; j++) {
       for (var k = 0; k < items.length; k++) {
         if (items[k].name === valid[j].name && items[k].price === valid[j].price) {
           matched.push(items[k])
+          newNames[items[k].name] = true
           break
         }
       }
     }
-    self.setData({ newItems: matched, newItemsPage: 0 })
+    var updatedItems = items.map(function(item) {
+      item._isNew = !!newNames[item.name]
+      return item
+    })
+    self.setData({ newItems: matched, newItemsPage: 0, items: updatedItems })
     if (matched.length > 0) {
       self.startNewItemsTimer()
     }
@@ -438,10 +447,14 @@ Page({
     if (!db) return
     notify.getSubscriptionStatus(function(err, status) {
       if (err) return
+      var itemSubs = status.merchant_item_items || {}
+      var count = 0
+      for (var k in itemSubs) { if (itemSubs[k]) count++ }
       self.setData({
         subscribedMerchant: status.merchant || false,
         subscribeCount: status.merchantCount || 0,
-        itemSubStatus: status.merchant_item_items || {}
+        itemSubStatus: itemSubs,
+        totalItemSubs: count
       })
     })
   },
@@ -471,6 +484,19 @@ Page({
       wx.showToast({ title: '请先登录', icon: 'none' })
       return
     }
+    // 已订阅 → 弹窗取消订阅
+    if (self.data.itemSubStatus[name]) {
+      wx.showModal({
+        title: '取消订阅',
+        content: '确定取消「' + name + '」的补货通知？',
+        confirmText: '取消订阅',
+        confirmColor: '#ff4757',
+        success: function(res) {
+          if (res.confirm) self._unsubscribeItem(name)
+        }
+      })
+      return
+    }
     notify.requestAndSaveItem('merchant_item', name, function(err, result) {
       if (err) return
       if (result.merchant_item === 'accept') {
@@ -479,20 +505,193 @@ Page({
       }
     })
   },
+  _unsubscribeItem: function(name) {
+    var self = this
+    if (!db) return
+    wx.cloud.callFunction({ name: 'login' }).then(function(res) {
+      var openid = res.result.openid
+      if (!openid) return
+      db.collection('subscribers').where({ openid: openid, type: 'merchant_item', itemName: name }).get()
+        .then(function(subRes) {
+          var tasks = []
+          for (var i = 0; i < subRes.data.length; i++) {
+            tasks.push(db.collection('subscribers').doc(subRes.data[i]._id).remove())
+          }
+          return Promise.all(tasks)
+        })
+        .then(function() {
+          var itemSubStatus = self.data.itemSubStatus
+          itemSubStatus[name] = false
+          var count = 0
+          for (var k in itemSubStatus) { if (itemSubStatus[k]) count++ }
+          self.setData({ itemSubStatus: itemSubStatus, totalItemSubs: count })
+          wx.showToast({ title: '已取消订阅: ' + name, icon: 'success' })
+        })
+        .catch(function() {
+          wx.showToast({ title: '操作失败', icon: 'none' })
+        })
+    })
+  },
   openAddItemModal: function() {
     this.setData({
       showAddItemModal: true,
+    editingItemIndex: null,
+    showBatchModal: false,
+    batchEditItem: null,
+    batchEditIndex: -1,
+    batchSaving: false,
       newItem: {
         name: '',
         price: '',
         effect: '',
         rarity: '普通',
-        source: '远行商人'
+        source: '远行商人',
+        image: ''
+      }
+    })
+  },
+  editItemCard: function(e) {
+    var index = e.currentTarget.dataset.index
+    var item = this.data.items[index]
+    if (!item) return
+    this.setData({
+      showAddItemModal: true,
+      editingItemIndex: index,
+      newItem: {
+        name: item.name,
+        price: String(item.price),
+        effect: item.effect,
+        rarity: item.rarity,
+        source: item.source || '远行商人',
+        image: item.image || ''
       }
     })
   },
   closeAddItemModal: function() {
-    this.setData({ showAddItemModal: false })
+    this.setData({ showAddItemModal: false, editingItemIndex: null })
+  },
+  openBatchEdit: function() {
+    this.setData({ showBatchModal: true, batchEditItem: null, batchEditIndex: -1 })
+  },
+  closeBatchModal: function() {
+    this.setData({ showBatchModal: false, batchEditItem: null, batchEditIndex: -1 })
+  },
+  selectBatchItem: function(e) {
+    var index = e.currentTarget.dataset.index
+    var item = this.data.items[index]
+    if (!item) return
+    this.setData({
+      batchEditItem: { name: item.name, price: String(item.price), effect: item.effect, rarity: item.rarity, source: item.source || '远行商人', image: item.image || '' },
+      batchEditIndex: index
+    })
+  },
+  backToBatchList: function() {
+    this.setData({ batchEditItem: null, batchEditIndex: -1 })
+  },
+  onBatchInput: function(e) {
+    var field = e.currentTarget.dataset.field
+    var value = e.detail.value
+    this.setData({ ['batchEditItem.' + field]: value })
+  },
+  onBatchRarityChange: function(e) {
+    var index = e.detail.value
+    this.setData({ 'batchEditItem.rarity': this.data.rarityOptions[index] })
+  },
+  chooseBatchImage: function() {
+    var self = this
+    wx.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'],
+      success: function(res) {
+        var filePath = res.tempFilePaths[0]
+        wx.showLoading({ title: '上传中...' })
+        var ext = filePath.split('.').pop() || 'jpg'
+        wx.cloud.uploadFile({ cloudPath: 'merchant/' + Date.now() + '.' + ext, filePath: filePath })
+          .then(function(r) { wx.hideLoading(); self.setData({ 'batchEditItem.image': r.fileID }) })
+          .catch(function() { wx.hideLoading(); wx.showToast({ title: '上传失败', icon: 'none' }) })
+      }
+    })
+  },
+  inputBatchImage: function() {
+    var self = this
+    wx.showModal({ title: '输入图片链接', content: '', editable: true, placeholderText: '粘贴图片URL地址',
+      success: function(res) { if (res.confirm && res.content && res.content.trim()) self.setData({ 'batchEditItem.image': res.content.trim() }) }
+    })
+  },
+  removeBatchImage: function() { this.setData({ 'batchEditItem.image': '' }) },
+  saveBatchItem: function() {
+    var self = this
+    if (self.data.batchSaving) return
+    var item = self.data.batchEditItem
+    var index = self.data.batchEditIndex
+    if (!item || index < 0) return
+    if (!item.name.trim()) { wx.showToast({ title: '请输入物品名称', icon: 'none' }); return }
+    if (!item.price || isNaN(parseInt(item.price))) { wx.showToast({ title: '请输入有效价格', icon: 'none' }); return }
+    self.setData({ batchSaving: true })
+    var items = self.data.items.slice()
+    items[index] = {
+      id: items[index].id,
+      name: item.name.trim(),
+      price: parseInt(item.price),
+      effect: (item.effect || '').trim(),
+      rarity: item.rarity,
+      source: (item.source || '远行商人').trim(),
+      image: (item.image || '').trim()
+    }
+    var customItemsText = items.map(function(i) {
+      return i.name + '|' + i.price + '|' + i.effect + '|' + i.rarity + '|' + i.source + (i.image ? '|' + i.image : '')
+    }).join('\n')
+    db.collection('page_config').doc('merchant').update({
+      data: { customItems: customItemsText, updateTime: db.serverDate() }
+    }).then(function() {
+      self.setData({ batchSaving: false, batchEditItem: null, batchEditIndex: -1, items: items, customItems: customItemsText })
+      wx.showToast({ title: '已保存', icon: 'success' })
+    }).catch(function() {
+      self.setData({ batchSaving: false })
+      wx.showToast({ title: '保存失败', icon: 'none' })
+    })
+  },
+  chooseItemImage: function() {
+    var self = this
+    wx.chooseImage({
+      count: 1,
+      sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
+      success: function(res) {
+        var filePath = res.tempFilePaths[0]
+        wx.showLoading({ title: '上传中...' })
+        var ext = filePath.split('.').pop() || 'jpg'
+        var cloudPath = 'merchant/' + Date.now() + '.' + ext
+        wx.cloud.uploadFile({ cloudPath: cloudPath, filePath: filePath })
+          .then(function(uploadRes) {
+            wx.hideLoading()
+            self.setData({ 'newItem.image': uploadRes.fileID })
+          })
+          .catch(function() {
+            wx.hideLoading()
+            wx.showToast({ title: '上传失败', icon: 'none' })
+          })
+      }
+    })
+  },
+  inputItemImage: function() {
+    var self = this
+    wx.showModal({
+      title: '输入图片链接',
+      content: '',
+      editable: true,
+      placeholderText: '粘贴图片URL地址',
+      success: function(res) {
+        if (res.confirm && res.content && res.content.trim()) {
+          self.setData({ 'newItem.image': res.content.trim() })
+        }
+      }
+    })
+  },
+  removeItemImage: function() {
+    this.setData({ 'newItem.image': '' })
+  },
+  previewItemImage: function(e) {
+    var src = e.currentTarget.dataset.src
+    if (src) wx.previewImage({ urls: [src] })
   },
   onNewItemInput: function(e) {
     var field = e.currentTarget.dataset.field
@@ -520,18 +719,47 @@ Page({
       return
     }
     self.setData({ addingItem: true })
+
+    var editIndex = self.data.editingItemIndex
+    if (editIndex !== null) {
+      var items = self.data.items.slice()
+      items[editIndex] = {
+        id: items[editIndex].id,
+        name: item.name.trim(),
+        price: parseInt(item.price),
+        effect: item.effect.trim(),
+        rarity: item.rarity,
+        source: item.source.trim() || '远行商人',
+        image: item.image.trim() || ''
+      }
+      var customItemsText = items.map(function(i) {
+        return i.name + '|' + i.price + '|' + i.effect + '|' + i.rarity + '|' + i.source + (i.image ? '|' + i.image : '')
+      }).join('\n')
+      db.collection('page_config').doc('merchant').update({
+        data: { customItems: customItemsText, updateTime: db.serverDate() }
+      }).then(function() {
+        self.setData({ addingItem: false, showAddItemModal: false, editingItemIndex: null, items: items, customItems: customItemsText })
+        wx.showToast({ title: '已更新', icon: 'success' })
+      }).catch(function() {
+        self.setData({ addingItem: false })
+        wx.showToast({ title: '更新失败', icon: 'none' })
+      })
+      return
+    }
+
     var newItemData = {
       id: Date.now(),
       name: item.name.trim(),
       price: parseInt(item.price),
       effect: item.effect.trim(),
       rarity: item.rarity,
-      source: item.source.trim() || '远行商人'
+      source: item.source.trim() || '远行商人',
+      image: item.image.trim() || ''
     }
     var currentItems = self.data.items || []
     currentItems.unshift(newItemData)
     var customItemsText = currentItems.map(function(i) {
-      return i.name + '|' + i.price + '|' + i.effect + '|' + i.rarity + '|' + i.source
+      return i.name + '|' + i.price + '|' + i.effect + '|' + i.rarity + '|' + i.source + (i.image ? '|' + i.image : '')
     }).join('\n')
     db.collection('page_config').doc('merchant').get()
       .then(function() {
@@ -558,7 +786,8 @@ Page({
       })
       .then(function() {
         self.setData({
-          addingItem: false,
+    addingItem: false,
+    editingItemIndex: null,
           showAddItemModal: false,
           items: currentItems,
           customItems: customItemsText,
@@ -570,7 +799,7 @@ Page({
         self.markNewItems()
         self.startNewItemsTimer()
         wx.showToast({ title: '添加成功', icon: 'success' })
-        notify.pushToSubscribers('merchant', '新商品上架', newItemData.name + ' - ' + newItemData.price + '洛克贝', '/pages/merchant/merchant', newItemData.name)
+        notify.pushToSubscribers('merchant', newItemData.name, newItemData.name + ' · ' + newItemData.price + '洛克贝', '/pages/merchant/merchant', newItemData.name)
       })
       .catch(function() {
         self.setData({ addingItem: false })
@@ -590,7 +819,7 @@ Page({
           var deleted = items[index]
           items.splice(index, 1)
           var customItemsText = items.map(function(i) {
-            return i.name + '|' + i.price + '|' + i.effect + '|' + i.rarity + '|' + i.source
+            return i.name + '|' + i.price + '|' + i.effect + '|' + i.rarity + '|' + i.source + (i.image ? '|' + i.image : '')
           }).join('\n')
           var selling = self.data.currentSelling || []
           var sellingChanged = false

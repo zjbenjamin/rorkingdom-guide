@@ -57,7 +57,7 @@
 .act-admin-btn:active { transform: scale(0.95); }
 
 /* 弹窗 */
-.modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,2,12,0.75); backdrop-filter: blur(16rpx); z-index: 1000; display: flex; align-items: flex-end; animation: modalFadeIn 0.35s cubic-bezier(0.32,0.72,0,1); }
+.modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,2,12,0.75); backdrop-filter: blur(16rpx); z-index: 10000; display: flex; align-items: flex-end; animation: modalFadeIn 0.35s cubic-bezier(0.32,0.72,0,1); }
 .modal-box { width: 100%; background: rgba(16,20,48,0.92); border: 1rpx solid rgba(255,255,255,0.1); border-radius: 36rpx 36rpx 0 0; padding: 32rpx; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 0 0 1rpx rgba(255,255,255,0.04) inset, 0 1rpx 0 rgba(255,255,255,0.04) inset, 0 -8rpx 40rpx rgba(0,0,0,0.3); }
 @keyframes modalFadeIn { from { opacity: 0; transform: translateY(20rpx); } to { opacity: 1; transform: translateY(0); } }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28rpx; flex-shrink: 0; }

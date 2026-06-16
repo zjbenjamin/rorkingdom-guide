@@ -236,7 +236,7 @@
           <view class="card lookup-tip-card">
             <view class="tip-title">💡 使用小贴士</view>
             <text class="tip-desc">• 身高和体重至少输入一项即可开始反查。</text>
-            <text class="tip-desc">• 每个精灵在孵出时会有大块头（偏大）、小块头（偏小）或普通体型的随机尺寸浮动。本工具已录入 WIKI 完整的尺寸浮动区间，以确保反查的准确性。</text>
+              <text class="tip-desc">• 每个精灵在孵出时会有大块头（偏大）、小块头（偏小）或普通体型的随机尺寸浮动。本工具已录入 WIKI 完整的尺寸浮动区间，以确保反查的准确性。</text>
           </view>
 
           <!-- 查询结果 -->

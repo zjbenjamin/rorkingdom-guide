@@ -42,6 +42,13 @@
             <view class="toggle-dot"></view>
           </view>
         </view>
+        <view class="admin-control-row">
+          <view class="admin-control-info">
+            <text class="admin-control-name">批量编辑</text>
+            <text class="admin-control-desc">滚动选择商品快速编辑</text>
+          </view>
+          <view class="admin-btn" catchtap="openBatchEdit">📋 编辑</view>
+        </view>
       </view>
 
       <view class="card" wx:if="{{merchantAway}}">
@@ -61,22 +68,20 @@
 
       <view class="card selling-card">
         <view class="card-title-row">
-          <view class="card-title-left">
-            <text class="card-title">🔥 正在售卖</text>
-            <view class="sub-badge {{subscribedMerchant ? 'on' : ''}}" catchtap="subscribeMerchant">
-              <text class="sub-badge-icon">{{subscribedMerchant ? '🔔' : '🔕'}}</text>
-              <text class="sub-badge-text">{{subscribedMerchant ? '已订阅新上架' : '订阅新上架'}}</text>
-              <text class="sub-badge-count" wx:if="{{subscribedMerchant && subscribeCount > 0}}">{{subscribeCount}}</text>
+          <text class="card-title">🔥 正在售卖</text>
+          <view class="selling-actions">
+            <view class="action-btn sub-btn {{subscribedMerchant ? 'on' : ''}}" catchtap="subscribeMerchant">
+              <text class="action-icon">{{subscribedMerchant ? '🔔' : '🔕'}}</text>
+              <text class="action-text">{{subscribedMerchant ? '已订阅' : '订阅'}}</text>
+              <text class="action-count" wx:if="{{subscribedMerchant && subscribeCount > 0}}">{{subscribeCount}}</text>
             </view>
-          </view>
-          <view class="selling-btns" wx:if="{{isAdmin}}">
-            <view class="dev-add-btn" catchtap="openAddSellingItemModal">
-              <text class="dev-add-icon">＋</text>
-              <text class="dev-add-text">添加商品</text>
+            <view class="action-btn add-btn" wx:if="{{isAdmin}}" catchtap="openAddSellingItemModal">
+              <text class="action-icon">＋</text>
+              <text class="action-text">添加商品</text>
             </view>
-            <view class="dev-edit-btn" catchtap="openSellingModal">
-              <text class="dev-edit-icon">📢</text>
-              <text class="dev-edit-text">发布并推送</text>
+            <view class="action-btn push-btn" wx:if="{{isAdmin}}" catchtap="openSellingModal">
+              <text class="action-icon">📢</text>
+              <text class="action-text">发布推送</text>
             </view>
           </view>
         </view>
@@ -137,33 +142,53 @@
 
       <view class="card">
         <view class="card-title">{{t.merchantPrices || '商人物品价格'}}</view>
-        <view class="admin-edit-hint" wx:if="{{isAdmin}}" bindtap="openAddItemModal">
-          <text class="edit-hint-icon">➕</text>
-          <text class="edit-hint-text">点击添加新物品</text>
-        </view>
-        <view class="admin-edit-hint" wx:if="{{isAdmin && useCustom}}" bindtap="onEdit" data-field="customItems" data-value="{{customItems}}">
-          <text class="edit-hint-icon">📝</text>
-          <text class="edit-hint-text">点击编辑物品数据（每行一个，格式：名称|价格|效果|稀有度|来源）</text>
-        </view>
         <view class="item-list">
-          <view class="item-card" wx:for="{{items}}" wx:key="id">
+          <view class="item-card {{isAdmin && useCustom ? 'editable' : ''}}" wx:for="{{items}}" wx:key="id" catchtap="{{isAdmin && useCustom ? 'editItemCard' : ''}}" data-index="{{index}}">
             <view class="item-card-header">
               <view class="item-badge badge-{{item.rarity==='普通'?'normal':item.rarity==='稀有'?'rare':item.rarity==='史诗'?'epic':'legend'}}">{{item.rarity}}</view>
               <view class="item-sub-btn {{itemSubStatus[item.name] ? 'on' : ''}}" catchtap="subscribeItem" data-name="{{item.name}}">
                 <text class="item-sub-icon">{{itemSubStatus[item.name] ? '🔔' : '➕'}}</text>
               </view>
             </view>
+            <image wx:if="{{item.image}}" class="item-image" src="{{item.image}}" mode="aspectFill" catchtap="previewItemImage" data-src="{{item.image}}" />
             <text class="item-name">{{item.name}}</text>
             <text class="item-price">{{item.price}}{{t.currency || '洛克贝'}}</text>
             <text class="item-effect">{{item.effect}}</text>
             <view class="item-delete" wx:if="{{isAdmin}}" catchtap="deleteMerchantItem" data-index="{{index}}">✕</view>
           </view>
+          <view class="item-card item-add-card" wx:if="{{isAdmin}}" catchtap="openAddItemModal">
+            <view class="item-add-icon">＋</view>
+            <text class="item-add-text">添加商品</text>
+          </view>
         </view>
       </view>
 
+      <!-- 商品订阅通知 -->
+      <view class="card sub-list-card" wx:if="{{totalItemSubs > 0}}">
+        <view class="subscribe-row">
+          <view class="subscribe-info">
+            <text class="subscribe-title">🔔 我的补货通知</text>
+            <text class="subscribe-desc">{{totalItemSubs}}个商品，点击+号自动加入</text>
+          </view>
+        </view>
+        <scroll-view scroll-y class="sub-item-scroll" style="max-height: 480rpx;">
+          <view class="sub-item-row" wx:for="{{items}}" wx:for-item="item" wx:key="id" wx:if="{{itemSubStatus[item.name]}}">
+            <view class="sub-item-left">
+              <view class="sub-item-new" wx:if="{{item._isNew}}">NEW</view>
+              <view class="item-badge sub-item-badge badge-{{item.rarity==='普通'?'normal':item.rarity==='稀有'?'rare':item.rarity==='史诗'?'epic':'legend'}}">{{item.rarity}}</view>
+              <view class="sub-item-info">
+                <text class="sub-item-name">{{item.name}}</text>
+                <text class="sub-item-price">{{item.price}}洛克贝</text>
+              </view>
+            </view>
+            <text class="unsub-btn" catchtap="subscribeItem" data-name="{{item.name}}">取消订阅</text>
+          </view>
+        </scroll-view>
+      </view>
+
       <view class="card">
-        <view class="card-title">{{t.dataSource || '数据来源'}}</view>
-        <text class="source">物品数据：洛克王国手游WIKI（CC BY-NC-SA 4.0）https://wiki.biligame.com/rocom/</text>
+        <view class="card-title">维护说明</view>
+        <text class="source">本页面数据由开发者浙里本杰明负责维护与更新，如有疑问请联系 flyzccboard@yeah.net</text>
       </view>
     </view>
   </view>
@@ -190,7 +215,7 @@
   <view class="modal-mask" wx:if="{{showAddItemModal}}" bindtap="closeAddItemModal">
     <view class="modal-box" catchtap="preventClose">
       <view class="modal-header">
-        <text class="modal-title">添加新物品</text>
+        <text class="modal-title">{{editingItemIndex !== null ? '编辑' + newItem.name : '添加新物品'}}</text>
         <text class="modal-close" catchtap="closeAddItemModal">✕</text>
       </view>
       <view class="modal-body">
@@ -213,13 +238,30 @@
           </picker>
         </view>
         <view class="form-group">
+          <text class="form-label">商品图片（可选）</text>
+          <view class="selling-image-preview" wx:if="{{newItem.image}}" catchtap="previewItemImage">
+            <image class="preview-img" src="{{newItem.image}}" mode="aspectFill" />
+            <view class="image-remove-btn" catchtap="removeItemImage">✕</view>
+          </view>
+          <view class="selling-image-actions" wx:if="{{!newItem.image}}">
+            <view class="image-action-btn" catchtap="chooseItemImage">
+              <text class="action-icon">📷</text>
+              <text class="action-text">本地上传</text>
+            </view>
+            <view class="image-action-btn" catchtap="inputItemImage">
+              <text class="action-icon">🔗</text>
+              <text class="action-text">图片链接</text>
+            </view>
+          </view>
+        </view>
+        <view class="form-group">
           <text class="form-label">来源</text>
           <input class="modal-input" placeholder="输入来源" value="{{newItem.source}}" bindinput="onNewItemInput" data-field="source" />
         </view>
       </view>
       <view class="modal-footer">
         <button class="modal-cancel" catchtap="closeAddItemModal">取消</button>
-        <button class="modal-save" catchtap="addMerchantItem" disabled="{{addingItem}}">{{addingItem ? '添加中...' : '添加'}}</button>
+        <button class="modal-save" catchtap="addMerchantItem" disabled="{{addingItem}}">{{addingItem ? '保存中...' : (editingItemIndex !== null ? '更新' : '添加')}}</button>
       </view>
     </view>
   </view>
@@ -299,5 +341,74 @@
       </view>
     </view>
   </view>
-  <dock current="merchant" />
+  <!-- 批量编辑弹窗 -->
+  <view class="modal-mask" wx:if="{{showBatchModal}}" bindtap="closeBatchModal" style="z-index:10000;">
+    <view class="modal-box" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">{{batchEditItem ? '编辑: ' + batchEditItem.name : '选择商品'}}</text>
+        <text class="modal-close" catchtap="closeBatchModal">✕</text>
+      </view>
+      <view class="modal-body">
+        <!-- 列表模式 -->
+        <view wx:if="{{!batchEditItem}}">
+          <scroll-view scroll-y style="max-height: 60vh;">
+            <view class="batch-item" wx:for="{{items}}" wx:for-item="item" wx:key="id" catchtap="selectBatchItem" data-index="{{index}}">
+              <view class="batch-item-left">
+                <view class="item-badge badge-{{item.rarity==='普通'?'normal':item.rarity==='稀有'?'rare':item.rarity==='史诗'?'epic':'legend'}}">{{item.rarity}}</view>
+                <text class="batch-item-name">{{item.name}}</text>
+              </view>
+              <text class="batch-item-price">{{item.price}}洛克贝</text>
+              <text class="batch-arrow">›</text>
+            </view>
+          </scroll-view>
+        </view>
+        <!-- 编辑模式 -->
+        <view wx:else>
+          <view class="form-group">
+            <text class="form-label">物品名称</text>
+            <input class="modal-input" value="{{batchEditItem.name}}" bindinput="onBatchInput" data-field="name" />
+          </view>
+          <view class="form-group">
+            <text class="form-label">价格</text>
+            <input class="modal-input" type="number" value="{{batchEditItem.price}}" bindinput="onBatchInput" data-field="price" />
+          </view>
+          <view class="form-group">
+            <text class="form-label">效果说明</text>
+            <input class="modal-input" value="{{batchEditItem.effect}}" bindinput="onBatchInput" data-field="effect" />
+          </view>
+          <view class="form-group">
+            <text class="form-label">稀有度</text>
+            <picker mode="selector" range="{{rarityOptions}}" value="{{rarityOptions.indexOf(batchEditItem.rarity)}}" bindchange="onBatchRarityChange">
+              <view class="picker-value">{{batchEditItem.rarity}}</view>
+            </picker>
+          </view>
+          <view class="form-group">
+            <text class="form-label">商品图片（可选）</text>
+            <view class="selling-image-preview" wx:if="{{batchEditItem.image}}" catchtap="previewItemImage">
+              <image class="preview-img" src="{{batchEditItem.image}}" mode="aspectFill" />
+              <view class="image-remove-btn" catchtap="removeBatchImage">✕</view>
+            </view>
+            <view class="selling-image-actions" wx:if="{{!batchEditItem.image}}">
+              <view class="image-action-btn" catchtap="chooseBatchImage">
+                <text class="action-icon">📷</text>
+                <text class="action-text">本地上传</text>
+              </view>
+              <view class="image-action-btn" catchtap="inputBatchImage">
+                <text class="action-icon">🔗</text>
+                <text class="action-text">图片链接</text>
+              </view>
+            </view>
+          </view>
+          <view class="form-group">
+            <text class="form-label">来源</text>
+            <input class="modal-input" value="{{batchEditItem.source}}" bindinput="onBatchInput" data-field="source" />
+          </view>
+        </view>
+      </view>
+      <view class="modal-footer" wx:if="{{batchEditItem}}">
+        <button class="modal-cancel" catchtap="backToBatchList">返回列表</button>
+        <button class="modal-save" catchtap="saveBatchItem" disabled="{{batchSaving}}">{{batchSaving ? '保存中...' : '保存'}}</button>
+      </view>
+    </view>
+  </view>
 </view>

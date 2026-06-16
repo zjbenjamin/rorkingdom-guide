@@ -13,7 +13,13 @@ Page({
     buildTime: '',
     currentPlayUrl: '',
     isPlaying: false,
-    icp: '浙ICP备2026043884号'
+    icp: '浙ICP备2026043884号',
+    showVideoPlayer: false,
+    videoPlayerUrl: '',
+    videoPlayerName: '',
+    videoPlayerCover: '',
+    videoPlayerOwner: '',
+    videoPlayerDesc: ''
   },
   onShow: function() {
     var self = this
@@ -375,6 +381,120 @@ Page({
         wx.showToast({ title: '链接已复制', icon: 'success' })
       }
     })
+  },
+  copyVideoLink: function(e) {
+    var url = e.currentTarget.dataset.url
+    wx.setClipboardData({
+      data: url,
+      success: function() {
+        wx.showToast({ title: '视频链接已复制，请在浏览器打开', icon: 'success' })
+      }
+    })
+  },
+  openVideo: function(e) {
+    var self = this
+    var url = e.currentTarget.dataset.url
+    var name = e.currentTarget.dataset.name || '视频'
+
+    function fetchBilibiliStream(bvid) {
+      wx.showLoading({ title: '解析中...' })
+      wx.request({
+        url: 'https://api.bilibili.com/x/web-interface/view?bvid=' + bvid,
+        success: function(res) {
+          if (res.data && res.data.code === 0 && res.data.data) {
+            var info = res.data.data
+            var cid = info.cid || (info.pages && info.pages[0] && info.pages[0].cid)
+            var videoTitle = name !== '视频' ? name : (info.title || 'B站视频')
+            var videoCover = info.pic || ''
+            var videoOwner = (info.owner && info.owner.name) ? info.owner.name : ''
+            var videoDesc = (info.desc || '').substring(0, 60)
+            if (cid) {
+              wx.request({
+                url: 'https://api.bilibili.com/x/player/playurl?bvid=' + bvid + '&cid=' + cid + '&platform=html5&qn=80&fnval=1',
+                success: function(streamRes) {
+                  wx.hideLoading()
+                  if (streamRes.data && streamRes.data.code === 0 && streamRes.data.data && streamRes.data.data.durl && streamRes.data.data.durl.length > 0) {
+                    self.setData({
+                      videoPlayerUrl: streamRes.data.data.durl[0].url,
+                      videoPlayerName: videoTitle,
+                      videoPlayerCover: videoCover,
+                      videoPlayerOwner: videoOwner,
+                      videoPlayerDesc: videoDesc,
+                      showVideoPlayer: true
+                    })
+                  } else {
+                    self._openVideoFallback(url)
+                  }
+                },
+                fail: function() { wx.hideLoading(); self._openVideoFallback(url) }
+              })
+            } else {
+              wx.hideLoading(); self._openVideoFallback(url)
+            }
+          } else {
+            wx.hideLoading(); self._openVideoFallback(url)
+          }
+        },
+        fail: function() { wx.hideLoading(); self._openVideoFallback(url) }
+      })
+    }
+
+    // 尝试从 URL 提取 BV 号
+    var bvMatch = url.match(/BV[a-zA-Z0-9]{10,}/)
+    if (bvMatch) {
+      fetchBilibiliStream(bvMatch[0])
+      return
+    }
+
+    // b23.tv 短链接：先跟随重定向获取真实 URL
+    var shortMatch = url.match(/b23\.tv\/([a-zA-Z0-9]+)/)
+    if (shortMatch) {
+      wx.showLoading({ title: '解析短链接...' })
+      wx.request({
+        url: url,
+        success: function(redirectRes) {
+          var finalUrl = redirectRes.request ? redirectRes.request.url || '' : ''
+          // 或从 header 中获取
+          if (!finalUrl && redirectRes.header && redirectRes.header.Location) {
+            finalUrl = redirectRes.header.Location
+          }
+          var matched = finalUrl.match(/BV[a-zA-Z0-9]{10,}/)
+          if (matched) {
+            wx.hideLoading()
+            fetchBilibiliStream(matched[0])
+          } else {
+            wx.hideLoading()
+            self._openVideoFallback(url)
+          }
+        },
+        fail: function() {
+          wx.hideLoading()
+          self._openVideoFallback(url)
+        }
+      })
+      return
+    }
+
+    self._openVideoFallback(url)
+  },
+  _openVideoFallback: function(url) {
+    wx.showModal({
+      title: '无法解析视频流',
+      content: 'B站以外平台或解析失败，将在浏览器打开',
+      confirmText: '打开',
+      success: function(res) {
+        if (res.confirm) {
+          wx.navigateTo({ url: '/pages/webview/webview?url=' + encodeURIComponent(url) })
+        }
+      }
+    })
+  },
+  closeVideoPlayer: function() {
+    this.setData({ showVideoPlayer: false, videoPlayerUrl: '', videoPlayerName: '', videoPlayerCover: '', videoPlayerOwner: '', videoPlayerDesc: '' })
+  },
+  previewRichImage: function(e) {
+    var src = e.currentTarget.dataset.src
+    if (src) wx.previewImage({ urls: [src] })
   },
   onShareAppMessage: function() {
     return { title: '洛手助手BENJAMIN - 洛克王国攻略', path: '/pages/index/index', imageUrl: '/images/banner1.png' }

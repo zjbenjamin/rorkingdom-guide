@@ -139,6 +139,70 @@ function parseGuessedName(text, url) {
   return '';
 }
 
+function parseBilibiliUrl(url) {
+  if (!url) return null
+  var bvMatch = url.match(/BV[a-zA-Z0-9]{10,}/)
+  if (bvMatch) return { platform: 'bilibili', platformName: 'B站', id: bvMatch[0], url: 'https://www.bilibili.com/video/' + bvMatch[0] }
+  var avMatch = url.match(/av(\d{6,})/i)
+  if (avMatch) return { platform: 'bilibili', platformName: 'B站', id: 'av' + avMatch[1], url: 'https://www.bilibili.com/video/av' + avMatch[1] + '/' }
+  var shortMatch = url.match(/b23\.tv\/([a-zA-Z0-9]+)/)
+  if (shortMatch) return { platform: 'bilibili', platformName: 'B站', id: shortMatch[1], url: url }
+  return null
+}
+
+function parseWeiboUrl(url) {
+  if (!url) return null
+  var fidMatch = url.match(/fid=([0-9:]+)/)
+  if (fidMatch) return { platform: 'weibo', platformName: '微博', id: fidMatch[1], url: 'https://video.weibo.com/show?fid=' + fidMatch[1] }
+  var showMatch = url.match(/(?:tv\/show|show)\/([0-9:]+)/)
+  if (showMatch) return { platform: 'weibo', platformName: '微博', id: showMatch[1], url: 'https://video.weibo.com/show?fid=' + showMatch[1] }
+  if (url.indexOf('weibo.com') > -1 || url.indexOf('weibo.cn') > -1) {
+    return { platform: 'weibo', platformName: '微博', id: '', url: url }
+  }
+  return null
+}
+
+function parseVideoUrl(url) {
+  if (!url) return null
+  return parseBilibiliUrl(url) || parseWeiboUrl(url) || null
+}
+
+function parseTableInput(text) {
+  if (!text || !text.trim()) return null
+  var lines = text.trim().split('\n')
+  if (lines.length < 2) {
+    var commaLines = text.trim().split(/\n|;/)
+    if (commaLines.length >= 2) lines = commaLines
+    else return null
+  }
+  var rows = []
+  var cols = 0
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].trim()
+    if (!line) continue
+    var seps = ['|', '\t', ',']
+    var bestSep = '|'
+    var bestCount = 0
+    for (var s = 0; s < seps.length; s++) {
+      var parts = line.split(seps[s])
+      var count = 0
+      for (var p = 0; p < parts.length; p++) {
+        var part = parts[p].trim()
+        if (part && !/^[-—*=_]{3,}$/.test(part)) count++
+      }
+      if (count > bestCount) { bestCount = count; bestSep = seps[s]; cols = Math.max(cols, count) }
+    }
+    var cells = line.split(bestSep).map(function(c) { return c.trim() }).filter(function(c, idx) { return c || idx < cols })
+    if (cells.length > 0) rows.push(cells)
+  }
+  if (rows.length < 2) {
+    return null
+  }
+  var headers = rows[0]
+  var dataRows = rows.slice(1)
+  return { headers: headers, rows: dataRows, rowCount: dataRows.length, colCount: headers.length }
+}
+
 Page({
   data: {
     isAdmin: false,
@@ -168,16 +232,33 @@ Page({
     currentFontColor: '#ffffff',
     currentFontStyle: 'normal',
     currentFontWeight: 'normal',
+    currentFontFamily: 'sans-serif',
     fontSizeOptions: [20, 24, 28, 32, 36, 40, 48],
+    fontFamilyOptions: [
+      { name: '系统默认', value: 'sans-serif' },
+      { name: '衬线体', value: 'serif' },
+      { name: '等宽体', value: 'monospace' },
+      { name: '楷体', value: 'KaiTi, STKaiti, serif' },
+      { name: '圆体', value: 'PingFang SC, Microsoft YaHei, sans-serif' }
+    ],
+    showFontFamilyPicker: false,
     fontColorOptions: [
       { name: '白色', value: '#ffffff' },
       { name: '青色', value: '#00d4ff' },
+      { name: '蓝色', value: '#448aff' },
       { name: '紫色', value: '#9945ff' },
       { name: '绿色', value: '#00e676' },
       { name: '橙色', value: '#ffab40' },
       { name: '红色', value: '#ff4757' },
       { name: '黄色', value: '#ffd700' },
-      { name: '灰色', value: 'rgba(255,255,255,0.5)' }
+      { name: '粉色', value: '#ff6b9d' },
+      { name: '金色', value: '#ffcc00' },
+      { name: '天蓝', value: '#4dc9f6' },
+      { name: '靛蓝', value: '#6366f1' },
+      { name: '青绿', value: '#14b8a6' },
+      { name: '珊瑚', value: '#ff6b6b' },
+      { name: '灰色', value: 'rgba(255,255,255,0.5)' },
+      { name: '浅灰', value: 'rgba(255,255,255,0.3)' }
     ],
     showColorPicker: false,
     showSizePicker: false,
@@ -197,6 +278,8 @@ Page({
     activityFontStyle: 'normal',
     activityFontSize: 28,
     activityFontColor: '#ffffff',
+    activityFontFamily: 'sans-serif',
+    showActivityFontFamilyPicker: false,
     activityRichContent: [],
     showActivitySizePicker: false,
     showActivityColorPicker: false,
@@ -406,15 +489,14 @@ Page({
       showModal: true,
       editingItem: item,
       formTitle: item ? item.title : '',
-      formContent: item ? item.content : '',
+      formContent: (item && item.richContent && item.richContent.length > 0) ? '' : (item ? item.content : ''),
       formType: item ? item.type : 'notice',
       formPinned: item ? item.pinned : false,
       formImage: item ? (item.image || '') : '',
       formRichContent: richContent,
       formSource: source,
       formStartDate: item ? (item.startDate || '') : '',
-      formEndDate: item ? (item.endDate || '') : '',
-      editorMode: 'simple'
+      formEndDate: item ? (item.endDate || '') : ''
     })
   },
   closeModal: function() {
@@ -480,8 +562,94 @@ Page({
   },
   _addMusicBlock: function(self, block) {
     var richContent = (self.data.formRichContent || []).concat([block])
-    self.setData({ formRichContent: richContent })
+    var formContent = self.data.formContent
+    if (block.url) formContent = formContent.replace(block.url, '').replace(/\s{2,}/g, ' ').trim()
+    self.setData({ formRichContent: richContent, formContent: formContent })
     wx.showToast({ title: '已添加: ' + block.name, icon: 'success' })
+  },
+  showVideoDialog: function() {
+    var self = this
+    wx.showModal({
+      title: '添加视频',
+      content: '',
+      placeholderText: '粘贴视频链接（支持微博/哔哩哔哩）',
+      editable: true,
+      success: function(res) {
+        if (res.confirm && res.content && res.content.trim()) {
+          var url = res.content.trim()
+          var videoInfo = parseVideoUrl(url)
+          if (!videoInfo) {
+            wx.showToast({ title: '未识别视频链接，支持微博和哔哩哔哩', icon: 'none' })
+            return
+          }
+          wx.showModal({
+            title: '视频标题（可选）',
+            content: '',
+            placeholderText: '输入视频标题',
+            editable: true,
+            success: function(nameRes) {
+              var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
+              var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id }
+              var richContent = (self.data.formRichContent || []).concat([block])
+              var formContent = self.data.formContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
+              self.setData({ formRichContent: richContent, formContent: formContent })
+              wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
+            }
+          })
+        }
+      }
+    })
+  },
+  _addVideoBlock: function(self, videoInfo, name) {
+    var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name || '', url: videoInfo.url, vid: videoInfo.id }
+    var richContent = (self.data.formRichContent || []).concat([block])
+    var formContent = self.data.formContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
+    self.setData({ formRichContent: richContent, formContent: formContent })
+    wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
+  },
+  showTableDialog: function() {
+    var self = this
+    wx.showModal({
+      title: '添加表格',
+      content: '',
+      placeholderText: '粘贴表格数据：每行换行，列用 | 或 Tab 或 , 分隔\n第一行为表头\n\n例：\n名称|属性|技能\n皮卡丘|电|十万伏特\n小火龙|火|喷射火焰',
+      editable: true,
+      success: function(res) {
+        if (res.confirm && res.content && res.content.trim()) {
+          var tableData = parseTableInput(res.content.trim())
+          if (!tableData) {
+            wx.showToast({ title: '未识别表格，请检查格式（至少2行）', icon: 'none' })
+            return
+          }
+          var block = { type: 'table', headers: tableData.headers, rows: tableData.rows, colCount: tableData.colCount, rowCount: tableData.rowCount }
+          var richContent = (self.data.formRichContent || []).concat([block])
+          self.setData({ formRichContent: richContent })
+          wx.showToast({ title: '已添加: ' + tableData.colCount + '列' + tableData.rowCount + '行表格', icon: 'success' })
+        }
+      }
+    })
+  },
+  showActivityTableDialog: function() {
+    var self = this
+    wx.showModal({
+      title: '添加表格',
+      content: '',
+      placeholderText: '粘贴表格数据：每行换行，列用 | 或 Tab 或 , 分隔\n第一行为表头\n\n例：\n名称|属性|技能\n皮卡丘|电|十万伏特\n小火龙|火|喷射火焰',
+      editable: true,
+      success: function(res) {
+        if (res.confirm && res.content && res.content.trim()) {
+          var tableData = parseTableInput(res.content.trim())
+          if (!tableData) {
+            wx.showToast({ title: '未识别表格，请检查格式（至少2行）', icon: 'none' })
+            return
+          }
+          var block = { type: 'table', headers: tableData.headers, rows: tableData.rows, colCount: tableData.colCount, rowCount: tableData.rowCount }
+          var richContent = (self.data.activityRichContent || []).concat([block])
+          self.setData({ activityRichContent: richContent })
+          wx.showToast({ title: '已添加: ' + tableData.colCount + '列' + tableData.rowCount + '行表格', icon: 'success' })
+        }
+      }
+    })
   },
   onTitleInput: function(e) { this.setData({ formTitle: e.detail.value }) },
   onContentInput: function(e) { this.setData({ formContent: e.detail.value }) },
@@ -491,23 +659,38 @@ Page({
   onEndDateChange: function(e) { this.setData({ formEndDate: e.detail.value }) },
   onTypeChange: function(e) { var types = ['notice', 'update', 'event', 'tip']; this.setData({ formType: types[e.detail.value] }) },
   togglePinned: function() { this.setData({ formPinned: !this.data.formPinned }) },
-  switchEditorMode: function() {
-    var newMode = this.data.editorMode === 'simple' ? 'rich' : 'simple'
-    this.setData({ editorMode: newMode })
-  },
   toggleBold: function() {
     var newWeight = this.data.currentFontWeight === 'normal' ? 'bold' : 'normal'
-    this.setData({ currentFontWeight: newWeight })
+    this._autoCommitText({ currentFontWeight: newWeight })
   },
   toggleItalic: function() {
     var newStyle = this.data.currentFontStyle === 'normal' ? 'italic' : 'normal'
-    this.setData({ currentFontStyle: newStyle })
+    this._autoCommitText({ currentFontStyle: newStyle })
+  },
+  setFontSize: function(e) {
+    var size = e.currentTarget.dataset.size
+    this._autoCommitText({ currentFontSize: size, showSizePicker: false })
+  },
+  setFontColor: function(e) {
+    var color = e.currentTarget.dataset.color
+    this._autoCommitText({ currentFontColor: color, showColorPicker: false })
+  },
+  setFontFamily: function(e) {
+    var family = e.currentTarget.dataset.family
+    this._autoCommitText({ currentFontFamily: family, showFontFamilyPicker: false })
   },
   showFontSizePicker: function() {
-    this.setData({ showSizePicker: !this.data.showSizePicker, showColorPicker: false })
+    this.setData({ showSizePicker: !this.data.showSizePicker, showColorPicker: false, showFontFamilyPicker: false })
   },
   showFontColorPicker: function() {
-    this.setData({ showColorPicker: !this.data.showColorPicker, showSizePicker: false })
+    this.setData({ showColorPicker: !this.data.showColorPicker, showSizePicker: false, showFontFamilyPicker: false })
+  },
+  showFontFamilyPicker: function() {
+    this.setData({ showFontFamilyPicker: !this.data.showFontFamilyPicker, showSizePicker: false, showColorPicker: false })
+  },
+  setFontFamily: function(e) {
+    var family = e.currentTarget.dataset.family
+    this.setData({ currentFontFamily: family, showFontFamilyPicker: false })
   },
   setFontSize: function(e) {
     var size = e.currentTarget.dataset.size
@@ -529,7 +712,8 @@ Page({
       style: this.data.currentFontStyle,
       weight: this.data.currentFontWeight,
       size: this.data.currentFontSize,
-      color: this.data.currentFontColor
+      color: this.data.currentFontColor,
+      fontFamily: this.data.currentFontFamily
     }
     var richContent = this.data.formRichContent.concat([block])
     this.setData({
@@ -538,7 +722,8 @@ Page({
       currentFontStyle: 'normal',
       currentFontWeight: 'normal',
       currentFontSize: 28,
-      currentFontColor: '#ffffff'
+      currentFontColor: '#ffffff',
+      currentFontFamily: 'sans-serif'
     })
   },
   addRichQuoteBlock: function() {
@@ -564,8 +749,13 @@ Page({
   removeRichBlock: function(e) {
     var idx = e.currentTarget.dataset.idx
     var richContent = this.data.formRichContent
+    var block = richContent[idx]
     richContent.splice(idx, 1)
-    this.setData({ formRichContent: richContent })
+    var formContent = this.data.formContent
+    if ((block.type === 'video' || block.type === 'music') && block.url) {
+      formContent = formContent.replace(block.url, '').replace(/\s{2,}/g, ' ').trim()
+    }
+    this.setData({ formRichContent: richContent, formContent: formContent })
   },
   editRichBlock: function(e) {
     var idx = e.currentTarget.dataset.idx
@@ -578,7 +768,8 @@ Page({
       currentFontStyle: block.style || 'normal',
       currentFontWeight: block.weight || 'normal',
       currentFontSize: block.size || 28,
-      currentFontColor: block.color || '#ffffff'
+      currentFontColor: block.color || '#ffffff',
+      currentFontFamily: block.fontFamily || 'sans-serif'
     })
   },
   chooseFormImage: function() {
@@ -688,45 +879,65 @@ Page({
     if (!db) { wx.showToast({ title: '云环境未就绪', icon: 'none' }); return }
     var title = self.data.formTitle.trim(), content = self.data.formContent.trim()
     if (!title) { wx.showToast({ title: '请输入标题', icon: 'none' }); return }
-    if (self.data.editorMode === 'rich') {
-      if (self.data.formRichContent.length === 0 && !content) {
-        wx.showToast({ title: '请输入内容', icon: 'none' }); return
-      }
-    } else {
-      if (!content) { wx.showToast({ title: '请输入内容', icon: 'none' }); return }
+    if (self.data.formRichContent.length === 0 && !content) {
+      wx.showToast({ title: '请输入内容', icon: 'none' }); return
     }
     self.setData({ submitting: true })
     var finalContent = content
     var richContent = []
-    if (self.data.editorMode === 'rich') {
-      if (content) {
-        richContent = self.data.formRichContent.concat([{
-          type: 'text', content: content, style: self.data.currentFontStyle,
-          weight: self.data.currentFontWeight, size: self.data.currentFontSize, color: self.data.currentFontColor
-        }])
-      } else {
-        richContent = self.data.formRichContent
-      }
-      var htmlParts = []
+    if (content) {
+      richContent = self.data.formRichContent.concat([{
+        type: 'text', content: content, style: self.data.currentFontStyle,
+        weight: self.data.currentFontWeight, size: self.data.currentFontSize, color: self.data.currentFontColor,
+        fontFamily: self.data.currentFontFamily
+      }])
+    } else {
+      richContent = self.data.formRichContent
+    }
+    var htmlParts = []
       for (var i = 0; i < richContent.length; i++) {
         var block = richContent[i]
         if (block.type === 'quote') {
           htmlParts.push('<blockquote style="border-left:4rpx solid rgba(0,212,255,0.3);padding-left:12rpx;color:rgba(255,255,255,0.7);font-size:26rpx;margin:12rpx 0;">' + block.content + '</blockquote>')
         } else if (block.type === 'music') {
           htmlParts.push('<p style="color:#00d4ff;font-size:26rpx;margin:12rpx 0;text-decoration:underline;">🎵 推荐单曲: ' + block.name + ' (' + block.url + ')</p>')
+        } else if (block.type === 'video') {
+          var platformEmoji = block.platform === 'bilibili' ? '📺' : '🎬'
+          var videoTitle = block.name ? block.name + ' - ' : ''
+          htmlParts.push('<p style="color:#ff6b9d;font-size:26rpx;margin:12rpx 0;">' + platformEmoji + ' 视频: ' + videoTitle + '<a href="' + block.url + '" style="color:#ff6b9d;text-decoration:underline;">' + block.url + '</a></p>')
+        } else if (block.type === 'image') {
+          htmlParts.push('<p style="text-align:center;margin:12rpx 0;"><img src="' + block.url + '" style="max-width:100%;border-radius:12rpx;" /></p>')
+        } else if (block.type === 'table') {
+          var tableHtml = '<table style="width:100%;border-collapse:collapse;margin:12rpx 0;font-size:24rpx;color:#fff;text-align:center;">'
+          tableHtml += '<thead><tr>'
+          for (var ci = 0; ci < block.headers.length; ci++) {
+            tableHtml += '<th style="padding:12rpx 8rpx;background:rgba(0,200,255,0.1);border:1rpx solid rgba(0,200,255,0.2);font-weight:700;color:#00d4ff;">' + block.headers[ci] + '</th>'
+          }
+          tableHtml += '</tr></thead><tbody>'
+          for (var ri = 0; ri < block.rows.length; ri++) {
+            tableHtml += '<tr style="background:' + (ri % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)') + ';">'
+            var row = block.rows[ri]
+            var maxCols = Math.max(block.headers.length, (row ? row.length : 0))
+            for (var cj = 0; cj < maxCols; cj++) {
+              tableHtml += '<td style="padding:10rpx 8rpx;border:1rpx solid rgba(255,255,255,0.06);">' + (row && row[cj] ? row[cj] : '') + '</td>'
+            }
+            tableHtml += '</tr>'
+          }
+          tableHtml += '</tbody></table>'
+          htmlParts.push(tableHtml)
         } else {
           var style = 'font-size:' + block.size + 'rpx;color:' + block.color + ';'
           if (block.weight === 'bold') style += 'font-weight:bold;'
           if (block.style === 'italic') style += 'font-style:italic;'
+          if (block.fontFamily && block.fontFamily !== 'sans-serif') style += 'font-family:' + block.fontFamily + ';'
           htmlParts.push('<p style="' + style + '">' + block.content + '</p>')
         }
       }
       finalContent = htmlParts.join('')
-    }
     var data = {
       title: title,
       content: finalContent,
-      richContent: self.data.editorMode === 'rich' ? richContent : [],
+      richContent: richContent,
       source: self.data.formSource.trim(),
       type: self.data.formType,
       pinned: self.data.formPinned,
@@ -943,15 +1154,14 @@ Page({
       showActivityModal: true,
       activityEditingItem: item,
       activityFormTitle: item ? item.title : '',
-      activityFormContent: item ? item.content : '',
+      activityFormContent: (item && item.richContent && item.richContent.length > 0) ? '' : (item ? item.content : ''),
       activityFormType: item ? (item.type || '活动') : '活动',
       activityFormStatus: item ? (item.pinned ? '置顶' : '进行中') : '进行中',
       activityFormStart: item ? (item.start || '') : '',
       activityFormEnd: item ? (item.end || '') : '',
       activityFormImage: item ? (item.image || '') : '',
       activityFormSource: source,
-      activityRichContent: richContent,
-      activityEditorMode: 'simple'
+      activityRichContent: richContent
     })
   },
   closeActivityModal: function() { this.setData({ showActivityModal: false }) },
@@ -1014,8 +1224,148 @@ Page({
   },
   _addActivityMusicBlock: function(self, block) {
     var richContent = (self.data.activityRichContent || []).concat([block])
-    self.setData({ activityRichContent: richContent })
+    var formContent = self.data.activityFormContent
+    if (block.url) formContent = formContent.replace(block.url, '').replace(/\s{2,}/g, ' ').trim()
+    self.setData({ activityRichContent: richContent, activityFormContent: formContent })
     wx.showToast({ title: '已添加: ' + block.name, icon: 'success' })
+  },
+  showImageBlockDialog: function() {
+    var self = this
+    wx.showActionSheet({
+      itemList: ['从相册选择', '拍照', '输入图片链接'],
+      success: function(res) {
+        if (res.tapIndex === 2) {
+          wx.showModal({
+            title: '输入图片链接',
+            content: '',
+            editable: true,
+            placeholderText: '粘贴图片URL地址',
+            success: function(urlRes) {
+              if (urlRes.confirm && urlRes.content && urlRes.content.trim()) {
+                var block = { type: 'image', url: urlRes.content.trim() }
+                var richContent = (self.data.formRichContent || []).concat([block])
+                self.setData({ formRichContent: richContent })
+                wx.showToast({ title: '已添加图片', icon: 'success' })
+              }
+            }
+          })
+        } else {
+          var sourceType = res.tapIndex === 0 ? ['album'] : ['camera']
+          wx.chooseImage({
+            count: 1,
+            sizeType: ['compressed'],
+            sourceType: sourceType,
+            success: function(imgRes) {
+              var filePath = imgRes.tempFilePaths[0]
+              wx.showLoading({ title: '上传中...' })
+              var ext = filePath.split('.').pop() || 'jpg'
+              var cloudPath = 'richtext/' + Date.now() + '.' + ext
+              wx.cloud.uploadFile({ cloudPath: cloudPath, filePath: filePath })
+                .then(function(uploadRes) {
+                  wx.hideLoading()
+                  var block = { type: 'image', url: uploadRes.fileID }
+                  var richContent = (self.data.formRichContent || []).concat([block])
+                  self.setData({ formRichContent: richContent })
+                  wx.showToast({ title: '已添加图片', icon: 'success' })
+                })
+                .catch(function() {
+                  wx.hideLoading()
+                  wx.showToast({ title: '上传失败', icon: 'none' })
+                })
+            }
+          })
+        }
+      }
+    })
+  },
+  showActivityImageBlockDialog: function() {
+    var self = this
+    wx.showActionSheet({
+      itemList: ['从相册选择', '拍照', '输入图片链接'],
+      success: function(res) {
+        if (res.tapIndex === 2) {
+          wx.showModal({
+            title: '输入图片链接',
+            content: '',
+            editable: true,
+            placeholderText: '粘贴图片URL地址',
+            success: function(urlRes) {
+              if (urlRes.confirm && urlRes.content && urlRes.content.trim()) {
+                var block = { type: 'image', url: urlRes.content.trim() }
+                var richContent = (self.data.activityRichContent || []).concat([block])
+                self.setData({ activityRichContent: richContent })
+                wx.showToast({ title: '已添加图片', icon: 'success' })
+              }
+            }
+          })
+        } else {
+          var sourceType = res.tapIndex === 0 ? ['album'] : ['camera']
+          wx.chooseImage({
+            count: 1,
+            sizeType: ['compressed'],
+            sourceType: sourceType,
+            success: function(imgRes) {
+              var filePath = imgRes.tempFilePaths[0]
+              wx.showLoading({ title: '上传中...' })
+              var ext = filePath.split('.').pop() || 'jpg'
+              var cloudPath = 'richtext/' + Date.now() + '.' + ext
+              wx.cloud.uploadFile({ cloudPath: cloudPath, filePath: filePath })
+                .then(function(uploadRes) {
+                  wx.hideLoading()
+                  var block = { type: 'image', url: uploadRes.fileID }
+                  var richContent = (self.data.activityRichContent || []).concat([block])
+                  self.setData({ activityRichContent: richContent })
+                  wx.showToast({ title: '已添加图片', icon: 'success' })
+                })
+                .catch(function() {
+                  wx.hideLoading()
+                  wx.showToast({ title: '上传失败', icon: 'none' })
+                })
+            }
+          })
+        }
+      }
+    })
+  },
+  showActivityVideoDialog: function() {
+    var self = this
+    wx.showModal({
+      title: '添加视频',
+      content: '',
+      placeholderText: '粘贴视频链接（支持微博/哔哩哔哩）',
+      editable: true,
+      success: function(res) {
+        if (res.confirm && res.content && res.content.trim()) {
+          var url = res.content.trim()
+          var videoInfo = parseVideoUrl(url)
+          if (!videoInfo) {
+            wx.showToast({ title: '未识别视频链接，支持微博和哔哩哔哩', icon: 'none' })
+            return
+          }
+          wx.showModal({
+            title: '视频标题（可选）',
+            content: '',
+            placeholderText: '输入视频标题',
+            editable: true,
+            success: function(nameRes) {
+              var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
+              var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id }
+              var richContent = (self.data.activityRichContent || []).concat([block])
+              var formContent = self.data.activityFormContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
+              self.setData({ activityRichContent: richContent, activityFormContent: formContent })
+              wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
+            }
+          })
+        }
+      }
+    })
+  },
+  _addActivityVideoBlock: function(self, videoInfo, name) {
+    var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name || '', url: videoInfo.url, vid: videoInfo.id }
+    var richContent = (self.data.activityRichContent || []).concat([block])
+    var formContent = self.data.activityFormContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
+    self.setData({ activityRichContent: richContent, activityFormContent: formContent })
+    wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
   },
   onActivityTitleInput: function(e) { this.setData({ activityFormTitle: e.detail.value }) },
   onActivityContentInput: function(e) { this.setData({ activityFormContent: e.detail.value }) },
@@ -1026,23 +1376,42 @@ Page({
   onActivityEndChange: function(e) { this.setData({ activityFormEnd: e.detail.value }) },
   onActivitySourceInput: function(e) { this.setData({ activityFormSource: e.detail.value }) },
   onActivityStatusChange: function(e) { var statuses = ['进行中','即将开始','置顶']; this.setData({ activityFormStatus: statuses[e.detail.value] }) },
-  switchActivityEditorMode: function() {
-    var newMode = this.data.activityEditorMode === 'simple' ? 'rich' : 'simple'
-    this.setData({ activityEditorMode: newMode })
-  },
   toggleActivityBold: function() {
     var newWeight = this.data.activityFontWeight === 'normal' ? 'bold' : 'normal'
-    this.setData({ activityFontWeight: newWeight })
+    this._autoCommitActivityText({ activityFontWeight: newWeight })
+  },
+  toggleActivityItalic: function() {
+    var newStyle = this.data.activityFontStyle === 'normal' ? 'italic' : 'normal'
+    this._autoCommitActivityText({ activityFontStyle: newStyle })
+  },
+  setActivityFontSize: function(e) {
+    var size = e.currentTarget.dataset.size
+    this._autoCommitActivityText({ activityFontSize: size, showActivitySizePicker: false })
+  },
+  setActivityFontColor: function(e) {
+    var color = e.currentTarget.dataset.color
+    this._autoCommitActivityText({ activityFontColor: color, showActivityColorPicker: false })
+  },
+  setActivityFontFamily: function(e) {
+    var family = e.currentTarget.dataset.family
+    this._autoCommitActivityText({ activityFontFamily: family, showActivityFontFamilyPicker: false })
   },
   toggleActivityItalic: function() {
     var newStyle = this.data.activityFontStyle === 'normal' ? 'italic' : 'normal'
     this.setData({ activityFontStyle: newStyle })
   },
   showActivityFontSizePicker: function() {
-    this.setData({ showActivitySizePicker: !this.data.showActivitySizePicker, showActivityColorPicker: false })
+    this.setData({ showActivitySizePicker: !this.data.showActivitySizePicker, showActivityColorPicker: false, showActivityFontFamilyPicker: false })
   },
   showActivityFontColorPicker: function() {
-    this.setData({ showActivityColorPicker: !this.data.showActivityColorPicker, showActivitySizePicker: false })
+    this.setData({ showActivityColorPicker: !this.data.showActivityColorPicker, showActivitySizePicker: false, showActivityFontFamilyPicker: false })
+  },
+  showActivityFontFamilyPicker: function() {
+    this.setData({ showActivityFontFamilyPicker: !this.data.showActivityFontFamilyPicker, showActivitySizePicker: false, showActivityColorPicker: false })
+  },
+  setActivityFontFamily: function(e) {
+    var family = e.currentTarget.dataset.family
+    this.setData({ activityFontFamily: family, showActivityFontFamilyPicker: false })
   },
   setActivityFontSize: function(e) {
     var size = e.currentTarget.dataset.size
@@ -1064,7 +1433,8 @@ Page({
       style: this.data.activityFontStyle,
       weight: this.data.activityFontWeight,
       size: this.data.activityFontSize,
-      color: this.data.activityFontColor
+      color: this.data.activityFontColor,
+      fontFamily: this.data.activityFontFamily
     }
     var richContent = this.data.activityRichContent.concat([block])
     this.setData({
@@ -1073,7 +1443,8 @@ Page({
       activityFontStyle: 'normal',
       activityFontWeight: 'normal',
       activityFontSize: 28,
-      activityFontColor: '#ffffff'
+      activityFontColor: '#ffffff',
+      activityFontFamily: 'sans-serif'
     })
   },
   addActivityRichQuoteBlock: function() {
@@ -1099,8 +1470,13 @@ Page({
   removeActivityRichBlock: function(e) {
     var idx = e.currentTarget.dataset.idx
     var richContent = this.data.activityRichContent
+    var block = richContent[idx]
     richContent.splice(idx, 1)
-    this.setData({ activityRichContent: richContent })
+    var formContent = this.data.activityFormContent
+    if ((block.type === 'video' || block.type === 'music') && block.url) {
+      formContent = formContent.replace(block.url, '').replace(/\s{2,}/g, ' ').trim()
+    }
+    this.setData({ activityRichContent: richContent, activityFormContent: formContent })
   },
   editActivityRichBlock: function(e) {
     var idx = e.currentTarget.dataset.idx
@@ -1113,7 +1489,8 @@ Page({
       activityFontStyle: block.style || 'normal',
       activityFontWeight: block.weight || 'normal',
       activityFontSize: block.size || 28,
-      activityFontColor: block.color || '#ffffff'
+      activityFontColor: block.color || '#ffffff',
+      activityFontFamily: block.fontFamily || 'sans-serif'
     })
   },
   chooseActivityImage: function() {
@@ -1146,37 +1523,61 @@ Page({
     self.setData({ activitySubmitting: true })
     var finalContent = content
     var richContent = []
-    if (self.data.activityEditorMode === 'rich') {
-      if (content) {
-        richContent = self.data.activityRichContent.concat([{
-          type: 'text', content: content, style: self.data.activityFontStyle,
-          weight: self.data.activityFontWeight, size: self.data.activityFontSize, color: self.data.activityFontColor
-        }])
-      } else {
-        richContent = self.data.activityRichContent
-      }
-      var htmlParts = []
+    if (content) {
+      richContent = self.data.activityRichContent.concat([{
+        type: 'text', content: content, style: self.data.activityFontStyle,
+        weight: self.data.activityFontWeight, size: self.data.activityFontSize, color: self.data.activityFontColor,
+        fontFamily: self.data.activityFontFamily
+      }])
+    } else {
+      richContent = self.data.activityRichContent
+    }
+    var htmlParts = []
       for (var i = 0; i < richContent.length; i++) {
         var block = richContent[i]
         if (block.type === 'quote') {
           htmlParts.push('<blockquote style="border-left:4rpx solid rgba(0,212,255,0.3);padding-left:12rpx;color:rgba(255,255,255,0.7);font-size:26rpx;margin:12rpx 0;">' + block.content + '</blockquote>')
         } else if (block.type === 'music') {
           htmlParts.push('<p style="color:#00d4ff;font-size:26rpx;margin:12rpx 0;text-decoration:underline;">🎵 推荐单曲: ' + block.name + ' (' + block.url + ')</p>')
+        } else if (block.type === 'video') {
+          var platformEmoji = block.platform === 'bilibili' ? '📺' : '🎬'
+          var videoTitle = block.name ? block.name + ' - ' : ''
+          htmlParts.push('<p style="color:#ff6b9d;font-size:26rpx;margin:12rpx 0;">' + platformEmoji + ' 视频: ' + videoTitle + '<a href="' + block.url + '" style="color:#ff6b9d;text-decoration:underline;">' + block.url + '</a></p>')
+        } else if (block.type === 'image') {
+          htmlParts.push('<p style="text-align:center;margin:12rpx 0;"><img src="' + block.url + '" style="max-width:100%;border-radius:12rpx;" /></p>')
+        } else if (block.type === 'table') {
+          var tableHtml = '<table style="width:100%;border-collapse:collapse;margin:12rpx 0;font-size:24rpx;color:#fff;text-align:center;">'
+          tableHtml += '<thead><tr>'
+          for (var ci = 0; ci < block.headers.length; ci++) {
+            tableHtml += '<th style="padding:12rpx 8rpx;background:rgba(0,200,255,0.1);border:1rpx solid rgba(0,200,255,0.2);font-weight:700;color:#00d4ff;">' + block.headers[ci] + '</th>'
+          }
+          tableHtml += '</tr></thead><tbody>'
+          for (var ri = 0; ri < block.rows.length; ri++) {
+            tableHtml += '<tr style="background:' + (ri % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)') + ';">'
+            var row = block.rows[ri]
+            var maxCols = Math.max(block.headers.length, (row ? row.length : 0))
+            for (var cj = 0; cj < maxCols; cj++) {
+              tableHtml += '<td style="padding:10rpx 8rpx;border:1rpx solid rgba(255,255,255,0.06);">' + (row && row[cj] ? row[cj] : '') + '</td>'
+            }
+            tableHtml += '</tr>'
+          }
+          tableHtml += '</tbody></table>'
+          htmlParts.push(tableHtml)
         } else {
           var style = 'font-size:' + block.size + 'rpx;color:' + block.color + ';'
           if (block.weight === 'bold') style += 'font-weight:bold;'
           if (block.style === 'italic') style += 'font-style:italic;'
+          if (block.fontFamily && block.fontFamily !== 'sans-serif') style += 'font-family:' + block.fontFamily + ';'
           htmlParts.push('<p style="' + style + '">' + block.content + '</p>')
         }
       }
       finalContent = htmlParts.join('')
-    }
     var data = {
       title: title, content: finalContent, type: 'event',
       pinned: self.data.activityFormStatus === '置顶',
       start: self.data.activityFormStart, end: self.data.activityFormEnd,
       image: self.data.activityFormImage, source: self.data.activityFormSource,
-      richContent: self.data.activityEditorMode === 'rich' ? richContent : [],
+      richContent: richContent,
       updateTime: db.serverDate()
     }
     var promise = self.data.activityEditingItem

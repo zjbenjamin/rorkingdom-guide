@@ -22,7 +22,6 @@
       <!-- Tab 栏 -->
       <view class="admin-tabs">
         <view class="admin-tab {{activeTab === 'announce' ? 'on' : ''}}" bindtap="switchTab" data-tab="announce">公告</view>
-        <view class="admin-tab {{activeTab === 'system' ? 'on' : ''}}" bindtap="switchTab" data-tab="system">系统</view>
         <view class="admin-tab {{activeTab === 'activity' ? 'on' : ''}}" bindtap="switchTab" data-tab="activity">活动</view>
         <view class="admin-tab {{activeTab === 'subscribe' ? 'on' : ''}}" bindtap="switchTab" data-tab="subscribe">订阅</view>
         <view class="admin-tab {{activeTab === 'users' ? 'on' : ''}}" bindtap="switchTab" data-tab="users">用户</view>
@@ -54,29 +53,6 @@
         <view class="empty" wx:if="{{announcements.length === 0}}"><text class="empty-text">暂无公告</text></view>
       </view>
 
-      <!-- 系统信息管理 -->
-      <view wx:if="{{activeTab === 'system'}}">
-        <view class="section-header">
-          <text class="section-title">系统更新 · 发布即推送</text>
-          <view class="add-btn" bindtap="openSystemModal"><text>+ 发布</text></view>
-        </view>
-        <view class="card-item" wx:for="{{systemUpdates}}" wx:key="_id">
-          <view class="card-top">
-            <view class="tag tag-system">{{item.updateType === 'feature' ? '新功能' : item.updateType === 'fix' ? '修复' : item.updateType === 'improve' ? '优化' : '通知'}}</view>
-            <text class="card-version" wx:if="{{item.version}}">{{item.version}}</text>
-          </view>
-          <text class="card-title">{{item.title}}</text>
-          <text class="card-desc">{{item.content}}</text>
-          <view class="card-bottom">
-            <text class="card-time">{{item.timeStr}}</text>
-            <view class="card-actions">
-              <view class="btn-edit" bindtap="openSystemModal" data-item="{{item}}">编辑</view>
-              <view class="btn-delete" bindtap="deleteSystemUpdate" data-item="{{item}}">删除</view>
-            </view>
-          </view>
-        </view>
-        <view class="empty" wx:if="{{systemUpdates.length === 0}}"><text class="empty-text">暂无系统更新，点击上方 + 发布</text></view>
-      </view>
 
       <!-- 活动管理 -->
       <view wx:if="{{activeTab === 'activity'}}">
@@ -262,14 +238,10 @@
           <view class="form-group">
             <view class="form-label-row">
               <text class="form-label">内容</text>
-              <view class="editor-mode-btn" catchtap="switchEditorMode">
-                <text class="mode-icon">{{editorMode === 'simple' ? '✏️' : '📝'}}</text>
-                <text class="mode-text">{{editorMode === 'simple' ? '切换排版模式' : '切换简易模式'}}</text>
-              </view>
             </view>
             
             <!-- 富文本编辑工具栏 -->
-            <view class="rich-toolbar" wx:if="{{editorMode === 'rich'}}">
+            <view class="rich-toolbar">
               <view class="toolbar-row">
                 <view class="tool-btn {{currentFontWeight === 'bold' ? 'active' : ''}}" catchtap="toggleBold">
                   <text class="tool-icon" style="font-weight:bold;">B</text>
@@ -283,9 +255,9 @@
                 <view class="tool-btn" catchtap="showFontColorPicker">
                   <view class="color-preview" style="background:{{currentFontColor}};"></view>
                 </view>
-                <view class="tool-btn" catchtap="addRichTextBlock">
-                  <text class="tool-icon">+</text>
-                  <text class="tool-text">添加</text>
+                <view class="tool-btn" catchtap="showFontFamilyPicker">
+                  <text class="tool-icon">𝐓</text>
+                  <text class="tool-text">字体</text>
                 </view>
                 <view class="tool-btn" catchtap="addRichQuoteBlock">
                   <text class="tool-icon">❝</text>
@@ -294,6 +266,18 @@
                 <view class="tool-btn" catchtap="showMusicDialog">
                   <text class="tool-icon">🎵</text>
                   <text class="tool-text">音乐</text>
+                </view>
+                <view class="tool-btn" catchtap="showVideoDialog">
+                  <text class="tool-icon">🎬</text>
+                  <text class="tool-text">视频</text>
+                </view>
+                <view class="tool-btn" catchtap="showTableDialog">
+                  <text class="tool-icon">📊</text>
+                  <text class="tool-text">表格</text>
+                </view>
+                <view class="tool-btn" catchtap="showImageBlockDialog">
+                  <text class="tool-icon">🖼️</text>
+                  <text class="tool-text">图片</text>
                 </view>
               </view>
               
@@ -311,28 +295,56 @@
                   <text class="color-name">{{item.name}}</text>
                 </view>
               </view>
+
+              <!-- 字体选择器 -->
+              <view class="font-picker" wx:if="{{showFontFamilyPicker}}">
+                <view class="font-option {{currentFontFamily === item.value ? 'active' : ''}}" wx:for="{{fontFamilyOptions}}" wx:key="value" catchtap="setFontFamily" data-family="{{item.value}}">
+                  <text class="font-preview" style="font-family:{{item.value}};">{{item.name}}</text>
+                </view>
+              </view>
             </view>
             
             <!-- 已添加的富文本块 -->
-            <view class="rich-blocks" wx:if="{{editorMode === 'rich' && formRichContent.length > 0}}">
-              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}} {{item.type === 'music' ? 'music-block-item' : ''}}" wx:for="{{formRichContent}}" wx:key="index">
+            <view class="rich-blocks" wx:if="{{formRichContent.length > 0}}">
+              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}} {{item.type === 'music' ? 'music-block-item' : ''}} {{item.type === 'video' ? 'video-block-item' : ''}} {{item.type === 'table' ? 'table-block-item' : ''}}" wx:for="{{formRichContent}}" wx:key="index">
                 <view class="block-content">
                   <text wx:if="{{item.type === 'quote'}}" class="block-quote-icon">❝</text>
                   <block wx:elif="{{item.type === 'music'}}">
                     <text class="block-music-icon">🎵</text>
                     <text class="block-text music-text-info">{{item.name}} ({{item.url}})</text>
                   </block>
-                  <text wx:else class="block-text" style="font-size:{{item.size}}rpx;color:{{item.color}};font-weight:{{item.weight}};font-style:{{item.style}};">{{item.content}}</text>
+                  <block wx:elif="{{item.type === 'video'}}">
+                    <text class="block-video-icon">{{item.platform === 'bilibili' ? '📺' : '🎬'}}</text>
+                    <text class="block-text video-text-info">{{item.platformName}}视频{{item.name ? ': ' + item.name : ''}} ({{item.url}})</text>
+                  </block>
+                  <block wx:elif="{{item.type === 'table'}}">
+                    <view class="table-block-preview">
+                      <text class="table-block-icon">📊</text>
+                      <view class="table-mini">
+                        <view class="table-mini-row" wx:for="{{item.headers}}" wx:for-item="h" wx:for-index="hi" wx:key="hi">
+                          <view class="table-mini-header-cell">{{h}}</view>
+                        </view>
+                      </view>
+                      <text class="table-block-info">{{item.colCount}}列 × {{item.rowCount}}行</text>
+                    </view>
+                  </block>
+                  <block wx:elif="{{item.type === 'image'}}">
+                    <text class="block-image-icon">🖼️</text>
+                    <view class="image-block-preview">
+                      <image src="{{item.url}}" mode="aspectFill" />
+                    </view>
+                  </block>
+                  <text wx:else class="block-text" style="font-size:{{item.size}}rpx;color:{{item.color}};font-weight:{{item.weight}};font-style:{{item.style}};{{item.fontFamily && item.fontFamily !== 'sans-serif' ? 'font-family:' + item.fontFamily + ';' : ''}}">{{item.content}}</text>
                 </view>
                 <view class="block-actions">
-                  <view class="block-btn" wx:if="{{item.type !== 'music'}}" catchtap="editRichBlock" data-idx="{{index}}">编辑</view>
+                  <view class="block-btn" wx:if="{{item.type !== 'music' && item.type !== 'video' && item.type !== 'table' && item.type !== 'image'}}" catchtap="editRichBlock" data-idx="{{index}}">编辑</view>
                   <view class="block-btn delete" catchtap="removeRichBlock" data-idx="{{index}}">删除</view>
                 </view>
               </view>
             </view>
             
-            <textarea class="form-textarea" placeholder="{{editorMode === 'rich' ? '输入内容后点击工具栏按钮添加...' : '输入公告内容...'}}" value="{{formContent}}" bindinput="onContentInput" maxlength="500" cursor-spacing="120" />
-            <view class="file-import" catchtap="importFile" wx:if="{{editorMode === 'simple'}}">
+            <textarea class="form-textarea" placeholder="输入文字后可点击工具栏按钮设置格式..." value="{{formContent}}" bindinput="onContentInput" maxlength="5000" cursor-spacing="120" />
+            <view class="file-import" catchtap="importFile">
               <text class="file-import-icon">📄</text>
               <text class="file-import-text">导入文件（XML/DOCX）</text>
             </view>
@@ -380,59 +392,12 @@
           </view>
         </view>
         <view class="modal-footer">
-          <text class="char-count">{{formContent.length}}/500</text>
+          <text class="char-count">{{formContent.length}}/5000</text>
           <button class="modal-submit" catchtap="submitAnnouncement" disabled="{{submitting}}">{{submitting ? '提交中...' : (editingItem ? '更新' : '发布')}}</button>
         </view>
       </view>
     </view>
 
-    <!-- 系统更新弹窗 -->
-    <view class="modal-mask" wx:if="{{showSystemModal}}" bindtap="closeSystemModal">
-      <view class="modal-box" catchtap="preventClose">
-        <view class="modal-header">
-          <text class="modal-title">{{systemEditingItem ? '编辑系统更新' : '发布系统更新'}}</text>
-          <text class="modal-close" catchtap="closeSystemModal">✕</text>
-        </view>
-        <view class="modal-body">
-          <view class="form-group">
-            <text class="form-label">更新类型</text>
-            <picker class="form-picker" range="{{['新功能', '修复', '优化', '通知']}}" bindchange="onSystemTypeChange">
-              <text class="picker-text">{{systemFormType === 'feature' ? '新功能' : systemFormType === 'fix' ? '修复' : systemFormType === 'improve' ? '优化' : '通知'}} ▾</text>
-            </picker>
-          </view>
-          <view class="form-group">
-            <text class="form-label">版本号（可选）</text>
-            <input class="form-input" placeholder="如 v1.0.7" value="{{systemFormVersion}}" bindinput="onSystemVersionInput" maxlength="20" />
-          </view>
-          <view class="form-group">
-            <text class="form-label">标题</text>
-            <input class="form-input" placeholder="输入更新标题" value="{{systemFormTitle}}" bindinput="onSystemTitleInput" maxlength="50" />
-          </view>
-          <view class="form-group">
-            <text class="form-label">更新内容</text>
-            <textarea class="form-textarea" placeholder="输入更新内容详情..." value="{{systemFormContent}}" bindinput="onSystemContentInput" maxlength="1000" cursor-spacing="120" />
-          </view>
-          <view class="form-row">
-            <view class="form-group half">
-              <text class="form-label">开始日期</text>
-              <picker class="form-picker" mode="date" value="{{systemFormStartDate}}" bindchange="onSystemStartDateChange">
-                <text class="picker-text">{{systemFormStartDate || '选择日期'}} ▾</text>
-              </picker>
-            </view>
-            <view class="form-group half">
-              <text class="form-label">结束日期</text>
-              <picker class="form-picker" mode="date" value="{{systemFormEndDate}}" bindchange="onSystemEndDateChange">
-                <text class="picker-text">{{systemFormEndDate || '选择日期'}} ▾</text>
-              </picker>
-            </view>
-          </view>
-        </view>
-        <view class="modal-footer">
-          <text class="notify-hint">发布后将自动推送通知给所有订阅用户</text>
-          <button class="modal-submit" catchtap="submitSystemUpdate" disabled="{{systemSubmitting}}">{{systemSubmitting ? '提交中...' : (systemEditingItem ? '更新' : '发布并推送')}}</button>
-        </view>
-      </view>
-    </view>
 
     <!-- 活动编辑弹窗 -->
     <view class="modal-mask" wx:if="{{showActivityModal}}" bindtap="closeActivityModal">
@@ -459,13 +424,9 @@
           <view class="form-group">
             <view class="form-label-row">
               <text class="form-label">描述</text>
-              <view class="editor-mode-btn" catchtap="switchActivityEditorMode">
-                <text class="mode-icon">{{activityEditorMode === 'simple' ? '✏️' : '📝'}}</text>
-                <text class="mode-text">{{activityEditorMode === 'simple' ? '切换排版模式' : '切换简易模式'}}</text>
-              </view>
             </view>
             <!-- 富文本编辑工具栏 -->
-            <view class="rich-toolbar" wx:if="{{activityEditorMode === 'rich'}}">
+            <view class="rich-toolbar">
               <view class="toolbar-row">
                 <view class="tool-btn {{activityFontWeight === 'bold' ? 'active' : ''}}" catchtap="toggleActivityBold">
                   <text class="tool-icon" style="font-weight:bold;">B</text>
@@ -479,9 +440,9 @@
                 <view class="tool-btn" catchtap="showActivityFontColorPicker">
                   <view class="color-preview" style="background:{{activityFontColor}};"></view>
                 </view>
-                <view class="tool-btn" catchtap="addActivityRichTextBlock">
-                  <text class="tool-icon">+</text>
-                  <text class="tool-text">添加</text>
+                <view class="tool-btn" catchtap="showActivityFontFamilyPicker">
+                  <text class="tool-icon">𝐓</text>
+                  <text class="tool-text">字体</text>
                 </view>
                 <view class="tool-btn" catchtap="addActivityRichQuoteBlock">
                   <text class="tool-icon">❝</text>
@@ -490,6 +451,18 @@
                 <view class="tool-btn" catchtap="showActivityMusicDialog">
                   <text class="tool-icon">🎵</text>
                   <text class="tool-text">音乐</text>
+                </view>
+                <view class="tool-btn" catchtap="showActivityVideoDialog">
+                  <text class="tool-icon">🎬</text>
+                  <text class="tool-text">视频</text>
+                </view>
+                <view class="tool-btn" catchtap="showActivityTableDialog">
+                  <text class="tool-icon">📊</text>
+                  <text class="tool-text">表格</text>
+                </view>
+                <view class="tool-btn" catchtap="showActivityImageBlockDialog">
+                  <text class="tool-icon">🖼️</text>
+                  <text class="tool-text">图片</text>
                 </view>
               </view>
               <view class="size-picker" wx:if="{{showActivitySizePicker}}">
@@ -503,25 +476,53 @@
                   <text class="color-name">{{item.name}}</text>
                 </view>
               </view>
+
+              <!-- 字体选择器 -->
+              <view class="font-picker" wx:if="{{showActivityFontFamilyPicker}}">
+                <view class="font-option {{activityFontFamily === item.value ? 'active' : ''}}" wx:for="{{fontFamilyOptions}}" wx:key="value" catchtap="setActivityFontFamily" data-family="{{item.value}}">
+                  <text class="font-preview" style="font-family:{{item.value}};">{{item.name}}</text>
+                </view>
+              </view>
             </view>
             <!-- 已添加的富文本块 -->
-            <view class="rich-blocks" wx:if="{{activityEditorMode === 'rich' && activityRichContent.length > 0}}">
-              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}} {{item.type === 'music' ? 'music-block-item' : ''}}" wx:for="{{activityRichContent}}" wx:key="index">
+            <view class="rich-blocks" wx:if="{{activityRichContent.length > 0}}">
+              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}} {{item.type === 'music' ? 'music-block-item' : ''}} {{item.type === 'video' ? 'video-block-item' : ''}} {{item.type === 'table' ? 'table-block-item' : ''}}" wx:for="{{activityRichContent}}" wx:key="index">
                 <view class="block-content">
                   <text wx:if="{{item.type === 'quote'}}" class="block-quote-icon">❝</text>
                   <block wx:elif="{{item.type === 'music'}}">
                     <text class="block-music-icon">🎵</text>
                     <text class="block-text music-text-info">{{item.name}} ({{item.url}})</text>
                   </block>
-                  <text wx:else class="block-text" style="font-size:{{item.size}}rpx;color:{{item.color}};font-weight:{{item.weight}};font-style:{{item.style}};">{{item.content}}</text>
+                  <block wx:elif="{{item.type === 'video'}}">
+                    <text class="block-video-icon">{{item.platform === 'bilibili' ? '📺' : '🎬'}}</text>
+                    <text class="block-text video-text-info">{{item.platformName}}视频{{item.name ? ': ' + item.name : ''}} ({{item.url}})</text>
+                  </block>
+                  <block wx:elif="{{item.type === 'table'}}">
+                    <view class="table-block-preview">
+                      <text class="table-block-icon">📊</text>
+                      <view class="table-mini">
+                        <view class="table-mini-row" wx:for="{{item.headers}}" wx:for-item="h" wx:for-index="hi" wx:key="hi">
+                          <view class="table-mini-header-cell">{{h}}</view>
+                        </view>
+                      </view>
+                      <text class="table-block-info">{{item.colCount}}列 × {{item.rowCount}}行</text>
+                    </view>
+                  </block>
+                  <block wx:elif="{{item.type === 'image'}}">
+                    <text class="block-image-icon">🖼️</text>
+                    <view class="image-block-preview">
+                      <image src="{{item.url}}" mode="aspectFill" />
+                    </view>
+                  </block>
+                  <text wx:else class="block-text" style="font-size:{{item.size}}rpx;color:{{item.color}};font-weight:{{item.weight}};font-style:{{item.style}};{{item.fontFamily && item.fontFamily !== 'sans-serif' ? 'font-family:' + item.fontFamily + ';' : ''}}">{{item.content}}</text>
                 </view>
                 <view class="block-actions">
-                  <view class="block-btn" wx:if="{{item.type !== 'music'}}" catchtap="editActivityRichBlock" data-idx="{{index}}">编辑</view>
+                  <view class="block-btn" wx:if="{{item.type !== 'music' && item.type !== 'video' && item.type !== 'table' && item.type !== 'image'}}" catchtap="editActivityRichBlock" data-idx="{{index}}">编辑</view>
                   <view class="block-btn delete" catchtap="removeActivityRichBlock" data-idx="{{index}}">删除</view>
                 </view>
               </view>
             </view>
-            <textarea class="form-textarea" placeholder="{{activityEditorMode === 'rich' ? '输入内容后点击工具栏按钮添加...' : '活动描述...'}}" value="{{activityFormContent}}" bindinput="onActivityContentInput" maxlength="500" cursor-spacing="120" />
+            <textarea class="form-textarea" placeholder="输入文字后可点击工具栏按钮设置格式..." value="{{activityFormContent}}" bindinput="onActivityContentInput" maxlength="5000" cursor-spacing="120" />
           </view>
           <view class="form-row">
             <view class="form-group half">

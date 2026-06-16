@@ -9,7 +9,7 @@ Page({
     uid: '476200',
     aboutData: {
       appName: '洛手助手BENJAMIN',
-      version: '版本 v1.0.8E 体验版',
+      version: '版本 v1.0.8F 体验版',
       devName: '浙里本杰明',
       devAvatar: '/images/avatar.jpg',
       uid: '476200',
