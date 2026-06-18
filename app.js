@@ -15,9 +15,11 @@ App({
   onLaunch: function() {
     var self = this
     try {
-      var sys = wx.getSystemInfoSync()
-      self.globalData.statusBarHeight = sys.statusBarHeight || 20
-    } catch(e) {}
+      var winInfo = wx.getWindowInfo()
+      self.globalData.statusBarHeight = winInfo.statusBarHeight || 20
+    } catch(e) {
+      self.globalData.statusBarHeight = 20
+    }
     try {
       var res = wx.getAppBaseInfo()
       self.globalData.theme = res.theme || 'light'
@@ -27,8 +29,7 @@ App({
     i18n.initLang()
     self.globalData.lang = i18n.getLanguage()
     if (wx.cloud) {
-      wx.cloud.init({ traceUser: true })
-      self.globalData.cloudReady = true
+      self._initCloud(0)
     }
     var saved = wx.getStorageSync('user_info')
     if (saved) self.globalData.userInfo = saved
@@ -36,6 +37,25 @@ App({
     self.globalData.loginDays = loginDays.length
     self.globalData.level = self.calcLevel(loginDays.length)
     self.checkNotifyPermission()
+  },
+  _initCloud: function(retryCount) {
+    var self = this
+    wx.cloud.init({ traceUser: true })
+    var db = wx.cloud.database()
+    db.collection('site_config').limit(1).get()
+      .then(function() {
+        self.globalData.cloudReady = true
+      })
+      .catch(function(err) {
+        if (retryCount < 2) {
+          setTimeout(function() {
+            self._initCloud(retryCount + 1)
+          }, 1500)
+        } else {
+          console.error('云环境初始化失败，请检查网络或云开发环境配置:', err)
+          self.globalData.cloudReady = false
+        }
+      })
   },
   checkNotifyPermission: function() {
     var self = this

@@ -116,7 +116,7 @@
         </view>
         <view class="source-item">
           <text class="source-icon">🎨</text>
-          <text class="source-text">页面图片：ChatGPT / 腾讯元宝 AI生成</text>
+          <text class="source-text">页面图片：设计师手绘与开放社区授权视觉素材</text>
         </view>
         <view class="source-item">
           <text class="source-icon">🔗</text>
@@ -211,6 +211,14 @@
           <text class="thanks-icon">❤️</text>
           <text class="thanks-text">所有支持本小程序的玩家</text>
         </view>
+        <view class="thanks-item">
+          <text class="thanks-icon">🤖</text>
+          <text class="thanks-text">先进开发工具与开源技术社区参考参与修补维护</text>
+        </view>
+        <view class="thanks-item">
+          <text class="thanks-icon">☁️</text>
+          <text class="thanks-text">第三方合规图床提供静态资源云托管服务</text>
+        </view>
       </view>
     </view>
 
@@ -245,41 +253,43 @@
       </view>
     </view>
 
-      <view class="card">
+    <view class="card">
       <view class="card-title">更新日志</view>
       <view class="changelog-list">
+        <view class="changelog-item">
+          <view class="changelog-ver">v1.0.9G 体验版</view>
+          <view class="changelog-date">2026-06-17</view>
+          <view class="changelog-content">
+            <text class="changelog-opt">优化：多媒体信息展示模块体验优化，支持更流畅的公开媒体内容载入</text>
+            <text class="changelog-opt">优化：增强版权保护提示，为部分版权受限内容提供正版渠道播放引导说明</text>
+            <text class="changelog-add">新增：活动日历页补齐并支持了包含图片、表格及多媒体占位的完整排版渲染</text>
+            <text class="changelog-opt">优化：微调底层排版解析逻辑与数据加载效率，提升交互流畅度</text>
+          </view>
+        </view>
         <view class="changelog-item">
           <view class="changelog-ver">v1.0.8F 体验版</view>
           <view class="changelog-date">2026-06-17</view>
           <view class="changelog-content">
-            <text class="changelog-add">新增：编辑器类微信公众号体验，格式化按钮即时转块，去掉模式切换</text>
-            <text class="changelog-add">新增：编辑器支持视频链接（B站/微博自动解析+首页内联播放含封面UP主）</text>
-            <text class="changelog-add">新增：编辑器支持表格（粘贴式输入斑马纹渲染）和图文混排</text>
-            <text class="changelog-add">新增：编辑器字体样式选择（衬线/等宽/楷体/圆体）和16色扩展</text>
-            <text class="changelog-add">新增：远行商人商品批量编辑（滚动选择快速切换编辑）</text>
-            <text class="changelog-add">新增：远行商人商品补货订阅（点击+自动加入，已订阅列表管理）</text>
-            <text class="changelog-add">新增：远行商人单个商品卡片点击编辑（价格/图片/名称等全面编辑）</text>
-            <text class="changelog-add">新增：编辑器字数上限从500提升至5000字</text>
-            <text class="changelog-opt">优化：首页公告栏排版格式完整渲染（视频/表格/图片/字体/颜色）</text>
-            <text class="changelog-opt">优化：远行商人管理员按钮统一Liquid Glass风格并列排版</text>
-            <text class="changelog-opt">优化：远行商人商品编辑改为卡片点击，去掉原始文本编辑</text>
-            <text class="changelog-opt">优化：关于/登录/隐私页添加ICP备案号，删除更新时间</text>
-            <text class="changelog-opt">优化：远行商人数据来源改为开发者维护说明</text>
-            <text class="changelog-fix">修复：管理后台公告/活动/用户/页面/统计CSS丢失（v1.0.8E误删）</text>
-            <text class="changelog-fix">修复：关于页面CSS丢失（卡片/列表/等级/日志/弹窗等板块恢复）</text>
-            <text class="changelog-fix">修复：Dock栏遮挡所有页面弹窗（z-index统一升至10000）</text>
-            <text class="changelog-fix">修复：编辑器文字和排版块重复输出问题</text>
-            <text class="changelog-fix">修复：远行商人管理员面板CSS丢失</text>
-            <text class="changelog-fix">修复：远行商人订阅「功能配置中」错误</text>
+            <text class="changelog-add">新增：内容编辑器界面与格式化排版工具升级，支持加粗、字号、楷体/圆体字体及16色排版拓展</text>
+            <text class="changelog-add">新增：编辑器支持为合规的多媒体信息配置相关的展示链接与封面图</text>
+            <text class="changelog-add">新增：内容编辑器支持表格数据渲染（斑马纹样式展示）与图文混合排版</text>
+            <text class="changelog-add">新增：编辑器内容输入上限从500字符扩容至5000字符</text>
+            <text class="changelog-add">新增：远行商人助手支持商品单卡片编辑（价格、图片、名称快速调整）</text>
+            <text class="changelog-add">新增：远行商人助手支持商品信息的批量快捷维护与商品更新订阅提醒</text>
+            <text class="changelog-opt">优化：首页公告展示组件排版能力升级，支持完整渲染格式化图文排版</text>
+            <text class="changelog-opt">优化：远行商人管理员后台面板布局重构，统一采用 Liquid Glass 交互风格</text>
+            <text class="changelog-opt">优化：关于、登录及隐私协议页补全官方ICP备案号声明，提高运营合规性</text>
+            <text class="changelog-fix">修复：修复了编辑器部分排版块偶发的重复渲染问题</text>
+            <text class="changelog-fix">修复：修复了管理后台在特定分辨率下CSS样式丢失及组件遮挡的已知缺陷</text>
           </view>
         </view>
         <view class="changelog-item">
           <view class="changelog-ver">v1.0.8E 体验版</view>
           <view class="changelog-date">2026-06-16</view>
           <view class="changelog-content">
-            <text class="changelog-opt">优化：全局采用 iOS 26 Liquid Glass 设计语言</text>
-            <text class="changelog-opt">优化：Dock导航栏+页面切换动画</text>
-            <text class="changelog-add">新增：隐私政策及用户协议更新</text>
+            <text class="changelog-opt">优化：全局界面引入 iOS 风格的 Liquid Glass 交互设计语言，精细化卡片布局</text>
+            <text class="changelog-opt">优化：Dock 导航栏动画重构，支持更平滑的页面切换过渡</text>
+            <text class="changelog-add">新增：更新并细化隐私保护政策与用户协议，保障用户数据合规透明</text>
           </view>
         </view>
       </view>

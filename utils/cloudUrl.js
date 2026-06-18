@@ -8,11 +8,12 @@ function convertList(list, fields, callback) {
     return
   }
   if (typeof fields === 'string') fields = [fields]
+  var result = list.map(function(item) { return Object.assign({}, item) })
   var fileIDs = []
   var map = []
-  for (var i = 0; i < list.length; i++) {
+  for (var i = 0; i < result.length; i++) {
     for (var j = 0; j < fields.length; j++) {
-      var val = list[i][fields[j]]
+      var val = result[i][fields[j]]
       if (isCloudUrl(val)) {
         fileIDs.push(val)
         map.push({ index: i, field: fields[j], fileID: val })
@@ -20,7 +21,7 @@ function convertList(list, fields, callback) {
     }
   }
   if (fileIDs.length === 0) {
-    callback(list)
+    callback(result)
     return
   }
   wx.cloud.getTempFileURL({ fileList: fileIDs })
@@ -35,13 +36,13 @@ function convertList(list, fields, callback) {
       }
       for (var m = 0; m < map.length; m++) {
         if (urlMap[map[m].fileID]) {
-          list[map[m].index][map[m].field] = urlMap[map[m].fileID]
+          result[map[m].index][map[m].field] = urlMap[map[m].fileID]
         }
       }
-      callback(list)
+      callback(result)
     })
     .catch(function() {
-      callback(list)
+      callback(result)
     })
 }
 

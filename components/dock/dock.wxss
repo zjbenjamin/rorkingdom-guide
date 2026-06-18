@@ -1,6 +1,8 @@
 .dock {
   position: fixed;
   bottom: 28rpx;
+  bottom: calc(28rpx + constant(safe-area-inset-bottom));
+  bottom: calc(28rpx + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;

@@ -3,3 +3,7 @@
 .p-title { font-size: 32rpx; font-weight: bold; color: #00d4ff; margin-bottom: 20rpx; display: block; }
 .p-text { font-size: 26rpx; display: block; margin-bottom: 12rpx; }
 .p-highlight { color: #ffab40; font-weight: bold; }
+.p-header { text-align: center; margin-bottom: 48rpx; padding-bottom: 24rpx; border-bottom: 1rpx solid rgba(255,255,255,0.1); }
+.p-main-title { font-size: 36rpx; font-weight: bold; color: #ffffff; display: block; margin-bottom: 12rpx; }
+.p-subtitle { font-size: 24rpx; color: rgba(255,255,255,0.4); display: block; }
+.p-link { color: #00d4ff; }

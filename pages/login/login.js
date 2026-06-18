@@ -180,6 +180,8 @@ Page({
       if (now - loginTime > expire) {
         wx.removeStorageSync('user_info')
         wx.removeStorageSync('login_time')
+        wx.removeStorageSync('is_admin_user')
+        wx.removeStorageSync('admin_logged_in')
         self.setData({ userInfo: null, hasUserInfo: false, gameUid: '' })
         wx.showToast({ title: '登录已过期，请重新登录', icon: 'none' })
       } else {
@@ -415,6 +417,8 @@ Page({
   clearLocalUserData: function() {
     wx.removeStorageSync('user_info')
     wx.removeStorageSync('login_time')
+    wx.removeStorageSync('is_admin_user')
+    wx.removeStorageSync('admin_logged_in')
     var app = getApp()
     app.globalData.userInfo = null
     this.setData({ userInfo: null, hasUserInfo: false, loginExpire: '' })

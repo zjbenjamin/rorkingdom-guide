@@ -54,10 +54,18 @@ function httpsPost(url, body) {
   })
 }
 
+let cachedToken = null
+let tokenExpireAt = 0
+
 async function getAccessToken() {
+  if (cachedToken && Date.now() < tokenExpireAt) return cachedToken
   const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${APP_ID}&secret=${APP_SECRET}`
   const res = await httpsGet(url)
-  if (res.access_token) return res.access_token
+  if (res.access_token) {
+    cachedToken = res.access_token
+    tokenExpireAt = Date.now() + (res.expires_in - 300) * 1000
+    return cachedToken
+  }
   throw new Error('获取access_token失败: ' + (res.errmsg || JSON.stringify(res)))
 }
 
@@ -117,11 +125,12 @@ exports.main_handler = async (event, context) => {
     const url = `https://api.weixin.qq.com/cgi-bin/message/subscribe/send?access_token=${token}`
 
     // 并发发送，提高效率，减少超时风险
+    const targetPage = (body.page || 'pages/index/index').replace(/^\//, '')
     const tasks = subscriberList.map(sub => {
       return httpsPost(url, {
         touser: sub.openid,
         template_id: sendTemplateId,
-        page: '/pages/index/index',
+        page: targetPage,
         data: msgData
       }).catch(e => ({ errcode: -1, errmsg: e.message }))
     })

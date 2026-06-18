@@ -233,7 +233,7 @@
           </view>
           <view class="form-group">
             <text class="form-label">标题</text>
-            <input class="form-input" placeholder="输入公告标题" value="{{formTitle}}" bindinput="onTitleInput" maxlength="50" />
+            <input class="form-input" placeholder-class="form-input-placeholder" placeholder="输入公告标题" value="{{formTitle}}" bindinput="onTitleInput" maxlength="50" />
           </view>
           <view class="form-group">
             <view class="form-label-row">
@@ -271,13 +271,29 @@
                   <text class="tool-icon">🎬</text>
                   <text class="tool-text">视频</text>
                 </view>
-                <view class="tool-btn" catchtap="showTableDialog">
+                <view class="tool-btn" catchtap="importFileToTable">
                   <text class="tool-icon">📊</text>
                   <text class="tool-text">表格</text>
                 </view>
+                <view class="tool-btn" catchtap="showAttachmentDialog">
+                  <text class="tool-icon">📎</text>
+                  <text class="tool-text">附件</text>
+                </view>
                 <view class="tool-btn" catchtap="showImageBlockDialog">
                   <text class="tool-icon">🖼️</text>
-                  <text class="tool-text">图片</text>
+                  <text class="tool-text">正文插图</text>
+                </view>
+                <view class="tool-btn" catchtap="showDividerDialog">
+                  <text class="tool-icon">➖</text>
+                  <text class="tool-text">分割线</text>
+                </view>
+                <view class="tool-btn" catchtap="showLinkDialog">
+                  <text class="tool-icon">🔗</text>
+                  <text class="tool-text">超链接</text>
+                </view>
+                <view class="tool-btn" catchtap="addRichTextBlock">
+                  <text class="tool-icon">＋</text>
+                  <text class="tool-text">新起一段</text>
                 </view>
               </view>
               
@@ -306,16 +322,16 @@
             
             <!-- 已添加的富文本块 -->
             <view class="rich-blocks" wx:if="{{formRichContent.length > 0}}">
-              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}} {{item.type === 'music' ? 'music-block-item' : ''}} {{item.type === 'video' ? 'video-block-item' : ''}} {{item.type === 'table' ? 'table-block-item' : ''}}" wx:for="{{formRichContent}}" wx:key="index">
+              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}} {{item.type === 'music' ? 'music-block-item' : ''}} {{item.type === 'video' ? 'video-block-item' : ''}} {{item.type === 'table' ? 'table-block-item' : ''}} {{item.type === 'divider' ? 'divider-block-item' : ''}} {{item.type === 'link' ? 'link-block-item' : ''}}" wx:for="{{formRichContent}}" wx:key="index">
                 <view class="block-content">
                   <text wx:if="{{item.type === 'quote'}}" class="block-quote-icon">❝</text>
                   <block wx:elif="{{item.type === 'music'}}">
                     <text class="block-music-icon">🎵</text>
-                    <text class="block-text music-text-info">{{item.name}} ({{item.url}})</text>
+                    <text class="block-text music-text-info">{{item.name || '推荐单曲'}}</text>
                   </block>
                   <block wx:elif="{{item.type === 'video'}}">
                     <text class="block-video-icon">{{item.platform === 'bilibili' ? '📺' : '🎬'}}</text>
-                    <text class="block-text video-text-info">{{item.platformName}}视频{{item.name ? ': ' + item.name : ''}} ({{item.url}})</text>
+                    <text class="block-text video-text-info">{{item.platformName || '在线'}}视频{{item.name ? ': ' + item.name : ''}}</text>
                   </block>
                   <block wx:elif="{{item.type === 'table'}}">
                     <view class="table-block-preview">
@@ -334,48 +350,46 @@
                       <image src="{{item.url}}" mode="aspectFill" />
                     </view>
                   </block>
+                  <block wx:elif="{{item.type === 'divider'}}">
+                    <view class="divider-block" style="width: 100%;">
+                      <view class="divider-line {{item.style}}"></view>
+                    </view>
+                  </block>
+                  <block wx:elif="{{item.type === 'link'}}">
+                    <view class="link-block-preview {{item.isVideo ? 'video-style' : ''}}" style="width: 100%;">
+                      <text class="link-preview-icon">{{item.isVideo ? '📺' : '🔗'}}</text>
+                      <text class="link-preview-text">{{item.text}}</text>
+                    </view>
+                  </block>
+                  <block wx:elif="{{item.type === 'attachment'}}">
+                    <view class="attachment-block-preview" style="width: 100%;">
+                      <text style="font-size: 28rpx; color: #ffab40; margin-right: 12rpx;">📎</text>
+                      <view style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+                        <text style="font-size: 26rpx; color: #ffab40; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">{{item.name}}</text>
+                        <text style="font-size: 20rpx; color: rgba(255,255,255,0.4);" wx:if="{{item.sizeText}}">{{item.sizeText}}</text>
+                      </view>
+                    </view>
+                  </block>
                   <text wx:else class="block-text" style="font-size:{{item.size}}rpx;color:{{item.color}};font-weight:{{item.weight}};font-style:{{item.style}};{{item.fontFamily && item.fontFamily !== 'sans-serif' ? 'font-family:' + item.fontFamily + ';' : ''}}">{{item.content}}</text>
                 </view>
                 <view class="block-actions">
-                  <view class="block-btn" wx:if="{{item.type !== 'music' && item.type !== 'video' && item.type !== 'table' && item.type !== 'image'}}" catchtap="editRichBlock" data-idx="{{index}}">编辑</view>
+                  <view class="block-btn" wx:if="{{item.type !== 'music' && item.type !== 'video' && item.type !== 'table' && item.type !== 'image' && item.type !== 'divider' && item.type !== 'link' && item.type !== 'attachment'}}" catchtap="editRichBlock" data-idx="{{index}}">编辑</view>
                   <view class="block-btn delete" catchtap="removeRichBlock" data-idx="{{index}}">删除</view>
                 </view>
               </view>
             </view>
             
-            <textarea class="form-textarea" placeholder="输入文字后可点击工具栏按钮设置格式..." value="{{formContent}}" bindinput="onContentInput" maxlength="5000" cursor-spacing="120" />
-            <view class="file-import" catchtap="importFile">
-              <text class="file-import-icon">📄</text>
-              <text class="file-import-text">导入文件（XML/DOCX）</text>
-            </view>
+            <editor id="editor" class="form-editor" placeholder="输入公告内容" bindstatuschange="onStatusChange" bindready="onEditorReady" bindinput="onEditorInput" show-img-size show-img-toolbar show-img-resize></editor>
           </view>
           <view class="form-group">
             <text class="form-label">引用来源（可选）</text>
-            <input class="form-input" placeholder="输入引用来源或出处" value="{{formSource}}" bindinput="onSourceInput" maxlength="100" />
+            <input class="form-input" placeholder-class="form-input-placeholder" placeholder="输入引用来源或出处" value="{{formSource}}" bindinput="onSourceInput" maxlength="100" />
           </view>
           <view class="form-group row">
             <text class="form-label">置顶</text>
             <view class="toggle {{formPinned ? 'on' : ''}}" catchtap="togglePinned"><view class="toggle-dot"></view></view>
           </view>
-          <view class="form-group">
-            <text class="form-label">图片（可选）</text>
-            <view class="image-section">
-              <view class="image-preview" wx:if="{{formImage}}" catchtap="previewFormImage">
-                <image class="preview-img" src="{{formImage}}" mode="aspectFill" />
-                <view class="image-remove" catchtap="removeFormImage">✕</view>
-              </view>
-              <view class="image-actions" wx:if="{{!formImage}}">
-                <view class="image-action-btn" catchtap="chooseFormImage">
-                  <text class="action-icon">📷</text>
-                  <text class="action-text">相册</text>
-                </view>
-                <view class="image-action-btn" catchtap="inputImageUrl">
-                  <text class="action-icon">🔗</text>
-                  <text class="action-text">链接</text>
-                </view>
-              </view>
-            </view>
-          </view>
+
           <view class="form-row">
             <view class="form-group half">
               <text class="form-label">开始日期</text>
@@ -409,11 +423,11 @@
         <view class="modal-body">
           <view class="form-group">
             <text class="form-label">标题</text>
-            <input class="form-input" placeholder="活动标题" value="{{activityFormTitle}}" bindinput="onActivityTitleInput" maxlength="50" />
+            <input class="form-input" placeholder-class="form-input-placeholder" placeholder="活动标题" value="{{activityFormTitle}}" bindinput="onActivityTitleInput" maxlength="50" />
           </view>
           <view class="form-group">
             <text class="form-label">类型</text>
-            <input class="form-input" placeholder="如：限时活动、日常活动" value="{{activityFormType}}" bindinput="onActivityTypeInput" />
+            <input class="form-input" placeholder-class="form-input-placeholder" placeholder="如：限时活动、日常活动" value="{{activityFormType}}" bindinput="onActivityTypeInput" />
           </view>
           <view class="form-group">
             <text class="form-label">状态</text>
@@ -456,13 +470,29 @@
                   <text class="tool-icon">🎬</text>
                   <text class="tool-text">视频</text>
                 </view>
-                <view class="tool-btn" catchtap="showActivityTableDialog">
+                <view class="tool-btn" catchtap="importActivityFileToTable">
                   <text class="tool-icon">📊</text>
                   <text class="tool-text">表格</text>
                 </view>
+                <view class="tool-btn" catchtap="showActivityAttachmentDialog">
+                  <text class="tool-icon">📎</text>
+                  <text class="tool-text">附件</text>
+                </view>
                 <view class="tool-btn" catchtap="showActivityImageBlockDialog">
                   <text class="tool-icon">🖼️</text>
-                  <text class="tool-text">图片</text>
+                  <text class="tool-text">正文插图</text>
+                </view>
+                <view class="tool-btn" catchtap="showActivityDividerDialog">
+                  <text class="tool-icon">➖</text>
+                  <text class="tool-text">分割线</text>
+                </view>
+                <view class="tool-btn" catchtap="showActivityLinkDialog">
+                  <text class="tool-icon">🔗</text>
+                  <text class="tool-text">超链接</text>
+                </view>
+                <view class="tool-btn" catchtap="addActivityRichTextBlock">
+                  <text class="tool-icon">＋</text>
+                  <text class="tool-text">新起一段</text>
                 </view>
               </view>
               <view class="size-picker" wx:if="{{showActivitySizePicker}}">
@@ -486,16 +516,16 @@
             </view>
             <!-- 已添加的富文本块 -->
             <view class="rich-blocks" wx:if="{{activityRichContent.length > 0}}">
-              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}} {{item.type === 'music' ? 'music-block-item' : ''}} {{item.type === 'video' ? 'video-block-item' : ''}} {{item.type === 'table' ? 'table-block-item' : ''}}" wx:for="{{activityRichContent}}" wx:key="index">
+              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}} {{item.type === 'music' ? 'music-block-item' : ''}} {{item.type === 'video' ? 'video-block-item' : ''}} {{item.type === 'table' ? 'table-block-item' : ''}} {{item.type === 'divider' ? 'divider-block-item' : ''}} {{item.type === 'link' ? 'link-block-item' : ''}}" wx:for="{{activityRichContent}}" wx:key="index">
                 <view class="block-content">
                   <text wx:if="{{item.type === 'quote'}}" class="block-quote-icon">❝</text>
                   <block wx:elif="{{item.type === 'music'}}">
                     <text class="block-music-icon">🎵</text>
-                    <text class="block-text music-text-info">{{item.name}} ({{item.url}})</text>
+                    <text class="block-text music-text-info">{{item.name || '推荐单曲'}}</text>
                   </block>
                   <block wx:elif="{{item.type === 'video'}}">
                     <text class="block-video-icon">{{item.platform === 'bilibili' ? '📺' : '🎬'}}</text>
-                    <text class="block-text video-text-info">{{item.platformName}}视频{{item.name ? ': ' + item.name : ''}} ({{item.url}})</text>
+                    <text class="block-text video-text-info">{{item.platformName || '在线'}}视频{{item.name ? ': ' + item.name : ''}}</text>
                   </block>
                   <block wx:elif="{{item.type === 'table'}}">
                     <view class="table-block-preview">
@@ -514,15 +544,35 @@
                       <image src="{{item.url}}" mode="aspectFill" />
                     </view>
                   </block>
+                  <block wx:elif="{{item.type === 'divider'}}">
+                    <view class="divider-block" style="width: 100%;">
+                      <view class="divider-line {{item.style}}"></view>
+                    </view>
+                  </block>
+                  <block wx:elif="{{item.type === 'link'}}">
+                    <view class="link-block-preview {{item.isVideo ? 'video-style' : ''}}" style="width: 100%;">
+                      <text class="link-preview-icon">{{item.isVideo ? '📺' : '🔗'}}</text>
+                      <text class="link-preview-text">{{item.text}}</text>
+                    </view>
+                  </block>
+                  <block wx:elif="{{item.type === 'attachment'}}">
+                    <view class="attachment-block-preview" style="width: 100%;">
+                      <text style="font-size: 28rpx; color: #ffab40; margin-right: 12rpx;">📎</text>
+                      <view style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+                        <text style="font-size: 26rpx; color: #ffab40; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">{{item.name}}</text>
+                        <text style="font-size: 20rpx; color: rgba(255,255,255,0.4);" wx:if="{{item.sizeText}}">{{item.sizeText}}</text>
+                      </view>
+                    </view>
+                  </block>
                   <text wx:else class="block-text" style="font-size:{{item.size}}rpx;color:{{item.color}};font-weight:{{item.weight}};font-style:{{item.style}};{{item.fontFamily && item.fontFamily !== 'sans-serif' ? 'font-family:' + item.fontFamily + ';' : ''}}">{{item.content}}</text>
                 </view>
                 <view class="block-actions">
-                  <view class="block-btn" wx:if="{{item.type !== 'music' && item.type !== 'video' && item.type !== 'table' && item.type !== 'image'}}" catchtap="editActivityRichBlock" data-idx="{{index}}">编辑</view>
+                  <view class="block-btn" wx:if="{{item.type !== 'music' && item.type !== 'video' && item.type !== 'table' && item.type !== 'image' && item.type !== 'divider' && item.type !== 'link' && item.type !== 'attachment'}}" catchtap="editActivityRichBlock" data-idx="{{index}}">编辑</view>
                   <view class="block-btn delete" catchtap="removeActivityRichBlock" data-idx="{{index}}">删除</view>
                 </view>
               </view>
             </view>
-            <textarea class="form-textarea" placeholder="输入文字后可点击工具栏按钮设置格式..." value="{{activityFormContent}}" bindinput="onActivityContentInput" maxlength="5000" cursor-spacing="120" />
+            <editor id="activityEditor" class="form-editor" placeholder="活动内容描述" bindstatuschange="onActivityEditorStatusChange" bindready="onActivityEditorReady" bindinput="onActivityEditorInput" show-img-size show-img-toolbar show-img-resize></editor>
           </view>
           <view class="form-row">
             <view class="form-group half">
@@ -538,28 +588,10 @@
               </picker>
             </view>
           </view>
-          <view class="form-group">
-            <text class="form-label">图片（可选）</text>
-            <view class="image-section">
-              <view class="image-preview" wx:if="{{activityFormImage}}" catchtap="previewActivityImage">
-                <image class="preview-img" src="{{activityFormImage}}" mode="aspectFill" />
-                <view class="image-remove" catchtap="removeActivityImage">✕</view>
-              </view>
-              <view class="image-actions" wx:if="{{!activityFormImage}}">
-                <view class="image-action-btn" catchtap="chooseActivityImage">
-                  <text class="action-icon">📷</text>
-                  <text class="action-text">相册</text>
-                </view>
-                <view class="image-action-btn" catchtap="inputActivityImageUrl">
-                  <text class="action-icon">🔗</text>
-                  <text class="action-text">链接</text>
-                </view>
-              </view>
-            </view>
-          </view>
+
           <view class="form-group">
             <text class="form-label">来源（可选）</text>
-            <input class="form-input" placeholder="  输入引用来源或出处" value="{{activityFormSource}}" bindinput="onActivitySourceInput" maxlength="100" />
+            <input class="form-input" placeholder-class="form-input-placeholder" placeholder="  输入引用来源或出处" value="{{activityFormSource}}" bindinput="onActivitySourceInput" maxlength="100" />
           </view>
         </view>
         <view class="modal-footer">

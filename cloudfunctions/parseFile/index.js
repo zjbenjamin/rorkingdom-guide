@@ -1,6 +1,7 @@
 const cloud = require('wx-server-sdk')
 const https = require('https')
 const http = require('http')
+const XLSX = require('xlsx')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
 function parseXmlTable(xml) {
@@ -83,6 +84,22 @@ exports.main = async (event, context) => {
         return { success: true, content: md, type: 'table' }
       }
       return { success: true, content: parseXmlText(xml), type: 'text' }
+    }
+    if (ext === 'xlsx' || ext === 'xls' || fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+      const workbook = XLSX.read(buffer, { type: 'buffer' })
+      const sheetName = workbook.SheetNames[0]
+      const worksheet = workbook.Sheets[sheetName]
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
+      if (jsonData.length > 0) {
+        let md = ''
+        for (let i = 0; i < jsonData.length; i++) {
+          const row = jsonData[i].map(cell => cell !== undefined && cell !== null ? String(cell) : '')
+          md += '| ' + row.join(' | ') + ' |\n'
+          if (i === 0) md += '| ' + row.map(() => '---').join(' | ') + ' |\n'
+        }
+        return { success: true, content: md, type: 'table' }
+      }
+      return { success: true, content: '', type: 'empty' }
     }
     if (ext === 'docx' || fileName.endsWith('.docx')) {
       const text = parseDocx(buffer)

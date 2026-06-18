@@ -1,5 +1,5 @@
 /* 关于页 Liquid Glass */
-.page { min-height: 100vh; background-color: #010314; background-image: radial-gradient(ellipse 70% 40% at 50% 20%, rgba(180,100,255,0.08) 0%, transparent 50%), linear-gradient(185deg, #020410 0%, #040c24 100%); animation: pageExpand 0.5s cubic-bezier(0.22, 0.61, 0.36, 1); padding-bottom: 180rpx; }
+.page { min-height: 100vh; background-color: #010314; background-image: radial-gradient(ellipse 70% 40% at 50% 20%, rgba(180,100,255,0.08) 0%, transparent 50%), linear-gradient(185deg, #020410 0%, #040c24 100%); animation: pageExpand 0.5s cubic-bezier(0.22, 0.61, 0.36, 1); padding-bottom: calc(180rpx + constant(safe-area-inset-bottom)); padding-bottom: calc(180rpx + env(safe-area-inset-bottom)); }
 @keyframes pageExpand { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 @keyframes btn-shine { 0% { left: -100%; } 50%, 100% { left: 100%; } }
 

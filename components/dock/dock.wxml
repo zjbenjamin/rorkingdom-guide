@@ -12,5 +12,8 @@
     <navigator class="dock-item {{current==='login'?'active':''}}" url="/pages/login/login" open-type="redirect" catchtap="">
       <text class="dock-icon">👤</text>
     </navigator>
+    <navigator class="dock-item {{current==='admin'?'active':''}}" url="/pages/admin/admin" open-type="redirect" wx:if="{{isAdmin}}">
+      <text class="dock-icon">⚙️</text>
+    </navigator>
   </view>
 </view>

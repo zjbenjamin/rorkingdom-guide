@@ -2,54 +2,73 @@
   <view class="privacy-container">
     <!-- 隐私政策内容 -->
     <block wx:if="{{type === 'privacy'}}">
+      <view class="p-header">
+        <text class="p-main-title">「洛手助手BENJAMIN」隐私政策</text>
+        <text class="p-subtitle">更新日期：2026年6月17日</text>
+      </view>
+
       <view class="p-section">
         <text class="p-title">一、 我们如何收集和使用您的个人信息</text>
-        <text class="p-text">1. 基础登录：在您授权后，我们会收集您的微信头像、昵称，用于多设备数据同步。</text>
-        <text class="p-text">2. 数据存储：业务数据均存储在您的手机本地（LocalStorage），我们不具备获取您本地数据的技术手段。</text>
-        <text class="p-text">3. IP地址：根据法律要求，我们会收集您的公网IP地址以展示IP属地。</text>
+        <text class="p-text">1. <text class="p-highlight">基础登录与云同步服务</text>：为了向您提供账号登录、评论发表身份标识及多设备数据同步服务，在您明确同意并主动授权后，我们会收集您的<text class="p-highlight">微信头像、昵称</text>。这些信息将被加密传输至微信官方云开发数据库（CloudBase）中保存。</text>
+        <text class="p-text">2. <text class="p-highlight">累计登录天数与等级</text>：为了计算并在个人中心展示您的玩家等级和累计登录天数，我们会收集并同步记录您的登录时间日志。</text>
+        <text class="p-text">3. <text class="p-highlight">本地数据存储</text>：您的核心业务数据（如精灵捕捉明细记录、咕噜球库存使用记录、奇遇事件及日常分析数据）<text class="p-highlight">仅保存在您的手机设备本地（wx.Storage）</text>。开发者服务器或云端不具备访问、读取您本地设备存储数据的技术能力，数据会随您删除本小程序而同步永久清除。</text>
+        <text class="p-text">4. <text class="p-highlight">订阅推送服务</text>：在您主动选择订阅消息（如活动提醒、商人更新）时，我们会调用微信订阅接口。您可随时在登录设置页或微信系统设置中关闭此推送。</text>
       </view>
 
       <view class="p-section">
-        <text class="p-title">二、 我们如何共享您的个人信息</text>
-        <text class="p-text">我们不会向任何第三方公司、组织或个人共享您的个人信息，亦不接入任何可能窃取隐私的第三方SDK。</text>
+        <text class="p-title">二、 我们如何共享、转让和公开披露您的个人信息</text>
+        <text class="p-text">1. 我们承诺<text class="p-highlight">不与任何第三方公司、组织和个人共享</text>您的个人信息，亦不将您的信息用于任何商业推广。本小程序不接入任何用于用户行为追踪或数据窃取的第三方广告及分析 SDK。</text>
+        <text class="p-text">2. 仅在涉及法律法规、行政司法机关依法要求，或者在获得您明确同意的极少数情况下，我们才会依法处理或提供您的信息。</text>
       </view>
 
       <view class="p-section">
-        <text class="p-title">三、 您的权利</text>
-        <text class="p-text">您可以随时查阅您的个人信息，或通过删除小程序清除所有本地数据。如需注销账号，请联系开发者邮箱。</text>
+        <text class="p-title">三、 您的权利与账号注销</text>
+        <text class="p-text">1. <text class="p-highlight">数据查阅与修改</text>：您可以在个人中心随时查阅您的头像、昵称和等级信息，并可自主修改您的昵称和头像。</text>
+        <text class="p-text">2. <text class="p-highlight">撤回授权与清除</text>：您可以通过微信客户端的权限管理随时撤回对我们的授权。通过在微信中删除本小程序，可以一键清除您设备中的所有本地存储数据。</text>
+        <text class="p-text">3. <text class="p-highlight">账号注销</text>：您可以随时在登录中心点击“注销账号”按钮，系统将立即从微信云端服务器彻底且不可恢复地清除您的云端账号记录（包括头像、昵称、等级与订阅次数）。您亦可发送注销申请邮件至开发者联系邮箱：<text class="p-link">flyzccboard@yeah.net</text>，我们将在15个工作日内响应处理。</text>
       </view>
 
       <view class="p-section">
-        <text class="p-title">四、 免责声明</text>
-        <text class="p-text">1. 本应用为非官方资料查询工具，由个人开发，与腾讯魔方工作室群无关。</text>
-        <text class="p-text">2. 资料数据参考自公开资料，请以官方实际情况为准。</text>
-        <text class="p-text">3. 本工具仅供用户学习交流使用，请勿用于商业用途。</text>
+        <text class="p-title">四、 免责与免归属声明</text>
+        <text class="p-text">1. 本小程序为个人独立开发运营的非官方攻略与辅助查询工具，<text class="p-highlight">与腾讯魔方工作室群及《洛克王国》官方产品无任何关联或商业合作关系</text>。</text>
+        <text class="p-text">2. 攻略信息主要来自玩家社区公开共享资料（CC BY-NC-SA 4.0协议授权），相关图文素材版权归原版权方腾讯计算机系统有限公司所有。</text>
+        <text class="p-text">3. <text class="p-highlight">先进数字化美工及排版技术说明</text>：本小程序中部分展示图画、修饰插图及辅助排版样式采用了先进的数字化图像处理技术与界面开发辅助工具进行生成，不包含任何有害、虚假或违法违规信息。</text>
+        <text class="p-text">4. <text class="p-highlight">静态资源托管服务说明</text>：为了提高界面加载速度和用户体验，本小程序中部分图片资源托管于第三方合规的分布式静态资源图床。该托管服务仅用于静态读取展示，绝不收集、追踪或存储任何用户的个人身份隐私数据及上网行为日志。</text>
       </view>
     </block>
 
     <!-- 用户协议内容 -->
     <block wx:else>
+      <view class="p-header">
+        <text class="p-main-title">「洛手助手BENJAMIN」用户协议</text>
+        <text class="p-subtitle">更新日期：2026年6月17日</text>
+      </view>
+
       <view class="p-section">
-        <text class="p-title">一、 服务内容</text>
-        <text class="p-text">「洛手助手BENJAMIN」提供游戏资料查询、捕捉统计等辅助功能。本工具由个人开发，非官方出品。</text>
+        <text class="p-title">一、 服务内容与性质</text>
+        <text class="p-text">1. 本小程序主要向用户提供游戏精灵图鉴数据展示、捕捉成功率简易计算、道具及活动日程提醒等信息服务。</text>
+        <text class="p-text">2. 本小程序是一项供广大游戏爱好者交流和研究的第三方自发性非官方辅助服务。用户应明确理解本服务的非官方性质。</text>
       </view>
 
       <view class="p-section">
         <text class="p-title">二、 用户行为规范</text>
-        <text class="p-text">1. 遵守国家法律法规，不得传播违法违规信息。</text>
-        <text class="p-text">2. 严禁利用工具漏洞获取非法利益或对工具进行反向工程。</text>
-        <text class="p-text">3. 未经许可，不得将本工具用于任何形式的商业用途。</text>
+        <text class="p-text">1. 用户在使用本小程序时，必须严格遵守《中华人民共和国网络安全法》《个人信息保护法》等国家法律法规，不得利用本小程序或其评论/UID交互功能传播违法、违规、侵权或有违社会公德的内容。</text>
+        <text class="p-text">2. 严禁利用任何漏洞破坏本小程序的云数据库，不得对本小程序进行恶意抓包、反编译、反向工程或恶意攻击云服务端口。</text>
+        <text class="p-text">3. 用户知悉并同意，本小程序仅供个人非盈利性交流研究使用，严禁将其用于任何形式的商业盈利行为或未经授权的推广活动。</text>
       </view>
 
       <view class="p-section">
-        <text class="p-title">三、 免责条款</text>
-        <text class="p-text">1. 数据准确性：工具展示的数据仅供参考，不对游戏决策后果负责。</text>
-        <text class="p-text">2. 服务稳定性：不对因网络或政策调整导致的服务中断或数据丢失负责。</text>
+        <text class="p-title">三、 免责条款声明</text>
+        <text class="p-text">1. <text class="p-highlight">数据准确性</text>：所有攻略与计算公式仅供玩家休闲娱乐参考，不对因数据误差导致的游戏内决策后果承担责任。请用户以游戏官方最终发布的数据及规则为准。</text>
+        <text class="p-text">2. <text class="p-highlight">服务可用性</text>：因运营商网络波动、微信平台规则重大调整、不可抗力等第三方原因导致的服务临时中断、登录记录清空等，开发者将积极组织修复，但不承担赔偿责任。</text>
+        <text class="p-text">3. <text class="p-highlight">数字化内容免责</text>：本小程序内由先进辅助工具生成的插画、界面排版及技术代码等仅作演示与体验交流，开发者不对其绝对无差错作法律担保，亦不构成本小程序功能性服务之外的其他指引。</text>
       </view>
 
       <view class="p-section">
-        <text class="p-title">四、 知识产权</text>
-        <text class="p-text">本小程序所有权归开发者“浙里本杰明”所有。所引用的游戏素材版权归原版权方腾讯所有。</text>
+        <text class="p-title">四、 知识产权归属</text>
+        <text class="p-text">1. 本小程序的所有程序代码、交互界面与专属 UI 的知识产权归开发者“浙里本杰明”所有。</text>
+        <text class="p-text">2. 小程序中展示的游戏精灵设计、技能数据、道具名称及相关视觉图文资产的版权和知识产权均归版权人腾讯计算机系统有限公司所有。</text>
+        <text class="p-text">3. 本应用对相关游戏内容的展示及评论引用，属于《著作权法》规定的为介绍、评论作品而合理使用的范畴。</text>
       </view>
     </block>
 

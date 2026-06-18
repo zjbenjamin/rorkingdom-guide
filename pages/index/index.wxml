@@ -11,26 +11,53 @@
 
     <!-- 头图编辑弹窗 -->
     <view class="modal-mask" wx:if="{{showBannerModal}}" bindtap="toggleBannerModal">
-      <view class="modal-box" catchtap="preventClose">
+      <view class="modal-box banner-modal" catchtap="preventClose">
         <view class="modal-header">
-          <text class="modal-title">编辑首页头图</text>
+          <view class="modal-title-box">
+            <view class="modal-title-line"></view>
+            <text class="modal-title">编辑首页头图</text>
+          </view>
           <text class="modal-close" catchtap="toggleBannerModal">✕</text>
         </view>
         <view class="modal-body">
+          <view class="banner-preview-label">效果预览</view>
           <view class="banner-preview" wx:if="{{bannerInput}}">
             <image class="preview-img" src="{{bannerInput}}" mode="aspectFill" />
-          </view>
-          <view class="banner-actions">
-            <view class="image-action-btn" catchtap="chooseBannerImage">
-              <text class="action-icon">📷</text>
-              <text class="action-text">相册选择</text>
+            <view class="preview-mask">
+              <text class="preview-text">PREVIEW</text>
             </view>
-            <input class="banner-input" placeholder="或粘贴图片URL链接" placeholder-style="color:rgba(255,255,255,0.35)" value="{{bannerInput}}" bindinput="onBannerInput" cursor-spacing="120" />
+          </view>
+          <view class="banner-preview empty" wx:else>
+            <text>暂无预览图片</text>
+          </view>
+
+          <view class="banner-form">
+            <view class="form-label">上传图片</view>
+            <view class="banner-actions">
+              <view class="image-action-btn" catchtap="chooseBannerImage">
+                <text class="action-icon">📸</text>
+                <text class="action-text">从相册选择图片</text>
+                <text class="action-hint">支持 jpg, png, webp</text>
+              </view>
+              
+              <view class="form-divider">
+                <view class="divider-line"></view>
+                <text class="divider-text">或者</text>
+                <view class="divider-line"></view>
+              </view>
+
+              <view class="input-group">
+                <view class="input-icon">🔗</view>
+                <input class="banner-input" placeholder="粘贴远程图片URL链接" placeholder-style="color:rgba(255,255,255,0.25)" value="{{bannerInput}}" bindinput="onBannerInput" cursor-spacing="140" />
+              </view>
+            </view>
           </view>
         </view>
         <view class="modal-footer">
           <button class="modal-cancel" catchtap="toggleBannerModal">取消</button>
-          <button class="modal-save" catchtap="saveBanner" disabled="{{bannerSaving}}">{{bannerSaving ? '保存中...' : '保存'}}</button>
+          <button class="modal-save" catchtap="saveBanner" disabled="{{bannerSaving}}">
+            <text>{{bannerSaving ? '正在提交...' : '确认更新头图'}}</text>
+          </button>
         </view>
       </view>
     </view>
@@ -64,7 +91,7 @@
           </view>
           <view class="news-detail" wx:if="{{expandedIndex === index}}">
             <block wx:if="{{item.richContent && item.richContent.length > 0}}">
-              <view class="news-detail-rich" style="padding: 12rpx 16rpx; background: rgba(0,0,0,0.2); border-radius: 12rpx; border-left: 4rpx solid rgba(0,212,255,0.3); margin-bottom: 16rpx;">
+              <view class="news-detail-rich" style="margin-bottom: 20rpx; width: 100%; box-sizing: border-box;">
                 <block wx:for="{{item.richContent}}" wx:for-item="block" wx:key="index">
                   <view wx:if="{{block.type === 'music'}}" class="rich-music-block {{currentPlayUrl === block.url && isPlaying ? 'playing' : ''}}" catchtap="playSong" data-url="{{block.url}}" data-name="{{block.name || '推荐单曲'}}">
                     <text class="music-icon {{currentPlayUrl === block.url && isPlaying ? 'rotating' : ''}}">🎵</text>
@@ -88,13 +115,22 @@
                   <view wx:elif="{{block.type === 'quote'}}" class="rich-quote-block">
                     <text class="quote-text">{{block.content}}</text>
                   </view>
-                  <view wx:elif="{{block.type === 'video'}}" class="rich-music-block" catchtap="openVideo" data-url="{{block.url}}" data-name="{{block.name || '视频'}}">
-                    <text class="music-icon">{{block.platform === 'bilibili' ? '📺' : '🎬'}}</text>
-                    <view class="music-info">
-                      <text class="music-name">{{block.name || block.platformName + '视频'}}</text>
-                      <text class="music-url">{{block.url}}</text>
+                  <view wx:elif="{{block.type === 'video'}}" class="rich-video-block" catchtap="openVideo" data-url="{{block.url}}" data-name="{{block.name || '视频'}}">
+                    <text class="video-icon">
+                      <block wx:if="{{block.platform === 'bilibili'}}">📺</block>
+                      <block wx:elif="{{block.platform === 'weibo'}}">🎬</block>
+                      <block wx:elif="{{block.platform === 'douyin'}}">🎵</block>
+                      <block wx:elif="{{block.platform === 'kuaishou'}}">📹</block>
+                      <block wx:elif="{{block.platform === 'tencent'}}">📽️</block>
+                      <block wx:elif="{{block.platform === 'xiaohongshu'}}">📕</block>
+                      <block wx:elif="{{block.platform === 'youtube'}}">🔴</block>
+                      <block wx:else>🎥</block>
+                    </text>
+                    <view class="video-info">
+                      <text class="video-name">{{block.name || block.platformName + '视频'}}</text>
+                      <text class="video-platform">{{block.platformName || '在线视频'}}</text>
                     </view>
-                    <text class="music-play-btn">▶ 观看</text>
+                    <text class="video-play-btn">▶ 观看</text>
                   </view>
                   <view wx:elif="{{block.type === 'table'}}" class="rich-table-block">
                     <view class="rich-table">
@@ -109,8 +145,26 @@
                   <view wx:elif="{{block.type === 'image'}}" class="rich-image-block" catchtap="previewRichImage" data-src="{{block.url}}">
                     <image class="rich-image" src="{{block.url}}" mode="widthFix" />
                   </view>
+                  <view wx:elif="{{block.type === 'divider'}}" class="divider-block">
+                    <view class="divider-line {{block.style}}"></view>
+                  </view>
+                  <view wx:elif="{{block.type === 'link' && block.isVideo}}" class="rich-link-block video-link" catchtap="openVideo" data-url="{{block.url}}" data-name="{{block.text}}">
+                    <text class="link-icon">📺</text>
+                    <text class="link-text">{{block.text}}</text>
+                    <text class="link-badge">点击观看</text>
+                  </view>
+                  <view wx:elif="{{block.type === 'link'}}" class="rich-link-block" catchtap="openLink" data-url="{{block.url}}" data-text="{{block.text}}">
+                    <text class="link-icon">🔗</text>
+                    <text class="link-text">{{block.text}}</text>
+                    <text class="link-badge">点击复制</text>
+                  </view>
+                  <view wx:elif="{{block.type === 'attachment'}}" class="rich-link-block attachment-link" catchtap="downloadAttachment" data-url="{{block.url}}" data-name="{{block.name}}" data-size="{{block.sizeText}}">
+                    <text class="link-icon">📎</text>
+                    <text class="link-text">{{block.name}} ({{block.sizeText}})</text>
+                    <text class="link-badge">下载预览</text>
+                  </view>
                   <view wx:else class="rich-text-block" style="font-size:{{block.size}}rpx;color:{{block.color}};font-weight:{{block.weight || 'normal'}};font-style:{{block.style || 'normal'}};{{block.fontFamily && block.fontFamily !== 'sans-serif' ? 'font-family:' + block.fontFamily + ';' : ''}}">
-                    {{block.content}}
+                    <rich-text nodes="{{block.html || block.content}}" />
                   </view>
                 </block>
               </view>
@@ -147,18 +201,18 @@
 
   <!-- 视频播放器 -->
   <view class="modal-mask" wx:if="{{showVideoPlayer}}" catchtap="closeVideoPlayer" style="z-index:10000;">
-    <view class="modal-box video-player-box" catchtap="preventClose" style="width:100%;background:rgba(10,14,39,0.96);border-radius:24rpx 24rpx 0 0;padding:0;max-height:85vh;">
-      <view class="modal-header" style="padding:20rpx 24rpx 0;margin-bottom:8rpx;">
-        <text class="modal-title" style="color:#fff;font-size:26rpx;">{{videoPlayerName}}</text>
+    <view class="modal-box video-player-box" catchtap="preventClose">
+      <view class="video-player-header">
+        <text class="video-player-title">{{videoPlayerName}}</text>
         <text class="modal-close" catchtap="closeVideoPlayer">✕</text>
       </view>
-      <view style="padding:0 24rpx 8rpx;display:flex;align-items:center;gap:8rpx;" wx:if="{{videoPlayerOwner}}">
-        <text style="font-size:22rpx;color:rgba(255,255,255,0.4);">UP主: {{videoPlayerOwner}}</text>
+      <view class="video-player-owner" wx:if="{{videoPlayerOwner}}">
+        <view class="video-player-owner-bar"></view>
+        <text class="video-player-owner-text">UP主: {{videoPlayerOwner}}</text>
       </view>
-      <image wx:if="{{videoPlayerCover}}" src="{{videoPlayerCover}}" mode="aspectFill" style="width:100%;height:220rpx;" />
-      <video style="width:100%;height:360rpx;" src="{{videoPlayerUrl}}" controls autoplay show-center-play-btn object-fit="contain" />
-      <view style="padding:12rpx 24rpx 24rpx;" wx:if="{{videoPlayerDesc}}">
-        <text style="font-size:22rpx;color:rgba(255,255,255,0.5);line-height:1.5;">{{videoPlayerDesc}}</text>
+      <video class="video-player-video" src="{{videoPlayerUrl}}" controls autoplay show-center-play-btn object-fit="contain" />
+      <view class="video-player-desc" wx:if="{{videoPlayerDesc}}">
+        <text class="video-player-desc-text">{{videoPlayerDesc}}</text>
       </view>
     </view>
   </view>

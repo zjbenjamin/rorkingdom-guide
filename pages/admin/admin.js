@@ -156,6 +156,11 @@ function parseWeiboUrl(url) {
   if (fidMatch) return { platform: 'weibo', platformName: '微博', id: fidMatch[1], url: 'https://video.weibo.com/show?fid=' + fidMatch[1] }
   var showMatch = url.match(/(?:tv\/show|show)\/([0-9:]+)/)
   if (showMatch) return { platform: 'weibo', platformName: '微博', id: showMatch[1], url: 'https://video.weibo.com/show?fid=' + showMatch[1] }
+  
+  // 解析微博文章 (ttarticle)
+  var articleMatch = url.match(/ttarticle\/p\/show\?id=(\d+)/) || url.match(/weibo\.com\/ttarticle\/p\/show\?id=(\d+)/)
+  if (articleMatch) return { platform: 'weibo_article', platformName: '微博文章', id: articleMatch[1], url: 'https://weibo.com/ttarticle/p/show?id=' + articleMatch[1] }
+  
   if (url.indexOf('weibo.com') > -1 || url.indexOf('weibo.cn') > -1) {
     return { platform: 'weibo', platformName: '微博', id: '', url: url }
   }
@@ -735,6 +740,36 @@ Page({
   },
   onTitleInput: function(e) { this.setData({ formTitle: e.detail.value }) },
   onContentInput: function(e) { this.setData({ formContent: e.detail.value }) },
+  onEditorReady: function() {
+    var self = this
+    wx.createSelectorQuery().in(this).select('#editor').context(function(res) {
+      self.editorCtx = res.context
+      if (self.data.formContent) {
+        self.editorCtx.setContents({
+          html: self.data.formHtml || self.data.formContent
+        })
+      }
+    }).exec()
+  },
+  onEditorInput: function(e) {
+    var text = e.detail.text || ''
+    if (text.endsWith('\n')) {
+      text = text.slice(0, -1)
+    }
+    this.setData({ 
+      formContent: text,
+      formHtml: e.detail.html || ''
+    })
+  },
+  onStatusChange: function(e) {
+    var formats = e.detail || {}
+    this.setData({
+      currentFontWeight: formats.bold ? 'bold' : 'normal',
+      currentFontStyle: formats.italic ? 'italic' : 'normal',
+      currentFontColor: formats.color || '#ffffff',
+      currentFontFamily: formats.fontFamily || 'sans-serif'
+    })
+  },
   onImageInput: function(e) { this.setData({ formImage: e.detail.value }) },
   onSourceInput: function(e) { this.setData({ formSource: e.detail.value }) },
   onStartDateChange: function(e) { this.setData({ formStartDate: e.detail.value }) },
@@ -761,24 +796,35 @@ Page({
     }
   },
   toggleBold: function() {
-    var newWeight = this.data.currentFontWeight === 'normal' ? 'bold' : 'normal'
-    this._autoCommitText({ currentFontWeight: newWeight })
+    if (this.editorCtx) {
+      this.editorCtx.format('bold')
+    }
   },
   toggleItalic: function() {
-    var newStyle = this.data.currentFontStyle === 'normal' ? 'italic' : 'normal'
-    this._autoCommitText({ currentFontStyle: newStyle })
+    if (this.editorCtx) {
+      this.editorCtx.format('italic')
+    }
   },
   setFontSize: function(e) {
     var size = e.currentTarget.dataset.size
-    this._autoCommitText({ currentFontSize: size, showSizePicker: false })
+    this.setData({ showSizePicker: false })
+    if (this.editorCtx) {
+      this.editorCtx.format('fontSize', (size / 2) + 'px')
+    }
   },
   setFontColor: function(e) {
     var color = e.currentTarget.dataset.color
-    this._autoCommitText({ currentFontColor: color, showColorPicker: false })
+    this.setData({ showColorPicker: false })
+    if (this.editorCtx) {
+      this.editorCtx.format('color', color)
+    }
   },
   setFontFamily: function(e) {
     var family = e.currentTarget.dataset.family
-    this._autoCommitText({ currentFontFamily: family, showFontFamilyPicker: false })
+    this.setData({ showFontFamilyPicker: false })
+    if (this.editorCtx) {
+      this.editorCtx.format('fontFamily', family)
+    }
   },
   showFontSizePicker: function() {
     this.setData({ showSizePicker: !this.data.showSizePicker, showColorPicker: false, showFontFamilyPicker: false })
@@ -790,32 +836,46 @@ Page({
     this.setData({ showFontFamilyPicker: !this.data.showFontFamilyPicker, showSizePicker: false, showColorPicker: false })
   },
   addRichTextBlock: function() {
-    var content = this.data.formContent.trim()
-    if (!content) {
-      wx.showToast({ title: '请输入内容', icon: 'none' })
+    var self = this
+    if (!self.editorCtx) {
+      wx.showToast({ title: '编辑器未就绪', icon: 'none' })
       return
     }
-    var block = {
-      type: 'text',
-      content: content,
-      style: this.data.currentFontStyle,
-      weight: this.data.currentFontWeight,
-      size: this.data.currentFontSize,
-      color: this.data.currentFontColor,
-      fontFamily: this.data.currentFontFamily
-    }
-    var richContent = this.data.formRichContent.concat([block])
-    this.setData({
-      formRichContent: richContent,
-      formContent: '',
-      currentFontStyle: 'normal',
-      currentFontWeight: 'normal',
-      currentFontSize: 28,
-      currentFontColor: '#ffffff',
-      currentFontFamily: 'sans-serif'
+    self.editorCtx.getContents({
+      success: function(res) {
+        var html = res.html
+        var text = res.text.trim()
+        if (!text) {
+          wx.showToast({ title: '请输入内容', icon: 'none' })
+          return
+        }
+        var block = {
+          type: 'text',
+          content: text,
+          html: html,
+          style: 'normal',
+          weight: 'normal',
+          size: 28,
+          color: '#ffffff',
+          fontFamily: 'sans-serif'
+        }
+        var richContent = self.data.formRichContent.concat([block])
+        self.setData({
+          formRichContent: richContent,
+          formContent: '',
+          formHtml: '',
+          currentFontStyle: 'normal',
+          currentFontWeight: 'normal',
+          currentFontSize: 28,
+          currentFontColor: '#ffffff',
+          currentFontFamily: 'sans-serif'
+        })
+        self.editorCtx.clear()
+      }
     })
   },
   addRichQuoteBlock: function() {
+    var self = this
     var content = this.data.formContent.trim()
     if (!content) {
       wx.showToast({ title: '请输入引用内容', icon: 'none' })
@@ -832,8 +892,12 @@ Page({
     var richContent = this.data.formRichContent.concat([block])
     this.setData({
       formRichContent: richContent,
-      formContent: ''
+      formContent: '',
+      formHtml: ''
     })
+    if (this.editorCtx) {
+      this.editorCtx.clear()
+    }
   },
   removeRichBlock: function(e) {
     var idx = e.currentTarget.dataset.idx
@@ -845,6 +909,9 @@ Page({
       formContent = formContent.replace(block.url, '').replace(/\s{2,}/g, ' ').trim()
     }
     this.setData({ formRichContent: richContent, formContent: formContent })
+    if (this.editorCtx) {
+      this.editorCtx.clear()
+    }
   },
   editRichBlock: function(e) {
     var idx = e.currentTarget.dataset.idx
@@ -853,13 +920,19 @@ Page({
     richContent.splice(idx, 1)
     this.setData({
       formRichContent: richContent,
-      formContent: block.content,
+      formContent: block.html || block.content,
+      formHtml: block.html || '',
       currentFontStyle: block.style || 'normal',
       currentFontWeight: block.weight || 'normal',
       currentFontSize: block.size || 28,
       currentFontColor: block.color || '#ffffff',
       currentFontFamily: block.fontFamily || 'sans-serif'
     })
+    if (this.editorCtx) {
+      this.editorCtx.setContents({
+        html: block.html || block.content
+      })
+    }
   },
   chooseFormImage: function() {
     var self = this
@@ -906,7 +979,7 @@ Page({
       wx.previewImage({ urls: [this.data.formImage] })
     }
   },
-  importFile: function() {
+  importFileToTable: function() {
     var self = this
     wx.chooseMessageFile({
       count: 1,
@@ -929,8 +1002,7 @@ Page({
                 var line = lines[i].replace(/<[^>]+>/g, '').trim()
                 if (line) text += line + '\n'
               }
-              self.setData({ formContent: (self.data.formContent ? self.data.formContent + '\n' : '') + text.trim() })
-              wx.showToast({ title: '导入成功', icon: 'success' })
+              self._processImportedTextToTable(text)
             },
             fail: function() {
               wx.hideLoading()
@@ -949,8 +1021,7 @@ Page({
           }).then(function(parseRes) {
             wx.hideLoading()
             if (parseRes.result && parseRes.result.success) {
-              self.setData({ formContent: (self.data.formContent ? self.data.formContent + '\n' : '') + parseRes.result.content })
-              wx.showToast({ title: '导入成功', icon: 'success' })
+              self._processImportedTextToTable(parseRes.result.content)
             } else {
               wx.showToast({ title: parseRes.result ? parseRes.result.error : '解析失败', icon: 'none' })
             }
@@ -959,6 +1030,124 @@ Page({
             wx.showToast({ title: '导入失败', icon: 'none' })
           })
         }
+      }
+    })
+  },
+  _processImportedTextToTable: function(text) {
+    var tableData = parseTableInput(text)
+    if (!tableData) {
+      wx.showToast({ title: '未识别出表格数据，请确保文件内含有至少两行、每行使用分隔符的分隔内容', icon: 'none' })
+      return
+    }
+    var block = { type: 'table', headers: tableData.headers, rows: tableData.rows, colCount: tableData.colCount, rowCount: tableData.rowCount }
+    var richContent = (this.data.formRichContent || []).concat([block])
+    this.setData({ formRichContent: richContent })
+    wx.showToast({ title: '表格导入成功', icon: 'success' })
+  },
+  showAttachmentDialog: function() {
+    var self = this
+    wx.chooseMessageFile({
+      count: 1,
+      type: 'all',
+      success: function(res) {
+        var file = res.tempFiles[0]
+        wx.showLoading({ title: '上传附件中...' })
+        var cloudPath = 'attachments/' + Date.now() + '_' + file.name
+        wx.cloud.uploadFile({
+          cloudPath: cloudPath,
+          filePath: file.path
+        }).then(function(uploadRes) {
+          wx.hideLoading()
+          var sizeKb = (file.size / 1024).toFixed(1)
+          var sizeText = sizeKb > 1024 ? (sizeKb / 1024).toFixed(1) + ' MB' : sizeKb + ' KB'
+          var block = {
+            type: 'attachment',
+            name: file.name,
+            url: uploadRes.fileID,
+            size: file.size,
+            sizeText: sizeText
+          }
+          var richContent = (self.data.formRichContent || []).concat([block])
+          self.setData({ formRichContent: richContent })
+          wx.showToast({ title: '附件上传成功', icon: 'success' })
+        }).catch(function(err) {
+          wx.hideLoading()
+          wx.showToast({ title: '附件上传失败', icon: 'none' })
+          console.error(err)
+        })
+      }
+    })
+  },
+  showLinkDialog: function() {
+    var self = this
+    wx.showModal({
+      title: '添加超链接',
+      content: '',
+      placeholderText: '请输入链接地址（以 http 或 https 开头）',
+      editable: true,
+      success: function(resUrl) {
+        if (resUrl.confirm && resUrl.content && resUrl.content.trim()) {
+          var url = resUrl.content.trim()
+          if (!/^https?:\/\//i.test(url)) {
+            wx.showToast({ title: '链接需以 http 或 https 开头', icon: 'none' })
+            return
+          }
+          wx.showModal({
+            title: '链接文字说明',
+            content: '',
+            placeholderText: '请输入链接显示的文字说明',
+            editable: true,
+            success: function(resText) {
+              if (resText.confirm) {
+                var text = (resText.content || '').trim() || '快捷链接'
+                var isVideo = /v\.qq\.com|bilibili\.com|video|youtube/i.test(url)
+                var block = { type: 'link', text: text, url: url, isVideo: isVideo }
+                var richContent = (self.data.formRichContent || []).concat([block])
+                self.setData({ formRichContent: richContent })
+                wx.showToast({ title: '超链接已添加', icon: 'success' })
+              }
+            }
+          })
+        }
+      }
+    })
+  },
+  showDividerDialog: function() {
+    var self = this
+    if (!self.editorCtx) {
+      wx.showToast({ title: '编辑器未就绪', icon: 'none' })
+      return
+    }
+    self.editorCtx.getContents({
+      success: function(res) {
+        var html = res.html
+        var text = res.text.trim()
+        var richContent = self.data.formRichContent.slice()
+        if (text) {
+          richContent.push({
+            type: 'text',
+            content: text,
+            html: html,
+            style: 'normal',
+            weight: 'normal',
+            size: 28,
+            color: '#ffffff',
+            fontFamily: 'sans-serif'
+          })
+        }
+        richContent.push({ type: 'divider' })
+        self.setData({
+          formRichContent: richContent,
+          formContent: '',
+          formHtml: '',
+          currentFontStyle: 'normal',
+          currentFontWeight: 'normal',
+          currentFontSize: 28,
+          currentFontColor: '#ffffff',
+          currentFontFamily: 'sans-serif'
+        })
+        self.editorCtx.clear()
+        wx.showToast({ title: '已添加分割线', icon: 'success' })
       }
     })
   },
@@ -976,7 +1165,7 @@ Page({
     var richContent = []
     if (content) {
       richContent = self.data.formRichContent.concat([{
-        type: 'text', content: content, style: self.data.currentFontStyle,
+        type: 'text', content: content, html: self.data.formHtml || '', style: self.data.currentFontStyle,
         weight: self.data.currentFontWeight, size: self.data.currentFontSize, color: self.data.currentFontColor,
         fontFamily: self.data.currentFontFamily
       }])
@@ -984,45 +1173,66 @@ Page({
       richContent = self.data.formRichContent
     }
     var htmlParts = []
-      for (var i = 0; i < richContent.length; i++) {
-        var block = richContent[i]
-        if (block.type === 'quote') {
-          htmlParts.push('<blockquote style="border-left:4rpx solid rgba(0,212,255,0.3);padding-left:12rpx;color:rgba(255,255,255,0.7);font-size:26rpx;margin:12rpx 0;">' + block.content + '</blockquote>')
-        } else if (block.type === 'music') {
-          htmlParts.push('<p style="color:#00d4ff;font-size:26rpx;margin:12rpx 0;text-decoration:underline;">🎵 推荐单曲: ' + block.name + ' (' + block.url + ')</p>')
-        } else if (block.type === 'video') {
-          var platformEmoji = block.platform === 'bilibili' ? '📺' : '🎬'
-          var videoTitle = block.name ? block.name + ' - ' : ''
-          htmlParts.push('<p style="color:#ff6b9d;font-size:26rpx;margin:12rpx 0;">' + platformEmoji + ' 视频: ' + videoTitle + '<a href="' + block.url + '" style="color:#ff6b9d;text-decoration:underline;">' + block.url + '</a></p>')
-        } else if (block.type === 'image') {
-          htmlParts.push('<p style="text-align:center;margin:12rpx 0;"><img src="' + block.url + '" style="max-width:100%;border-radius:12rpx;" /></p>')
-        } else if (block.type === 'table') {
-          var tableHtml = '<table style="width:100%;border-collapse:collapse;margin:12rpx 0;font-size:24rpx;color:#fff;text-align:center;">'
-          tableHtml += '<thead><tr>'
-          for (var ci = 0; ci < block.headers.length; ci++) {
-            tableHtml += '<th style="padding:12rpx 8rpx;background:rgba(0,200,255,0.1);border:1rpx solid rgba(0,200,255,0.2);font-weight:700;color:#00d4ff;">' + block.headers[ci] + '</th>'
+    for (var i = 0; i < richContent.length; i++) {
+      var block = richContent[i]
+      if (block.type === 'quote') {
+        htmlParts.push('<blockquote style="border-left:4rpx solid rgba(0,212,255,0.3);padding-left:12rpx;color:rgba(255,255,255,0.7);font-size:26rpx;margin:12rpx 0;">' + block.content + '</blockquote>')
+      } else if (block.type === 'music') {
+        htmlParts.push('<p style="color:#00d4ff;font-size:26rpx;margin:12rpx 0;text-decoration:underline;">🎵 推荐单曲: ' + block.name + ' (' + block.url + ')</p>')
+      } else if (block.type === 'video') {
+        var platformEmoji = block.platform === 'bilibili' ? '📺' : '🎬'
+        var videoTitle = block.name ? block.name + ' - ' : ''
+        htmlParts.push('<p style="color:#ff6b9d;font-size:26rpx;margin:12rpx 0;">' + platformEmoji + ' 视频: ' + videoTitle + '<a href="' + block.url + '" style="color:#ff6b9d;text-decoration:underline;">' + block.url + '</a></p>')
+      } else if (block.type === 'image') {
+        htmlParts.push('<p style="text-align:center;margin:12rpx 0;"><img src="' + block.url + '" style="max-width:100%;border-radius:12rpx;" /></p>')
+      } else if (block.type === 'attachment') {
+        htmlParts.push('<p style="color:#ffab40;font-size:26rpx;margin:12rpx 0;">📎 附件: <a href="' + block.url + '" style="color:#ffab40;text-decoration:underline;">' + block.name + '</a></p>')
+      } else if (block.type === 'divider') {
+        htmlParts.push('<hr style="border:none;border-top:1px dashed rgba(255,255,255,0.15);margin:24rpx 0;" />')
+      } else if (block.type === 'link') {
+        var linkEmoji = block.isVideo ? '📺' : '🔗'
+        htmlParts.push('<p style="color:#00d4ff;font-size:26rpx;margin:12rpx 0;">' + linkEmoji + ' 链接: <a href="' + block.url + '" style="color:#00d4ff;text-decoration:underline;">' + block.text + '</a></p>')
+      } else if (block.type === 'table') {
+        var tableHtml = '<table style="width:100%;border-collapse:collapse;margin:12rpx 0;font-size:24rpx;color:#fff;text-align:center;">'
+        tableHtml += '<thead><tr>'
+        for (var ci = 0; ci < block.headers.length; ci++) {
+          tableHtml += '<th style="padding:12rpx 8rpx;background:rgba(0,200,255,0.1);border:1rpx solid rgba(0,200,255,0.2);font-weight:700;color:#00d4ff;">' + block.headers[ci] + '</th>'
+        }
+        tableHtml += '</tr></thead><tbody>'
+        for (var ri = 0; ri < block.rows.length; ri++) {
+          tableHtml += '<tr style="background:' + (ri % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)') + ';">'
+          var row = block.rows[ri]
+          var maxCols = Math.max(block.headers.length, (row ? row.length : 0))
+          for (var cj = 0; cj < maxCols; cj++) {
+            tableHtml += '<td style="padding:10rpx 8rpx;border:1rpx solid rgba(255,255,255,0.06);">' + (row && row[cj] ? row[cj] : '') + '</td>'
           }
-          tableHtml += '</tr></thead><tbody>'
-          for (var ri = 0; ri < block.rows.length; ri++) {
-            tableHtml += '<tr style="background:' + (ri % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)') + ';">'
-            var row = block.rows[ri]
-            var maxCols = Math.max(block.headers.length, (row ? row.length : 0))
-            for (var cj = 0; cj < maxCols; cj++) {
-              tableHtml += '<td style="padding:10rpx 8rpx;border:1rpx solid rgba(255,255,255,0.06);">' + (row && row[cj] ? row[cj] : '') + '</td>'
-            }
-            tableHtml += '</tr>'
-          }
-          tableHtml += '</tbody></table>'
-          htmlParts.push(tableHtml)
+          tableHtml += '</tr>'
+        }
+        tableHtml += '</tbody></table>'
+        htmlParts.push(tableHtml)
+      } else {
+        if (block.html) {
+          htmlParts.push(block.html)
         } else {
           var style = 'font-size:' + block.size + 'rpx;color:' + block.color + ';'
           if (block.weight === 'bold') style += 'font-weight:bold;'
           if (block.style === 'italic') style += 'font-style:italic;'
           if (block.fontFamily && block.fontFamily !== 'sans-serif') style += 'font-family:' + block.fontFamily + ';'
-          htmlParts.push('<p style="' + style + '">' + block.content + '</p>')
+          var contentWithBreaks = (block.content || '').replace(/\n/g, '<br/>')
+          htmlParts.push('<p style="' + style + '">' + contentWithBreaks + '</p>')
         }
       }
-      finalContent = htmlParts.join('')
+    }
+    finalContent = htmlParts.join('')
+    
+    var coverImage = ''
+    for (var i = 0; i < richContent.length; i++) {
+      if (richContent[i].type === 'image' && richContent[i].url) {
+        coverImage = richContent[i].url
+        break
+      }
+    }
+
     var data = {
       title: title,
       content: finalContent,
@@ -1030,7 +1240,7 @@ Page({
       source: self.data.formSource.trim(),
       type: self.data.formType,
       pinned: self.data.formPinned,
-      image: self.data.formImage.trim(),
+      image: coverImage,
       startDate: self.data.formStartDate,
       endDate: self.data.formEndDate,
       updateTime: db.serverDate()
@@ -1044,15 +1254,15 @@ Page({
       promise = db.collection('announcements').add({ data: data })
     }
     promise.then(function() {
-      self.setData({ submitting: false, showModal: false, editingItem: null })
-      wx.showToast({ title: '操作成功', icon: 'success' })
-      self.loadAnnouncements()
-      self.pushSubscribe('announcement', title, (content || title).substring(0, 20))
+      self.setData({ submitting: false, showModal: false, editingItem: null, formImage: '', formHtml: '' });
+      wx.showToast({ title: '操作成功', icon: 'success' });
+      self.loadAnnouncements();
+      self.pushSubscribe('announcement', title, (content || title).substring(0, 20));
     }).catch(function(err) {
-      console.error('发布公告失败:', err)
-      self.setData({ submitting: false })
-      wx.showToast({ title: '操作失败: ' + (err.errMsg || '未知错误'), icon: 'none' })
-    })
+      console.error('发布公告失败:', err);
+      self.setData({ submitting: false });
+      wx.showToast({ title: '操作失败: ' + (err.errMsg || '未知错误'), icon: 'none' });
+    });
   },
   deleteAnnouncement: function(e) {
     var self = this, item = e.currentTarget.dataset.item
@@ -1619,6 +1829,36 @@ Page({
   },
   onActivityTitleInput: function(e) { this.setData({ activityFormTitle: e.detail.value }) },
   onActivityContentInput: function(e) { this.setData({ activityFormContent: e.detail.value }) },
+  onActivityEditorReady: function() {
+    var self = this
+    wx.createSelectorQuery().in(this).select('#activityEditor').context(function(res) {
+      self.activityEditorCtx = res.context
+      if (self.data.activityFormContent) {
+        self.activityEditorCtx.setContents({
+          html: self.data.activityFormHtml || self.data.activityFormContent
+        })
+      }
+    }).exec()
+  },
+  onActivityEditorInput: function(e) {
+    var text = e.detail.text || ''
+    if (text.endsWith('\n')) {
+      text = text.slice(0, -1)
+    }
+    this.setData({ 
+      activityFormContent: text,
+      activityFormHtml: e.detail.html || ''
+    })
+  },
+  onActivityEditorStatusChange: function(e) {
+    var formats = e.detail || {}
+    this.setData({
+      activityFontWeight: formats.bold ? 'bold' : 'normal',
+      activityFontStyle: formats.italic ? 'italic' : 'normal',
+      activityFontColor: formats.color || '#ffffff',
+      activityFontFamily: formats.fontFamily || 'sans-serif'
+    })
+  },
   onActivityTypeInput: function(e) { this.setData({ activityFormType: e.detail.value }) },
   onActivityStartInput: function(e) { this.setData({ activityFormStart: e.detail.value }) },
   onActivityEndInput: function(e) { this.setData({ activityFormEnd: e.detail.value }) },
@@ -1646,24 +1886,35 @@ Page({
     }
   },
   toggleActivityBold: function() {
-    var newWeight = this.data.activityFontWeight === 'normal' ? 'bold' : 'normal'
-    this._autoCommitActivityText({ activityFontWeight: newWeight })
+    if (this.activityEditorCtx) {
+      this.activityEditorCtx.format('bold')
+    }
   },
   toggleActivityItalic: function() {
-    var newStyle = this.data.activityFontStyle === 'normal' ? 'italic' : 'normal'
-    this._autoCommitActivityText({ activityFontStyle: newStyle })
+    if (this.activityEditorCtx) {
+      this.activityEditorCtx.format('italic')
+    }
   },
   setActivityFontSize: function(e) {
     var size = e.currentTarget.dataset.size
-    this._autoCommitActivityText({ activityFontSize: size, showActivitySizePicker: false })
+    this.setData({ showActivitySizePicker: false })
+    if (this.activityEditorCtx) {
+      this.activityEditorCtx.format('fontSize', (size / 2) + 'px')
+    }
   },
   setActivityFontColor: function(e) {
     var color = e.currentTarget.dataset.color
-    this._autoCommitActivityText({ activityFontColor: color, showActivityColorPicker: false })
+    this.setData({ showActivityColorPicker: false })
+    if (this.activityEditorCtx) {
+      this.activityEditorCtx.format('color', color)
+    }
   },
   setActivityFontFamily: function(e) {
     var family = e.currentTarget.dataset.family
-    this._autoCommitActivityText({ activityFontFamily: family, showActivityFontFamilyPicker: false })
+    this.setData({ showActivityFontFamilyPicker: false })
+    if (this.activityEditorCtx) {
+      this.activityEditorCtx.format('fontFamily', family)
+    }
   },
   showActivityFontSizePicker: function() {
     this.setData({ showActivitySizePicker: !this.data.showActivitySizePicker, showActivityColorPicker: false, showActivityFontFamilyPicker: false })
@@ -1674,45 +1925,47 @@ Page({
   showActivityFontFamilyPicker: function() {
     this.setData({ showActivityFontFamilyPicker: !this.data.showActivityFontFamilyPicker, showActivitySizePicker: false, showActivityColorPicker: false })
   },
-  setActivityFontFamily: function(e) {
-    var family = e.currentTarget.dataset.family
-    this.setData({ activityFontFamily: family, showActivityFontFamilyPicker: false })
-  },
-  setActivityFontSize: function(e) {
-    var size = e.currentTarget.dataset.size
-    this.setData({ activityFontSize: size, showActivitySizePicker: false })
-  },
-  setActivityFontColor: function(e) {
-    var color = e.currentTarget.dataset.color
-    this.setData({ activityFontColor: color, showActivityColorPicker: false })
-  },
   addActivityRichTextBlock: function() {
-    var content = this.data.activityFormContent.trim()
-    if (!content) {
-      wx.showToast({ title: '请输入内容', icon: 'none' })
+    var self = this
+    if (!self.activityEditorCtx) {
+      wx.showToast({ title: '编辑器未就绪', icon: 'none' })
       return
     }
-    var block = {
-      type: 'text',
-      content: content,
-      style: this.data.activityFontStyle,
-      weight: this.data.activityFontWeight,
-      size: this.data.activityFontSize,
-      color: this.data.activityFontColor,
-      fontFamily: this.data.activityFontFamily
-    }
-    var richContent = this.data.activityRichContent.concat([block])
-    this.setData({
-      activityRichContent: richContent,
-      activityFormContent: '',
-      activityFontStyle: 'normal',
-      activityFontWeight: 'normal',
-      activityFontSize: 28,
-      activityFontColor: '#ffffff',
-      activityFontFamily: 'sans-serif'
+    self.activityEditorCtx.getContents({
+      success: function(res) {
+        var html = res.html
+        var text = res.text.trim()
+        if (!text) {
+          wx.showToast({ title: '请输入内容', icon: 'none' })
+          return
+        }
+        var block = {
+          type: 'text',
+          content: text,
+          html: html,
+          style: 'normal',
+          weight: 'normal',
+          size: 28,
+          color: '#ffffff',
+          fontFamily: 'sans-serif'
+        }
+        var richContent = self.data.activityRichContent.concat([block])
+        self.setData({
+          activityRichContent: richContent,
+          activityFormContent: '',
+          activityFormHtml: '',
+          activityFontStyle: 'normal',
+          activityFontWeight: 'normal',
+          activityFontSize: 28,
+          activityFontColor: '#ffffff',
+          activityFontFamily: 'sans-serif'
+        })
+        self.activityEditorCtx.clear()
+      }
     })
   },
   addActivityRichQuoteBlock: function() {
+    var self = this
     var content = this.data.activityFormContent.trim()
     if (!content) {
       wx.showToast({ title: '请输入引用内容', icon: 'none' })
@@ -1729,8 +1982,12 @@ Page({
     var richContent = this.data.activityRichContent.concat([block])
     this.setData({
       activityRichContent: richContent,
-      activityFormContent: ''
+      activityFormContent: '',
+      activityFormHtml: ''
     })
+    if (this.activityEditorCtx) {
+      this.activityEditorCtx.clear()
+    }
   },
   removeActivityRichBlock: function(e) {
     var idx = e.currentTarget.dataset.idx
@@ -1742,6 +1999,9 @@ Page({
       formContent = formContent.replace(block.url, '').replace(/\s{2,}/g, ' ').trim()
     }
     this.setData({ activityRichContent: richContent, activityFormContent: formContent })
+    if (this.activityEditorCtx) {
+      this.activityEditorCtx.clear()
+    }
   },
   editActivityRichBlock: function(e) {
     var idx = e.currentTarget.dataset.idx
@@ -1750,12 +2010,190 @@ Page({
     richContent.splice(idx, 1)
     this.setData({
       activityRichContent: richContent,
-      activityFormContent: block.content,
+      activityFormContent: block.html || block.content,
+      activityFormHtml: block.html || '',
       activityFontStyle: block.style || 'normal',
       activityFontWeight: block.weight || 'normal',
       activityFontSize: block.size || 28,
       activityFontColor: block.color || '#ffffff',
       activityFontFamily: block.fontFamily || 'sans-serif'
+    })
+    if (this.activityEditorCtx) {
+      this.activityEditorCtx.setContents({
+        html: block.html || block.content
+      })
+    }
+  },
+  importActivityFileToTable: function() {
+    var self = this
+    wx.chooseMessageFile({
+      count: 1,
+      type: 'file',
+      extension: ['xml', 'docx'],
+      success: function(res) {
+        var file = res.tempFiles[0]
+        var ext = file.name.split('.').pop().toLowerCase()
+        wx.showLoading({ title: '解析中...' })
+        if (ext === 'xml') {
+          wx.getFileSystemManager().readFile({
+            filePath: file.path,
+            encoding: 'utf8',
+            success: function(readRes) {
+              wx.hideLoading()
+              var content = readRes.data
+              var lines = content.split('\n')
+              var text = ''
+              for (var i = 0; i < lines.length; i++) {
+                var line = lines[i].replace(/<[^>]+>/g, '').trim()
+                if (line) text += line + '\n'
+              }
+              self._processActivityImportedTextToTable(text)
+            },
+            fail: function() {
+              wx.hideLoading()
+              wx.showToast({ title: '读取失败', icon: 'none' })
+            }
+          })
+        } else {
+          wx.cloud.uploadFile({
+            cloudPath: 'temp/' + Date.now() + '.' + ext,
+            filePath: file.path
+          }).then(function(uploadRes) {
+            return wx.cloud.callFunction({
+              name: 'parseFile',
+              data: { fileID: uploadRes.fileID, fileType: ext }
+            })
+          }).then(function(parseRes) {
+            wx.hideLoading()
+            if (parseRes.result && parseRes.result.success) {
+              self._processActivityImportedTextToTable(parseRes.result.content)
+            } else {
+              wx.showToast({ title: parseRes.result ? parseRes.result.error : '解析失败', icon: 'none' })
+            }
+          }).catch(function() {
+            wx.hideLoading()
+            wx.showToast({ title: '导入失败', icon: 'none' })
+          })
+        }
+      }
+    })
+  },
+  _processActivityImportedTextToTable: function(text) {
+    var tableData = parseTableInput(text)
+    if (!tableData) {
+      wx.showToast({ title: '未识别出表格数据，请确保文件内含有至少两行、每行使用分隔符的分隔内容', icon: 'none' })
+      return
+    }
+    var block = { type: 'table', headers: tableData.headers, rows: tableData.rows, colCount: tableData.colCount, rowCount: tableData.rowCount }
+    var richContent = (this.data.activityRichContent || []).concat([block])
+    this.setData({ activityRichContent: richContent })
+    wx.showToast({ title: '表格导入成功', icon: 'success' })
+  },
+  showActivityAttachmentDialog: function() {
+    var self = this
+    wx.chooseMessageFile({
+      count: 1,
+      type: 'all',
+      success: function(res) {
+        var file = res.tempFiles[0]
+        wx.showLoading({ title: '上传附件中...' })
+        var cloudPath = 'attachments/' + Date.now() + '_' + file.name
+        wx.cloud.uploadFile({
+          cloudPath: cloudPath,
+          filePath: file.path
+        }).then(function(uploadRes) {
+          wx.hideLoading()
+          var sizeKb = (file.size / 1024).toFixed(1)
+          var sizeText = sizeKb > 1024 ? (sizeKb / 1024).toFixed(1) + ' MB' : sizeKb + ' KB'
+          var block = {
+            type: 'attachment',
+            name: file.name,
+            url: uploadRes.fileID,
+            size: file.size,
+            sizeText: sizeText
+          }
+          var richContent = (self.data.activityRichContent || []).concat([block])
+          self.setData({ activityRichContent: richContent })
+          wx.showToast({ title: '附件上传成功', icon: 'success' })
+        }).catch(function(err) {
+          wx.hideLoading()
+          wx.showToast({ title: '附件上传失败', icon: 'none' })
+          console.error(err)
+        })
+      }
+    })
+  },
+  showActivityLinkDialog: function() {
+    var self = this
+    wx.showModal({
+      title: '添加超链接',
+      content: '',
+      placeholderText: '请输入链接地址（以 http 或 https 开头）',
+      editable: true,
+      success: function(resUrl) {
+        if (resUrl.confirm && resUrl.content && resUrl.content.trim()) {
+          var url = resUrl.content.trim()
+          if (!/^https?:\/\//i.test(url)) {
+            wx.showToast({ title: '链接需以 http 或 https 开头', icon: 'none' })
+            return
+          }
+          wx.showModal({
+            title: '链接文字说明',
+            content: '',
+            placeholderText: '请输入链接显示的文字说明',
+            editable: true,
+            success: function(resText) {
+              if (resText.confirm) {
+                var text = (resText.content || '').trim() || '快捷链接'
+                var isVideo = /v\.qq\.com|bilibili\.com|video|youtube/i.test(url)
+                var block = { type: 'link', text: text, url: url, isVideo: isVideo }
+                var richContent = (self.data.activityRichContent || []).concat([block])
+                self.setData({ activityRichContent: richContent })
+                wx.showToast({ title: '超链接已添加', icon: 'success' })
+              }
+            }
+          })
+        }
+      }
+    })
+  },
+  showActivityDividerDialog: function() {
+    var self = this
+    if (!self.activityEditorCtx) {
+      wx.showToast({ title: '编辑器未就绪', icon: 'none' })
+      return
+    }
+    self.activityEditorCtx.getContents({
+      success: function(res) {
+        var html = res.html
+        var text = res.text.trim()
+        var richContent = self.data.activityRichContent.slice()
+        if (text) {
+          richContent.push({
+            type: 'text',
+            content: text,
+            html: html,
+            style: 'normal',
+            weight: 'normal',
+            size: 28,
+            color: '#ffffff',
+            fontFamily: 'sans-serif'
+          })
+        }
+        richContent.push({ type: 'divider' })
+        self.setData({
+          activityRichContent: richContent,
+          activityFormContent: '',
+          activityFormHtml: '',
+          activityFontStyle: 'normal',
+          activityFontWeight: 'normal',
+          activityFontSize: 28,
+          activityFontColor: '#ffffff',
+          activityFontFamily: 'sans-serif'
+        })
+        self.activityEditorCtx.clear()
+        wx.showToast({ title: '已添加分割线', icon: 'success' })
+      }
     })
   },
   chooseActivityImage: function() {
@@ -1790,58 +2228,79 @@ Page({
     var richContent = []
     if (content) {
       richContent = self.data.activityRichContent.concat([{
-        type: 'text', content: content, style: self.data.activityFontStyle,
-        weight: self.data.activityFontWeight, size: self.data.activityFontSize, color: self.data.activityFontColor,
-        fontFamily: self.data.activityFontFamily
+        type: 'text', content: content, html: self.data.activityFormHtml || '', style: self.data.activityFontStyle,
+        weight: self.data.activityFontWeight || 'normal', size: self.data.activityFontSize || 28, color: self.data.activityFontColor || '#ffffff',
+        fontFamily: self.data.activityFormFamily || 'sans-serif'
       }])
     } else {
       richContent = self.data.activityRichContent
     }
     var htmlParts = []
-      for (var i = 0; i < richContent.length; i++) {
-        var block = richContent[i]
-        if (block.type === 'quote') {
-          htmlParts.push('<blockquote style="border-left:4rpx solid rgba(0,212,255,0.3);padding-left:12rpx;color:rgba(255,255,255,0.7);font-size:26rpx;margin:12rpx 0;">' + block.content + '</blockquote>')
-        } else if (block.type === 'music') {
-          htmlParts.push('<p style="color:#00d4ff;font-size:26rpx;margin:12rpx 0;text-decoration:underline;">🎵 推荐单曲: ' + block.name + ' (' + block.url + ')</p>')
-        } else if (block.type === 'video') {
-          var platformEmoji = block.platform === 'bilibili' ? '📺' : '🎬'
-          var videoTitle = block.name ? block.name + ' - ' : ''
-          htmlParts.push('<p style="color:#ff6b9d;font-size:26rpx;margin:12rpx 0;">' + platformEmoji + ' 视频: ' + videoTitle + '<a href="' + block.url + '" style="color:#ff6b9d;text-decoration:underline;">' + block.url + '</a></p>')
-        } else if (block.type === 'image') {
-          htmlParts.push('<p style="text-align:center;margin:12rpx 0;"><img src="' + block.url + '" style="max-width:100%;border-radius:12rpx;" /></p>')
-        } else if (block.type === 'table') {
-          var tableHtml = '<table style="width:100%;border-collapse:collapse;margin:12rpx 0;font-size:24rpx;color:#fff;text-align:center;">'
-          tableHtml += '<thead><tr>'
-          for (var ci = 0; ci < block.headers.length; ci++) {
-            tableHtml += '<th style="padding:12rpx 8rpx;background:rgba(0,200,255,0.1);border:1rpx solid rgba(0,200,255,0.2);font-weight:700;color:#00d4ff;">' + block.headers[ci] + '</th>'
+    for (var i = 0; i < richContent.length; i++) {
+      var block = richContent[i]
+      if (block.type === 'quote') {
+        htmlParts.push('<blockquote style="border-left:4rpx solid rgba(0,212,255,0.3);padding-left:12rpx;color:rgba(255,255,255,0.7);font-size:26rpx;margin:12rpx 0;">' + block.content + '</blockquote>')
+      } else if (block.type === 'music') {
+        htmlParts.push('<p style="color:#00d4ff;font-size:26rpx;margin:12rpx 0;text-decoration:underline;">🎵 推荐单曲: ' + block.name + ' (' + block.url + ')</p>')
+      } else if (block.type === 'video') {
+        var platformEmoji = block.platform === 'bilibili' ? '📺' : '🎬'
+        var videoTitle = block.name ? block.name + ' - ' : ''
+        htmlParts.push('<p style="color:#ff6b9d;font-size:26rpx;margin:12rpx 0;">' + platformEmoji + ' 视频: ' + videoTitle + '<a href="' + block.url + '" style="color:#ff6b9d;text-decoration:underline;">' + block.url + '</a></p>')
+      } else if (block.type === 'image') {
+        htmlParts.push('<p style="text-align:center;margin:12rpx 0;"><img src="' + block.url + '" style="max-width:100%;border-radius:12rpx;" /></p>')
+      } else if (block.type === 'attachment') {
+        htmlParts.push('<p style="color:#ffab40;font-size:26rpx;margin:12rpx 0;">📎 附件: <a href="' + block.url + '" style="color:#ffab40;text-decoration:underline;">' + block.name + '</a></p>')
+      } else if (block.type === 'divider') {
+        htmlParts.push('<hr style="border:none;border-top:1px dashed rgba(255,255,255,0.15);margin:24rpx 0;" />')
+      } else if (block.type === 'link') {
+        var linkEmoji = block.isVideo ? '📺' : '🔗'
+        htmlParts.push('<p style="color:#00d4ff;font-size:26rpx;margin:12rpx 0;">' + linkEmoji + ' 链接: <a href="' + block.url + '" style="color:#00d4ff;text-decoration:underline;">' + block.text + '</a></p>')
+      } else if (block.type === 'table') {
+        var tableHtml = '<table style="width:100%;border-collapse:collapse;margin:12rpx 0;font-size:24rpx;color:#fff;text-align:center;">'
+        tableHtml += '<thead><tr>'
+        for (var ci = 0; ci < block.headers.length; ci++) {
+          tableHtml += '<th style="padding:12rpx 8rpx;background:rgba(0,200,255,0.1);border:1rpx solid rgba(0,200,255,0.2);font-weight:700;color:#00d4ff;">' + block.headers[ci] + '</th>'
+        }
+        tableHtml += '</tr></thead><tbody>'
+        for (var ri = 0; ri < block.rows.length; ri++) {
+          tableHtml += '<tr style="background:' + (ri % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)') + ';">'
+          var row = block.rows[ri]
+          var maxCols = Math.max(block.headers.length, (row ? row.length : 0))
+          for (var cj = 0; cj < maxCols; cj++) {
+            tableHtml += '<td style="padding:10rpx 8rpx;border:1rpx solid rgba(255,255,255,0.06);">' + (row && row[cj] ? row[cj] : '') + '</td>'
           }
-          tableHtml += '</tr></thead><tbody>'
-          for (var ri = 0; ri < block.rows.length; ri++) {
-            tableHtml += '<tr style="background:' + (ri % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)') + ';">'
-            var row = block.rows[ri]
-            var maxCols = Math.max(block.headers.length, (row ? row.length : 0))
-            for (var cj = 0; cj < maxCols; cj++) {
-              tableHtml += '<td style="padding:10rpx 8rpx;border:1rpx solid rgba(255,255,255,0.06);">' + (row && row[cj] ? row[cj] : '') + '</td>'
-            }
-            tableHtml += '</tr>'
-          }
-          tableHtml += '</tbody></table>'
-          htmlParts.push(tableHtml)
+          tableHtml += '</tr>'
+        }
+        tableHtml += '</tbody></table>'
+        htmlParts.push(tableHtml)
+      } else {
+        if (block.html) {
+          htmlParts.push(block.html)
         } else {
           var style = 'font-size:' + block.size + 'rpx;color:' + block.color + ';'
           if (block.weight === 'bold') style += 'font-weight:bold;'
           if (block.style === 'italic') style += 'font-style:italic;'
           if (block.fontFamily && block.fontFamily !== 'sans-serif') style += 'font-family:' + block.fontFamily + ';'
-          htmlParts.push('<p style="' + style + '">' + block.content + '</p>')
+          var contentWithBreaks = (block.content || '').replace(/\n/g, '<br/>')
+          htmlParts.push('<p style="' + style + '">' + contentWithBreaks + '</p>')
         }
       }
-      finalContent = htmlParts.join('')
+    }
+    finalContent = htmlParts.join('')
+    
+    var coverImage = ''
+    for (var i = 0; i < richContent.length; i++) {
+      if (richContent[i].type === 'image' && richContent[i].url) {
+        coverImage = richContent[i].url
+        break
+      }
+    }
+
     var data = {
       title: title, content: finalContent, type: 'event',
       pinned: self.data.activityFormStatus === '置顶',
       start: self.data.activityFormStart, end: self.data.activityFormEnd,
-      image: self.data.activityFormImage, source: self.data.activityFormSource,
+      image: coverImage, source: self.data.activityFormSource,
       richContent: richContent,
       updateTime: db.serverDate()
     }
@@ -1849,11 +2308,14 @@ Page({
       ? db.collection('announcements').doc(self.data.activityEditingItem._id).update({ data: data })
       : (data.createTime = db.serverDate(), data.author = app.globalData.userInfo ? app.globalData.userInfo.nickName : 'Admin', db.collection('announcements').add({ data: data }))
     promise.then(function() {
-      self.setData({ activitySubmitting: false, showActivityModal: false, activityEditingItem: null })
-      wx.showToast({ title: '操作成功', icon: 'success' })
-      self.loadAdminActivities()
-      self.pushSubscribe('activity', title, content.substring(0, 20))
-    }).catch(function() { self.setData({ activitySubmitting: false }); wx.showToast({ title: '操作失败', icon: 'none' }) })
+      self.setData({ activitySubmitting: false, showActivityModal: false, activityEditingItem: null, activityFormImage: '', activityFormHtml: '' });
+      wx.showToast({ title: '操作成功', icon: 'success' });
+      self.loadAdminActivities();
+      self.pushSubscribe('activity', title, content.substring(0, 20));
+    }).catch(function() {
+      self.setData({ activitySubmitting: false });
+      wx.showToast({ title: '操作失败', icon: 'none' });
+    });
   },
   toggleActivityPinned: function(e) {
     var self = this, item = e.currentTarget.dataset.item

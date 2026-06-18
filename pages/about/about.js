@@ -9,7 +9,7 @@ Page({
     uid: '476200',
     aboutData: {
       appName: '洛手助手BENJAMIN',
-      version: '版本 v1.0.8F 体验版',
+      version: '版本 v1.0.9G 体验版',
       devName: '浙里本杰明',
       devAvatar: '/images/avatar.jpg',
       uid: '476200',
@@ -17,8 +17,8 @@ Page({
       icp: '浙ICP备2026043884号',
       gifts: ['免费领一测、二测、三测鸭蛋', '赐福奇袭固执罗隐'],
       platforms: [
-        { name: 'QQ音乐', url: 'https://y.qq.com/' },
-        { name: '网易云音乐', url: 'https://music.163.com/' }
+        { name: 'QQ音乐/网易云', url: 'https://music.163.com/' },
+        { name: 'B站/微博/抖音/快手/小红书/腾讯/YouTube', url: 'https://www.bilibili.com/' }
       ]
     },
     editMode: '',
@@ -266,11 +266,30 @@ Page({
   copyUID() { wx.setClipboardData({ data: this.data.aboutData?.uid || this.data.uid, success() { wx.showToast({ title: '已复制', icon: 'success' }) } }) },
   onFeedback() {
     wx.showActionSheet({
-      itemList: ['复制邮箱地址', '发送邮件反馈'],
+      itemList: ['官方日志意见反馈 (自动跳转)', '复制开发者邮箱地址', '发送邮件反馈'],
       success: (res) => {
         if (res.tapIndex === 0) {
-          wx.setClipboardData({ data: 'flyzccboard@yeah.net', success() { wx.showToast({ title: '邮箱已复制', icon: 'success' }) } })
+          var feedbackUrl = 'https://mp.weixin.qq.com/wxawap/wapreportwxadevlog?action=complain_feedback&appid=wxeddd39c667edfd84&embeddedappid=&hostappid=&pageid=&from=1&version_type=0&version_code=0&screenshot_localId=weixin%3A%2F%2Fresourceid%2F7d21fd11e29bb065c2f4c7669d7ff296&sessionid=&business_appid=&msgid=bab280da20e4d9f3d51d6203300fb1b1&public_lib_version=&public_lib_version_str=&template_id=ZhxGKGtZi3uWIzFIQtxJrjK5XXLlwjXpEo7M0rBrfEs&roomId=#wechat_redirect'
+          
+          wx.navigateTo({
+            url: '/pages/webview/webview?url=' + encodeURIComponent(feedbackUrl),
+            fail: function() {
+              // 自动跳转失败时（如本地开发者工具校验限制），降级为复制链接
+              wx.setClipboardData({
+                data: feedbackUrl,
+                success() {
+                  wx.showModal({
+                    title: '反馈链接已复制',
+                    content: '直接跳转失败。专属反馈链接已复制到您的剪贴板，您可以在微信聊天框中粘贴发送并点击打开。',
+                    showCancel: false
+                  })
+                }
+              })
+            }
+          })
         } else if (res.tapIndex === 1) {
+          wx.setClipboardData({ data: 'flyzccboard@yeah.net', success() { wx.showToast({ title: '邮箱已复制', icon: 'success' }) } })
+        } else if (res.tapIndex === 2) {
           wx.setClipboardData({ data: 'flyzccboard@yeah.net', success() {
             wx.showModal({
               title: '发送邮件',

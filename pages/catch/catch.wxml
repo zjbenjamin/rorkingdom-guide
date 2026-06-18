@@ -182,15 +182,23 @@
       </view>
 
       <!-- 快速采购/合成按钮区 -->
-      <view class="quick-add-row">
-        <picker class="premium-picker" bindchange="onSpecialBall" range="{{specialBalls}}" mode="selector">
-          <view class="picker-inner">
-            <text>{{specialBall}}</text>
-            <text class="arrow" style="color:rgba(255,255,255,0.3); font-size:16rpx;">▼</text>
-          </view>
-        </picker>
-        <input class="premium-count-input" placeholder="数量" type="number" value="{{specialCount}}" bindinput="onSpecialCount" />
-        <view class="visual-btn-add" bindtap="onAddSpecial">入库</view>
+      <view class="quick-add-row-premium">
+        <view class="form-group-mini">
+          <text class="form-label-mini">选择球类</text>
+          <picker class="premium-picker-new" bindchange="onSpecialBall" range="{{specialBalls}}" mode="selector">
+            <view class="picker-inner-new">
+              <text>{{specialBall}}</text>
+              <text class="arrow-new">▾</text>
+            </view>
+          </picker>
+        </view>
+        <view class="form-group-mini count-group">
+          <text class="form-label-mini">入库数量</text>
+          <input class="premium-count-input-new" placeholder="0" type="number" value="{{specialCount}}" bindinput="onSpecialCount" />
+        </view>
+        <view class="visual-btn-add-new" bindtap="onAddSpecial">
+          <text>确认入库</text>
+        </view>
       </view>
 
       <!-- 入库记录 -->
@@ -226,11 +234,20 @@
       </view>
 
       <!-- 选中后的操作区 -->
-      <view class="selected-op-panel" wx:if="{{selectedBall!==null && balls[selectedBall].count > 0}}">
-        <text class="op-label">使用 {{balls[selectedBall].name}}</text>
-        <view class="op-input-group">
-          <input class="op-input" type="number" value="{{selectedBallCount}}" bindinput="onBallCountInput" />
-          <view class="visual-btn-confirm" bindtap="onUseBall">确认消耗</view>
+      <view class="selected-op-panel-new" wx:if="{{selectedBall!==null && balls[selectedBall].count > 0}}">
+        <view class="op-header">
+          <view class="op-title-box">
+            <view class="op-line"></view>
+            <text class="op-title">使用 {{balls[selectedBall].name}}</text>
+          </view>
+          <text class="op-hint">剩余: {{balls[selectedBall].count}}</text>
+        </view>
+        <view class="op-input-group-new">
+          <view class="input-wrapper">
+            <text class="input-label">消耗数量</text>
+            <input class="op-input-new" type="number" value="{{selectedBallCount}}" bindinput="onBallCountInput" />
+          </view>
+          <view class="visual-btn-confirm-new" bindtap="onUseBall">确认消耗</view>
         </view>
       </view>
       

@@ -40,8 +40,26 @@ Page({
   checkAdmin: function() {
     var self = this
     if (!db) return
-    var adminFlag = wx.getStorageSync('admin_logged_in')
-    self.setData({ isAdmin: !!adminFlag })
+    var adminFlag = wx.getStorageSync('admin_logged_in') || wx.getStorageSync('is_admin_user')
+    if (adminFlag) {
+      self.setData({ isAdmin: true })
+      return
+    }
+    var userInfo = app.globalData.userInfo || wx.getStorageSync('user_info')
+    if (!userInfo) return
+    db.collection('admin_config').doc('admin').get()
+      .then(function(res) {
+        var adminOpenid = res.data.openid
+        db.collection('users').where({ _openid: adminOpenid }).get()
+          .then(function(userRes) {
+            if (userRes.data.length > 0) {
+              self.setData({ isAdmin: true })
+              wx.setStorageSync('admin_logged_in', true)
+              wx.setStorageSync('is_admin_user', true)
+            }
+          })
+      })
+      .catch(function() {})
   },
   loadBanner: function() {
     var self = this
@@ -272,24 +290,59 @@ Page({
   onBannerInput: function(e) { this.setData({ bannerInput: e.detail.value }) },
   chooseBannerImage: function() {
     var self = this
-    wx.chooseImage({
-      count: 1,
-      sizeType: ['compressed'],
-      sourceType: ['album', 'camera'],
-      success: function(res) {
-        var filePath = res.tempFilePaths[0]
-        wx.showLoading({ title: '上传中...' })
-        wx.cloud.uploadFile({
-          cloudPath: 'banner/' + Date.now() + '.jpg',
-          filePath: filePath
-        }).then(function(uploadRes) {
-          wx.hideLoading()
-          self.setData({ bannerInput: uploadRes.fileID })
-        }).catch(function() {
-          wx.hideLoading()
-          wx.showToast({ title: '上传失败', icon: 'none' })
-        })
-      }
+    var chooseFn = wx.chooseMedia || wx.chooseImage
+    if (wx.chooseMedia) {
+      wx.chooseMedia({
+        count: 1,
+        mediaType: ['image'],
+        sizeType: ['compressed'],
+        sourceType: ['album', 'camera'],
+        success: function(res) {
+          var filePath = res.tempFiles[0].tempFilePath
+          self.uploadBannerFile(filePath)
+        },
+        fail: function(err) {
+          console.error('chooseMedia fail', err)
+          if (err.errMsg && err.errMsg.indexOf('cancel') === -1) {
+            wx.showToast({ title: '选择图片失败: ' + err.errMsg, icon: 'none' })
+          }
+        }
+      })
+    } else {
+      wx.chooseImage({
+        count: 1,
+        sizeType: ['compressed'],
+        sourceType: ['album', 'camera'],
+        success: function(res) {
+          var filePath = res.tempFilePaths[0]
+          self.uploadBannerFile(filePath)
+        },
+        fail: function(err) {
+          console.error('chooseImage fail', err)
+        }
+      })
+    }
+  },
+  uploadBannerFile: function(filePath) {
+    var self = this
+    wx.showLoading({ title: '上传中...' })
+    
+    // 正则提取图片真实后缀，若提取失败默认使用 jpg，避免 MIME 冲突被存储防火墙拦截
+    var extMatch = filePath.match(/\.([a-zA-Z0-9]+)$/)
+    var ext = extMatch ? extMatch[1].toLowerCase() : 'jpg'
+    
+    wx.cloud.uploadFile({
+      cloudPath: 'banner/' + Date.now() + '.' + ext,
+      filePath: filePath
+    }).then(function(uploadRes) {
+      wx.hideLoading()
+      self.setData({ bannerInput: uploadRes.fileID })
+      wx.showToast({ title: '图片上传成功', icon: 'success' })
+    }).catch(function(err) {
+      console.error('uploadFile fail', err)
+      wx.hideLoading()
+      var errMsg = err.errMsg || (err.message || '网络连接失败')
+      wx.showToast({ title: '上传失败: ' + errMsg, icon: 'none' })
     })
   },
   saveBanner: function() {
@@ -302,7 +355,8 @@ Page({
       .then(function() {
         return db.collection('site_config').doc('banner').update({ data: { url: url, updateTime: db.serverDate() } })
       })
-      .catch(function() {
+      .catch(function(err) {
+        console.warn('Doc banner get or update failed, try add', err)
         return db.collection('site_config').add({ data: { _id: 'banner', url: url, updateTime: db.serverDate() } })
       })
       .then(function() {
@@ -310,9 +364,11 @@ Page({
         wx.showToast({ title: '保存成功', icon: 'success' })
         self.loadBanner()
       })
-      .catch(function() {
+      .catch(function(err) {
+        console.error('saveBanner fail', err)
         self.setData({ bannerSaving: false })
-        wx.showToast({ title: '保存失败', icon: 'none' })
+        var errMsg = err.errMsg || (err.message || '无写入权限')
+        wx.showToast({ title: '保存失败: ' + errMsg, icon: 'none' })
       })
   },
   preventClose: function() {},
@@ -332,20 +388,42 @@ Page({
       }
     }
     
-    if (!directUrl) {
-      wx.setClipboardData({
-        data: url,
-        success: function() {
-          wx.showModal({
-            title: '听歌链接已复制',
-            content: '该平台暂不支持直接播放，已复制链接到剪贴板，请到浏览器或音乐App中打开！',
-            showCancel: false
-          })
+    if (directUrl) {
+      self._playBgAudio(url, directUrl, name)
+      return
+    }
+
+    // 无法本地直接解析（如 QQ 音乐），调用云函数解析
+    var isQQ = /qq\.com|qqmusic/i.test(url)
+    var isNetEase = /163\.com|163cn\.tv/i.test(url)
+    if (isQQ || isNetEase) {
+      wx.showLoading({ title: '加载音乐中...' })
+      wx.cloud.callFunction({
+        name: 'parseBilibili',
+        data: { url: url },
+        success: function(res) {
+          wx.hideLoading()
+          if (res.result && res.result.code === 0 && res.result.data && res.result.data.videoUrl) {
+            var musicUrl = res.result.data.videoUrl
+            var musicTitle = res.result.data.title || name
+            self._playBgAudio(url, musicUrl, musicTitle)
+          } else {
+            self._playSongFallback(url)
+          }
+        },
+        fail: function(err) {
+          console.error('音乐解析失败:', err)
+          wx.hideLoading()
+          self._playSongFallback(url)
         }
       })
       return
     }
-    
+
+    self._playSongFallback(url)
+  },
+  _playBgAudio: function(url, directUrl, name) {
+    var self = this
     var bgAudio = wx.getBackgroundAudioManager()
     
     if (self.data.currentPlayUrl === url && self.data.isPlaying) {
@@ -360,9 +438,21 @@ Page({
     })
     
     bgAudio.title = name
-    bgAudio.epname = '游戏原声'
-    bgAudio.singer = '群星'
+    bgAudio.epname = '音乐分享'
+    bgAudio.singer = '洛手助手'
     bgAudio.src = directUrl
+  },
+  _playSongFallback: function(url) {
+    wx.setClipboardData({
+      data: url,
+      success: function() {
+        wx.showModal({
+          title: '听歌链接已复制',
+          content: '该音乐暂不支持在小程序内直接播放，已复制链接到剪贴板，请到浏览器或官方音乐APP中打开听歌！',
+          showCancel: false
+        })
+      }
+    })
   },
   openIframe: function(e) {
     var url = e.currentTarget.dataset.url
@@ -396,73 +486,88 @@ Page({
     var url = e.currentTarget.dataset.url
     var name = e.currentTarget.dataset.name || '视频'
 
-    function fetchBilibiliStream(bvid) {
-      wx.showLoading({ title: '解析中...' })
-      wx.request({
-        url: 'https://api.bilibili.com/x/web-interface/view?bvid=' + bvid,
-        success: function(res) {
-          if (res.data && res.data.code === 0 && res.data.data) {
-            var info = res.data.data
-            var cid = info.cid || (info.pages && info.pages[0] && info.pages[0].cid)
-            var videoTitle = name !== '视频' ? name : (info.title || 'B站视频')
-            var videoCover = info.pic || ''
-            var videoOwner = (info.owner && info.owner.name) ? info.owner.name : ''
-            var videoDesc = (info.desc || '').substring(0, 60)
-            if (cid) {
-              wx.request({
-                url: 'https://api.bilibili.com/x/player/playurl?bvid=' + bvid + '&cid=' + cid + '&platform=html5&qn=80&fnval=1',
-                success: function(streamRes) {
-                  wx.hideLoading()
-                  if (streamRes.data && streamRes.data.code === 0 && streamRes.data.data && streamRes.data.data.durl && streamRes.data.data.durl.length > 0) {
-                    self.setData({
-                      videoPlayerUrl: streamRes.data.data.durl[0].url,
-                      videoPlayerName: videoTitle,
-                      videoPlayerCover: videoCover,
-                      videoPlayerOwner: videoOwner,
-                      videoPlayerDesc: videoDesc,
-                      showVideoPlayer: true
-                    })
-                  } else {
-                    self._openVideoFallback(url)
-                  }
-                },
-                fail: function() { wx.hideLoading(); self._openVideoFallback(url) }
-              })
-            } else {
-              wx.hideLoading(); self._openVideoFallback(url)
-            }
-          } else {
-            wx.hideLoading(); self._openVideoFallback(url)
-          }
-        },
-        fail: function() { wx.hideLoading(); self._openVideoFallback(url) }
-      })
+    if (self.data.isPlaying) {
+      var bgAudio = wx.getBackgroundAudioManager()
+      bgAudio.pause()
+      self.setData({ isPlaying: false })
     }
 
-    // 尝试从 URL 提取 BV 号
+    // 检测视频平台类型
+    var isBilibili = /bilibili\.com|b23\.tv/i.test(url) || /BV[a-zA-Z0-9]{10,}/.test(url)
+    var isWeibo = /weibo\.(com|cn)/i.test(url)
+    var isDouyin = /douyin\.com/i.test(url)
+    var isKuaishou = /kuaishou\.com/i.test(url)
+    var isXiaohongshu = /xiaohongshu\.com|xhslink\.com/i.test(url)
+    var isTencent = /v\.qq\.com/i.test(url)
+    var isYoutube = /youtube\.com|youtu\.be/i.test(url)
+
+    // 可以播放或解析的平台
+    var isSupported = isBilibili || isWeibo || isDouyin || isKuaishou || isXiaohongshu || isTencent || isYoutube
+
+    if (!isSupported) {
+      self._openVideoFallback(url, '未支持的平台')
+      return
+    }
+
+    wx.showLoading({ title: '解析视频中...' })
+    
+    // 构造请求参数，优先提取 B站 bvid 以保证向后兼容，其他平台传整个 url
+    var callData = {}
     var bvMatch = url.match(/BV[a-zA-Z0-9]{10,}/)
     if (bvMatch) {
-      fetchBilibiliStream(bvMatch[0])
-      return
+      callData.bvid = bvMatch[0]
+    } else {
+      callData.url = url
     }
 
-    // b23.tv 短链接：直接 webview 打开，服务器端自动重定向到视频页
-    var shortMatch = url.match(/b23\.tv\/([a-zA-Z0-9]+)/)
-    if (shortMatch) {
-      self._openVideoFallback(url)
-      return
-    }
-
-    self._openVideoFallback(url)
+    wx.cloud.callFunction({
+      name: 'parseBilibili',
+      data: callData,
+      success: function(res) {
+        wx.hideLoading()
+        if (res.result && res.result.code === 0 && res.result.data) {
+          var data = res.result.data
+          var defaultTitle = isBilibili ? 'B站视频' : isWeibo ? '微博视频' : isDouyin ? '抖音视频' : isKuaishou ? '快手视频' : isXiaohongshu ? '小红书视频' : '在线视频'
+          var videoTitle = name !== '视频' ? name : (data.title || defaultTitle)
+          
+          self.setData({
+            videoPlayerUrl: data.videoUrl,
+            videoPlayerName: videoTitle,
+            videoPlayerCover: data.pic || '',
+            videoPlayerOwner: data.ownerName || '',
+            videoPlayerDesc: (data.desc || '').substring(0, 60),
+            showVideoPlayer: true
+          })
+        } else {
+          var errMsg = res.result ? res.result.msg : '解析失败'
+          self._openVideoFallback(url, errMsg)
+        }
+      },
+      fail: function(err) {
+        console.error('Call parseBilibili failed:', err)
+        wx.hideLoading()
+        self._openVideoFallback(url, '网络解析错误')
+      }
+    })
   },
-  _openVideoFallback: function(url) {
+  _openVideoFallback: function(url, reason) {
+    var content = '该视频由于版权限制或解析失败，可复制链接观看。'
+    if (reason) {
+      content = '解析未成功（' + reason + '），可复制链接到浏览器或App中观看。'
+    }
     wx.showModal({
-      title: '无法解析视频流',
-      content: 'B站以外平台或解析失败，将在浏览器打开',
-      confirmText: '打开',
+      title: '解析提示',
+      content: content,
+      confirmText: '复制链接',
+      cancelText: '取消',
       success: function(res) {
         if (res.confirm) {
-          wx.navigateTo({ url: '/pages/webview/webview?url=' + encodeURIComponent(url) })
+          wx.setClipboardData({
+            data: url,
+            success: function() {
+              wx.showToast({ title: '链接已复制', icon: 'success' })
+            }
+          })
         }
       }
     })
@@ -473,6 +578,87 @@ Page({
   previewRichImage: function(e) {
     var src = e.currentTarget.dataset.src
     if (src) wx.previewImage({ urls: [src] })
+  },
+  openLink: function(e) {
+    var url = e.currentTarget.dataset.url
+    wx.showModal({
+      title: '复制链接',
+      content: '由于微信小程序限制，暂不支持直接跳转外部网页。是否复制此链接？\n\n' + url,
+      confirmText: '复制',
+      cancelText: '取消',
+      success: function(res) {
+        if (res.confirm) {
+          wx.setClipboardData({
+            data: url,
+            success: function() {
+              wx.showToast({ title: '已复制到剪贴板', icon: 'success' })
+            }
+          })
+        }
+      }
+    })
+  },
+  downloadAttachment: function(e) {
+    var url = e.currentTarget.dataset.url
+    var name = e.currentTarget.dataset.name || '附件'
+    if (!url) return
+    
+    wx.showLoading({ title: '加载文件中...' })
+    
+    var isCloud = url.indexOf('cloud://') === 0
+    
+    var performOpen = function(localPath) {
+      wx.openDocument({
+        filePath: localPath,
+        showMenu: true,
+        success: function() {
+          wx.hideLoading()
+        },
+        fail: function(err) {
+          wx.hideLoading()
+          wx.showModal({
+            title: '预览失败',
+            content: '该文件格式暂不支持直接预览。是否复制下载链接？\n\n' + url,
+            confirmText: '复制链接',
+            success: function(res) {
+              if (res.confirm) {
+                wx.setClipboardData({
+                  data: url,
+                  success: function() {
+                    wx.showToast({ title: '链接已复制', icon: 'success' })
+                  }
+                })
+              }
+            }
+          })
+        }
+      })
+    }
+    
+    if (isCloud) {
+      wx.cloud.downloadFile({
+        fileID: url,
+        success: function(res) {
+          performOpen(res.tempFilePath)
+        },
+        fail: function(err) {
+          wx.hideLoading()
+          wx.showToast({ title: '文件获取失败', icon: 'none' })
+        }
+      })
+    } else {
+      wx.downloadFile({
+        url: url,
+        filePath: wx.env.USER_DATA_PATH + '/' + name,
+        success: function(res) {
+          performOpen(res.filePath || res.tempFilePath)
+        },
+        fail: function(err) {
+          wx.hideLoading()
+          wx.showToast({ title: '下载失败', icon: 'none' })
+        }
+      })
+    }
   },
   onShareAppMessage: function() {
     return { title: '洛手助手BENJAMIN - 洛克王国攻略', path: '/pages/index/index', imageUrl: '/images/banner1.png' }
