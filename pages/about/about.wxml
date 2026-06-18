@@ -257,39 +257,19 @@
       <view class="card-title">更新日志</view>
       <view class="changelog-list">
         <view class="changelog-item">
-          <view class="changelog-ver">v1.0.9G 体验版</view>
-          <view class="changelog-date">2026-06-17</view>
+          <view class="changelog-ver">全新版 v1.0.1 体验版</view>
+          <view class="changelog-date">2026-06-18</view>
           <view class="changelog-content">
-            <text class="changelog-opt">优化：多媒体信息展示模块体验优化，支持更流畅的公开媒体内容载入</text>
-            <text class="changelog-opt">优化：增强版权保护提示，为部分版权受限内容提供正版渠道播放引导说明</text>
-            <text class="changelog-add">新增：活动日历页补齐并支持了包含图片、表格及多媒体占位的完整排版渲染</text>
-            <text class="changelog-opt">优化：微调底层排版解析逻辑与数据加载效率，提升交互流畅度</text>
-          </view>
-        </view>
-        <view class="changelog-item">
-          <view class="changelog-ver">v1.0.8F 体验版</view>
-          <view class="changelog-date">2026-06-17</view>
-          <view class="changelog-content">
-            <text class="changelog-add">新增：内容编辑器界面与格式化排版工具升级，支持加粗、字号、楷体/圆体字体及16色排版拓展</text>
-            <text class="changelog-add">新增：编辑器支持为合规的多媒体信息配置相关的展示链接与封面图</text>
-            <text class="changelog-add">新增：内容编辑器支持表格数据渲染（斑马纹样式展示）与图文混合排版</text>
-            <text class="changelog-add">新增：编辑器内容输入上限从500字符扩容至5000字符</text>
-            <text class="changelog-add">新增：远行商人助手支持商品单卡片编辑（价格、图片、名称快速调整）</text>
-            <text class="changelog-add">新增：远行商人助手支持商品信息的批量快捷维护与商品更新订阅提醒</text>
-            <text class="changelog-opt">优化：首页公告展示组件排版能力升级，支持完整渲染格式化图文排版</text>
-            <text class="changelog-opt">优化：远行商人管理员后台面板布局重构，统一采用 Liquid Glass 交互风格</text>
-            <text class="changelog-opt">优化：关于、登录及隐私协议页补全官方ICP备案号声明，提高运营合规性</text>
-            <text class="changelog-fix">修复：修复了编辑器部分排版块偶发的重复渲染问题</text>
-            <text class="changelog-fix">修复：修复了管理后台在特定分辨率下CSS样式丢失及组件遮挡的已知缺陷</text>
-          </view>
-        </view>
-        <view class="changelog-item">
-          <view class="changelog-ver">v1.0.8E 体验版</view>
-          <view class="changelog-date">2026-06-16</view>
-          <view class="changelog-content">
-            <text class="changelog-opt">优化：全局界面引入 iOS 风格的 Liquid Glass 交互设计语言，精细化卡片布局</text>
-            <text class="changelog-opt">优化：Dock 导航栏动画重构，支持更平滑的页面切换过渡</text>
-            <text class="changelog-add">新增：更新并细化隐私保护政策与用户协议，保障用户数据合规透明</text>
+            <text class="changelog-add">新增：全局 iOS 26 Liquid Glass 设计语言，毛玻璃卡片、多层光影、悬浮Dock导航栏</text>
+            <text class="changelog-add">新增：编辑器支持多平台视频链接解析与内嵌播放，表格/图文混排/字体样式全面升级</text>
+            <text class="changelog-add">新增：远行商人商品补货订阅、批量编辑、全量替换、XLSX文件导入</text>
+            <text class="changelog-add">新增：远行商人上架弹窗「仅更新内容」按钮，可随时更新不推送通知</text>
+            <text class="changelog-add">新增：订阅消息推送系统，管理后台统一开关与测试推送</text>
+            <text class="changelog-opt">优化：后台编辑器触控体验全面升级，工具栏按钮放大、编辑器高度提升</text>
+            <text class="changelog-opt">优化：首页公告栏播放器独立样式，音乐/视频卡片区分展示</text>
+            <text class="changelog-opt">优化：远行商人模块重构，序列化公共函数提取、管理员精确查询、错误处理增强</text>
+            <text class="changelog-fix">修复：首页公告栏管理员检测时序问题、通知跳转页面硬编码、文件导入列对齐错位</text>
+            <text class="changelog-opt">合规：隐私政策及用户协议同步更新至最新法律法规要求</text>
           </view>
         </view>
       </view>
