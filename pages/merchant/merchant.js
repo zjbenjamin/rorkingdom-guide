@@ -70,7 +70,7 @@ var notify = require('../../utils/notify')
 var db = null
 
 function serializeItem(item) {
-  return item.name + '|' + item.price + '|' + item.effect + '|' + item.rarity + '|' + item.source + '|' + (item.image || '') + '|' + (item.limitCount || '')
+  return item.name + '|' + item.price + '|' + item.effect + '|' + item.rarity + '|' + item.source + '|' + (item.image || '') + '|' + (item.limitCount || '') + '|' + (item.offlineDate || '') + '|' + (item.offlineTimeStr || '')
 }
 
 function serializeItems(items) {
@@ -79,6 +79,7 @@ function serializeItems(items) {
 
 Page({
   data: {
+    adminCollapse: true,
     items: [],
     t: {},
     isAdmin: false,
@@ -333,12 +334,32 @@ Page({
     var now = Date.now()
     var diff = offlineTime - now
     if (diff <= 0) {
-      self.setData({ remainingTimeStr: '已下架', currentSelling: [], currentSellingText: '' })
+      self.setData({ remainingTimeStr: '已下架', currentSellingText: '' }); self.syncSellingArrays([])
       self.stopCountdownTimer()
       self.loadConfig()
       return
     }
-    var totalSeconds = Math.floor(diff / 1000)
+    
+      var hasExpired = false;
+      var newCurrentSelling = self.data.currentSelling.filter(function(item) {
+        if (!item.offlineDate) return true;
+        var itemTime = item.offlineDate + ' ' + (item.offlineTimeStr === '23:59' ? '23:59:59' : item.offlineTimeStr + ':00');
+        itemTime = itemTime.replace(/-/g, '/');
+        var itemTimestamp = new Date(itemTime).getTime();
+        if (now >= itemTimestamp) {
+          hasExpired = true;
+          return false;
+        }
+        return true;
+      });
+      if (hasExpired) {
+        var newText = serializeItems(newCurrentSelling);
+        self.setData({ currentSellingText: newText });
+        self.syncSellingArrays(newCurrentSelling);
+        self.updateSellingSilent();
+      }
+
+      var totalSeconds = Math.floor(diff / 1000)
     var hours = Math.floor(totalSeconds / 3600)
     var minutes = Math.floor((totalSeconds % 3600) / 60)
     var seconds = totalSeconds % 60
@@ -399,7 +420,7 @@ Page({
               customDesc: d.customDesc || '',
               customItems: d.customItems || '',
               items: convertedItems,
-              currentSelling: convertedSelling,
+              /* currentSelling handled later */
               currentSellingText: currentSellingText,
               currentSellingImage: currentSellingImage,
               sellingMode: 'text',
@@ -408,7 +429,7 @@ Page({
               offlineTime: d.offlineTime || null,
               timeSlotIndex: tsi,
               showCountdown: d.showCountdown !== undefined ? d.showCountdown : true
-            })
+            }); self.syncSellingArrays(convertedSelling)
             self.markNewItems()
           })
         })
@@ -458,7 +479,9 @@ Page({
           rarity: parts[3].trim() || '普通',
           source: (parts.length > 4) ? parts[4].trim() : '远行商人',
           image: (parts.length > 5) ? parts[5].trim() : undefined,
-          limitCount: (parts.length > 6) ? parts[6].trim() : undefined
+          limitCount: (parts.length > 6) ? parts[6].trim() : undefined,
+          offlineDate: (parts.length > 7) ? parts[7].trim() : undefined,
+          offlineTimeStr: (parts.length > 8) ? parts[8].trim() : undefined
         })
       }
     }
@@ -579,7 +602,7 @@ Page({
     db.collection('page_config').doc('merchant').update({
       data: updateData
     }).then(function() {
-      var nextState = { currentSelling: updated, currentSellingText: text, showAddSellingItemModal: false }
+      var nextState = { /* currentSelling handled */ currentSellingText: text, showAddSellingItemModal: false }
       if (updateData.offlineTime === null) {
         nextState.offlineTime = null
         nextState.offlineDate = ''
@@ -587,7 +610,7 @@ Page({
         nextState.timeSlotIndex = -1
         nextState.remainingTimeStr = ''
       }
-      self.setData(nextState)
+      self.setData(nextState); self.syncSellingArrays(updated)
       wx.showToast({ title: '已添加: ' + item.name, icon: 'success' })
     }).catch(function() {
       wx.showToast({ title: '添加失败', icon: 'none' })
@@ -687,7 +710,7 @@ Page({
         nextState.customItems = customItemsText
         nextState.useCustom = true
       }
-      self.setData(nextState)
+      self.setData(nextState); self.syncSellingArrays(updated)
       self.markNewItems()
       wx.showToast({ title: '上架成功', icon: 'success' })
       var itemNames = parsed.map(function(i) { return i.name })
@@ -781,7 +804,7 @@ Page({
         nextState.customItems = customItemsText
         nextState.useCustom = true
       }
-      self.setData(nextState)
+      self.setData(nextState); self.syncSellingArrays(updated)
       self.markNewItems()
       wx.showToast({ title: '已更新，未推送通知', icon: 'success' })
     }).catch(function() {
@@ -813,7 +836,7 @@ Page({
     if (currentSelling[index]) {
       currentSelling[index].image = val
       var text = serializeItems(currentSelling)
-      this.setData({ currentSelling: currentSelling, currentSellingText: text })
+      this.setData({ currentSellingText: text }); if(typeof self !== 'undefined') self.syncSellingArrays(currentSelling); else this.syncSellingArrays(currentSelling)
     }
   },
   onSellingItemLimitInput: function(e) {
@@ -823,7 +846,7 @@ Page({
     if (currentSelling[index]) {
       currentSelling[index].limitCount = val
       var text = serializeItems(currentSelling)
-      this.setData({ currentSelling: currentSelling, currentSellingText: text })
+      this.setData({ currentSellingText: text }); if(typeof self !== 'undefined') self.syncSellingArrays(currentSelling); else this.syncSellingArrays(currentSelling)
     }
   },
   chooseSellingItemImage: function(e) {
@@ -845,7 +868,7 @@ Page({
             if (currentSelling[index]) {
               currentSelling[index].image = uploadRes.fileID
               var text = serializeItems(currentSelling)
-              self.setData({ currentSelling: currentSelling, currentSellingText: text })
+              self.setData({ currentSellingText: text }); if(typeof self !== 'undefined') self.syncSellingArrays(currentSelling); else this.syncSellingArrays(currentSelling)
             }
           })
           .catch(function() {
@@ -860,7 +883,7 @@ Page({
     var currentSelling = this.data.currentSelling.slice()
     currentSelling.splice(index, 1)
     var text = serializeItems(currentSelling)
-    this.setData({ currentSelling: currentSelling, currentSellingText: text })
+    this.setData({ currentSellingText: text }); if(typeof self !== 'undefined') self.syncSellingArrays(currentSelling); else this.syncSellingArrays(currentSelling)
   },
   previewSellingItemImage: function(e) {
     var src = e.currentTarget.dataset.src
@@ -876,7 +899,7 @@ Page({
     db.collection('page_config').doc('merchant').update({
       data: { currentSelling: text, updateTime: db.serverDate() }
     }).then(function() {
-      self.setData({ currentSelling: items, currentSellingText: text })
+      self.setData({ currentSellingText: text }); if(typeof self !== 'undefined') self.syncSellingArrays(items); else this.syncSellingArrays(items)
       wx.showToast({ title: '已移除', icon: 'success' })
     }).catch(function() {
       wx.showToast({ title: '操作失败', icon: 'none' })
@@ -1230,13 +1253,16 @@ Page({
     })
   },
   closeAddItemModal: function() {
-    this.setData({ showAddItemModal: false, editingItemIndex: null })
+    this.setData({ showAddItemModal: false, editingItemIndex: null
+            }); if(typeof self !== 'undefined') self.syncSellingArrays(selling); else this.syncSellingArrays(selling)
   },
   openBatchEdit: function() {
-    this.setData({ showBatchModal: true, batchEditItem: null, batchEditIndex: -1, selectedItems: {}, selectedCount: 0 })
+    this.setData({ showBatchModal: true, batchEditItem: null, batchEditIndex: -1, selectedItems: {}, selectedCount: 0
+            }); if(typeof self !== 'undefined') self.syncSellingArrays(selling); else this.syncSellingArrays(selling)
   },
   closeBatchModal: function() {
-    this.setData({ showBatchModal: false, batchEditItem: null, batchEditIndex: -1, selectedItems: {}, selectedCount: 0 })
+    this.setData({ showBatchModal: false, batchEditItem: null, batchEditIndex: -1, selectedItems: {}, selectedCount: 0
+            }); if(typeof self !== 'undefined') self.syncSellingArrays(selling); else this.syncSellingArrays(selling)
   },
   toggleSelectItem: function(e) {
     var id = e.currentTarget.dataset.id
@@ -1314,11 +1340,11 @@ Page({
             self.setData({
               items: updatedItems,
               customItems: customItemsText,
-              currentSelling: selling,
+              /* currentSelling handled */
               currentSellingText: sellingText,
               selectedItems: {},
               selectedCount: 0
-            })
+            }); if(typeof self !== 'undefined') self.syncSellingArrays(selling); else this.syncSellingArrays(selling)
             wx.showToast({ title: '下架成功', icon: 'success' })
           }).catch(function() {
             wx.hideLoading()
@@ -1383,11 +1409,11 @@ Page({
       self.setData({
         items: updatedItems,
         customItems: customItemsText,
-        currentSelling: selling,
+        /* currentSelling handled */
         currentSellingText: sellingText,
         selectedItems: {},
         selectedCount: 0
-      })
+            }); if(typeof self !== 'undefined') self.syncSellingArrays(selling); else this.syncSellingArrays(selling)
       wx.showToast({ title: successMsg || '修改成功', icon: 'success' })
     }).catch(function() {
       wx.hideLoading()
@@ -1478,7 +1504,8 @@ Page({
     })
   },
   backToBatchList: function() {
-    this.setData({ batchEditItem: null, batchEditIndex: -1 })
+    this.setData({ batchEditItem: null, batchEditIndex: -1
+            }); if(typeof self !== 'undefined') self.syncSellingArrays(selling); else this.syncSellingArrays(selling)
   },
   onBatchInput: function(e) {
     var field = e.currentTarget.dataset.field
@@ -1572,11 +1599,11 @@ Page({
             self.setData({
               items: items,
               customItems: customItemsText,
-              currentSelling: selling,
+              /* currentSelling handled */
               currentSellingText: sellingText,
               batchEditItem: null,
               batchEditIndex: -1
-            })
+            }); if(typeof self !== 'undefined') self.syncSellingArrays(selling); else this.syncSellingArrays(selling)
             wx.showToast({ title: '已删除', icon: 'success' })
           }).catch(function() {
             wx.showToast({ title: '删除失败', icon: 'none' })
@@ -1618,11 +1645,11 @@ Page({
             self.setData({
               items: items,
               customItems: customItemsText,
-              currentSelling: selling,
+              /* currentSelling handled */
               currentSellingText: sellingText,
               showAddItemModal: false,
               editingItemIndex: null
-            })
+            }); if(typeof self !== 'undefined') self.syncSellingArrays(selling); else this.syncSellingArrays(selling)
             wx.showToast({ title: '已删除', icon: 'success' })
           }).catch(function() {
             wx.showToast({ title: '删除失败', icon: 'none' })
@@ -1820,7 +1847,7 @@ Page({
           db.collection('page_config').doc('merchant').update({
             data: updateData
           }).then(function() {
-            self.setData({ items: items, customItems: customItemsText, currentSelling: selling, currentSellingText: sellingText })
+            self.setData({ items: items, customItems: customItemsText, currentSellingText: sellingText }); if(typeof self !== 'undefined') self.syncSellingArrays(selling); else this.syncSellingArrays(selling)
             wx.showToast({ title: '已删除', icon: 'success' })
           }).catch(function() {
             wx.showToast({ title: '删除失败', icon: 'none' })
