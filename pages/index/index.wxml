@@ -1,11 +1,11 @@
 <view class="page">
   <view class="container">
     <!-- 首页大图 -->
-    <view class="banner-card" bindtap="{{isAdmin ? 'toggleBannerModal' : ''}}">
-      <image class="banner-image" src="{{bannerUrl || '/images/banner1.png'}}" mode="widthFix"></image>
-      <view class="banner-edit" wx:if="{{isAdmin}}">
-        <text class="banner-edit-icon">✏️</text>
-        <text class="banner-edit-text">编辑头图</text>
+    <view class="hero-banner" bindtap="{{isAdmin ? 'toggleBannerModal' : ''}}">
+      <image lazy-load class="hero-image" src="{{bannerUrl || '/images/banner.webp'}}" mode="widthFix"></image>
+      <view class="hero-overlay"></view>
+      <view class="hero-badge" wx:if="{{isAdmin}}">
+        <text class="hero-badge-icon">✏️</text>
       </view>
     </view>
 
@@ -22,7 +22,7 @@
         <view class="modal-body">
           <view class="banner-preview-label">效果预览</view>
           <view class="banner-preview" wx:if="{{bannerInput}}">
-            <image class="preview-img" src="{{bannerInput}}" mode="aspectFill" />
+            <image lazy-load class="preview-img" src="{{bannerInput}}" mode="aspectFill" />
             <view class="preview-mask">
               <text class="preview-text">PREVIEW</text>
             </view>
@@ -63,37 +63,98 @@
     </view>
 
     <!-- 快捷入口 -->
-    <view class="card">
-      <view class="stitle">快捷入口</view>
-      <view class="actions">
-        <view class="act" bindtap="go" data-url="/pages/egg/egg"><view class="act-icon">🥚</view><text>孵蛋查询</text></view>
-        <view class="act" bindtap="go" data-url="/pages/merchant/merchant"><view class="act-icon">🛒</view><text>远行商人</text></view>
-        <view class="act" bindtap="go" data-url="/pages/catch/catch"><view class="act-icon">🎯</view><text>捕捉统计</text></view>
-        <view class="act" bindtap="go" data-url="/pages/about/about"><view class="act-icon">ℹ️</view><text>关于我们</text></view>
+    <view class="quick-nav-card">
+      <view class="quick-nav-header">
+        <text class="quick-nav-icon">⚡</text>
+        <text class="quick-nav-title">快捷入口</text>
+      </view>
+      <view class="quick-nav-grid">
+        <view class="nav-item" bindtap="go" data-url="/pages/egg/egg">
+          <view class="nav-icon-wrap blue">
+            <text class="nav-icon">🥚</text>
+          </view>
+          <text class="nav-text">孵蛋查询</text>
+        </view>
+        <view class="nav-item" bindtap="go" data-url="/pages/merchant/merchant">
+          <view class="nav-icon-wrap orange">
+            <text class="nav-icon">🛒</text>
+          </view>
+          <text class="nav-text">远行商人</text>
+        </view>
+        <view class="nav-item" bindtap="go" data-url="/pages/activity/activity">
+          <view class="nav-icon-wrap pink">
+            <text class="nav-icon">📅</text>
+          </view>
+          <text class="nav-text">活动日历</text>
+        </view>
+        <view class="nav-item" bindtap="go" data-url="/pages/catch/catch">
+          <view class="nav-icon-wrap green">
+            <text class="nav-icon">🎯</text>
+          </view>
+          <text class="nav-text">捕捉统计</text>
+        </view>
+        <view class="nav-item" bindtap="go" data-url="/pages/about/about">
+          <view class="nav-icon-wrap purple">
+            <text class="nav-icon">ℹ️</text>
+          </view>
+          <text class="nav-text">关于我们</text>
+        </view>
+        <view class="nav-item" bindtap="go" data-url="/pages/redeem/redeem">
+          <view class="nav-icon-wrap red">
+            <text class="nav-icon">🎫</text>
+          </view>
+          <text class="nav-text">兑换码</text>
+        </view>
+        <view class="nav-item" bindtap="go" data-url="/pages/map/map">
+          <view class="nav-icon-wrap cyan">
+            <text class="nav-icon">🗺️</text>
+          </view>
+          <text class="nav-text">洛手地图</text>
+        </view>
+        <view class="nav-item" bindtap="go" data-url="/pages/swarm/swarm">
+          <view class="nav-icon-wrap yellow">
+            <text class="nav-icon">💥</text>
+          </view>
+          <text class="nav-text">大量出没</text>
+        </view>
       </view>
     </view>
 
-    <!-- 公告栏：有公告时全员可见，无公告时仅管理员可见 -->
-    <view class="card announcement-card" wx:if="{{announcements.length > 0 || isAdmin}}">
-      <view class="stitle-row">
-        <text class="stitle">📢 公告通知</text>
+    <!-- 公告栏 -->
+    <view class="announce-card" wx:if="{{announcements.length > 0 || isAdmin}}">
+      <view class="announce-card-header">
+        <view class="announce-header-left">
+          <view class="announce-header-icon-wrap">
+            <text class="announce-header-icon">📢</text>
+          </view>
+          <text class="announce-header-title">公告通知</text>
+        </view>
+        <view class="announce-count-pill" wx:if="{{announcements.length > 1}}">
+          <text class="count-text">{{announcements.length}}条</text>
+        </view>
       </view>
       <!-- 有公告 -->
-      <view wx:if="{{announcements.length > 0}}">
-        <view class="news-item" wx:for="{{announcements}}" wx:key="_id">
-          <view class="news" bindtap="showAnnouncement" data-i="{{index}}">
-            <view class="news-tag {{item.pinned?'pinned':''}}">{{item.pinned?'置顶':item.type === 'notice' ? '公告' : item.type === 'update' ? '更新' : item.type === 'event' ? '活动' : '提示'}}</view>
-            <view class="news-body">
-              <text class="news-t">{{item.title}}</text>
-              <text class="news-d">{{item.timeStr}}</text>
-            </view>
-            <view class="news-arrow {{expandedIndex === index ? 'expanded' : ''}}">›</view>
+      <view wx:if="{{announcements.length > 0}}" class="announce-list">
+        <view class="announce-item {{expandedIndex === index ? 'expanded' : ''}}" wx:for="{{announcements}}" wx:key="_id">
+          <view class="announce-header" bindtap="showAnnouncement" data-i="{{index}}">
+            <view class="announce-tag {{item.pinned ? 'pinned' : item.type}}">{{item.pinned ? '置顶' : (item.typeLabel || (item.type === 'notice' ? '公告' : item.type === 'update' ? '更新' : item.type === 'event' ? '活动' : '提示'))}}</view>
+            <text class="announce-title">{{item.title}}</text>
+            <text class="announce-time">{{item.timeStr}}</text>
+            <view class="announce-arrow {{expandedIndex === index ? 'up' : ''}}">›</view>
           </view>
-          <view class="news-detail" wx:if="{{expandedIndex === index}}">
-            <block wx:if="{{item.richContent && item.richContent.length > 0}}">
-              <view class="news-detail-rich" style="margin-bottom: 20rpx; width: 100%; box-sizing: border-box;">
+          <view class="announce-body" wx:if="{{expandedIndex === index}}">
+            <text class="announce-auto-delete" wx:if="{{item.autoDeleteDisplay}}">{{item.autoDeleteDisplay}}</text>
+            <scroll-view class="announce-content" scroll-y>
+              <!-- 编辑器文本内容 -->
+              <view wx:if="{{item.content && (!item.richContent || item.richContent.length === 0)}}" class="news-detail-rich">
+                <rich-text nodes="{{item.content}}" />
+              </view>
+              <!-- 富文本内容 -->
+              <block wx:if="{{item.richContent && item.richContent.length > 0}}">
                 <block wx:for="{{item.richContent}}" wx:for-item="block" wx:key="index">
-                  <view wx:if="{{block.type === 'music'}}" class="rich-music-block {{currentPlayUrl === block.url && isPlaying ? 'playing' : ''}}" catchtap="playSong" data-url="{{block.url}}" data-name="{{block.name || '推荐单曲'}}">
+                  <!-- 音乐 -->
+                  <view wx:if="{{block.type === 'music'}}" class="rich-music-block {{currentPlayUrl === block.url && isPlaying ? 'playing' : ''}}" catchtap="playSong" data-url="{{block.url}}" data-name="{{block.name || '推荐单曲'}}" data-cover="{{block.cover || ''}}">
+                    <image lazy-load wx:if="{{block.cover}}" class="music-cover" src="{{block.cover}}" mode="aspectFill" />
                     <text class="music-icon {{currentPlayUrl === block.url && isPlaying ? 'rotating' : ''}}">🎵</text>
                     <view class="music-info">
                       <text class="music-name">{{block.name || '推荐单曲'}}</text>
@@ -101,19 +162,9 @@
                     </view>
                     <text class="music-play-btn">{{currentPlayUrl === block.url && isPlaying ? '暂停' : '点我听歌'}}</text>
                   </view>
-                  <view wx:elif="{{block.type === 'iframe'}}" class="rich-iframe-block">
-                    <text class="iframe-icon">🌐</text>
-                    <view class="iframe-info">
-                      <text class="iframe-name">{{block.name || '外部网页'}}</text>
-                      <text class="iframe-url">{{block.url}}</text>
-                    </view>
-                    <view class="iframe-actions">
-                      <view class="iframe-btn open" catchtap="openIframe" data-url="{{block.url}}">打开</view>
-                      <view class="iframe-btn copy" catchtap="copyIframe" data-url="{{block.url}}">复制</view>
-                    </view>
-                  </view>
-                  <view wx:elif="{{block.type === 'quote'}}" class="rich-quote-block">
-                    <text class="quote-text">{{block.content}}</text>
+                  <!-- 视频 -->
+                  <view wx:elif="{{block.type === 'video' && block.isDirectMp4}}" class="rich-video-inline">
+                    <video class="video-player-video" src="{{block.url}}" controls show-center-play-btn object-fit="contain" style="width:100%; border-radius:12rpx; margin-top:10rpx;" />
                   </view>
                   <view wx:elif="{{block.type === 'video'}}" class="rich-video-block" catchtap="openVideo" data-url="{{block.url}}" data-name="{{block.name || '视频'}}">
                     <text class="video-icon">
@@ -132,6 +183,7 @@
                     </view>
                     <text class="video-play-btn">▶ 观看</text>
                   </view>
+                  <!-- 表格 -->
                   <view wx:elif="{{block.type === 'table'}}" class="rich-table-block">
                     <view class="rich-table">
                       <view class="rich-table-row rich-table-header">
@@ -142,12 +194,15 @@
                       </view>
                     </view>
                   </view>
+                  <!-- 图片 -->
                   <view wx:elif="{{block.type === 'image'}}" class="rich-image-block" catchtap="previewRichImage" data-src="{{block.url}}">
-                    <image class="rich-image" src="{{block.url}}" mode="widthFix" />
+                    <image class="rich-image" src="{{block.url}}" mode="widthFix" lazy-load="true" webp="true" show-menu-by-longpress="true" />
                   </view>
+                  <!-- 分割线 -->
                   <view wx:elif="{{block.type === 'divider'}}" class="divider-block">
                     <view class="divider-line {{block.style}}"></view>
                   </view>
+                  <!-- 链接 -->
                   <view wx:elif="{{block.type === 'link' && block.isVideo}}" class="rich-link-block video-link" catchtap="openVideo" data-url="{{block.url}}" data-name="{{block.text}}">
                     <text class="link-icon">📺</text>
                     <text class="link-text">{{block.text}}</text>
@@ -158,39 +213,41 @@
                     <text class="link-text">{{block.text}}</text>
                     <text class="link-badge">点击复制</text>
                   </view>
+                  <!-- 附件 -->
                   <view wx:elif="{{block.type === 'attachment'}}" class="rich-link-block attachment-link" catchtap="downloadAttachment" data-url="{{block.url}}" data-name="{{block.name}}" data-size="{{block.sizeText}}">
                     <text class="link-icon">📎</text>
                     <text class="link-text">{{block.name}} ({{block.sizeText}})</text>
                     <text class="link-badge">下载预览</text>
                   </view>
+                  <!-- 引用 -->
+                  <view wx:elif="{{block.type === 'quote'}}" class="rich-quote-block">
+                    <text class="quote-text">{{block.content}}</text>
+                  </view>
+                  <!-- 普通文本 -->
                   <view wx:else class="rich-text-block" style="font-size:{{block.size}}rpx;color:{{block.color}};font-weight:{{block.weight || 'normal'}};font-style:{{block.style || 'normal'}};{{block.fontFamily && block.fontFamily !== 'sans-serif' ? 'font-family:' + block.fontFamily + ';' : ''}}">
                     <rich-text nodes="{{block.html || block.content}}" />
                   </view>
                 </block>
-              </view>
-            </block>
-            <text wx:else class="news-detail-content">{{item.content}}</text>
-            <view class="news-source" wx:if="{{item.source}}">
-              <text class="source-label">来源：</text>
-              <text class="source-text">{{item.source}}</text>
+              </block>
+            </scroll-view>
+            <!-- 来源 -->
+            <view class="announce-source" wx:if="{{item.source}}">
+              <text>来源：{{item.source}}</text>
             </view>
-            <image 
-              wx:if="{{item.image}}" 
-              class="news-detail-image" 
-              src="{{item.image}}" 
-              mode="widthFix" 
-              catchtap="previewAnnouncementImage" 
-              data-src="{{item.image}}"
-              binderror="onAnnouncementImageError"
-              data-index="{{index}}"
-            />
+
           </view>
         </view>
       </view>
-      <!-- 无公告，管理员可见提示 -->
+      <!-- 无公告 -->
       <view class="empty-notice" wx:if="{{announcements.length === 0 && isAdmin}}">
-        <text class="empty-notice-text">暂无公告，请前往管理后台发布</text>
-        <view class="empty-notice-btn" bindtap="goAdmin">去发布</view>
+        <view class="empty-icon-wrap">
+          <text class="empty-icon">📭</text>
+        </view>
+        <text class="empty-notice-text">暂无公告</text>
+        <view class="empty-notice-btn" bindtap="goAdmin">
+          <text class="btn-icon">✏️</text>
+          <text class="btn-text">去发布</text>
+        </view>
       </view>
     </view>
 
@@ -211,9 +268,9 @@
         <text class="video-player-owner-text">UP主: {{videoPlayerOwner}}</text>
       </view>
       <video class="video-player-video" src="{{videoPlayerUrl}}" controls autoplay show-center-play-btn object-fit="contain" />
-      <view class="video-player-desc" wx:if="{{videoPlayerDesc}}">
-        <text class="video-player-desc-text">{{videoPlayerDesc}}</text>
-      </view>
+      <scroll-view scroll-y class="video-player-desc" wx:if="{{videoPlayerDesc}}">
+        <text class="video-player-desc-text" space="ensp" decode="true">{{videoPlayerDesc}}</text>
+      </scroll-view>
     </view>
   </view>
 

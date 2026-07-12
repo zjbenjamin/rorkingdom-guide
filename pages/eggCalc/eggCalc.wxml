@@ -10,7 +10,7 @@
     <view class="egg-card">
       <view class="egg-head">
         <view class="egg-icon-wrap">
-          <image class="egg-icon-img" src="https://patchwiki.biligame.com/images/rocom/c/c1/eqj6769ofwdcvdlh44wex3t1837hztb.png" mode="aspectFit" />
+          <image lazy-load class="egg-icon-img" src="https://patchwiki.biligame.com/images/rocom/c/c1/eqj6769ofwdcvdlh44wex3t1837hztb.png" mode="aspectFit" />
         </view>
         <view class="egg-title">
           <text class="egg-label">蛋组计算器</text>
@@ -25,7 +25,7 @@
       <view class="egg-tabs">
         <view class="egg-tab-item {{activeTab === 'search' ? 'active' : ''}}" catchtap="switchTab" data-tab="search">
           <text class="egg-tab-icon">🔍</text>
-          <text>蛋组查询</text>
+          <text>孵蛋查询</text>
         </view>
         <view class="egg-tab-item {{activeTab === 'simulate' ? 'active' : ''}}" catchtap="switchTab" data-tab="simulate">
           <text class="egg-tab-icon">🥚</text>
@@ -84,12 +84,12 @@
           <!-- 两个槽位 -->
           <view class="sim-slots">
             <!-- 母方 -->
-            <picker mode="selector" range="{{pets}}" range-key="name" bindchange="onMotherPickerChange" style="width: 100%;">
+            <picker mode="selector" range="{{petNames}}" bindchange="onMotherPickerChange" style="width: 100%;">
               <view class="sim-slot {{motherPet ? 'selected' : ''}}">
                 <text class="sim-slot-label">母方 (生蛋子代系列)</text>
                 <block wx:if="{{motherPet}}">
                   <view class="sim-slot-pet">
-                    <image class="sim-pet-img" wx:if="{{motherPet.imgUrl}}" src="{{motherPet.imgUrl}}" mode="aspectFit" />
+                    <image lazy-load class="sim-pet-img" wx:if="{{motherPet.imgUrl}}" src="{{motherPet.imgUrl}}" mode="aspectFit" />
                     <text class="sim-pet-emoji" wx:else>{{eggTypeEmoji[motherPet.types[0]] || '🥚'}}</text>
                     <text class="sim-pet-name">{{motherPet.name}}</text>
                     <view class="sim-pet-groups">
@@ -108,12 +108,12 @@
             </picker>
 
             <!-- 父方 -->
-            <picker mode="selector" range="{{compatibleFathers}}" range-key="name" bindchange="onFatherPickerChange" disabled="{{!motherPet}}" style="width: 100%;">
+            <picker mode="selector" range="{{compatibleFatherNames}}" bindchange="onFatherPickerChange" disabled="{{!motherPet}}" style="width: 100%;">
               <view class="sim-slot {{fatherPet ? 'selected' : ''}} {{!motherPet ? 'disabled' : ''}}">
                 <text class="sim-slot-label">父方 (提供遗传技能)</text>
                 <block wx:if="{{fatherPet}}">
                   <view class="sim-slot-pet">
-                    <image class="sim-pet-img" wx:if="{{fatherPet.imgUrl}}" src="{{fatherPet.imgUrl}}" mode="aspectFit" />
+                    <image lazy-load class="sim-pet-img" wx:if="{{fatherPet.imgUrl}}" src="{{fatherPet.imgUrl}}" mode="aspectFit" />
                     <text class="sim-pet-emoji" wx:else>{{eggTypeEmoji[fatherPet.types[0]] || '🥚'}}</text>
                     <text class="sim-pet-name">{{fatherPet.name}}</text>
                     <view class="sim-pet-groups">

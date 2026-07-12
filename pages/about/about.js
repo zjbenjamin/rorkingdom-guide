@@ -4,12 +4,14 @@ var cloudUrl = require('../../utils/cloudUrl')
 
 Page({
   data: {
+    hasUpdate: false,
+    updateReady: false,
     buildTime: '',
     contact: 'flyzccboard@yeah.net',
     uid: '476200',
     aboutData: {
       appName: '洛手助手BENJAMIN',
-      version: '版本 v1.0.1 体验版',
+      version: '洛手助手1.0.4正式版',
       devName: '浙里本杰明',
       devAvatar: '/images/avatar.jpg',
       uid: '476200',
@@ -24,7 +26,20 @@ Page({
     editMode: '',
     showModal: false,
     platformName: '',
-    platformUrl: ''
+    platformUrl: '',
+    changelogList: [
+      {
+        version: '1.0.4',
+        date: '2026-06-22',
+        content: '新增：全局页面渐入动效体验\n优化：倒计时数据局部渲染，大幅提高性能\n优化：页面按钮和卡片增加物理点击反馈\n优化：启用分包静默预下载，实现多页面秒开'
+      }
+    ],
+    showChangelogModal: false,
+    changelogVersion: '',
+    changelogDate: '',
+    changelogContent: '',
+    changelogEditIndex: -1,
+    changelogSaving: false
   },
   onLoad() {
     if (wx.cloud) db = wx.cloud.database()
@@ -37,6 +52,7 @@ Page({
     })
     self.loadAboutData()
     self.checkAdmin()
+    self.checkUpdate()
   },
   parseChangelog(content) {
     if (!content) return []
@@ -74,8 +90,13 @@ Page({
             merged[key] = cloudData[key] !== undefined ? cloudData[key] : defaults[key]
           }
         }
+        var changelogList = cloudData.changelogList || []
+        for (var i = 0; i < changelogList.length; i++) {
+          changelogList[i].lines = self.parseChangelog(changelogList[i].content || '')
+        }
         self.setData({ 
           aboutData: merged,
+          changelogList: changelogList,
           changelogLines: self.parseChangelog(merged.changelogContent || self.data.defaultChangelog)
         })
         if (cloudUrl.isCloudUrl(merged.devAvatar)) {
@@ -106,11 +127,60 @@ Page({
         .catch(function() {})
     }).catch(function() {})
   },
+  checkUpdate() {
+    var self = this
+    if (wx.getUpdateManager) {
+      const updateManager = wx.getUpdateManager()
+      updateManager.onCheckForUpdate(function (res) {
+        if (res.hasUpdate) {
+          self.setData({ hasUpdate: true })
+        }
+      })
+      updateManager.onUpdateReady(function () {
+        self.setData({ updateReady: true })
+        wx.showModal({
+          title: '更新提示',
+          content: '新版本已经准备好，是否重启应用以应用更新？',
+          success: function (res) {
+            if (res.confirm) {
+              updateManager.applyUpdate()
+            }
+          }
+        })
+      })
+      updateManager.onUpdateFailed(function () {
+        wx.showToast({ title: '新版本下载失败，请稍后重试', icon: 'none' })
+      })
+    }
+  },
+  triggerUpdate() {
+    if (wx.getUpdateManager) {
+      const updateManager = wx.getUpdateManager()
+      updateManager.applyUpdate()
+    }
+  },
+  manualCheckUpdate() {
+    if (this.data.updateReady) {
+      wx.showModal({
+        title: '更新提示',
+        content: '新版本已经准备好，是否马上重启小程序？',
+        success: function (res) {
+          if (res.confirm) {
+            wx.getUpdateManager().applyUpdate()
+          }
+        }
+      })
+    } else if (this.data.hasUpdate) {
+      wx.showToast({ title: '新版本正在下载中，请稍后', icon: 'none' })
+    } else {
+      wx.showToast({ title: '当前已是最新版本', icon: 'none' })
+    }
+  },
   onEdit(e) {
     if (!this.data.isAdmin) return
     var field = e.currentTarget.dataset.field
     var value = e.currentTarget.dataset.value || ''
-    var title = field === 'devName' ? '编辑开发者名称' : field === 'uid' ? '编辑UID' : '编辑邮箱'
+    var title = field === 'devName' ? '编辑开发者名称' : field === 'uid' ? '编辑UID' : field === 'version' ? '编辑版本号' : '编辑邮箱'
     this.setData({ showModal: true, editingField: field, editValue: value, editModalTitle: title, editMode: 'field' })
   },
   addGift() {
@@ -262,6 +332,112 @@ Page({
     this.setData({ showModal: false })
   },
   preventClose: function() {},
+  
+  // 更新日志管理
+  openChangelogModal() {
+    var today = new Date()
+    var dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0')
+    this.setData({
+      showChangelogModal: true,
+      changelogEditIndex: -1,
+      changelogVersion: '',
+      changelogDate: dateStr,
+      changelogContent: ''
+    })
+  },
+  editChangelog(e) {
+    var index = e.currentTarget.dataset.index
+    var item = this.data.changelogList[index]
+    if (!item) return
+    this.setData({
+      showChangelogModal: true,
+      changelogEditIndex: index,
+      changelogVersion: item.version || '',
+      changelogDate: item.date || '',
+      changelogContent: item.content || ''
+    })
+  },
+  closeChangelogModal() {
+    this.setData({ showChangelogModal: false, changelogEditIndex: -1 })
+  },
+  onChangelogVersionInput(e) {
+    this.setData({ changelogVersion: e.detail.value })
+  },
+  onChangelogDateChange(e) {
+    this.setData({ changelogDate: e.detail.value })
+  },
+  onChangelogContentInput(e) {
+    this.setData({ changelogContent: e.detail.value })
+  },
+  deleteChangelog(e) {
+    var self = this
+    var index = e.currentTarget.dataset.index
+    wx.showModal({
+      title: '删除日志',
+      content: '确定删除这条更新日志吗？',
+      success: function(res) {
+        if (res.confirm) {
+          var list = self.data.changelogList.slice()
+          list.splice(index, 1)
+          self.saveChangelogList(list)
+        }
+      }
+    })
+  },
+  saveChangelog() {
+    var self = this
+    if (self.data.changelogSaving) return
+    var version = (self.data.changelogVersion || '').trim()
+    var date = self.data.changelogDate
+    var content = (self.data.changelogContent || '').trim()
+    if (!version) {
+      wx.showToast({ title: '请输入版本号', icon: 'none' })
+      return
+    }
+    if (!date) {
+      wx.showToast({ title: '请选择日期', icon: 'none' })
+      return
+    }
+    if (!content) {
+      wx.showToast({ title: '请输入更新内容', icon: 'none' })
+      return
+    }
+    self.setData({ changelogSaving: true })
+    var list = self.data.changelogList.slice()
+    var entry = { version: version, date: date, content: content }
+    if (self.data.changelogEditIndex >= 0) {
+      list[self.data.changelogEditIndex] = entry
+    } else {
+      list.unshift(entry)
+    }
+    self.saveChangelogList(list, function() {
+      self.setData({ changelogSaving: false, showChangelogModal: false })
+    })
+  },
+  saveChangelogList(list, callback) {
+    var self = this
+    if (!db) return
+    for (var i = 0; i < list.length; i++) {
+      list[i].lines = self.parseChangelog(list[i].content || '')
+    }
+    db.collection('about_config').doc('main').get()
+      .then(function() {
+        return db.collection('about_config').doc('main').update({ data: { changelogList: list, updateTime: db.serverDate() } })
+      })
+      .catch(function() {
+        return db.collection('about_config').add({ data: { _id: 'main', changelogList: list, updateTime: db.serverDate() } })
+      })
+      .then(function() {
+        self.setData({ changelogList: list })
+        wx.showToast({ title: '已保存', icon: 'success' })
+        if (callback) callback()
+      })
+      .catch(function() {
+        wx.showToast({ title: '保存失败', icon: 'none' })
+        self.setData({ changelogSaving: false })
+      })
+  },
+  
   copyEmail() { wx.setClipboardData({ data: this.data.aboutData?.contact || this.data.contact, success() { wx.showToast({ title: '已复制', icon: 'success' }) } }) },
   copyUID() { wx.setClipboardData({ data: this.data.aboutData?.uid || this.data.uid, success() { wx.showToast({ title: '已复制', icon: 'success' }) } }) },
   onFeedback() {

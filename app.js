@@ -40,11 +40,17 @@ App({
   },
   _initCloud: function(retryCount) {
     var self = this
-    wx.cloud.init({ traceUser: true })
+    wx.cloud.init({ env: 'cloudbase-d2gu3iv2o6878a0f9', traceUser: true })
+    var cachedReady = wx.getStorageSync('cloud_ready')
+    if (cachedReady && Date.now() - cachedReady < 600000) {
+      self.globalData.cloudReady = true
+      return
+    }
     var db = wx.cloud.database()
     db.collection('site_config').limit(1).get()
       .then(function() {
         self.globalData.cloudReady = true
+        wx.setStorageSync('cloud_ready', Date.now())
       })
       .catch(function(err) {
         if (retryCount < 2) {

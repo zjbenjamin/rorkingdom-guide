@@ -205,7 +205,11 @@
       <view class="special-history-list" wx:if="{{specialHistory.length > 0}}">
         <view class="history-item-mini" wx:for="{{specialHistory}}" wx:key="index">
           <text class="h-type {{item.type === '购买' ? 'buy' : 'craft'}}">{{item.type}}</text>
-          <text class="h-name">{{item.ball}}</text>
+          <view style="display:flex; align-items:center; gap:8rpx;">
+              <image wx:if="{{item.icon && item.icon.length > 5}}" src="{{item.icon}}" style="width:28rpx; height:28rpx; border-radius:50%;" mode="aspectFill"></image>
+              <text wx:elif="{{item.icon}}" style="font-size:28rpx;">{{item.icon}}</text>
+              <text class="h-name">{{item.ball}}</text>
+            </view>
           <text class="h-count">x{{item.count}}</text>
           <text class="h-cost" wx:if="{{item.cost > 0}}">💵{{item.cost}}</text>
           <text class="h-time">{{item.time}}</text>
@@ -216,7 +220,10 @@
       <view class="ball-visual-list">
         <view wx:for="{{balls}}" wx:key="id" wx:if="{{item.count > 0}}">
           <view class="ball-item-card {{selectedBall===index?'selected':''}} {{pinnedBallIndex===index?'pinned':''}}" bindtap="onSelectBall" data-i="{{index}}">
-            <view class="ball-icon-circle">{{item.icon}}</view>
+            <view class="ball-icon-circle">
+              <image wx:if="{{item.icon && item.icon.length > 5}}" src="{{item.icon}}" mode="aspectFit" style="width:100%; height:100%; border-radius:50%;" />
+              <text wx:else>{{item.icon}}</text>
+            </view>
             <view class="ball-info-main">
               <text class="ball-name-txt">{{item.name}}</text>
               <view class="ball-meta-tags">
@@ -265,7 +272,8 @@
           <text class="title-sub">最近 20 条记录</text>
         </view>
         <view class="history-ops" style="display:flex; gap:12rpx;">
-          <view class="capsule-btn warning" bindtap="onUndo" wx:if="{{history.length > 0}}">撤销</view>
+          <view class="capsule-btn info" bindtap="onGenerateImage" wx:if="{{history.length > 0 && showLogShareBtn}}">生成图片</view>
+            <view class="capsule-btn warning" bindtap="onUndo" wx:if="{{history.length > 0}}">撤销</view>
           <view class="capsule-btn danger" bindtap="onClearHistory">清空</view>
         </view>
       </view>
@@ -276,7 +284,13 @@
             {{item.result.indexOf('成功')>=0?'成功':item.result==='歪了'?'歪了':'事件'}}
           </view>
           <view class="log-content">
-            <text class="log-ball">{{item.balls}}</text>
+            <view style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4rpx;">
+              <view style="display:flex; align-items:center; gap:8rpx;">
+                <image wx:if="{{item.ballIcon && item.ballIcon.length > 5}}" src="{{item.ballIcon}}" style="width: 32rpx; height: 32rpx; border-radius: 50%; background:rgba(255,255,255,0.1);" mode="aspectFill"></image>
+                <text wx:elif="{{item.ballIcon}}" style="font-size: 32rpx; margin-right: 8rpx;">{{item.ballIcon}}</text>
+                <text class="log-ball">{{item.balls}}</text>
+              </view>
+            </view>
             <text class="log-pet" wx:if="{{item.pet}}">目标: {{item.pet}}</text>
             <view class="log-details">
               <text class="log-cost" wx:if="{{item.cost>0}}">消耗: 💵{{item.cost}}</text>
@@ -392,5 +406,6 @@
     </view>
   </view>
 
+  <canvas type="2d" id="shareCanvas" style="width: 320px; height: 500px; position: fixed; top: -9999px;"></canvas>
   <dock current="catch" />
 </view>

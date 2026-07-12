@@ -58,6 +58,36 @@ function parseDocx(buffer) {
   return parseXmlText(xml)
 }
 
+function parseCsv(buffer) {
+  const text = buffer.toString('utf8')
+  const lines = text.split(/\r?\n/).filter(line => line.trim())
+  const rows = []
+  for (const line of lines) {
+    const cells = []
+    let current = ''
+    let inQuotes = false
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i]
+      if (ch === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          current += '"'
+          i++
+        } else {
+          inQuotes = !inQuotes
+        }
+      } else if (ch === ',' && !inQuotes) {
+        cells.push(current.trim())
+        current = ''
+      } else {
+        current += ch
+      }
+    }
+    cells.push(current.trim())
+    rows.push(cells)
+  }
+  return rows
+}
+
 exports.main = async (event, context) => {
   const { fileID, url, fileType } = event
   try {
@@ -101,6 +131,18 @@ exports.main = async (event, context) => {
       }
       return { success: true, content: '', type: 'empty' }
     }
+    if (ext === 'csv' || fileName.endsWith('.csv')) {
+      const table = parseCsv(buffer)
+      if (table.length > 0) {
+        let md = ''
+        for (let i = 0; i < table.length; i++) {
+          md += '| ' + table[i].join(' | ') + ' |\n'
+          if (i === 0) md += '| ' + table[i].map(() => '---').join(' | ') + ' |\n'
+        }
+        return { success: true, content: md, type: 'table' }
+      }
+      return { success: true, content: '', type: 'empty' }
+    }
     if (ext === 'docx' || fileName.endsWith('.docx')) {
       const text = parseDocx(buffer)
       return { success: true, content: text, type: 'text' }
@@ -108,7 +150,7 @@ exports.main = async (event, context) => {
     if (ext === 'doc' || fileName.endsWith('.doc')) {
       return { success: false, error: '暂不支持DOC格式，请转换为DOCX后重试' }
     }
-    return { success: false, error: '不支持的文件格式' }
+    return { success: false, error: '不支持的文件格式: ' + ext }
   } catch (e) {
     return { success: false, error: e.message || '解析失败' }
   }

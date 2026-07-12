@@ -12,3 +12,8 @@ $RECYCLE.BIN/
 
 # Node.js
 node_modules/
+
+# Agent files
+.agents/
+scratch/
+aliyun-push-server/

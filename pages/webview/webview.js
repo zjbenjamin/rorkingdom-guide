@@ -6,5 +6,8 @@ Page({
     if (options.url) {
       this.setData({ url: decodeURIComponent(options.url) })
     }
+  },
+  onUnload: function() {
+    this.setData({ url: '' })
   }
 })

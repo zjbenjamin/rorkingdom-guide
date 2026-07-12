@@ -242,30 +242,43 @@
           <!-- 查询结果 -->
           <view class="card no-padding" wx:if="{{hasSearched}}">
             <view class="card-title" style="padding: 16px 16px 4px 16px;">🎯 反查结果 (共 {{lookupResults.length}} 个)</view>
+            <view wx:if="{{lookupResults.length > 0}}" style="padding: 0 16rpx 8rpx; font-size: 22rpx; color: rgba(255,255,255,0.4);">按匹配精度排序，越靠前越精确</view>
             
-            <view class="pet-pool-list" wx:if="{{lookupResults.length > 0}}">
-              <view class="pet-pool-item" wx:for="{{lookupResults}}" wx:key="name">
-                <view class="pet-pool-info">
-                  <view class="pet-pool-name-row">
-                    <text class="pet-pool-name">{{item.name}}</text>
-                    <view class="pet-pool-types">
-                      <text class="pet-pool-type type-{{item.type1_class}}">{{item.type1}}</text>
-                      <text class="pet-pool-type type-{{item.type2_class}}" wx:if="{{item.type2}}">{{item.type2}}</text>
+            <view class="lookup-result-list" wx:if="{{lookupResults.length > 0}}">
+              <view class="lookup-result-card {{selectedLookupPet.name === item.name ? 'selected' : ''}}" wx:for="{{lookupResults}}" wx:key="name" bindtap="selectLookupPet" data-item="{{item}}">
+                <!-- 顶部：图片 + 名称 + 属性 -->
+                <view class="lookup-result-header">
+                  <view class="lookup-result-img-wrap" wx:if="{{item.imgUrl}}">
+                    <image class="lookup-result-img" src="{{item.imgUrl}}" mode="aspectFit" lazy-load />
+                  </view>
+                  <view class="lookup-result-title-area">
+                    <view class="lookup-result-name-row">
+                      <text class="lookup-result-name">{{item.name}}</text>
+                      <view class="lookup-result-types">
+                        <text class="lookup-result-type type-{{item.type1_class}}">{{item.type1}}</text>
+                        <text class="lookup-result-type type-{{item.type2_class}}" wx:if="{{item.type2}}">{{item.type2}}</text>
+                      </view>
+                    </view>
+                    <view class="lookup-result-tags">
+                      <text class="lookup-result-egg-tag">{{item.egg || '普通蛋'}}</text>
+                      <text class="lookup-result-group-tag">{{item.group[0] || '未知'}}</text>
+                      <text class="lookup-result-shiny-tag" wx:if="{{item.hasShiny}}">可闪光</text>
                     </view>
                   </view>
-                  <view class="pet-pool-meta">
-                    <view class="meta-row">
-                      <text class="pet-pool-egg">所在蛋池：{{item.egg || '普通蛋'}}</text>
-                      <text class="pet-pool-group">蛋组：{{item.group[0] || '未知'}}</text>
-                    </view>
-                    <view class="meta-row size-range-row">
-                      <text class="size-range-text">身高范围：{{item.height || '未知'}} m</text>
-                      <text class="size-range-text">体重范围：{{item.weight || '未知'}} kg</text>
-                    </view>
-                  </view>
+                  <view class="lookup-result-rank">{{index + 1}}</view>
                 </view>
-                <view class="pet-pool-shiny" wx:if="{{item.hasShiny}}">
-                  <text class="shiny-tag">可闪光</text>
+                
+                <!-- 底部：尺寸范围 -->
+                <view class="lookup-result-sizes">
+                  <view class="lookup-result-size-item">
+                    <text class="lookup-result-size-label">身高</text>
+                    <text class="lookup-result-size-value">{{item.height || '未知'}} m</text>
+                  </view>
+                  <view class="lookup-result-size-divider"></view>
+                  <view class="lookup-result-size-item">
+                    <text class="lookup-result-size-label">体重</text>
+                    <text class="lookup-result-size-value">{{item.weight || '未知'}} kg</text>
+                  </view>
                 </view>
               </view>
             </view>

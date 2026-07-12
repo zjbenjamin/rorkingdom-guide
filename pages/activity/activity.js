@@ -194,7 +194,7 @@ Page({
             return wx.cloud.callFunction({
               name: 'parseFile',
               data: { fileID: uploadRes.fileID, fileType: ext }
-            })
+            }).catch(function(err) { console.error("Cloud call failed", err); })
           }).then(function(parseRes) {
             wx.hideLoading()
             if (parseRes.result && parseRes.result.success) {
@@ -310,7 +310,7 @@ Page({
           }
         },
         fail: function() {}
-      })
+      }).catch(function(err) { console.error("Cloud call failed", err); })
     } else {
       self.doSaveSubscription(type, openid)
     }
@@ -389,7 +389,7 @@ Page({
             return wx.cloud.callFunction({
               name: 'parseFile',
               data: { fileID: uploadRes.fileID, fileType: ext }
-            })
+            }).catch(function(err) { console.error("Cloud call failed", err); })
           }).then(function(parseRes) {
             wx.hideLoading()
             if (parseRes.result && parseRes.result.success) {
@@ -505,7 +505,7 @@ Page({
           }
         },
         fail: function() {}
-      })
+      }).catch(function(err) { console.error("Cloud call failed", err); })
     } else {
       self.doSaveSubscription(type, openid)
     }
@@ -607,7 +607,7 @@ Page({
           wx.hideLoading()
           self._playSongFallback(url)
         }
-      })
+      }).catch(function(err) { console.error("Cloud call failed", err); })
       return
     }
 
@@ -738,7 +738,7 @@ Page({
         wx.hideLoading()
         self._openVideoFallback(url, '网络解析错误')
       }
-    })
+    }).catch(function(err) { console.error("Cloud call failed", err); })
   },
   _openVideoFallback: function(url, reason) {
     var content = '该视频由于版权限制或解析失败，可复制链接观看。'

@@ -4,6 +4,15 @@
       <text class="admin-text">管理员模式</text>
       <view class="admin-btn" bindtap="onAddActivity"><text>+ 新增活动</text></view>
     </view>
+    <view class="subscribe-bar" wx:if="{{subscribeConfig.activity}}">
+      <view class="sub-info">
+        <text class="sub-title">活动更新通知</text>
+        <text class="sub-desc">订阅获取最新活动信息提醒</text>
+      </view>
+      <view class="sub-btn {{subscribedActivity ? 'active' : ''}}" bindtap="subscribeActivity">
+        {{subscribedActivity ? '已订阅(' + subscribeCount + ')' : '+ 订阅通知'}}
+      </view>
+    </view>
     <view class="tabs">
       <view class="tab {{status===item?'on':''}}" wx:for="{{statuses}}" wx:key="*this" bindtap="onStatus" data-s="{{item}}">{{item}}</view>
     </view>
@@ -15,11 +24,12 @@
             <view class="badge badge-official" wx:if="{{item.type==='官方权威信息'}}">官方权威信息</view>
           </view>
           <text class="act-title headline-title">{{item.title}}</text>
-          <text class="act-summary" wx:if="{{item.richContent && item.richContent.length > 0}}">{{item.content}}</text>
+          <view class="act-summary" wx:if="{{item.content && (!item.richContent || item.richContent.length === 0)}}"><rich-text nodes="{{item.content}}" /></view>
           <block wx:if="{{item.richContent && item.richContent.length > 0}}">
             <view class="act-rich-content">
               <block wx:for="{{item.richContent}}" wx:for-item="block" wx:key="index">
-                <view wx:if="{{block.type === 'music'}}" class="rich-music-block {{currentPlayUrl === block.url && isPlaying ? 'playing' : ''}}" catchtap="playSong" data-url="{{block.url}}" data-name="{{block.name || '推荐单曲'}}">
+                <view wx:if="{{block.type === 'music'}}" class="rich-music-block {{currentPlayUrl === block.url && isPlaying ? 'playing' : ''}}" catchtap="playSong" data-url="{{block.url}}" data-name="{{block.name || '推荐单曲'}}" data-cover="{{block.cover || ''}}">
+                  <image lazy-load wx:if="{{block.cover}}" class="music-cover" src="{{block.cover}}" mode="aspectFill" />
                   <text class="music-icon {{currentPlayUrl === block.url && isPlaying ? 'rotating' : ''}}">🎵</text>
                   <view class="music-info">
                     <text class="music-name">{{block.name || '推荐单曲'}}</text>
@@ -69,7 +79,7 @@
                   </view>
                 </view>
                 <view wx:elif="{{block.type === 'image'}}" class="rich-image-block" catchtap="previewRichImage" data-src="{{block.url}}">
-                  <image class="rich-image" src="{{block.url}}" mode="widthFix" />
+                  <image lazy-load class="rich-image" src="{{block.url}}" mode="widthFix" />
                 </view>
                 <view wx:elif="{{block.type === 'divider'}}" class="divider-block">
                   <view class="divider-line {{block.style}}"></view>
@@ -95,14 +105,14 @@
               </block>
             </view>
           </block>
-          <text class="act-summary" wx:else>{{item.desc}}</text>
+          <view class="act-summary" wx:else><rich-text nodes="{{item.desc}}" /></view>
         </view>
         <view class="act-source" wx:if="{{item.source}}">来源：{{item.source}}</view>
         <view class="act-footer" wx:if="{{item.rewards.length > 0 || item.start}}">
           <view class="act-rewards" wx:if="{{item.rewards.length > 0}}">
             <text class="act-reward" wx:for="{{item.rewards}}" wx:for-item="r" wx:key="*this">{{r}}</text>
           </view>
-          <text class="act-date" wx:if="{{item.start}}">{{item.start}}~{{item.end}}</text>
+          <text class="act-date" wx:if="{{item.start}}">{{item.start}} {{item.startTime || ''}}~{{item.end}} {{item.endTime || ''}}</text>
         </view>
         <view class="act-admin-btns" wx:if="{{isAdmin}}">
           <view class="act-admin-btn edit" catchtap="onEditActivity" data-item="{{item}}">编辑</view>
@@ -123,8 +133,8 @@
           <view class="badge badge-type" wx:if="{{item.type}}">{{item.type}}</view>
         </view>
         <text class="act-title">{{item.title}}</text>
-        <image class="act-image" wx:if="{{item.image}}" src="{{item.image}}" mode="widthFix" />
-        <text class="act-desc" wx:if="{{item.richContent && item.richContent.length > 0}}">{{item.content}}</text>
+        <image lazy-load class="act-image" wx:if="{{item.image}}" src="{{item.image}}" mode="widthFix" />
+        <view class="act-desc" wx:if="{{item.content && (!item.richContent || item.richContent.length === 0)}}"><rich-text nodes="{{item.content}}" /></view>
         <block wx:if="{{item.richContent && item.richContent.length > 0}}">
           <view class="act-rich-content">
             <block wx:for="{{item.richContent}}" wx:for-item="block" wx:key="index">
@@ -149,6 +159,9 @@
               </view>
               <view wx:elif="{{block.type === 'quote'}}" class="rich-quote-block">
                 <text class="quote-text">{{block.content}}</text>
+              </view>
+              <view wx:elif="{{block.type === 'video' && block.isDirectMp4}}" class="rich-video-inline">
+                <video class="video-player-video" src="{{block.url}}" controls show-center-play-btn object-fit="contain" style="width:100%; border-radius:12rpx; margin-top:10rpx;" />
               </view>
               <view wx:elif="{{block.type === 'video'}}" class="rich-music-block" catchtap="openVideo" data-url="{{block.url}}" data-name="{{block.name || '视频'}}">
                 <text class="music-icon">
@@ -178,7 +191,7 @@
                 </view>
               </view>
               <view wx:elif="{{block.type === 'image'}}" class="rich-image-block" catchtap="previewRichImage" data-src="{{block.url}}">
-                <image class="rich-image" src="{{block.url}}" mode="widthFix" />
+                <image lazy-load class="rich-image" src="{{block.url}}" mode="widthFix" />
               </view>
               <view wx:elif="{{block.type === 'divider'}}" class="divider-block">
                 <view class="divider-line {{block.style}}"></view>
@@ -204,13 +217,13 @@
             </block>
           </view>
         </block>
-        <text class="act-desc" wx:else>{{item.desc}}</text>
+        <view class="act-desc" wx:else><rich-text nodes="{{item.desc}}" /></view>
         <view class="act-source" wx:if="{{item.source}}">来源：{{item.source}}</view>
         <view class="act-footer" wx:if="{{item.rewards.length > 0 || item.start}}">
           <view class="act-rewards" wx:if="{{item.rewards.length > 0}}">
             <text class="act-reward" wx:for="{{item.rewards}}" wx:for-item="r" wx:key="*this">{{r}}</text>
           </view>
-          <text class="act-date" wx:if="{{item.start}}">{{item.start}}~{{item.end}}</text>
+          <text class="act-date" wx:if="{{item.start}}">{{item.start}} {{item.startTime || ''}}~{{item.end}} {{item.endTime || ''}}</text>
         </view>
         <view class="act-admin-btns" wx:if="{{isAdmin}}">
           <view class="act-admin-btn edit" catchtap="onEditActivity" data-item="{{item}}">编辑</view>
@@ -245,6 +258,35 @@
         </view>
         <view class="form-group">
           <text class="form-label">描述</text>
+          
+          <view class="rich-toolbar" style="margin-bottom: 20rpx; background: rgba(0,0,0,0.2); padding: 10rpx; border-radius: 12rpx; display: flex; flex-wrap: wrap; gap: 10rpx;">
+            <view class="tool-btn" catchtap="showMusicDialog" style="padding: 10rpx; background: rgba(255,255,255,0.05); border-radius: 8rpx; display: flex; align-items: center; gap: 6rpx;">
+              <text class="tool-icon">🎵</text><text class="tool-label" style="font-size: 24rpx; color: #ccc;">音乐</text>
+            </view>
+            <view class="tool-btn" catchtap="showVideoDialog" style="padding: 10rpx; background: rgba(255,255,255,0.05); border-radius: 8rpx; display: flex; align-items: center; gap: 6rpx;">
+              <text class="tool-icon">🎬</text><text class="tool-label" style="font-size: 24rpx; color: #ccc;">视频</text>
+            </view>
+            <view class="tool-btn" catchtap="showImageBlockDialog" style="padding: 10rpx; background: rgba(255,255,255,0.05); border-radius: 8rpx; display: flex; align-items: center; gap: 6rpx;">
+              <text class="tool-icon">🖼</text><text class="tool-label" style="font-size: 24rpx; color: #ccc;">插图</text>
+            </view>
+          </view>
+
+          <!-- 富文本预览区 -->
+          <view class="rich-blocks" wx:if="{{editRichContent && editRichContent.length > 0}}" style="margin-bottom: 20rpx; display: flex; flex-direction: column; gap: 16rpx;">
+            <view class="rich-block" wx:for="{{editRichContent}}" wx:key="index" style="background: rgba(255,255,255,0.05); padding: 16rpx; border-radius: 12rpx; position: relative;">
+              <block wx:if="{{item.type === 'music'}}">
+                <text>🎵 {{item.name || '音乐'}} ({{item.url}})</text>
+              </block>
+              <block wx:elif="{{item.type === 'video'}}">
+                <text>🎬 {{item.name || '视频'}} ({{item.url}})</text>
+              </block>
+              <block wx:elif="{{item.type === 'image'}}">
+                <image lazy-load src="{{item.url}}" mode="aspectFill" style="width: 100%; height: 200rpx; border-radius: 8rpx;" />
+              </block>
+              <view class="block-delete" catchtap="removeRichBlock" data-idx="{{index}}" style="position: absolute; right: 10rpx; top: 10rpx; background: rgba(255,0,0,0.5); padding: 4rpx 12rpx; border-radius: 8rpx; font-size: 20rpx;">删除</view>
+            </view>
+          </view>
+
           <textarea class="form-textarea" placeholder="活动描述..." value="{{editDesc}}" bindinput="onDescInput" maxlength="500" cursor-spacing="120" />
           <view class="file-import" catchtap="importActivityFile">
             <text class="file-import-icon">📄</text>
@@ -256,20 +298,38 @@
           <textarea class="form-textarea" placeholder="洛克贝x1000&#10;经验果x5" value="{{editRewards}}" bindinput="onRewardsInput" maxlength="200" cursor-spacing="120" />
         </view>
         <view class="form-row">
-          <view class="form-group half">
+          <view class="form-group flex-3">
             <text class="form-label">开始日期</text>
-            <input class="form-input" placeholder="2026-01-01" value="{{editStart}}" bindinput="onStartInput" />
+            <picker mode="date" value="{{editStart}}" bindchange="onStartDateChange">
+              <view class="form-picker-value {{editStart ? '' : 'placeholder'}}">{{editStart || '选择日期'}}</view>
+            </picker>
           </view>
-          <view class="form-group half">
+          <view class="form-group flex-2">
+            <text class="form-label">开始时间</text>
+            <picker mode="time" value="{{editStartTime}}" bindchange="onStartTimeChange">
+              <view class="form-picker-value {{editStartTime ? '' : 'placeholder'}}">{{editStartTime || '时间'}}</view>
+            </picker>
+          </view>
+        </view>
+        <view class="form-row">
+          <view class="form-group flex-3">
             <text class="form-label">结束日期</text>
-            <input class="form-input" placeholder="2026-01-31" value="{{editEnd}}" bindinput="onEndInput" />
+            <picker mode="date" value="{{editEnd}}" bindchange="onEndDateChange">
+              <view class="form-picker-value {{editEnd ? '' : 'placeholder'}}">{{editEnd || '选择日期'}}</view>
+            </picker>
+          </view>
+          <view class="form-group flex-2">
+            <text class="form-label">结束时间</text>
+            <picker mode="time" value="{{editEndTime}}" bindchange="onEndTimeChange">
+              <view class="form-picker-value {{editEndTime ? '' : 'placeholder'}}">{{editEndTime || '时间'}}</view>
+            </picker>
           </view>
         </view>
         <view class="form-group">
           <text class="form-label">封面图（可选）</text>
           <view class="image-section">
             <view class="image-preview" wx:if="{{editImage}}" catchtap="previewEditImage">
-              <image class="preview-img" src="{{editImage}}" mode="aspectFill" />
+              <image lazy-load class="preview-img" src="{{editImage}}" mode="aspectFill" />
               <view class="image-remove" catchtap="removeEditImage">✕</view>
             </view>
             <view class="image-actions" wx:if="{{!editImage}}">
@@ -303,11 +363,11 @@
         <text style="font-size:24rpx;color:rgba(255,255,255,0.5);">UP主: {{videoPlayerOwner}}</text>
       </view>
       <video style="width:100%;height:420rpx;display:block;" src="{{videoPlayerUrl}}" controls autoplay show-center-play-btn object-fit="contain" />
-      <view style="padding:24rpx 32rpx 32rpx;" wx:if="{{videoPlayerDesc}}">
-        <text style="font-size:26rpx;color:rgba(255,255,255,0.7);line-height:1.7;">{{videoPlayerDesc}}</text>
-      </view>
+      <scroll-view scroll-y class="video-player-desc" wx:if="{{videoPlayerDesc}}">
+        <text class="video-player-desc-text" space="ensp" decode="true">{{videoPlayerDesc}}</text>
+      </scroll-view>
     </view>
   </view>
 
-  <dock current="activity" />
+  <dock current="" />
 </view>

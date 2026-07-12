@@ -1,0 +1,258 @@
+<view class="page">
+  <view class="container">
+    <!-- 头部 Banner -->
+    <view class="swarm-banner">
+      <view class="banner-glow"></view>
+      <view class="banner-content">
+        <text class="banner-title">⚡ 大量出没监控 ⚡</text>
+        <text class="banner-subtitle">洛克王国手游 · 野外精灵限时大量刷新</text>
+      </view>
+    </view>
+
+    <!-- 订阅推送卡片 -->
+    <view class="card subscribe-card">
+      <view class="sub-left">
+        <view class="sub-icon-wrap">
+          <text class="sub-icon">🔔</text>
+        </view>
+        <view class="sub-info">
+          <text class="sub-title">出没补货广播</text>
+          <text class="sub-desc">绑定「系统公告通知」进行新刷新推送</text>
+        </view>
+      </view>
+      <view class="action-btn sub-btn {{subscribed ? 'on' : ''}}" catchtap="toggleSubscribe">
+        <text class="btn-text">{{subscribed ? '已订阅' : '订阅通知'}}</text>
+      </view>
+    </view>
+
+    <!-- 管理员控制台 -->
+    <view class="admin-panel-swarm" wx:if="{{isAdmin}}">
+      <view class="admin-header">
+        <text class="admin-icon">👑</text>
+        <text class="admin-title">出没管理控制台</text>
+      </view>
+      <view class="admin-actions">
+        <button class="admin-btn add" catchtap="openAddModal">
+          <text class="btn-icon">＋</text>
+          <text class="btn-text">添加出没精灵</text>
+        </button>
+      </view>
+    </view>
+
+    <!-- 大量出没列表 -->
+    <view class="swarm-section" wx:if="{{activeSwarms.length > 0}}">
+      <view class="section-title-row">
+        <text class="section-title">⚡ 大量出没</text>
+        <text class="section-count">共 {{activeSwarms.length}} 处</text>
+      </view>
+
+      <view class="swarm-list">
+        <view class="swarm-item-card {{item.statusInfo.statusClass}}" wx:for="{{activeSwarms}}" wx:key="id">
+          <!-- 顶部状态栏 -->
+          <view class="item-top">
+            <view class="status-badge {{item.statusInfo.statusClass}}">
+              <text class="badge-dot"></text>
+              <text class="badge-text">{{item.statusInfo.statusText}}</text>
+            </view>
+            <view class="admin-item-actions" wx:if="{{isAdmin}}">
+              <text class="action-edit" catchtap="openEditModal" data-index="{{index}}" data-source="active">✏️</text>
+              <text class="action-delete" catchtap="deleteSwarm" data-index="{{index}}" data-source="active">✕</text>
+            </view>
+          </view>
+
+          <!-- 内容主体 -->
+          <view class="item-main">
+            <image lazy-load class="swarm-image" src="{{item.image || '/images/pet_placeholder.png'}}" mode="aspectFill" catchtap="previewImage" data-src="{{item.image}}" />
+            <view class="item-details">
+              <text class="swarm-name">{{item.name}}</text>
+              <view class="detail-row">
+                <text class="detail-label">📍 地点：</text>
+                <text class="detail-value text-glow">{{item.location}}</text>
+              </view>
+              <view class="detail-row" wx:if="{{item.startDate}}">
+                <text class="detail-label">📅 时间：</text>
+                <text class="detail-value">{{item.startDate}} {{item.startTime || ''}} 至 {{item.endDate || '长期'}} {{item.endTime || ''}}</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 额外描述 -->
+          <view class="item-footer" wx:if="{{item.desc}}">
+            <text class="footer-icon">💡</text>
+            <text class="footer-text">{{item.desc}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 即将出没列表 -->
+    <view class="swarm-section" wx:if="{{upcomingSwarms.length > 0}}">
+      <view class="section-title-row">
+        <text class="section-title">🔔 即将出没</text>
+        <text class="section-count">共 {{upcomingSwarms.length}} 处</text>
+      </view>
+
+      <view class="swarm-list">
+        <view class="swarm-item-card {{item.statusInfo.statusClass}}" wx:for="{{upcomingSwarms}}" wx:key="id">
+          <!-- 顶部状态栏 -->
+          <view class="item-top">
+            <view class="status-badge {{item.statusInfo.statusClass}}">
+              <text class="badge-dot"></text>
+              <text class="badge-text">{{item.statusInfo.statusText}}</text>
+            </view>
+            <view class="admin-item-actions" wx:if="{{isAdmin}}">
+              <text class="action-edit" catchtap="openEditModal" data-index="{{index}}" data-source="upcoming">✏️</text>
+              <text class="action-delete" catchtap="deleteSwarm" data-index="{{index}}" data-source="upcoming">✕</text>
+            </view>
+          </view>
+
+          <!-- 内容主体 -->
+          <view class="item-main">
+            <image lazy-load class="swarm-image" src="{{item.image || '/images/pet_placeholder.png'}}" mode="aspectFill" catchtap="previewImage" data-src="{{item.image}}" />
+            <view class="item-details">
+              <text class="swarm-name">{{item.name}}</text>
+              <view class="detail-row">
+                <text class="detail-label">📍 地点：</text>
+                <text class="detail-value text-glow">{{item.location}}</text>
+              </view>
+              <view class="detail-row" wx:if="{{item.startDate}}">
+                <text class="detail-label">📅 时间：</text>
+                <text class="detail-value">{{item.startDate}} {{item.startTime || ''}} 至 {{item.endDate || '长期'}} {{item.endTime || ''}}</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 额外描述 -->
+          <view class="item-footer" wx:if="{{item.desc}}">
+            <text class="footer-icon">💡</text>
+            <text class="footer-text">{{item.desc}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="swarm-empty" wx:if="{{activeSwarms.length === 0 && upcomingSwarms.length === 0}}">
+      <text class="empty-icon">🍃</text>
+      <text class="empty-text">当前暂无大量出没的野外精灵</text>
+      <text class="empty-desc">请留意后续系统公告或本周排期</text>
+    </view>
+
+    <!-- 底部版权说明 -->
+    <view class="footer-card">
+      <text class="source">本页面数据由开发者浙里本杰明负责维护与更新</text>
+    </view>
+  </view>
+
+  <!-- 添加/编辑弹窗 -->
+  <view class="modal-mask" wx:if="{{showModal}}" bindtap="closeModal">
+    <view class="modal-box glass-modal" catchtap="preventClose">
+      <view class="modal-glow-top"></view>
+      <view class="modal-header">
+        <view class="modal-title-box">
+          <view class="modal-title-line"></view>
+          <text class="modal-title">{{editingIndex !== null ? '👑 编辑出没监控' : '⚡ 新增出没监控'}}</text>
+        </view>
+        <text class="modal-close" catchtap="closeModal">✕</text>
+      </view>
+      
+      <scroll-view scroll-y class="modal-body-scroll">
+        <view class="modal-body">
+          <!-- 精灵名称 -->
+          <view class="form-group">
+            <view class="form-label">
+              <text class="form-label-icon">🐾</text>
+              <text class="form-label-text">精灵名称 *</text>
+            </view>
+            <input class="modal-input" placeholder="请输入精灵名称" placeholder-class="input-placeholder" value="{{form.name}}" bindinput="onFormInput" data-field="name" />
+          </view>
+
+          <!-- 地点选择/填写 -->
+          <view class="form-group">
+            <view class="form-label">
+              <text class="form-label-icon">📍</text>
+              <text class="form-label-text">刷新地点</text>
+              <picker mode="selector" range="{{locationOptions}}" bindchange="onLocationChange" style="margin-left: auto; color: #00d4ff; font-size: 24rpx; padding: 4rpx 12rpx; background: rgba(0,200,255,0.1); border-radius: 8rpx;">
+                <text>快捷选择</text>
+              </picker>
+            </view>
+            <input class="modal-input" placeholder="请填写或选择地点" placeholder-class="input-placeholder" value="{{form.location}}" bindinput="onFormInput" data-field="location" />
+          </view>
+
+          <!-- 出没时间 -->
+          <view class="form-group">
+            <view class="form-label">
+              <text class="form-label-icon">📅</text>
+              <text class="form-label-text">开始时间</text>
+            </view>
+            <view class="form-grid-row">
+              <picker mode="date" value="{{form.startDate}}" bindchange="onStartDateChange" class="date-time-picker">
+                <view class="picker-value">
+                  <text>{{form.startDate || '选择日期'}}</text>
+                  <text class="picker-arrow">▾</text>
+                </view>
+              </picker>
+              <picker mode="time" value="{{form.startTime}}" bindchange="onStartTimeChange" class="date-time-picker">
+                <view class="picker-value">
+                  <text>{{form.startTime || '选择时间'}}</text>
+                  <text class="picker-arrow">▾</text>
+                </view>
+              </picker>
+            </view>
+          </view>
+
+          <view class="form-group">
+            <view class="form-label">
+              <text class="form-label-icon">📅</text>
+              <text class="form-label-text">结束时间</text>
+            </view>
+            <view class="form-grid-row">
+              <picker mode="date" value="{{form.endDate}}" start="{{form.startDate}}" bindchange="onEndDateChange" class="date-time-picker">
+                <view class="picker-value">
+                  <text>{{form.endDate || '选择日期'}}</text>
+                  <text class="picker-arrow">▾</text>
+                </view>
+              </picker>
+              <picker mode="time" value="{{form.endTime}}" bindchange="onEndTimeChange" class="date-time-picker">
+                <view class="picker-value">
+                  <text>{{form.endTime || '选择时间'}}</text>
+                  <text class="picker-arrow">▾</text>
+                </view>
+              </picker>
+            </view>
+          </view>
+
+          <!-- 图片链接 -->
+          <view class="form-group">
+            <view class="form-label">
+              <text class="form-label-icon">🔗</text>
+              <text class="form-label-text">图片链接 (可选)</text>
+            </view>
+            <input class="modal-input" maxlength="-1" placeholder="例如：https://...png" placeholder-class="input-placeholder" value="{{form.image}}" bindinput="onFormInput" data-field="image" />
+          </view>
+
+          <!-- 备注说明 -->
+          <view class="form-group">
+            <view class="form-label">
+              <text class="form-label-icon">📝</text>
+              <text class="form-label-text">备注说明</text>
+            </view>
+            <textarea class="modal-textarea" placeholder="简单说明精灵出没的天气、等级、捕捉技巧或放生收益" value="{{form.desc}}" bindinput="onFormInput" data-field="desc" cursor-spacing="120" />
+          </view>
+        </view>
+      </scroll-view>
+
+      <view class="modal-footer">
+        <button class="modal-btn modal-cancel" catchtap="closeModal">取消</button>
+        <button class="modal-btn modal-save-only" catchtap="saveFormOnly" disabled="{{saving}}">
+          <text wx:if="{{saving}}">保存中...</text>
+          <text wx:else>仅保存</text>
+        </button>
+        <button class="modal-btn modal-save" catchtap="saveForm" disabled="{{saving || !canPublish}}">
+          <text wx:if="{{saving}}">保存中...</text>
+          <text wx:else>发布</text>
+        </button>
+      </view>
+    </view>
+  </view>
+</view>

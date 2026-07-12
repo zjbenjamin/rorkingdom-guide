@@ -162,10 +162,28 @@ async function parseMusicUrl(url) {
   if (host.includes('163.com') || host.includes('163cn.tv')) {
     const match = url.match(/(?:id=|song\/)(\d+)/)
     if (match && match[1]) {
+      const songId = match[1]
+      let pic = ''
+      let title = '网易云音乐歌曲'
+      try {
+        const detailUrl = `https://music.163.com/api/song/detail?id=${songId}&ids=[${songId}]`
+        const detailData = await requestPage(detailUrl, {
+          'Referer': 'https://music.163.com/',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        })
+        const detail = JSON.parse(detailData)
+        if (detail.songs && detail.songs[0]) {
+          const song = detail.songs[0]
+          pic = song.al && song.al.picUrl ? song.al.picUrl : ''
+          title = song.name || title
+        }
+      } catch (e) {
+        // 获取封面失败，忽略
+      }
       return {
-        title: '网易云音乐歌曲',
-        videoUrl: `https://music.163.com/song/media/outer/url?id=${match[1]}.mp3`,
-        pic: '',
+        title: title,
+        videoUrl: `https://music.163.com/song/media/outer/url?id=${songId}.mp3`,
+        pic: pic,
         desc: '网易云音乐外链播放',
         ownerName: '网易云音乐'
       }
@@ -180,20 +198,40 @@ async function parseMusicUrl(url) {
     }
     
     if (songmid) {
+      let pic = ''
+      let title = 'QQ音乐歌曲'
+      try {
+        const detailUrl = `https://u.y.qq.com/cgi-bin/musicu.fcg?data=${encodeURIComponent(JSON.stringify({comm:{ct:24,cv:0},songinfo:{method:"get_song_detail_yqq",param:{song_type:0,song_mid:songmid,song_id:""},module:"music.pf_song_detail_svr"}}))}`
+        const detailData = await requestPage(detailUrl, {
+          'Referer': 'https://y.qq.com/',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        })
+        const detail = JSON.parse(detailData)
+        if (detail.songinfo && detail.songinfo.data && detail.songinfo.data.track_info) {
+          const track = detail.songinfo.data.track_info
+          title = track.name || title
+          if (track.album && track.album.mid) {
+            pic = `https://y.gtimg.cn/music/photo_new/T002R300x300M000${track.album.mid}.jpg`
+          }
+        }
+      } catch (e) {
+        // 获取封面失败，忽略
+      }
+      
       try {
         const playUrl = await getQQMusicPlayUrl(songmid)
         return {
-          title: 'QQ音乐歌曲',
+          title: title,
           videoUrl: playUrl,
-          pic: '',
+          pic: pic,
           desc: 'QQ音乐外链播放',
           ownerName: 'QQ音乐'
         }
       } catch (e) {
         return {
-          title: 'QQ音乐歌曲',
+          title: title,
           videoUrl: `http://ws.stream.qqmusic.qq.com/C400${songmid}.m4a?guid=2799562608&vkey=7F62BF906EC7E4FFAC35A8876C66B49C7B68F915535D5275979A8761F6FA545595DE36343A3FF61F9259CED9EE18D44888D529E9AD73BB66&uin=0&fromtag=38`,
-          pic: '',
+          pic: pic,
           desc: 'QQ音乐外链播放(备用)',
           ownerName: 'QQ音乐'
         }

@@ -1,0 +1,52 @@
+<view class="game-map-container">
+  <canvas
+    id="tileCanvas"
+    type="2d"
+    class="tile-canvas"
+    disable-scroll
+    bindtouchstart="onTouchStart"
+    bindtouchmove="onTouchMove"
+    bindtouchend="onTouchEnd"
+    catchtap="onTap"
+  />
+
+  <!-- Coordinates Display HUD -->
+  <view class="hud-coords">
+    <text class="hud-coords-label">定位系统</text>
+    <text class="hud-coords-val">X: {{centerValX}}  Y: {{centerValY}}</text>
+  </view>
+
+  <!-- Compass HUD -->
+  <view class="hud-compass" wx:if="{{navTarget}}">
+    <view class="compass-ring">
+      <text class="compass-marker n">N</text>
+      <text class="compass-marker e">E</text>
+      <text class="compass-marker s">S</text>
+      <text class="compass-marker w">W</text>
+    </view>
+    <view class="compass-needle" style="transform: rotate({{compassAngle}}deg);"></view>
+    <view class="compass-text">{{compassDirection}}</view>
+  </view>
+
+  <!-- Map HUD Controls -->
+  <view class="map-controls">
+    <!-- Snap back to center -->
+    <view class="control-btn snap-btn" bindtap="snapToStart" hover-class="btn-hover">
+      <text class="control-icon">🎯</text>
+    </view>
+    
+    <!-- Zoom controls -->
+    <view class="zoom-group">
+      <view class="control-btn zoom-btn" bindtap="zoomIn" hover-class="btn-hover">
+        <text class="control-icon">+</text>
+      </view>
+      <view class="control-btn zoom-btn" bindtap="zoomOut" hover-class="btn-hover">
+        <text class="control-icon">−</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="zoom-level" wx:if="{{showZoomLevel}}">
+    <text class="zoom-text">{{zoomText}}</text>
+  </view>
+</view>

@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "dock": "/components/dock/dock"
+  },
+  "navigationBarTitleText": "兑换码查询"
+}

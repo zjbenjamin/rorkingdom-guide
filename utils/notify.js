@@ -252,9 +252,9 @@ function requestAndSaveItem(type, itemName, callback) {
 }
 
 function pushToSubscribers(type, title, content, page, itemName, itemNames) {
-  if (!wx.cloud) return
-  wx.cloud.callFunction({
-    name: 'sendSubscribe',
+  wx.request({
+    url: 'http://121.41.6.197:3000/api/push/send',
+    method: 'POST',
     data: {
       type: type,
       title: title,
@@ -262,11 +262,13 @@ function pushToSubscribers(type, title, content, page, itemName, itemNames) {
       page: page || '/pages/index/index',
       itemName: itemName,
       itemNames: itemNames
+    },
+    success: function(res) {
+      console.log('推送请求成功', res.data)
+    },
+    fail: function(err) {
+      console.error('推送失败:', err)
     }
-  }).then(function(res) {
-    console.log('推送完成:', res)
-  }).catch(function(err) {
-    console.error('推送失败:', err)
   })
 }
 

@@ -4,6 +4,6 @@
   "description": "初始化雲數據庫集合",
   "main": "index.js",
   "dependencies": {
-    "wx-server-sdk": "~2.7.4"
+    "wx-server-sdk": "~2.6.3"
   }
 }

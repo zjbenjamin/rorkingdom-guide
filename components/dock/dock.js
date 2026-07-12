@@ -33,9 +33,9 @@ Component({
       db.collection('admin_config').doc('admin').get()
         .then(function(res) {
           var adminOpenid = res.data.openid
-          db.collection('users').where({ _openid: adminOpenid }).get()
-            .then(function(userRes) {
-              var isUserAdmin = userRes.data.length > 0
+          wx.cloud.callFunction({ name: 'login' }).then(function(loginRes) {
+              var openid = loginRes.result.openid;
+              var isUserAdmin = (openid === adminOpenid)
               self.setData({ isAdmin: isUserAdmin })
               wx.setStorageSync('is_admin_user', isUserAdmin)
               wx.setStorageSync('admin_logged_in', isUserAdmin)

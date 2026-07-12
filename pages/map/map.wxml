@@ -1,0 +1,121 @@
+<view class="page">
+  <view class="map-wrapper">
+    <game-map
+      id="gameMap"
+      class="map-view"
+      style="position:absolute;top:0;left:0;width:100%;height:100%;"
+      markers="{{markers}}"
+      initialCenterX="{{0}}"
+      initialCenterY="{{0}}"
+      initialZoom="{{4}}"
+      showZoomLevel
+      navTarget="{{navTarget}}"
+      bindmarkertap="onMarkerTap"
+      bindmaptap="onMapTap"
+      bindcenterchange="onCenterChange"
+      bindnavupdate="onNavUpdate"
+    />
+
+    <!-- Navigation Banner Overlay -->
+    <view class="nav-banner" wx:if="{{isNavigating && navTarget}}">
+      <view class="nav-banner-arrow">{{navInfo.arrow}}</view>
+      <view class="nav-banner-info">
+        <view class="nav-banner-title">正在导航至 {{navTarget.name}}</view>
+        <view class="nav-banner-subtitle">距离目的地约 {{navInfo.dist}}m | 方位: {{navInfo.dir}}</view>
+      </view>
+      <view class="nav-banner-close" bindtap="exitNavigation">✕</view>
+    </view>
+
+    <!-- Floating Search & Filter Panel -->
+    <view class="search-bar-container" wx:else>
+      <view class="search-box">
+        <text class="search-icon">🔍</text>
+        <input 
+          class="search-input" 
+          placeholder="搜索地点、传送点、宝箱..." 
+          placeholder-style="color: rgba(255,255,255,0.4);" 
+          value="{{searchVal}}" 
+          bindinput="onSearchInput"
+        />
+        <text class="search-clear" wx:if="{{searchVal}}" bindtap="clearSearch">✕</text>
+      </view>
+      
+      <!-- Category Tag Scroll List -->
+      <scroll-view scroll-x class="category-scroll" enhanced show-scrollbar="{{false}}">
+        <view class="category-list">
+          <view
+            class="category-tag {{activeCategory === '' ? 'active' : ''}}"
+            bindtap="filterByCategory"
+            data-category=""
+          >
+            <text>默认</text>
+          </view>
+          <view
+            class="category-tag {{activeCategory === item.name ? 'active' : ''}}"
+            wx:for="{{categories}}"
+            wx:key="name"
+            bindtap="filterByCategory"
+            data-category="{{item.name}}"
+          >
+            <text>{{item.icon}} {{item.name}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- Floating Search Results Dropdown -->
+    <view class="search-results" wx:if="{{searchResults.length > 0}}">
+      <view class="search-result-item" wx:for="{{searchResults}}" wx:key="name" bindtap="selectSearchResult" data-item="{{item}}">
+        <view class="result-details">
+          <text class="result-name">{{item.name}}</text>
+          <text class="result-region">{{item.region || '未知区域'}}</text>
+        </view>
+        <text class="result-tag" style="border-color: {{item.color}}; color: {{item.color}};">{{item.typeName}}</text>
+      </view>
+    </view>
+
+    <!-- Destination / Marker Details Card -->
+    <view 
+      class="detail-panel {{showPanel ? 'show' : ''}} {{panelExpanded ? 'expanded' : ''}}" 
+      style="{{panelStyle}}"
+      bindtouchstart="onPanelTouchStart"
+      bindtouchmove="onPanelTouchMove"
+      bindtouchend="onPanelTouchEnd"
+    >
+      <view class="panel-handle" catchtap="togglePanelExpand">
+        <view class="handle-bar"></view>
+      </view>
+      <view class="panel-content" wx:if="{{selectedMarker}}">
+        <view class="panel-header">
+          <text class="panel-title">{{selectedMarker.name}}</text>
+          <text class="panel-coords">X: {{selectedMarker.gameX}}  Y: {{selectedMarker.gameY}}</text>
+        </view>
+        <view class="panel-tags">
+          <text class="panel-tag" wx:if="{{selectedMarker.typeName}}">{{selectedMarker.typeName}}</text>
+          <text class="panel-tag region" wx:if="{{selectedMarker.region}}">{{selectedMarker.region}}</text>
+          <text class="panel-tag distance" wx:if="{{targetDistance !== null}}">距此 {{targetDistance}}m</text>
+        </view>
+        <text class="panel-desc" wx:if="{{selectedMarker.desc}}">{{selectedMarker.desc}}</text>
+        
+        <!-- Navigation Action Buttons -->
+        <view class="panel-actions">
+          <button class="action-btn go-btn" bindtap="startNavigation">
+            <text class="btn-icon">🧭</text>去这里
+          </button>
+          <button class="action-btn center-btn" bindtap="focusMarker">
+            <text class="btn-icon">🎯</text>移至中心
+          </button>
+          <button class="action-btn copy-btn" bindtap="copyMarkerCoords">
+            <text class="btn-icon">📋</text>复制坐标
+          </button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Sliding Dock Wrapper -->
+  <view class="dock-wrapper {{showPanel || isNavigating ? 'dock-hidden' : ''}}">
+    <dock current="map" />
+  </view>
+</view>
+

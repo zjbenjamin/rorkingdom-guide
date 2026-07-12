@@ -1,52 +1,244 @@
 var app = getApp()
 var eggData = {
-  types: [
-    { id: 1, name: '普通蛋', color: '#999', icon: '🥚', desc: '最常见的精灵蛋', prob: '75%', bonus: '无' },
-    { id: 2, name: '火系蛋', color: '#d32f2f', icon: '🔥', desc: '孵化出火系精灵', prob: '15%', bonus: '火系攻击+3%' },
-    { id: 3, name: '水系蛋', color: '#1565c0', icon: '💧', desc: '孵化出水系精灵', prob: '15%', bonus: '水系攻击+3%' },
-    { id: 4, name: '草系蛋', color: '#2e7d32', icon: '🌿', desc: '孵化出草系精灵', prob: '15%', bonus: '草系攻击+3%' },
-    { id: 5, name: '电系蛋', color: '#f57f17', icon: '⚡', desc: '孵化出电系精灵', prob: '10%', bonus: '电系攻击+5%' },
-    { id: 6, name: '冰系蛋', color: '#00838f', icon: '❄️', desc: '孵化出冰系精灵', prob: '10%', bonus: '冰系攻击+5%' },
-    { id: 7, name: '龙系蛋', color: '#4527a0', icon: '🐉', desc: '孵化出龙系精灵', prob: '5%', bonus: '全属性+5%' },
-    { id: 8, name: '恶系蛋', color: '#37474f', icon: '👿', desc: '孵化出恶系精灵', prob: '10%', bonus: '恶系攻击+5%' },
-    { id: 9, name: '飞行蛋', color: '#388e3c', icon: '🕊️', desc: '孵化出飞行系精灵', prob: '10%', bonus: '速度+5%' },
-    { id: 10, name: '格斗蛋', color: '#d84315', icon: '👊', desc: '孵化出格斗系精灵', prob: '10%', bonus: '攻击+5%' }
+  "types": [
+    {
+      "id": 1,
+      "name": "普通蛋",
+      "color": "#999",
+      "icon": "🥚",
+      "desc": "最常见的精灵蛋",
+      "prob": "75%",
+      "bonus": "无"
+    },
+    {
+      "id": 2,
+      "name": "火系蛋",
+      "color": "#d32f2f",
+      "icon": "🔥",
+      "desc": "孵化出火系精灵",
+      "prob": "15%",
+      "bonus": "火系攻击+3%"
+    },
+    {
+      "id": 3,
+      "name": "水系蛋",
+      "color": "#1565c0",
+      "icon": "💧",
+      "desc": "孵化出水系精灵",
+      "prob": "15%",
+      "bonus": "水系攻击+3%"
+    },
+    {
+      "id": 4,
+      "name": "草系蛋",
+      "color": "#2e7d32",
+      "icon": "🌿",
+      "desc": "孵化出草系精灵",
+      "prob": "15%",
+      "bonus": "草系攻击+3%"
+    },
+    {
+      "id": 5,
+      "name": "电系蛋",
+      "color": "#f57f17",
+      "icon": "⚡",
+      "desc": "孵化出电系精灵",
+      "prob": "10%",
+      "bonus": "电系攻击+5%"
+    },
+    {
+      "id": 6,
+      "name": "冰系蛋",
+      "color": "#00838f",
+      "icon": "❄️",
+      "desc": "孵化出冰系精灵",
+      "prob": "10%",
+      "bonus": "冰系攻击+5%"
+    },
+    {
+      "id": 7,
+      "name": "龙系蛋",
+      "color": "#4527a0",
+      "icon": "🐉",
+      "desc": "孵化出龙系精灵",
+      "prob": "5%",
+      "bonus": "全属性+5%"
+    },
+    {
+      "id": 8,
+      "name": "恶系蛋",
+      "color": "#37474f",
+      "icon": "👿",
+      "desc": "孵化出恶系精灵",
+      "prob": "10%",
+      "bonus": "恶系攻击+5%"
+    },
+    {
+      "id": 9,
+      "name": "飞行蛋",
+      "color": "#388e3c",
+      "icon": "🕊️",
+      "desc": "孵化出飞行系精灵",
+      "prob": "10%",
+      "bonus": "速度+5%"
+    },
+    {
+      "id": 10,
+      "name": "格斗蛋",
+      "color": "#d84315",
+      "icon": "👊",
+      "desc": "孵化出格斗系精灵",
+      "prob": "10%",
+      "bonus": "攻击+5%"
+    }
   ],
-  eggItems: [
-    { name: '普通蛋', rarity: '普通', icon: '🥚' },
-    { name: '火系蛋', rarity: '普通', icon: '🔥' },
-    { name: '水系蛋', rarity: '普通', icon: '💧' },
-    { name: '草系蛋', rarity: '普通', icon: '🌿' },
-    { name: '电系蛋', rarity: '普通', icon: '⚡' },
-    { name: '冰系蛋', rarity: '普通', icon: '❄️' },
-    { name: '龙系蛋', rarity: '稀有', icon: '🐉' },
-    { name: '恶系蛋', rarity: '普通', icon: '👿' },
-    { name: '飞行蛋', rarity: '普通', icon: '🕊️' },
-    { name: '格斗蛋', rarity: '普通', icon: '👊' },
-    { name: '岩石蛋', rarity: '普通', icon: '🪨' },
-    { name: '钢系蛋', rarity: '稀有', icon: '⚙️' },
-    { name: '妖精蛋', rarity: '稀有', icon: '🧚' },
-    { name: '超能力蛋', rarity: '稀有', icon: '🔮' },
-    { name: '鬼系蛋', rarity: '稀有', icon: '👻' },
-    { name: '毒系蛋', rarity: '普通', icon: '☠️' },
-    { name: '地面蛋', rarity: '普通', icon: '⛰️' },
-    { name: '虫系蛋', rarity: '普通', icon: '🐛' },
-    { name: '闪光蛋', rarity: '传说', icon: '✨' },
-    { name: '异色蛋', rarity: '传说', icon: '🌈' }
+  "eggItems": [
+    {
+      "name": "普通蛋",
+      "rarity": "普通",
+      "icon": "🥚"
+    },
+    {
+      "name": "火系蛋",
+      "rarity": "普通",
+      "icon": "🔥"
+    },
+    {
+      "name": "水系蛋",
+      "rarity": "普通",
+      "icon": "💧"
+    },
+    {
+      "name": "草系蛋",
+      "rarity": "普通",
+      "icon": "🌿"
+    },
+    {
+      "name": "电系蛋",
+      "rarity": "普通",
+      "icon": "⚡"
+    },
+    {
+      "name": "冰系蛋",
+      "rarity": "普通",
+      "icon": "❄️"
+    },
+    {
+      "name": "龙系蛋",
+      "rarity": "稀有",
+      "icon": "🐉"
+    },
+    {
+      "name": "恶系蛋",
+      "rarity": "普通",
+      "icon": "👿"
+    },
+    {
+      "name": "飞行蛋",
+      "rarity": "普通",
+      "icon": "🕊️"
+    },
+    {
+      "name": "格斗蛋",
+      "rarity": "普通",
+      "icon": "👊"
+    },
+    {
+      "name": "岩石蛋",
+      "rarity": "普通",
+      "icon": "🪨"
+    },
+    {
+      "name": "钢系蛋",
+      "rarity": "稀有",
+      "icon": "⚙️"
+    },
+    {
+      "name": "妖精蛋",
+      "rarity": "稀有",
+      "icon": "🧚"
+    },
+    {
+      "name": "超能力蛋",
+      "rarity": "稀有",
+      "icon": "🔮"
+    },
+    {
+      "name": "鬼系蛋",
+      "rarity": "稀有",
+      "icon": "👻"
+    },
+    {
+      "name": "毒系蛋",
+      "rarity": "普通",
+      "icon": "☠️"
+    },
+    {
+      "name": "地面蛋",
+      "rarity": "普通",
+      "icon": "⛰️"
+    },
+    {
+      "name": "虫系蛋",
+      "rarity": "普通",
+      "icon": "🐛"
+    },
+    {
+      "name": "闪光蛋",
+      "rarity": "传说",
+      "icon": "✨"
+    },
+    {
+      "name": "异色蛋",
+      "rarity": "传说",
+      "icon": "🌈"
+    }
   ],
-  sizes: [
-    { id: 1, name: '大块头', icon: '💪', color: '#d32f2f', desc: '体型较大的精灵蛋，孵化出的精灵体型偏大', prob: '10%', bonus: '生命值+5%' },
-    { id: 2, name: '小块头', icon: '👶', color: '#1a6d37', desc: '体型较小的精灵蛋，孵化出的精灵体型偏小', prob: '10%', bonus: '速度+5%' },
-    { id: 3, name: '炫彩蛋', icon: '🌈', color: '#9c27b0', desc: '稀有炫彩外观的精灵蛋，有概率孵出闪光精灵', prob: '5%', bonus: '全属性+3%' },
-    { id: 4, name: '普通蛋', icon: '🥚', color: '#999', desc: '最常见的精灵蛋', prob: '75%', bonus: '无' }
+  "sizes": [
+    {
+      "id": 1,
+      "name": "大块头",
+      "icon": "💪",
+      "color": "#d32f2f",
+      "desc": "体型较大的精灵蛋，孵化出的精灵体型偏大",
+      "prob": "10%",
+      "bonus": "生命值+5%"
+    },
+    {
+      "id": 2,
+      "name": "小块头",
+      "icon": "👶",
+      "color": "#1a6d37",
+      "desc": "体型较小的精灵蛋，孵化出的精灵体型偏小",
+      "prob": "10%",
+      "bonus": "速度+5%"
+    },
+    {
+      "id": 3,
+      "name": "炫彩蛋",
+      "icon": "🌈",
+      "color": "#9c27b0",
+      "desc": "稀有炫彩外观的精灵蛋，有概率孵出闪光精灵",
+      "prob": "5%",
+      "bonus": "全属性+3%"
+    },
+    {
+      "id": 4,
+      "name": "普通蛋",
+      "icon": "🥚",
+      "color": "#999",
+      "desc": "最常见的精灵蛋",
+      "prob": "75%",
+      "bonus": "无"
+    }
   ],
-pets: [
+  "pets": [
     {
       "name": "迪莫",
       "type1": "光",
       "type2": "",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": false,
       "variant": ""
@@ -56,7 +248,7 @@ pets: [
       "type1": "草",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -66,7 +258,7 @@ pets: [
       "type1": "草",
       "type2": "",
       "group": [
-        "植物"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -76,7 +268,7 @@ pets: [
       "type1": "草",
       "type2": "",
       "group": [
-        "植物"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -86,7 +278,8 @@ pets: [
       "type1": "火",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -96,7 +289,8 @@ pets: [
       "type1": "火",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -106,7 +300,8 @@ pets: [
       "type1": "火",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -116,7 +311,7 @@ pets: [
       "type1": "水",
       "type2": "",
       "group": [
-        "怪兽"
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -126,7 +321,7 @@ pets: [
       "type1": "水",
       "type2": "",
       "group": [
-        "怪兽"
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -136,7 +331,7 @@ pets: [
       "type1": "水",
       "type2": "",
       "group": [
-        "怪兽"
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -146,7 +341,7 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": false,
       "variant": "蓬松的样子"
@@ -156,7 +351,7 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": false,
       "variant": "紧实的样子"
@@ -166,7 +361,7 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": false,
       "variant": "急急急鸭"
@@ -176,7 +371,7 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": false,
       "variant": "等一等鸭"
@@ -186,7 +381,7 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": false,
       "variant": "起来鸭"
@@ -196,7 +391,7 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": false,
       "variant": "燃了鸭"
@@ -206,7 +401,7 @@ pets: [
       "type1": "水",
       "type2": "",
       "group": [
-        "怪兽"
+        "两栖组"
       ],
       "hasShiny": false,
       "variant": "本来的样子"
@@ -216,7 +411,7 @@ pets: [
       "type1": "水",
       "type2": "",
       "group": [
-        "怪兽"
+        "两栖组"
       ],
       "hasShiny": false,
       "variant": "本来的样子"
@@ -226,7 +421,7 @@ pets: [
       "type1": "水",
       "type2": "",
       "group": [
-        "怪兽"
+        "两栖组"
       ],
       "hasShiny": false,
       "variant": "本来的样子"
@@ -236,7 +431,7 @@ pets: [
       "type1": "幽",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -246,7 +441,7 @@ pets: [
       "type1": "幽",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -256,7 +451,7 @@ pets: [
       "type1": "幽",
       "type2": "恶",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -266,7 +461,7 @@ pets: [
       "type1": "翼",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": false,
       "variant": "本来的样子"
@@ -276,7 +471,7 @@ pets: [
       "type1": "翼",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": false,
       "variant": "本来的样子"
@@ -286,7 +481,7 @@ pets: [
       "type1": "翼",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": false,
       "variant": "本来的样子"
@@ -296,7 +491,8 @@ pets: [
       "type1": "幽",
       "type2": "",
       "group": [
-        "怪兽"
+        "植物组",
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -306,7 +502,8 @@ pets: [
       "type1": "幽",
       "type2": "草",
       "group": [
-        "怪兽"
+        "植物组",
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -316,7 +513,8 @@ pets: [
       "type1": "幽",
       "type2": "草",
       "group": [
-        "怪兽"
+        "植物组",
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -326,7 +524,8 @@ pets: [
       "type1": "地",
       "type2": "",
       "group": [
-        "怪兽"
+        "两栖组",
+        "大地组"
       ],
       "hasShiny": false,
       "variant": "本来的样子"
@@ -336,7 +535,8 @@ pets: [
       "type1": "地",
       "type2": "",
       "group": [
-        "怪兽"
+        "两栖组",
+        "大地组"
       ],
       "hasShiny": false,
       "variant": "本来的样子"
@@ -346,7 +546,8 @@ pets: [
       "type1": "地",
       "type2": "",
       "group": [
-        "怪兽"
+        "两栖组",
+        "大地组"
       ],
       "hasShiny": false,
       "variant": "本来的样子"
@@ -356,7 +557,8 @@ pets: [
       "type1": "地",
       "type2": "",
       "group": [
-        "怪兽"
+        "大地组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -366,7 +568,8 @@ pets: [
       "type1": "地",
       "type2": "",
       "group": [
-        "怪兽"
+        "大地组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -376,7 +579,8 @@ pets: [
       "type1": "地",
       "type2": "",
       "group": [
-        "怪兽"
+        "大地组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -386,7 +590,7 @@ pets: [
       "type1": "恶",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "妖精组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -396,7 +600,7 @@ pets: [
       "type1": "恶",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "妖精组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -406,7 +610,8 @@ pets: [
       "type1": "虫",
       "type2": "萌",
       "group": [
-        "怪兽"
+        "昆虫组",
+        "软体组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -416,7 +621,8 @@ pets: [
       "type1": "虫",
       "type2": "萌",
       "group": [
-        "怪兽"
+        "昆虫组",
+        "软体组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -426,7 +632,8 @@ pets: [
       "type1": "虫",
       "type2": "萌",
       "group": [
-        "怪兽"
+        "昆虫组",
+        "软体组"
       ],
       "hasShiny": false,
       "variant": "平常的样子"
@@ -436,7 +643,8 @@ pets: [
       "type1": "幽",
       "type2": "草",
       "group": [
-        "怪兽"
+        "妖精组",
+        "植物组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -446,7 +654,8 @@ pets: [
       "type1": "普通",
       "type2": "水",
       "group": [
-        "怪兽"
+        "两栖组",
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -456,7 +665,8 @@ pets: [
       "type1": "普通",
       "type2": "水",
       "group": [
-        "怪兽"
+        "两栖组",
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -466,7 +676,8 @@ pets: [
       "type1": "普通",
       "type2": "水",
       "group": [
-        "怪兽"
+        "两栖组",
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -476,7 +687,8 @@ pets: [
       "type1": "光",
       "type2": "地",
       "group": [
-        "怪兽"
+        "大地组",
+        "软体组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -486,7 +698,8 @@ pets: [
       "type1": "光",
       "type2": "地",
       "group": [
-        "怪兽"
+        "大地组",
+        "软体组"
       ],
       "hasShiny": false,
       "variant": "西瓜碧玺的样子"
@@ -496,7 +709,7 @@ pets: [
       "type1": "草",
       "type2": "",
       "group": [
-        "植物"
+        "植物组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -506,7 +719,7 @@ pets: [
       "type1": "草",
       "type2": "",
       "group": [
-        "植物"
+        "植物组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -516,7 +729,7 @@ pets: [
       "type1": "草",
       "type2": "",
       "group": [
-        "植物"
+        "植物组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -526,7 +739,7 @@ pets: [
       "type1": "草",
       "type2": "",
       "group": [
-        "植物"
+        "两栖组"
       ],
       "hasShiny": false,
       "variant": "草地附近的样子"
@@ -536,7 +749,7 @@ pets: [
       "type1": "草",
       "type2": "",
       "group": [
-        "植物"
+        "两栖组"
       ],
       "hasShiny": false,
       "variant": "草地附近的样子"
@@ -546,7 +759,7 @@ pets: [
       "type1": "草",
       "type2": "",
       "group": [
-        "植物"
+        "两栖组"
       ],
       "hasShiny": false,
       "variant": "草地附近的样子"
@@ -556,7 +769,7 @@ pets: [
       "type1": "火",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -566,7 +779,7 @@ pets: [
       "type1": "火",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -576,7 +789,7 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -586,7 +799,7 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -596,7 +809,7 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -606,7 +819,8 @@ pets: [
       "type1": "毒",
       "type2": "",
       "group": [
-        "怪兽"
+        "大地组",
+        "妖精组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -616,7 +830,8 @@ pets: [
       "type1": "毒",
       "type2": "",
       "group": [
-        "怪兽"
+        "大地组",
+        "妖精组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -626,7 +841,7 @@ pets: [
       "type1": "幽",
       "type2": "",
       "group": [
-        "怪兽"
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -636,7 +851,7 @@ pets: [
       "type1": "幽",
       "type2": "",
       "group": [
-        "怪兽"
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": "睁眼的样子"
@@ -646,7 +861,7 @@ pets: [
       "type1": "幽",
       "type2": "",
       "group": [
-        "怪兽"
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": "睁眼的样子"
@@ -656,7 +871,8 @@ pets: [
       "type1": "幽",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组",
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": "穿旧睡衣的样子"
@@ -666,7 +882,8 @@ pets: [
       "type1": "幽",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组",
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": "穿旧睡衣的样子"
@@ -676,7 +893,7 @@ pets: [
       "type1": "光",
       "type2": "草",
       "group": [
-        "怪兽"
+        "植物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -686,7 +903,7 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -696,7 +913,7 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -706,7 +923,7 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -716,7 +933,7 @@ pets: [
       "type1": "草",
       "type2": "毒",
       "group": [
-        "植物"
+        "植物组"
       ],
       "hasShiny": false,
       "variant": "海神球形态"
@@ -726,7 +943,7 @@ pets: [
       "type1": "草",
       "type2": "毒",
       "group": [
-        "植物"
+        "植物组"
       ],
       "hasShiny": false,
       "variant": "海神球形态"
@@ -736,7 +953,7 @@ pets: [
       "type1": "草",
       "type2": "毒",
       "group": [
-        "植物"
+        "植物组"
       ],
       "hasShiny": false,
       "variant": "海神球形态"
@@ -746,7 +963,7 @@ pets: [
       "type1": "电",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -756,7 +973,7 @@ pets: [
       "type1": "电",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -766,7 +983,7 @@ pets: [
       "type1": "电",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -776,7 +993,8 @@ pets: [
       "type1": "草",
       "type2": "萌",
       "group": [
-        "植物"
+        "天空组",
+        "植物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -786,7 +1004,8 @@ pets: [
       "type1": "草",
       "type2": "萌",
       "group": [
-        "植物"
+        "天空组",
+        "植物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -796,7 +1015,8 @@ pets: [
       "type1": "草",
       "type2": "",
       "group": [
-        "植物"
+        "植物组",
+        "软体组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -806,7 +1026,8 @@ pets: [
       "type1": "草",
       "type2": "",
       "group": [
-        "植物"
+        "植物组",
+        "软体组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -816,7 +1037,8 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -826,7 +1048,8 @@ pets: [
       "type1": "普通",
       "type2": "武",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -836,7 +1059,8 @@ pets: [
       "type1": "普通",
       "type2": "武",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -846,7 +1070,8 @@ pets: [
       "type1": "水",
       "type2": "毒",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": "本来的样子"
@@ -856,7 +1081,8 @@ pets: [
       "type1": "水",
       "type2": "毒",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": "本来的样子"
@@ -866,7 +1092,8 @@ pets: [
       "type1": "水",
       "type2": "毒",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": "本来的样子"
@@ -876,7 +1103,7 @@ pets: [
       "type1": "萌",
       "type2": "",
       "group": [
-        "怪兽"
+        "植物组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -886,7 +1113,7 @@ pets: [
       "type1": "电",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": "星光能量的样子"
@@ -896,7 +1123,7 @@ pets: [
       "type1": "电",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": "星光能量的样子"
@@ -906,7 +1133,8 @@ pets: [
       "type1": "虫",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "天空组",
+        "昆虫组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -916,7 +1144,8 @@ pets: [
       "type1": "虫",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "天空组",
+        "昆虫组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -926,7 +1155,8 @@ pets: [
       "type1": "虫",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "天空组",
+        "昆虫组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -936,7 +1166,8 @@ pets: [
       "type1": "恶",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组",
+        "拟人组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -946,7 +1177,8 @@ pets: [
       "type1": "恶",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组",
+        "拟人组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -956,7 +1188,8 @@ pets: [
       "type1": "恶",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组",
+        "拟人组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -966,7 +1199,8 @@ pets: [
       "type1": "翼",
       "type2": "水",
       "group": [
-        "怪兽"
+        "两栖组",
+        "天空组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -976,7 +1210,8 @@ pets: [
       "type1": "翼",
       "type2": "水",
       "group": [
-        "怪兽"
+        "两栖组",
+        "天空组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -986,7 +1221,8 @@ pets: [
       "type1": "翼",
       "type2": "水",
       "group": [
-        "怪兽"
+        "两栖组",
+        "天空组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -996,7 +1232,8 @@ pets: [
       "type1": "翼",
       "type2": "恶",
       "group": [
-        "怪兽"
+        "两栖组",
+        "天空组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1006,7 +1243,8 @@ pets: [
       "type1": "翼",
       "type2": "水",
       "group": [
-        "怪兽"
+        "两栖组",
+        "天空组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1016,7 +1254,8 @@ pets: [
       "type1": "草",
       "type2": "幻",
       "group": [
-        "植物"
+        "妖精组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1026,7 +1265,8 @@ pets: [
       "type1": "草",
       "type2": "幻",
       "group": [
-        "植物"
+        "妖精组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1036,7 +1276,7 @@ pets: [
       "type1": "地",
       "type2": "",
       "group": [
-        "怪兽"
+        "大地组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1046,7 +1286,7 @@ pets: [
       "type1": "翼",
       "type2": "普通",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1056,7 +1296,7 @@ pets: [
       "type1": "翼",
       "type2": "普通",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1066,7 +1306,7 @@ pets: [
       "type1": "翼",
       "type2": "普通",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1076,7 +1316,8 @@ pets: [
       "type1": "虫",
       "type2": "草",
       "group": [
-        "怪兽"
+        "拟人组",
+        "昆虫组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1086,7 +1327,8 @@ pets: [
       "type1": "虫",
       "type2": "草",
       "group": [
-        "怪兽"
+        "拟人组",
+        "昆虫组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1096,7 +1338,8 @@ pets: [
       "type1": "虫",
       "type2": "草",
       "group": [
-        "怪兽"
+        "拟人组",
+        "昆虫组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1106,7 +1349,8 @@ pets: [
       "type1": "萌",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "天空组",
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1116,7 +1360,8 @@ pets: [
       "type1": "萌",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "天空组",
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1126,7 +1371,8 @@ pets: [
       "type1": "萌",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "天空组",
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1136,7 +1382,8 @@ pets: [
       "type1": "地",
       "type2": "",
       "group": [
-        "怪兽"
+        "大地组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1146,7 +1393,8 @@ pets: [
       "type1": "地",
       "type2": "",
       "group": [
-        "怪兽"
+        "大地组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1156,7 +1404,8 @@ pets: [
       "type1": "地",
       "type2": "恶",
       "group": [
-        "怪兽"
+        "大地组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1166,7 +1415,8 @@ pets: [
       "type1": "水",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "天空组",
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1176,7 +1426,8 @@ pets: [
       "type1": "水",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "天空组",
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1186,7 +1437,8 @@ pets: [
       "type1": "水",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "天空组",
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1196,7 +1448,8 @@ pets: [
       "type1": "地",
       "type2": "",
       "group": [
-        "怪兽"
+        "大地组",
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1206,7 +1459,8 @@ pets: [
       "type1": "地",
       "type2": "幽",
       "group": [
-        "怪兽"
+        "大地组",
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1216,7 +1470,8 @@ pets: [
       "type1": "地",
       "type2": "幻",
       "group": [
-        "怪兽"
+        "大地组",
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1226,7 +1481,8 @@ pets: [
       "type1": "地",
       "type2": "幻",
       "group": [
-        "怪兽"
+        "大地组",
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1236,7 +1492,8 @@ pets: [
       "type1": "地",
       "type2": "幻",
       "group": [
-        "怪兽"
+        "大地组",
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1246,7 +1503,8 @@ pets: [
       "type1": "光",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组",
+        "巨灵组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -1256,7 +1514,8 @@ pets: [
       "type1": "光",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组",
+        "巨灵组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -1266,7 +1525,8 @@ pets: [
       "type1": "普通",
       "type2": "虫",
       "group": [
-        "怪兽"
+        "昆虫组",
+        "植物组"
       ],
       "hasShiny": false,
       "variant": "金黄的样子"
@@ -1276,7 +1536,8 @@ pets: [
       "type1": "普通",
       "type2": "虫",
       "group": [
-        "怪兽"
+        "昆虫组",
+        "植物组"
       ],
       "hasShiny": false,
       "variant": "金黄的样子"
@@ -1286,7 +1547,8 @@ pets: [
       "type1": "普通",
       "type2": "虫",
       "group": [
-        "怪兽"
+        "昆虫组",
+        "植物组"
       ],
       "hasShiny": false,
       "variant": "金黄的样子"
@@ -1296,7 +1558,8 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组",
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1306,7 +1569,8 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组",
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1316,7 +1580,8 @@ pets: [
       "type1": "幽",
       "type2": "毒",
       "group": [
-        "怪兽"
+        "动物组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1326,7 +1591,8 @@ pets: [
       "type1": "幽",
       "type2": "毒",
       "group": [
-        "怪兽"
+        "动物组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1336,7 +1602,7 @@ pets: [
       "type1": "毒",
       "type2": "地",
       "group": [
-        "怪兽"
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1346,7 +1612,7 @@ pets: [
       "type1": "毒",
       "type2": "地",
       "group": [
-        "怪兽"
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1356,7 +1622,7 @@ pets: [
       "type1": "毒",
       "type2": "地",
       "group": [
-        "怪兽"
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1366,7 +1632,7 @@ pets: [
       "type1": "幻",
       "type2": "",
       "group": [
-        "怪兽"
+        "植物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1376,7 +1642,7 @@ pets: [
       "type1": "幻",
       "type2": "",
       "group": [
-        "怪兽"
+        "植物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1386,7 +1652,7 @@ pets: [
       "type1": "幻",
       "type2": "",
       "group": [
-        "怪兽"
+        "植物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1396,7 +1662,7 @@ pets: [
       "type1": "恶",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -1406,7 +1672,7 @@ pets: [
       "type1": "冰",
       "type2": "电",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1416,7 +1682,7 @@ pets: [
       "type1": "冰",
       "type2": "电",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1426,7 +1692,8 @@ pets: [
       "type1": "冰",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1436,7 +1703,8 @@ pets: [
       "type1": "冰",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1446,7 +1714,8 @@ pets: [
       "type1": "冰",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1456,7 +1725,7 @@ pets: [
       "type1": "冰",
       "type2": "地",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -1466,7 +1735,7 @@ pets: [
       "type1": "冰",
       "type2": "地",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -1476,7 +1745,7 @@ pets: [
       "type1": "冰",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1486,7 +1755,7 @@ pets: [
       "type1": "冰",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1496,7 +1765,7 @@ pets: [
       "type1": "冰",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1506,7 +1775,8 @@ pets: [
       "type1": "冰",
       "type2": "萌",
       "group": [
-        "怪兽"
+        "妖精组",
+        "拟人组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -1516,7 +1786,8 @@ pets: [
       "type1": "冰",
       "type2": "萌",
       "group": [
-        "怪兽"
+        "妖精组",
+        "拟人组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -1526,7 +1797,8 @@ pets: [
       "type1": "冰",
       "type2": "萌",
       "group": [
-        "怪兽"
+        "妖精组",
+        "拟人组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -1536,7 +1808,7 @@ pets: [
       "type1": "机械",
       "type2": "",
       "group": [
-        "怪兽"
+        "机械组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1546,7 +1818,7 @@ pets: [
       "type1": "机械",
       "type2": "",
       "group": [
-        "怪兽"
+        "机械组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1556,7 +1828,7 @@ pets: [
       "type1": "火",
       "type2": "冰",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -1566,7 +1838,7 @@ pets: [
       "type1": "火",
       "type2": "冰",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -1576,7 +1848,7 @@ pets: [
       "type1": "火",
       "type2": "冰",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -1586,7 +1858,7 @@ pets: [
       "type1": "翼",
       "type2": "",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1596,7 +1868,7 @@ pets: [
       "type1": "翼",
       "type2": "",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1606,7 +1878,7 @@ pets: [
       "type1": "翼",
       "type2": "",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1616,7 +1888,7 @@ pets: [
       "type1": "草",
       "type2": "武",
       "group": [
-        "植物"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1626,7 +1898,7 @@ pets: [
       "type1": "草",
       "type2": "武",
       "group": [
-        "植物"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1636,7 +1908,7 @@ pets: [
       "type1": "草",
       "type2": "武",
       "group": [
-        "植物"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1646,7 +1918,7 @@ pets: [
       "type1": "火",
       "type2": "武",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1656,7 +1928,7 @@ pets: [
       "type1": "火",
       "type2": "武",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1666,7 +1938,7 @@ pets: [
       "type1": "火",
       "type2": "武",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1676,7 +1948,8 @@ pets: [
       "type1": "水",
       "type2": "武",
       "group": [
-        "怪兽"
+        "两栖组",
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1686,7 +1959,8 @@ pets: [
       "type1": "水",
       "type2": "武",
       "group": [
-        "怪兽"
+        "两栖组",
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1696,7 +1970,8 @@ pets: [
       "type1": "水",
       "type2": "武",
       "group": [
-        "怪兽"
+        "两栖组",
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1706,7 +1981,7 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -1716,7 +1991,8 @@ pets: [
       "type1": "武",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1726,7 +2002,8 @@ pets: [
       "type1": "武",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1736,7 +2013,8 @@ pets: [
       "type1": "翼",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组",
+        "天空组"
       ],
       "hasShiny": false,
       "variant": "崖间地的样子"
@@ -1746,7 +2024,8 @@ pets: [
       "type1": "翼",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组",
+        "天空组"
       ],
       "hasShiny": false,
       "variant": "崖间地的样子"
@@ -1756,7 +2035,8 @@ pets: [
       "type1": "翼",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组",
+        "天空组"
       ],
       "hasShiny": false,
       "variant": "崖间地的样子"
@@ -1766,7 +2046,7 @@ pets: [
       "type1": "虫",
       "type2": "",
       "group": [
-        "怪兽"
+        "昆虫组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1776,7 +2056,7 @@ pets: [
       "type1": "虫",
       "type2": "毒",
       "group": [
-        "怪兽"
+        "昆虫组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1786,7 +2066,7 @@ pets: [
       "type1": "虫",
       "type2": "毒",
       "group": [
-        "怪兽"
+        "昆虫组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1796,7 +2076,8 @@ pets: [
       "type1": "地",
       "type2": "水",
       "group": [
-        "怪兽"
+        "两栖组",
+        "大地组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1806,7 +2087,8 @@ pets: [
       "type1": "地",
       "type2": "水",
       "group": [
-        "怪兽"
+        "两栖组",
+        "大地组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1816,7 +2098,8 @@ pets: [
       "type1": "地",
       "type2": "水",
       "group": [
-        "怪兽"
+        "两栖组",
+        "大地组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1826,7 +2109,7 @@ pets: [
       "type1": "地",
       "type2": "草",
       "group": [
-        "怪兽"
+        "植物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1836,7 +2119,7 @@ pets: [
       "type1": "地",
       "type2": "草",
       "group": [
-        "怪兽"
+        "植物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1846,7 +2129,7 @@ pets: [
       "type1": "地",
       "type2": "草",
       "group": [
-        "怪兽"
+        "植物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1856,7 +2139,7 @@ pets: [
       "type1": "翼",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1866,7 +2149,7 @@ pets: [
       "type1": "翼",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1876,7 +2159,8 @@ pets: [
       "type1": "草",
       "type2": "",
       "group": [
-        "植物"
+        "两栖组",
+        "天空组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1886,7 +2170,8 @@ pets: [
       "type1": "草",
       "type2": "武",
       "group": [
-        "植物"
+        "两栖组",
+        "天空组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1896,7 +2181,8 @@ pets: [
       "type1": "武",
       "type2": "水",
       "group": [
-        "怪兽"
+        "两栖组",
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1906,7 +2192,8 @@ pets: [
       "type1": "武",
       "type2": "水",
       "group": [
-        "怪兽"
+        "两栖组",
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1916,7 +2203,8 @@ pets: [
       "type1": "水",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组",
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1926,7 +2214,8 @@ pets: [
       "type1": "水",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组",
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1936,7 +2225,8 @@ pets: [
       "type1": "水",
       "type2": "萌",
       "group": [
-        "怪兽"
+        "妖精组",
+        "软体组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1946,7 +2236,8 @@ pets: [
       "type1": "水",
       "type2": "萌",
       "group": [
-        "怪兽"
+        "妖精组",
+        "软体组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1956,7 +2247,8 @@ pets: [
       "type1": "水",
       "type2": "萌",
       "group": [
-        "怪兽"
+        "妖精组",
+        "软体组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -1966,7 +2258,7 @@ pets: [
       "type1": "武",
       "type2": "地",
       "group": [
-        "怪兽"
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": "白子"
@@ -1976,7 +2268,7 @@ pets: [
       "type1": "武",
       "type2": "地",
       "group": [
-        "怪兽"
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": "白子"
@@ -1986,7 +2278,7 @@ pets: [
       "type1": "武",
       "type2": "地",
       "group": [
-        "怪兽"
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": "白子"
@@ -1996,7 +2288,7 @@ pets: [
       "type1": "武",
       "type2": "地",
       "group": [
-        "怪兽"
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": "白子"
@@ -2006,7 +2298,7 @@ pets: [
       "type1": "武",
       "type2": "地",
       "group": [
-        "怪兽"
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": "白子"
@@ -2016,7 +2308,8 @@ pets: [
       "type1": "地",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2026,7 +2319,8 @@ pets: [
       "type1": "地",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2036,7 +2330,8 @@ pets: [
       "type1": "草",
       "type2": "萌",
       "group": [
-        "植物"
+        "动物组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2046,7 +2341,8 @@ pets: [
       "type1": "草",
       "type2": "萌",
       "group": [
-        "植物"
+        "动物组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2056,7 +2352,8 @@ pets: [
       "type1": "草",
       "type2": "萌",
       "group": [
-        "植物"
+        "动物组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2066,7 +2363,8 @@ pets: [
       "type1": "萌",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2076,7 +2374,8 @@ pets: [
       "type1": "萌",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2086,7 +2385,8 @@ pets: [
       "type1": "萌",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2096,7 +2396,7 @@ pets: [
       "type1": "地",
       "type2": "草",
       "group": [
-        "怪兽"
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2106,7 +2406,7 @@ pets: [
       "type1": "地",
       "type2": "草",
       "group": [
-        "怪兽"
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2116,7 +2416,7 @@ pets: [
       "type1": "龙",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨龙组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2126,7 +2426,7 @@ pets: [
       "type1": "龙",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨龙组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2136,7 +2436,7 @@ pets: [
       "type1": "电",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -2146,7 +2446,7 @@ pets: [
       "type1": "电",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -2156,7 +2456,7 @@ pets: [
       "type1": "电",
       "type2": "",
       "group": [
-        "怪兽"
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2166,7 +2466,7 @@ pets: [
       "type1": "电",
       "type2": "",
       "group": [
-        "怪兽"
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2176,7 +2476,7 @@ pets: [
       "type1": "电",
       "type2": "",
       "group": [
-        "怪兽"
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2186,7 +2486,8 @@ pets: [
       "type1": "机械",
       "type2": "幻",
       "group": [
-        "怪兽"
+        "妖精组",
+        "机械组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2196,7 +2497,8 @@ pets: [
       "type1": "机械",
       "type2": "幻",
       "group": [
-        "怪兽"
+        "妖精组",
+        "机械组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2206,7 +2508,8 @@ pets: [
       "type1": "萌",
       "type2": "毒",
       "group": [
-        "怪兽"
+        "两栖组",
+        "动物组"
       ],
       "hasShiny": false,
       "variant": "本来的样子"
@@ -2216,7 +2519,8 @@ pets: [
       "type1": "萌",
       "type2": "毒",
       "group": [
-        "怪兽"
+        "两栖组",
+        "动物组"
       ],
       "hasShiny": false,
       "variant": "本来的样子"
@@ -2226,7 +2530,8 @@ pets: [
       "type1": "虫",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "昆虫组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2236,7 +2541,8 @@ pets: [
       "type1": "虫",
       "type2": "恶",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "昆虫组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2246,7 +2552,7 @@ pets: [
       "type1": "火",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2256,7 +2562,7 @@ pets: [
       "type1": "火",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2266,7 +2572,7 @@ pets: [
       "type1": "火",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2276,7 +2582,8 @@ pets: [
       "type1": "水",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组",
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2286,7 +2593,8 @@ pets: [
       "type1": "水",
       "type2": "幽",
       "group": [
-        "怪兽"
+        "植物组",
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": "碧蓝珊瑚"
@@ -2296,7 +2604,8 @@ pets: [
       "type1": "机械",
       "type2": "地",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "机械组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2306,7 +2615,8 @@ pets: [
       "type1": "机械",
       "type2": "地",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "机械组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2316,7 +2626,8 @@ pets: [
       "type1": "机械",
       "type2": "地",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "机械组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2326,7 +2637,8 @@ pets: [
       "type1": "龙",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "天空组",
+        "巨龙组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2336,7 +2648,8 @@ pets: [
       "type1": "龙",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "天空组",
+        "巨龙组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2346,7 +2659,7 @@ pets: [
       "type1": "电",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2356,7 +2669,7 @@ pets: [
       "type1": "电",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2366,7 +2679,7 @@ pets: [
       "type1": "电",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2376,7 +2689,7 @@ pets: [
       "type1": "机械",
       "type2": "",
       "group": [
-        "怪兽"
+        "机械组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2386,7 +2699,7 @@ pets: [
       "type1": "机械",
       "type2": "",
       "group": [
-        "怪兽"
+        "机械组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2396,7 +2709,7 @@ pets: [
       "type1": "翼",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2406,7 +2719,7 @@ pets: [
       "type1": "翼",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2416,7 +2729,7 @@ pets: [
       "type1": "翼",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2426,7 +2739,8 @@ pets: [
       "type1": "冰",
       "type2": "",
       "group": [
-        "怪兽"
+        "软体组",
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2436,7 +2750,8 @@ pets: [
       "type1": "冰",
       "type2": "",
       "group": [
-        "怪兽"
+        "软体组",
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2446,7 +2761,8 @@ pets: [
       "type1": "冰",
       "type2": "",
       "group": [
-        "怪兽"
+        "软体组",
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2456,7 +2772,7 @@ pets: [
       "type1": "毒",
       "type2": "萌",
       "group": [
-        "怪兽"
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": "上弦的样子"
@@ -2466,7 +2782,7 @@ pets: [
       "type1": "毒",
       "type2": "萌",
       "group": [
-        "怪兽"
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": "上弦的样子"
@@ -2476,7 +2792,8 @@ pets: [
       "type1": "水",
       "type2": "龙",
       "group": [
-        "怪兽"
+        "巨龙组",
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2486,7 +2803,8 @@ pets: [
       "type1": "水",
       "type2": "龙",
       "group": [
-        "怪兽"
+        "巨龙组",
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2496,7 +2814,8 @@ pets: [
       "type1": "水",
       "type2": "龙",
       "group": [
-        "怪兽"
+        "巨龙组",
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2506,7 +2825,7 @@ pets: [
       "type1": "电",
       "type2": "水",
       "group": [
-        "怪兽"
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2516,7 +2835,7 @@ pets: [
       "type1": "电",
       "type2": "水",
       "group": [
-        "怪兽"
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2526,7 +2845,8 @@ pets: [
       "type1": "水",
       "type2": "毒",
       "group": [
-        "怪兽"
+        "海洋组",
+        "软体组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2536,7 +2856,8 @@ pets: [
       "type1": "水",
       "type2": "毒",
       "group": [
-        "怪兽"
+        "海洋组",
+        "软体组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2546,7 +2867,8 @@ pets: [
       "type1": "毒",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组",
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2556,7 +2878,8 @@ pets: [
       "type1": "毒",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组",
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2566,7 +2889,8 @@ pets: [
       "type1": "毒",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组",
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2576,7 +2900,8 @@ pets: [
       "type1": "火",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2586,7 +2911,8 @@ pets: [
       "type1": "火",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2596,7 +2922,8 @@ pets: [
       "type1": "火",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2606,7 +2933,8 @@ pets: [
       "type1": "冰",
       "type2": "",
       "group": [
-        "怪兽"
+        "海洋组",
+        "软体组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2616,7 +2944,8 @@ pets: [
       "type1": "冰",
       "type2": "",
       "group": [
-        "怪兽"
+        "海洋组",
+        "软体组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2626,7 +2955,8 @@ pets: [
       "type1": "冰",
       "type2": "",
       "group": [
-        "怪兽"
+        "海洋组",
+        "软体组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2636,7 +2966,8 @@ pets: [
       "type1": "火",
       "type2": "萌",
       "group": [
-        "怪兽"
+        "动物组",
+        "妖精组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -2646,7 +2977,8 @@ pets: [
       "type1": "火",
       "type2": "萌",
       "group": [
-        "怪兽"
+        "动物组",
+        "妖精组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -2656,7 +2988,8 @@ pets: [
       "type1": "火",
       "type2": "萌",
       "group": [
-        "怪兽"
+        "动物组",
+        "妖精组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -2666,7 +2999,7 @@ pets: [
       "type1": "恶",
       "type2": "火",
       "group": [
-        "怪兽"
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": "极昼的样子"
@@ -2676,7 +3009,7 @@ pets: [
       "type1": "恶",
       "type2": "火",
       "group": [
-        "怪兽"
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": "极昼的样子"
@@ -2686,7 +3019,7 @@ pets: [
       "type1": "恶",
       "type2": "火",
       "group": [
-        "怪兽"
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": "极昼的样子"
@@ -2696,7 +3029,8 @@ pets: [
       "type1": "机械",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "天空组",
+        "机械组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2706,7 +3040,8 @@ pets: [
       "type1": "机械",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "天空组",
+        "机械组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2716,7 +3051,8 @@ pets: [
       "type1": "机械",
       "type2": "",
       "group": [
-        "怪兽"
+        "拟人组",
+        "机械组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -2726,7 +3062,8 @@ pets: [
       "type1": "机械",
       "type2": "",
       "group": [
-        "怪兽"
+        "拟人组",
+        "机械组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -2736,7 +3073,8 @@ pets: [
       "type1": "机械",
       "type2": "",
       "group": [
-        "怪兽"
+        "拟人组",
+        "机械组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -2746,7 +3084,8 @@ pets: [
       "type1": "火",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2756,7 +3095,8 @@ pets: [
       "type1": "火",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2766,7 +3106,8 @@ pets: [
       "type1": "火",
       "type2": "武",
       "group": [
-        "怪兽"
+        "天空组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2776,7 +3117,8 @@ pets: [
       "type1": "火",
       "type2": "武",
       "group": [
-        "怪兽"
+        "天空组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2786,7 +3128,7 @@ pets: [
       "type1": "地",
       "type2": "光",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2796,7 +3138,7 @@ pets: [
       "type1": "地",
       "type2": "光",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2806,7 +3148,8 @@ pets: [
       "type1": "电",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "天空组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2816,7 +3159,8 @@ pets: [
       "type1": "水",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2826,7 +3170,8 @@ pets: [
       "type1": "草",
       "type2": "",
       "group": [
-        "植物"
+        "妖精组",
+        "植物组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -2836,7 +3181,8 @@ pets: [
       "type1": "草",
       "type2": "",
       "group": [
-        "植物"
+        "妖精组",
+        "植物组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -2846,7 +3192,8 @@ pets: [
       "type1": "草",
       "type2": "",
       "group": [
-        "植物"
+        "妖精组",
+        "植物组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -2856,7 +3203,7 @@ pets: [
       "type1": "地",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": "枯水期的样子"
@@ -2866,7 +3213,7 @@ pets: [
       "type1": "地",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": "枯水期的样子"
@@ -2876,7 +3223,7 @@ pets: [
       "type1": "地",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": false,
       "variant": "枯水期的样子"
@@ -2886,7 +3233,8 @@ pets: [
       "type1": "幽",
       "type2": "",
       "group": [
-        "怪兽"
+        "海洋组",
+        "软体组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2896,7 +3244,8 @@ pets: [
       "type1": "幽",
       "type2": "恶",
       "group": [
-        "怪兽"
+        "海洋组",
+        "软体组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2906,7 +3255,8 @@ pets: [
       "type1": "幽",
       "type2": "萌",
       "group": [
-        "怪兽"
+        "海洋组",
+        "软体组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2916,7 +3266,8 @@ pets: [
       "type1": "虫",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组",
+        "昆虫组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2926,7 +3277,8 @@ pets: [
       "type1": "虫",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组",
+        "昆虫组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2936,7 +3288,8 @@ pets: [
       "type1": "机械",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "机械组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2946,7 +3299,8 @@ pets: [
       "type1": "机械",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "机械组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2956,7 +3310,8 @@ pets: [
       "type1": "地",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "两栖组",
+        "天空组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2966,7 +3321,8 @@ pets: [
       "type1": "地",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "两栖组",
+        "天空组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2976,7 +3332,8 @@ pets: [
       "type1": "龙",
       "type2": "幽",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "巨龙组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2986,7 +3343,8 @@ pets: [
       "type1": "龙",
       "type2": "幽",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "巨龙组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -2996,7 +3354,8 @@ pets: [
       "type1": "毒",
       "type2": "恶",
       "group": [
-        "怪兽"
+        "天空组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3006,7 +3365,8 @@ pets: [
       "type1": "毒",
       "type2": "恶",
       "group": [
-        "怪兽"
+        "天空组",
+        "拟人组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3016,7 +3376,7 @@ pets: [
       "type1": "恶",
       "type2": "",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3026,7 +3386,7 @@ pets: [
       "type1": "恶",
       "type2": "",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3036,7 +3396,7 @@ pets: [
       "type1": "恶",
       "type2": "",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3046,7 +3406,8 @@ pets: [
       "type1": "虫",
       "type2": "地",
       "group": [
-        "怪兽"
+        "妖精组",
+        "昆虫组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3056,7 +3417,8 @@ pets: [
       "type1": "虫",
       "type2": "地",
       "group": [
-        "怪兽"
+        "妖精组",
+        "昆虫组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3066,7 +3428,8 @@ pets: [
       "type1": "虫",
       "type2": "地",
       "group": [
-        "怪兽"
+        "妖精组",
+        "昆虫组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3076,7 +3439,8 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3086,7 +3450,8 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3096,7 +3461,8 @@ pets: [
       "type1": "普通",
       "type2": "幻",
       "group": [
-        "怪兽"
+        "妖精组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3106,7 +3472,8 @@ pets: [
       "type1": "普通",
       "type2": "武",
       "group": [
-        "怪兽"
+        "妖精组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3116,7 +3483,8 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3126,7 +3494,8 @@ pets: [
       "type1": "普通",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3136,7 +3505,8 @@ pets: [
       "type1": "普通",
       "type2": "幻",
       "group": [
-        "怪兽"
+        "妖精组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3146,7 +3516,8 @@ pets: [
       "type1": "普通",
       "type2": "武",
       "group": [
-        "怪兽"
+        "妖精组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3156,7 +3527,7 @@ pets: [
       "type1": "光",
       "type2": "虫",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3166,7 +3537,7 @@ pets: [
       "type1": "光",
       "type2": "虫",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3176,7 +3547,7 @@ pets: [
       "type1": "光",
       "type2": "虫",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3186,7 +3557,7 @@ pets: [
       "type1": "光",
       "type2": "",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3196,7 +3567,7 @@ pets: [
       "type1": "光",
       "type2": "",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3206,7 +3577,7 @@ pets: [
       "type1": "光",
       "type2": "",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3216,7 +3587,8 @@ pets: [
       "type1": "水",
       "type2": "",
       "group": [
-        "怪兽"
+        "海洋组",
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3226,7 +3598,8 @@ pets: [
       "type1": "水",
       "type2": "草",
       "group": [
-        "怪兽"
+        "海洋组",
+        "魔力组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3236,7 +3609,7 @@ pets: [
       "type1": "水",
       "type2": "冰",
       "group": [
-        "怪兽"
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3246,7 +3619,7 @@ pets: [
       "type1": "水",
       "type2": "火",
       "group": [
-        "怪兽"
+        "海洋组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3256,7 +3629,7 @@ pets: [
       "type1": "虫",
       "type2": "",
       "group": [
-        "怪兽"
+        "昆虫组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3266,7 +3639,7 @@ pets: [
       "type1": "虫",
       "type2": "",
       "group": [
-        "怪兽"
+        "昆虫组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3276,7 +3649,7 @@ pets: [
       "type1": "虫",
       "type2": "",
       "group": [
-        "怪兽"
+        "昆虫组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3286,7 +3659,7 @@ pets: [
       "type1": "水",
       "type2": "电",
       "group": [
-        "怪兽"
+        "海洋组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3296,7 +3669,7 @@ pets: [
       "type1": "水",
       "type2": "电",
       "group": [
-        "怪兽"
+        "海洋组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3306,7 +3679,8 @@ pets: [
       "type1": "冰",
       "type2": "幻",
       "group": [
-        "怪兽"
+        "动物组",
+        "巨灵组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3316,7 +3690,7 @@ pets: [
       "type1": "恶",
       "type2": "光",
       "group": [
-        "怪兽"
+        "昆虫组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3326,7 +3700,7 @@ pets: [
       "type1": "恶",
       "type2": "光",
       "group": [
-        "怪兽"
+        "昆虫组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3336,7 +3710,8 @@ pets: [
       "type1": "火",
       "type2": "草",
       "group": [
-        "怪兽"
+        "昆虫组",
+        "植物组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3346,7 +3721,8 @@ pets: [
       "type1": "火",
       "type2": "草",
       "group": [
-        "怪兽"
+        "昆虫组",
+        "植物组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3356,7 +3732,8 @@ pets: [
       "type1": "幽",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "魔力组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3366,7 +3743,8 @@ pets: [
       "type1": "幽",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "魔力组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3376,7 +3754,8 @@ pets: [
       "type1": "幽",
       "type2": "",
       "group": [
-        "怪兽"
+        "巨灵组",
+        "魔力组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3386,7 +3765,8 @@ pets: [
       "type1": "电",
       "type2": "幻",
       "group": [
-        "怪兽"
+        "妖精组",
+        "软体组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3396,7 +3776,8 @@ pets: [
       "type1": "电",
       "type2": "幻",
       "group": [
-        "怪兽"
+        "妖精组",
+        "软体组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3406,7 +3787,7 @@ pets: [
       "type1": "机械",
       "type2": "火",
       "group": [
-        "怪兽"
+        "机械组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3416,7 +3797,7 @@ pets: [
       "type1": "机械",
       "type2": "火",
       "group": [
-        "怪兽"
+        "机械组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3426,7 +3807,7 @@ pets: [
       "type1": "机械",
       "type2": "火",
       "group": [
-        "怪兽"
+        "机械组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3436,7 +3817,8 @@ pets: [
       "type1": "幻",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组",
+        "妖精组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3446,7 +3828,8 @@ pets: [
       "type1": "幻",
       "type2": "",
       "group": [
-        "怪兽"
+        "天空组",
+        "妖精组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3456,7 +3839,8 @@ pets: [
       "type1": "幻",
       "type2": "幽",
       "group": [
-        "怪兽"
+        "天空组",
+        "妖精组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3466,7 +3850,7 @@ pets: [
       "type1": "幻",
       "type2": "",
       "group": [
-        "怪兽"
+        "两栖组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3476,7 +3860,7 @@ pets: [
       "type1": "幻",
       "type2": "",
       "group": [
-        "怪兽"
+        "两栖组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3486,7 +3870,7 @@ pets: [
       "type1": "火",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3496,7 +3880,7 @@ pets: [
       "type1": "火",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3506,7 +3890,8 @@ pets: [
       "type1": "草",
       "type2": "",
       "group": [
-        "植物"
+        "动物组",
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3516,7 +3901,8 @@ pets: [
       "type1": "草",
       "type2": "",
       "group": [
-        "植物"
+        "动物组",
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3526,7 +3912,8 @@ pets: [
       "type1": "草",
       "type2": "",
       "group": [
-        "植物"
+        "动物组",
+        "妖精组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3536,7 +3923,8 @@ pets: [
       "type1": "幻",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3546,7 +3934,8 @@ pets: [
       "type1": "幻",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "妖精组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3556,7 +3945,8 @@ pets: [
       "type1": "幻",
       "type2": "翼",
       "group": [
-        "怪兽"
+        "妖精组",
+        "巨灵组"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3566,7 +3956,7 @@ pets: [
       "type1": "机械",
       "type2": "",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3576,7 +3966,7 @@ pets: [
       "type1": "机械",
       "type2": "",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3586,7 +3976,7 @@ pets: [
       "type1": "机械",
       "type2": "",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3596,7 +3986,7 @@ pets: [
       "type1": "翼",
       "type2": "",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3606,7 +3996,7 @@ pets: [
       "type1": "翼",
       "type2": "",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3616,7 +4006,7 @@ pets: [
       "type1": "翼",
       "type2": "",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": false,
       "variant": ""
@@ -3626,7 +4016,7 @@ pets: [
       "type1": "冰",
       "type2": "",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3636,7 +4026,7 @@ pets: [
       "type1": "冰",
       "type2": "",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3646,7 +4036,7 @@ pets: [
       "type1": "火",
       "type2": "龙",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3656,7 +4046,7 @@ pets: [
       "type1": "火",
       "type2": "龙",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3666,7 +4056,8 @@ pets: [
       "type1": "普通",
       "type2": "机械",
       "group": [
-        "怪兽"
+        "动物组",
+        "机械组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3676,7 +4067,8 @@ pets: [
       "type1": "普通",
       "type2": "机械",
       "group": [
-        "怪兽"
+        "动物组",
+        "机械组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3686,7 +4078,8 @@ pets: [
       "type1": "水",
       "type2": "萌",
       "group": [
-        "怪兽"
+        "两栖组",
+        "妖精组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3696,7 +4089,8 @@ pets: [
       "type1": "水",
       "type2": "萌",
       "group": [
-        "怪兽"
+        "两栖组",
+        "妖精组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3706,7 +4100,8 @@ pets: [
       "type1": "恶",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组",
+        "拟人组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3716,7 +4111,8 @@ pets: [
       "type1": "恶",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组",
+        "拟人组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3726,7 +4122,8 @@ pets: [
       "type1": "恶",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组",
+        "拟人组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3736,7 +4133,8 @@ pets: [
       "type1": "火",
       "type2": "毒",
       "group": [
-        "怪兽"
+        "机械组",
+        "魔力组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3746,7 +4144,8 @@ pets: [
       "type1": "火",
       "type2": "毒",
       "group": [
-        "怪兽"
+        "机械组",
+        "魔力组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3756,7 +4155,7 @@ pets: [
       "type1": "幽",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3766,7 +4165,7 @@ pets: [
       "type1": "幽",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3776,7 +4175,8 @@ pets: [
       "type1": "电",
       "type2": "光",
       "group": [
-        "怪兽"
+        "动物组",
+        "大地组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3786,7 +4186,8 @@ pets: [
       "type1": "电",
       "type2": "光",
       "group": [
-        "怪兽"
+        "动物组",
+        "大地组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3796,7 +4197,8 @@ pets: [
       "type1": "机械",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组",
+        "机械组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3806,7 +4208,8 @@ pets: [
       "type1": "机械",
       "type2": "",
       "group": [
-        "怪兽"
+        "动物组",
+        "机械组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3816,7 +4219,8 @@ pets: [
       "type1": "幻",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组",
+        "拟人组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3826,7 +4230,8 @@ pets: [
       "type1": "幻",
       "type2": "",
       "group": [
-        "怪兽"
+        "妖精组",
+        "拟人组"
       ],
       "hasShiny": true,
       "variant": ""
@@ -3836,34 +4241,62 @@ pets: [
       "type1": "武",
       "type2": "",
       "group": [
-        "怪兽"
+        "无法孵蛋"
       ],
       "hasShiny": false,
       "variant": ""
     }
   ],
-  mounts: [
-    { pet: '极光迪莫', mount: '光翼飞行', bonus: '飞行速度+25%', req: '等级30以上' },
-    { pet: '烈焰火羽', mount: '火焰冲锋', bonus: '移动速度+30%', req: '等级35以上' },
-    { pet: '水翼精灵', mount: '水翼滑行', bonus: '水中移动速度+40%', req: '等级35以上' },
-    { pet: '草叶精灵', mount: '藤蔓滑翔', bonus: '采集速度+20%', req: '等级30以上' },
-    { pet: '齿轮小子', mount: '机甲合体', bonus: '防御+15%', req: '等级40以上' },
-    { pet: '上岸蛙', mount: '蛙跳飞行', bonus: '跳跃高度+50%', req: '等级30以上' }
+  "mounts": [
+    {
+      "pet": "极光迪莫",
+      "mount": "光翼飞行",
+      "bonus": "飞行速度+25%",
+      "req": "等级30以上"
+    },
+    {
+      "pet": "烈焰火羽",
+      "mount": "火焰冲锋",
+      "bonus": "移动速度+30%",
+      "req": "等级35以上"
+    },
+    {
+      "pet": "水翼精灵",
+      "mount": "水翼滑行",
+      "bonus": "水中移动速度+40%",
+      "req": "等级35以上"
+    },
+    {
+      "pet": "草叶精灵",
+      "mount": "藤蔓滑翔",
+      "bonus": "采集速度+20%",
+      "req": "等级30以上"
+    },
+    {
+      "pet": "齿轮小子",
+      "mount": "机甲合体",
+      "bonus": "防御+15%",
+      "req": "等级40以上"
+    },
+    {
+      "pet": "上岸蛙",
+      "mount": "蛙跳飞行",
+      "bonus": "跳跃高度+50%",
+      "req": "等级30以上"
+    }
   ],
-  api: {
-    url: 'https://roco.gptvip.chat/api/magic-egg-lookup',
-    source: 'https://wiki.biligame.com/rocom',
-    license: 'CC BY-NC-SA 4.0',
-    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans'
+  "api": {
+    "url": "https://roco.gptvip.chat/api/magic-egg-lookup",
+    "source": "https://wiki.biligame.com/rocom",
+    "license": "CC BY-NC-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans"
   }
 }
-var eggData = eggData
-
 var petImgMap = {
   '迪莫': 'JL dimo', '喵喵': 'JL miaomiao', '喵呜': 'JL miaowu', '魔力猫': 'JL molimiao',
   '火花': 'JL huohua', '焰火': 'JL yanhuo', '火神': 'JL huoshen',
   '水蓝蓝': 'JL shuilanlan', '波波拉': 'JL bobola', '水灵': 'JL shuiling',
-  '鸭吉集': 'JL yajiji', '板板壳': 'JL banbanke', '咔咔壳': 'JL kakake', '水泡壳': 'JL shuipaoke',
+  '鸭吉吉': 'JL yajiji', '板板壳': 'JL banbanke', '咔咔壳': 'JL kakake', '水泡壳': 'JL shuipaoke',
   '锥尾羊': 'JL youlingyang', '铃兰羊': 'JL lanlingyang', '花影羚羊': 'JL guimeilingyang',
   '雪绒鸟': 'JL xuerongniao_dong', '冬羽雀': 'JL dongyuque', '岚鸟': 'JL lanniao',
   '小灵菇': 'JL xiaolinggu', '幻灵菇': 'JL youlinggu', '幻影灵菇': 'JL lunhuilinggu',
@@ -3893,7 +4326,7 @@ var petImgMap = {
   '小星光': 'JL xiaoxingguang', '星光狮': 'JL xingguangshi',
   '一窝蜂': 'JL yiwofeng', '黄蜂后': 'JL huangfenghou', '花魁蜂后': 'JL huakuifenghou',
   '小夜': 'JL xiaoye', '紫夜': 'JL ziye', '朔夜伊芙': 'JL shuoyeifu',
-  '乖乖鹲': 'JL guaiguaimeng', '蓝珠天鹅': 'JL lanzhutiane', '翠顶夫人': 'JL cuidingfuren', '黑羽夫人': 'JL heiyufuren', '锤头鹲': 'JL chuitoumeng',
+  '乖乖鹲': 'JL guaiguaimeng', '蓝珠天鹅': 'JL lanzhutianer', '翠顶夫人': 'JL cuidingfuren', '黑羽夫人': 'JL heiyufuren', '锤头鹲': 'JL chuitoumeng',
   '绿草精灵': 'JL lvcaojingling', '魔草巫灵': 'JL mocaowuling',
   '记忆石': 'JL jiyishi',
   '咔咔羽毛': 'JL kakayumao', '咔咔雀': 'JL kakaque', '咔咔鸟': 'JL kakaniao',
@@ -3919,76 +4352,23 @@ var petImgMap = {
 }
 var db = null
 
-
-
-var petImgMap = {
-  '迪莫': 'JL dimo', '喵喵': 'JL miaomiao', '喵呜': 'JL miaowu', '魔力猫': 'JL molimiao',
-  '火花': 'JL huohua', '焰火': 'JL yanhuo', '火神': 'JL huoshen',
-  '水蓝蓝': 'JL shuilanlan', '波波拉': 'JL bobola', '水灵': 'JL shuiling',
-  '鸭吉集': 'JL yajiji', '板板壳': 'JL banbanke', '咔咔壳': 'JL kakake', '水泡壳': 'JL shuipaoke',
-  '锥尾羊': 'JL youlingyang', '铃兰羊': 'JL lanlingyang', '花影羚羊': 'JL guimeilingyang',
-  '雪绒鸟': 'JL xuerongniao_dong', '冬羽雀': 'JL dongyuque', '岚鸟': 'JL lanniao',
-  '小灵菇': 'JL xiaolinggu', '幻灵菇': 'JL youlinggu', '幻影灵菇': 'JL lunhuilinggu',
-  '石肤蜥': 'JL huociyanxiyi', '石刺蜥': 'JL conglinluxiyi', '石冠王蜥': 'JL shihuacixiyi',
-  '布是石': 'JL xiaobushi', '布是岩': 'JL bulaishi', '布克棱岩': 'JL bulaikeyan',
-  '恶魔叮': 'JL emoding', '叮叮恶魔': 'JL dingdingemo',
-  '毛毛': 'JL maomao', '爬爬': 'JL papa', '化蝶': 'JL huadie',
-  '幽影树': 'JL youlingshu',
-  '小鼠獭': 'JL xiaoshulan', '燕尾獭': 'JL dashulan', '卷胡巨獭': 'JL jushulan',
-  '矿晶虫': 'JL kuangjingchong', '晶石蜗': 'JL jingshiwo',
-  '奇丽草': 'JL qilicao', '奇丽叶': 'JL qiliye', '奇丽花': 'JL qilihua',
-  '丢丢': 'JL diudiu', '卡卡虫': 'JL kakachong', '卡瓦重': 'JL kawachong',
-  '护主犬': 'JL huzhuquan', '音速犬': 'JL yinsuquan',
-  '绿耳松鼠': 'JL lversongshu', '抱枕松鼠': 'JL baozhensongshu', '蹦床松鼠': 'JL bengchuangsongshu',
-  '嘟嘟煲': 'JL duudbao', '嘟嘟锅': 'JL duudguo',
-  '小灵面': 'JL xiaoyoulinglian', '暗影灵面': 'JL youlinglian', '幽冥眼': 'JL youmingzhiyan',
-  '梦游': 'JL menhyou', '梦悠悠': 'JL mengyouyou',
-  '兽花蕾': 'JL shouhualei',
-  '伏地兽': 'JL fudishou', '贪食鼹': 'JL shiyishou', '巨噬针鼹': 'JL wanzuishou',
-  '蹦蹦种子': 'JL bengbengzhongzi', '蹦蹦草': 'JL bengbengcao', '蹦蹦花': 'JL bengbenghua',
-  '电咩咩': 'JL dianmieemie', '粉咩咩': 'JL fenmieemie', '电球咩咩': 'JL dianqiumieemie',
-  '蒲公英': 'JL pugongying', '蒲公英娃娃': 'JL pugongyingwawa',
-  '伊贝儿': 'JL yibeier', '伊贝粉粉': 'JL yibeifenfen',
-  '白发懒人': 'JL baifalanren', '动力猿': 'JL dongliyuan', '瞌睡王': 'JL keshuiwang',
-  '海盔虫': 'JL haikuichong', '刺盔虫': 'JL cikuichong', '千棘盔': 'JL qianjikuichong',
-  '菊花梨': 'JL juhuali',
-  '小星光': 'JL xiaoxingguang', '星光狮': 'JL xingguangshi',
-  '一窝蜂': 'JL yiwofeng', '黄蜂后': 'JL huangfenghou', '花魁蜂后': 'JL huakuifenghou',
-  '小夜': 'JL xiaoye', '紫夜': 'JL ziye', '朔夜伊芙': 'JL shuoyeifu',
-  '乖乖鹲': 'JL guaiguaimeng', '蓝珠天鹅': 'JL lanzhutiane', '翠顶夫人': 'JL cuidingfuren', '黑羽夫人': 'JL heiyufuren', '锤头鹲': 'JL chuitoumeng',
-  '绿草精灵': 'JL lvcaojingling', '魔草巫灵': 'JL mocaowuling',
-  '记忆石': 'JL jiyishi',
-  '咔咔羽毛': 'JL kakayumao', '咔咔雀': 'JL kakaque', '咔咔鸟': 'JL kakaniao',
-  '小草虫': 'JL xiaocaochong', '草衣虫': 'JL caoyichong', '花衣蝶': 'JL huayidie',
-  '绿翼鸟': 'JL lvyiniao', '魔翼鸟': 'JL moyiniao', '魔眷鸟': 'JL mojuanniao',
-  '爆焰仔': 'JL baoyanzai', '爆焰喷喷': 'JL baoyanpenpen',
-  '猴麦仔': 'JL houmaizai', '音碟吼': 'JL yindiehou',
-  '加油海葵': 'JL jiayouhaikui', '加油蟹': 'JL jiayouxie',
-  '小丑豆豆': 'JL xiaochoudoudou', '小丑兔': 'JL xiaochoutu', '小丑公爵': 'JL xiaochougongjue',
-  '烟花团': 'JL yianhuatuan', '烟花伯爵': 'JL yianhuabojue',
-  '咕咕帽': 'JL gugumao', '咕德帽帽': 'JL gudemama',
-  '炫光迪迪': 'JL xuanguangdidi', '霹雳迪迪': 'JL pilididi',
-  '小鼓象': 'JL xiaoguxiang', '巨鼓象': 'JL juguxiang',
-  '牵线木偶': 'JL qianxianmuou', '帅帅魔偶': 'JL shuaishuaimuou',
-  '学院呱呱': 'JL xueyuanguagua',
-  '布瓜蝌': 'JL buguake', '上岸蛙': 'JL shanganwa',
-  '火红尾': 'JL huohongwei', '雅丹鬃': 'JL yadanbin',
-  '小雪人': 'JL xiaoxueren', '雪怪': 'JL xueguai',
-  '乌达': 'JL wuda', '迷你乌': 'JL miniwu', '乌拉塔': 'JL wulata',
-  '多灵': 'JL duoling', '多灵主': 'JL duolingzhu',
-  '圣剑侍从': 'JL shengjianshicong', '圣剑-X': 'JL shengjianX',
-  '枫枫迪迪': 'JL xuanguangdidi'
-}
-var db = null
-
-function getEggImgUrl(name) {
-  var fn = petImgMap[name]
-  if (!fn) return ''
-  return 'https://wiki.biligame.com/rocom/Special:FilePath/' + fn + '.png'
+function getEggImgUrl(name, variant) {
+  var fullPetMap = require('../egg/fullPetMap.js');
+  var fullName = variant ? name + '（' + variant + '）' : name;
+  if (fullPetMap[fullName]) return fullPetMap[fullName];
+  if (fullPetMap[name]) return fullPetMap[name];
+  var fn = petImgMap[name];
+  if (fn) {
+    if (variant) return 'https://wiki.biligame.com/rocom/Special:FilePath/精灵_头像_' + fullName + '.png';
+    return 'https://wiki.biligame.com/rocom/Special:FilePath/' + fn + '.png';
+  }
+  return 'https://wiki.biligame.com/rocom/Special:FilePath/精灵_头像_' + fullName + '.png';
 }
 
 Page({
   data: {
+    fullFilteredPets: [],
+    displayCount: 50,
     pets: [],
     filteredPets: [],
     groups: [],
@@ -4010,11 +4390,21 @@ Page({
     sharedGroups: [],
     offspringName: '',
     eggGroupColors: {
-      '怪兽': '#d32f2f', '虫': '#7cb342', '飞行': '#42a5f5', '毒': '#ab47bc',
-      '地面': '#8d6e63', '岩石': '#78909c', '鬼': '#5c6bc0', '钢': '#90a4ae',
-      '火': '#ff7043', '草': '#66bb6a', '电': '#fdd835', '龙': '#7e57c2',
-      '水': '#29b6f6', '妖精': '#f48fb1', '格斗': '#ef5350', '冰': '#26c6da',
-      '超能力': '#ec407a', '恶': '#455a64'
+      '无法孵蛋': '#999999',
+      '动物组': '#d32f2f',
+      '拟人组': '#fdd835',
+      '巨灵组': '#5c6bc0',
+      '魔力组': '#d84315',
+      '天空组': '#42a5f5',
+      '两栖组': '#26a69a',
+      '植物组': '#66bb6a',
+      '大地组': '#8d6e63',
+      '妖精组': '#ec4899',
+      '昆虫组': '#7cb342',
+      '软体组': '#ff7043',
+      '机械组': '#90a4ae',
+      '海洋组': '#00838f',
+      '巨龙组': '#4527a0'
     },
     eggTypeEmoji: {
       '火': '🔥', '水': '💧', '草': '🌿', '电': '⚡', '冰': '❄️',
@@ -4030,7 +4420,15 @@ Page({
       '虫': '#7cb342', '普通': '#ffa726'
     }
   },
-  onLoad: function() {
+  onReachBottom: function() {
+    if (this.data.fullFilteredPets && this.data.displayCount < this.data.fullFilteredPets.length) {
+      this.data.displayCount += 50;
+      this.setData({
+        filteredPets: this.data.fullFilteredPets.slice(0, this.data.displayCount)
+      });
+    }
+  },
+  onLoad: function(options) {
     this.loadLocalFallbackData()
     this.loadData()
   },
@@ -4045,7 +4443,9 @@ Page({
         data: { action: 'groups' }
       }).then(function(res) {
         if (res.result && res.result.success && res.result.data && res.result.data.length > 0) {
-          self.setData({ groups: res.result.data })
+          self.data.fullFilteredPets = pets;
+      self.data.displayCount = 50;
+      self.setData({ groups: res.result.data })
         }
       }).catch(function() {
         // Already has local fallback, no need to force reload
@@ -4062,9 +4462,10 @@ Page({
             } else {
               pets[i].groupStr = ''
             }
-            pets[i].imgUrl = getEggImgUrl(pets[i].name)
+            pets[i].imgUrl = getEggImgUrl(pets[i].name, pets[i].variant)
           }
-          self.setData({ pets: pets, filteredPets: pets, simFilteredPets: pets, loading: false })
+          self.fullPets = pets;
+      self.setData({ petNames: pets.map(p => p.variant ? p.name + "（" + p.variant + "）" : p.name), filteredPets: pets.slice(0, 50), simFilteredPets: pets, loading: false })
         }
       }).catch(function() {
         // Already has local fallback, no need to force reload
@@ -4072,7 +4473,7 @@ Page({
     }
   },
   loadLocalFallbackData: function() {
-    if (this.data.pets.length > 0) return // 避免重复加载
+    if ((this.fullPets && this.fullPets.length) > 0) return // 避免重复加载
     var self = this
     var localPets = eggData.pets || []
     var processedPets = []
@@ -4086,7 +4487,7 @@ Page({
         if (p.type2) p.types.push(p.type2)
       }
       p.groupStr = p.group ? p.group.join(', ') : ''
-      p.imgUrl = getEggImgUrl(p.name)
+      p.imgUrl = getEggImgUrl(p.name, p.variant)
       processedPets.push(p)
     }
 
@@ -4107,10 +4508,12 @@ Page({
     // 按照数量排序蛋组
     groups.sort(function(a, b) { return b.count - a.count })
 
+    self.fullPets = processedPets;
+    self.data.fullFilteredPets = processedPets;
+    self.data.displayCount = 50;
     self.setData({
-      pets: processedPets,
-      filteredPets: processedPets,
-      simFilteredPets: processedPets,
+      petNames: processedPets.map(p => p.variant ? p.name + "（" + p.variant + "）" : p.name),
+      filteredPets: processedPets.slice(0, 50),
       groups: groups,
       loading: false
     })
@@ -4128,7 +4531,7 @@ Page({
   doSearch: function(keyword) {
     var self = this
     var results = []
-    var pets = self.data.pets
+    var pets = self.fullPets
     for (var i = 0; i < pets.length; i++) {
       if (pets[i].name.indexOf(keyword) >= 0) {
         results.push(pets[i])
@@ -4136,20 +4539,25 @@ Page({
     }
     self.setData({ showSuggest: true, suggestList: results.slice(0, 10) })
     if (results.length > 0) {
-      self.setData({ filteredPets: results, activeGroup: '' })
+      self.setData({ filteredPets: results.slice(0, 50), activeGroup: '' })
     }
   },
   selectSuggest: function(e) {
     var item = e.currentTarget.dataset.item
+    this.data.fullFilteredPets = [item]
+    ;
+    this.data.displayCount = 50;
     this.setData({
       selectedPet: item,
       searchKeyword: item.name,
       showSuggest: false,
       suggestList: [],
       filteredPets: [item]
-    })
+    .slice(0, 50)})
   },
   clearSearch: function() {
+    this.data.fullFilteredPets = pets ;
+    this.data.displayCount = 50;
     this.setData({ searchKeyword: '', showSuggest: false, suggestList: [], selectedPet: null })
     this.filterByGroup()
   },
@@ -4161,9 +4569,9 @@ Page({
   filterByGroup: function() {
     var self = this
     var group = self.data.activeGroup
-    var pets = self.data.pets
+    var pets = self.fullPets
     if (!group) {
-      self.setData({ filteredPets: pets })
+      self.setData({ filteredPets: pets.slice(0, 50)})
       return
     }
     var filtered = []
@@ -4172,7 +4580,9 @@ Page({
         filtered.push(pets[i])
       }
     }
-    self.setData({ filteredPets: filtered })
+    self.data.fullFilteredPets = filtered;
+      self.data.displayCount = 50;
+      self.setData({ filteredPets: filtered.slice(0, 50)})
   },
   selectPet: function(e) {
     var item = e.currentTarget.dataset.item
@@ -4180,7 +4590,9 @@ Page({
     
     // 如果已经选中了该精灵，则取消选中
     if (this.data.selectedPet && this.data.selectedPet.name === item.name) {
-      this.setData({ selectedPet: null })
+      this.data.fullFilteredPets = filtered;
+    this.data.displayCount = 50;
+    this.setData({ selectedPet: null })
       this.filterByGroup()
       return
     }
@@ -4190,7 +4602,7 @@ Page({
     // 孵蛋反查逻辑：显示同蛋组的所有精灵
     if (item.group && item.group.length > 0) {
       var filtered = []
-      var pets = self.data.pets
+      var pets = self.fullPets
       for (var i = 0; i < pets.length; i++) {
         // 检查是否有交集蛋组
         var hasCommonGroup = false
@@ -4206,7 +4618,7 @@ Page({
           filtered.push(pets[i])
         }
       }
-      this.setData({ filteredPets: filtered, activeGroup: '' })
+      this.setData({ filteredPets: filtered.slice(0, 50), activeGroup: '' })
       
       wx.showToast({
         title: '已筛选同蛋组对象',
@@ -4224,12 +4636,12 @@ Page({
   },
   onMotherPickerChange: function(e) {
     var index = e.detail.value
-    var pet = this.data.pets[index]
+    var pet = this.fullPets[index]
     this.selectMotherPet(pet)
   },
   onFatherPickerChange: function(e) {
     var index = e.detail.value
-    var pet = this.data.compatibleFathers[index]
+    var pet = this.fullCompatibleFathers[index]
     this.setData({ fatherPet: pet })
     this.checkCompatibility()
   },
@@ -4244,7 +4656,7 @@ Page({
     })
     // Compute compatible fathers
     var compatible = []
-    var pets = self.data.pets
+    var pets = self.fullPets
     for (var i = 0; i < pets.length; i++) {
       var other = pets[i]
       var overlap = false

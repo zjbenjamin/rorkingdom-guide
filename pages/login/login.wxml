@@ -2,7 +2,7 @@
   <view class="container">
     <view class="login-header">
       <view class="logo-box">
-        <image class="logo-image" src="/images/logo.png" mode="aspectFill"></image>
+        <image lazy-load class="logo-image" src="{{loginLogoUrl || '/images/logo.webp'}}" mode="aspectFill"></image>
       </view>
       <text class="app-name">洛手助手BENJAMIN</text>
       <text class="app-desc">全面攻略 · 精灵图鉴 · 道具图鉴</text>
@@ -12,13 +12,13 @@
     <view class="login-card" wx:if="{{!hasUserInfo}}">
       <view class="login-tips">
         <text class="tips-title">欢迎使用</text>
-        <text class="tips-desc">登录后可同步个人数据，解锁更多功能</text>
+        <text class="tips-desc">登录后可解锁订阅推送通知功能，其他功能均可免费使用</text>
       </view>
 
       <view class="avatar-section">
         <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
           <view class="avatar-wrap">
-            <image class="avatar-img" src="{{tempAvatar}}" wx:if="{{tempAvatar}}" mode="aspectFill" />
+            <image lazy-load class="avatar-img" src="{{tempAvatar}}" wx:if="{{tempAvatar}}" mode="aspectFill" />
             <view class="avatar-empty" wx:else>
               <text class="avatar-plus">+</text>
             </view>
@@ -53,7 +53,7 @@
     <view class="user-card" wx:if="{{hasUserInfo}}">
       <view class="user-header">
         <view class="avatar-wrap">
-          <image class="user-avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill"></image>
+          <image lazy-load class="user-avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill"></image>
           <view class="level-tag" style="background: {{levelColor.bg}}; color: {{levelColor.text}}; border-color: {{levelColor.border}};">
             <text class="level-icon">{{levelIcon}}</text>
             <text class="level-num">Lv.{{level}}</text>
@@ -210,6 +210,7 @@
 
     <view class="notice-box">
       <text class="notice-title">📋 登录说明</text>
+      <text class="notice-text">• 未登录可正常使用所有功能，仅【订阅推送】需登录后使用</text>
       <text class="notice-text">• 登录后数据仅在本地设备保存</text>
       <text class="notice-text">• 登录有效期为 3 天，到期后自动退出登录</text>
       <text class="notice-text">• 您可随时手动退出登录并清除本地数据</text>

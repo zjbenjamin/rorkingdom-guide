@@ -7,27 +7,54 @@
     </view>
 
     <view class="loading" wx:if="{{loading && isAdmin}}">
+      <view class="loading-spinner"></view>
       <text class="loading-text">加载中...</text>
     </view>
 
     <view wx:if="{{isAdmin}}">
-      <!-- 顶部标题栏 -->
-      <view class="admin-header">
-        <text class="admin-title">管理后台</text>
-        <view class="refresh-btn" bindtap="refreshData">
-          <text>刷新</text>
+      <!-- 顶部标题栏 (Hero) -->
+      <view class="admin-hero">
+        <view class="admin-hero-bg"></view>
+        <view class="admin-hero-content">
+          <view class="admin-hero-left">
+            <view class="admin-avatar">
+              <text class="admin-avatar-icon">👑</text>
+            </view>
+            <view class="admin-hero-info">
+              <text class="admin-hero-title">管理后台</text>
+              <text class="admin-hero-sub">Control Panel</text>
+            </view>
+          </view>
+          <view class="admin-hero-right">
+            <view class="admin-stat-pill">
+              <text class="stat-pill-num">{{announcements.length || 0}}</text>
+              <text class="stat-pill-label">公告</text>
+            </view>
+            <view class="admin-stat-pill">
+              <text class="stat-pill-num">{{adminActivities.length || 0}}</text>
+              <text class="stat-pill-label">活动</text>
+            </view>
+            <view class="refresh-btn" bindtap="refreshData">
+              <text class="refresh-icon">🔄</text>
+            </view>
+          </view>
         </view>
       </view>
 
       <!-- Tab 栏 -->
-      <view class="admin-tabs">
-        <view class="admin-tab {{activeTab === 'announce' ? 'on' : ''}}" bindtap="switchTab" data-tab="announce">公告</view>
-        <view class="admin-tab {{activeTab === 'activity' ? 'on' : ''}}" bindtap="switchTab" data-tab="activity">活动</view>
-        <view class="admin-tab {{activeTab === 'subscribe' ? 'on' : ''}}" bindtap="switchTab" data-tab="subscribe">订阅</view>
-        <view class="admin-tab {{activeTab === 'users' ? 'on' : ''}}" bindtap="switchTab" data-tab="users">用户</view>
-        <view class="admin-tab {{activeTab === 'pages' ? 'on' : ''}}" bindtap="switchTab" data-tab="pages">页面</view>
-        <view class="admin-tab {{activeTab === 'stats' ? 'on' : ''}}" bindtap="switchTab" data-tab="stats">统计</view>
-      </view>
+      <scroll-view scroll-x class="admin-tabs-scroll">
+        <view class="admin-tabs">
+          <view class="admin-tab {{activeTab === 'announce' ? 'on' : ''}}" bindtap="switchTab" data-tab="announce">公告</view>
+          <view class="admin-tab {{activeTab === 'activity' ? 'on' : ''}}" bindtap="switchTab" data-tab="activity">活动</view>
+          <view class="admin-tab {{activeTab === 'balls' ? 'on' : ''}}" bindtap="switchTab" data-tab="balls">道具球</view>
+          <view class="admin-tab {{activeTab === 'subscribe' ? 'on' : ''}}" bindtap="switchTab" data-tab="subscribe">订阅</view>
+          <view class="admin-tab {{activeTab === 'users' ? 'on' : ''}}" bindtap="switchTab" data-tab="users">用户</view>
+          <view class="admin-tab {{activeTab === 'pages' ? 'on' : ''}}" bindtap="switchTab" data-tab="pages">页面</view>
+          <view class="admin-tab {{activeTab === 'stats' ? 'on' : ''}}" bindtap="switchTab" data-tab="stats">统计</view>
+          <view class="admin-tab {{activeTab === 'swarm' ? 'on' : ''}}" bindtap="switchTab" data-tab="swarm">预设</view>
+          <view class="admin-tab {{activeTab === 'site' ? 'on' : ''}}" bindtap="switchTab" data-tab="site">设置</view>
+        </view>
+      </scroll-view>
 
       <!-- 公告管理 -->
       <view wx:if="{{activeTab === 'announce'}}">
@@ -41,7 +68,7 @@
             <view class="pin-tag {{item.pinned ? 'on' : ''}}" bindtap="togglePinnedStatus" data-item="{{item}}">{{item.pinned ? '已置顶' : '置顶'}}</view>
           </view>
           <text class="card-title">{{item.title}}</text>
-          <text class="card-desc">{{item.content}}</text>
+          <text class="card-desc">{{item.previewText || item.content}}</text>
           <view class="card-bottom">
             <text class="card-time">{{item.timeStr}}</text>
             <view class="card-actions">
@@ -66,7 +93,7 @@
             <view class="pin-tag {{item.pinned ? 'on' : ''}}" bindtap="toggleActivityPinned" data-item="{{item}}">{{item.pinned ? '已置顶' : '置顶'}}</view>
           </view>
           <text class="card-title">{{item.title}}</text>
-          <text class="card-desc">{{item.content}}</text>
+          <text class="card-desc">{{item.previewText || item.content}}</text>
           <view class="card-bottom">
             <text class="card-time">{{item.timeStr}}</text>
             <view class="card-actions">
@@ -160,7 +187,7 @@
         <view class="section-header"><text class="section-title">用户列表</text></view>
         <view class="card-item" wx:for="{{users}}" wx:key="_id">
           <view class="card-top">
-            <image class="card-avatar" src="{{item.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill" />
+            <image lazy-load class="card-avatar" src="{{item.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill" />
             <view class="card-user-info">
               <text class="card-author">{{item.nickName}}</text>
               <text class="card-meta">Lv.{{item.level}} · 登录{{item.loginDays ? item.loginDays.length : 0}}天 · {{item.timeStr}}</text>
@@ -215,6 +242,36 @@
           </view>
         </view>
       </view>
+
+      <!-- 出没预设管理 -->
+      <view class="tab-content-pane" wx:if="{{activeTab === 'swarm'}}">
+        <view class="section-header">
+          <text class="section-title">大量出没地点预设</text>
+          <view class="add-btn" bindtap="openSwarmLocationModal"><text>+ 添加</text></view>
+        </view>
+        <view class="card-item" wx:for="{{swarmLocations}}" wx:key="*this" style="display:flex; justify-content:space-between; align-items:center;">
+          <text class="card-title" style="margin-bottom:0;">{{item}}</text>
+          <view class="btn-delete" bindtap="deleteSwarmLocation" data-index="{{index}}" style="margin:0; padding:6rpx 16rpx; background:rgba(255,80,80,0.1); color:#ff5050; border-radius:10rpx; font-size:24rpx;">删除</view>
+        </view>
+        <view class="empty" wx:if="{{swarmLocations.length === 0}}"><text class="empty-text">暂无预设地点</text></view>
+      </view>
+
+      <!-- 系统设置面板 -->
+      <view class="tab-content-pane" wx:if="{{activeTab === 'site'}}">
+        <view class="section-header">
+          <text class="section-title">系统设置</text>
+        </view>
+        <view class="form-card" style="padding: 32rpx; background: rgba(255,255,255,0.04); border-radius: 24rpx; border: 1rpx solid rgba(255,255,255,0.08); margin-bottom: 24rpx;">
+          <view class="form-group">
+            <text class="form-label" style="display: block; margin-bottom: 16rpx; color: rgba(255,255,255,0.7); font-size: 28rpx;">个人页Logo URL</text>
+            <input class="form-input" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.2); border: 1rpx solid rgba(255,255,255,0.1); border-radius: 12rpx; padding: 20rpx; color: #fff;" placeholder="输入个人中心Logo的图片地址" value="{{siteConfig.loginLogoUrl}}" bindinput="onLoginLogoInput" />
+            <text class="form-hint" style="display: block; margin-top: 12rpx; font-size: 22rpx; color: rgba(255,255,255,0.4);">留空则使用默认Logo，支持完整网络URL或cloud://云存储路径</text>
+          </view>
+          <view class="form-actions" style="margin-top: 40rpx;">
+            <button class="btn-primary" style="width: 100%; height: 80rpx; background: rgba(0,200,255,0.12); color: #00d4ff; border: 1rpx solid rgba(0,200,255,0.2); border-radius: 40rpx; display: flex; align-items: center; justify-content: center; font-size: 28rpx;" bindtap="saveSiteConfig">保存设置</button>
+          </view>
+        </view>
+      </view>
     </view>
 
     <!-- 发布/编辑弹窗 -->
@@ -243,10 +300,46 @@
             <!-- 富文本编辑工具栏 -->
             <view class="rich-toolbar">
               <view class="toolbar-row">
-                <view class="tool-btn {{currentFontWeight === 'bold' ? 'active' : ''}}" catchtap="toggleBold">
+                                  <view class="tool-btn" catchtap="undo">
+                    <text class="tool-icon">↩️</text>
+                  </view>
+                  <view class="tool-btn {{currentAlign === 'left' ? 'active' : ''}}" catchtap="alignLeft">
+                    <text class="tool-icon" style="font-size:24rpx;">居左</text>
+                  </view>
+                  <view class="tool-btn {{currentAlign === 'center' ? 'active' : ''}}" catchtap="alignCenter">
+                    <text class="tool-icon" style="font-size:24rpx;">居中</text>
+                  </view>
+                  <view class="tool-btn {{currentAlign === 'right' ? 'active' : ''}}" catchtap="alignRight">
+                    <text class="tool-icon" style="font-size:24rpx;">居右</text>
+                  </view>
+                                    <view class="tool-btn" catchtap="undo">
+                    <text class="tool-icon">↩️</text>
+                  </view>
+                  <view class="tool-btn {{currentAlign === 'left' ? 'active' : ''}}" catchtap="alignLeft">
+                    <text class="tool-icon" style="font-size:24rpx;">居左</text>
+                  </view>
+                  <view class="tool-btn {{currentAlign === 'center' ? 'active' : ''}}" catchtap="alignCenter">
+                    <text class="tool-icon" style="font-size:24rpx;">居中</text>
+                  </view>
+                  <view class="tool-btn {{currentAlign === 'right' ? 'active' : ''}}" catchtap="alignRight">
+                    <text class="tool-icon" style="font-size:24rpx;">居右</text>
+                  </view>
+                  <view class="tool-btn {{currentFontWeight === 'bold' ? 'active' : ''}}" catchtap="toggleBold">
                   <text class="tool-icon" style="font-weight:bold;">B</text>
                 </view>
-                <view class="tool-btn {{currentFontStyle === 'italic' ? 'active' : ''}}" catchtap="toggleItalic">
+                                  <view class="tool-btn {{currentUnderline ? 'active' : ''}}" catchtap="toggleUnderline">
+                    <text class="tool-icon" style="text-decoration:underline;">U</text>
+                  </view>
+                  <view class="tool-btn {{currentStrike ? 'active' : ''}}" catchtap="toggleStrike">
+                    <text class="tool-icon" style="text-decoration:line-through;">S</text>
+                  </view>
+                  <view class="tool-btn {{currentHeader === 2 ? 'active' : ''}}" catchtap="toggleHeader2">
+                    <text class="tool-icon" style="font-weight:bold;">H2</text>
+                  </view>
+                  <view class="tool-btn {{currentHeader === 3 ? 'active' : ''}}" catchtap="toggleHeader3">
+                    <text class="tool-icon" style="font-weight:bold;">H3</text>
+                  </view>
+                  <view class="tool-btn {{currentFontStyle === 'italic' ? 'active' : ''}}" catchtap="toggleItalic">
                   <text class="tool-icon" style="font-style:italic;">I</text>
                 </view>
                 <view class="tool-btn" catchtap="showFontSizePicker">
@@ -347,7 +440,7 @@
                   <block wx:elif="{{item.type === 'image'}}">
                     <text class="block-image-icon">🖼️</text>
                     <view class="image-block-preview">
-                      <image src="{{item.url}}" mode="aspectFill" />
+                      <image lazy-load src="{{item.url}}" mode="aspectFill" />
                     </view>
                   </block>
                   <block wx:elif="{{item.type === 'divider'}}">
@@ -390,18 +483,28 @@
             <view class="toggle {{formPinned ? 'on' : ''}}" catchtap="togglePinned"><view class="toggle-dot"></view></view>
           </view>
 
-          <view class="form-row">
-            <view class="form-group half">
-              <text class="form-label">开始日期</text>
-              <picker class="form-picker" mode="date" value="{{formStartDate}}" bindchange="onStartDateChange">
-                <text class="picker-text">{{formStartDate || '选择日期'}} ▾</text>
-              </picker>
+          <view class="form-row" style="display:flex; flex-direction:column; gap:20rpx;">
+            <view class="form-group" style="width:100%;">
+              <text class="form-label">开始时间</text>
+              <view style="display:flex; gap:20rpx;">
+                <picker class="form-picker" mode="date" value="{{formStartDate}}" bindchange="onStartDateChange" style="flex:1;">
+                  <text class="picker-text">{{formStartDate || '选择日期'}} ▾</text>
+                </picker>
+                <picker class="form-picker" mode="time" value="{{formStartTime}}" bindchange="onStartTimeChange" style="flex:1;">
+                  <text class="picker-text">{{formStartTime || '选择时间'}} ▾</text>
+                </picker>
+              </view>
             </view>
-            <view class="form-group half">
-              <text class="form-label">结束日期</text>
-              <picker class="form-picker" mode="date" value="{{formEndDate}}" bindchange="onEndDateChange">
-                <text class="picker-text">{{formEndDate || '选择日期'}} ▾</text>
-              </picker>
+            <view class="form-group" style="width:100%;">
+              <text class="form-label">结束时间/倒计时</text>
+              <view style="display:flex; gap:20rpx;">
+                <picker class="form-picker" mode="date" value="{{formEndDate}}" bindchange="onEndDateChange" style="flex:1;">
+                  <text class="picker-text">{{formEndDate || '选择日期'}} ▾</text>
+                </picker>
+                <picker class="form-picker" mode="time" value="{{formEndTime}}" bindchange="onEndTimeChange" style="flex:1;">
+                  <text class="picker-text">{{formEndTime || '选择时间'}} ▾</text>
+                </picker>
+              </view>
             </view>
           </view>
         </view>
@@ -442,10 +545,46 @@
             <!-- 富文本编辑工具栏 -->
             <view class="rich-toolbar">
               <view class="toolbar-row">
-                <view class="tool-btn {{activityFontWeight === 'bold' ? 'active' : ''}}" catchtap="toggleActivityBold">
+                                  <view class="tool-btn" catchtap="activityUndo">
+                    <text class="tool-icon">↩️</text>
+                  </view>
+                  <view class="tool-btn {{activityAlign === 'left' ? 'active' : ''}}" catchtap="activityAlignLeft">
+                    <text class="tool-icon" style="font-size:24rpx;">居左</text>
+                  </view>
+                  <view class="tool-btn {{activityAlign === 'center' ? 'active' : ''}}" catchtap="activityAlignCenter">
+                    <text class="tool-icon" style="font-size:24rpx;">居中</text>
+                  </view>
+                  <view class="tool-btn {{activityAlign === 'right' ? 'active' : ''}}" catchtap="activityAlignRight">
+                    <text class="tool-icon" style="font-size:24rpx;">居右</text>
+                  </view>
+                                    <view class="tool-btn" catchtap="activityUndo">
+                    <text class="tool-icon">↩️</text>
+                  </view>
+                  <view class="tool-btn {{activityAlign === 'left' ? 'active' : ''}}" catchtap="activityAlignLeft">
+                    <text class="tool-icon" style="font-size:24rpx;">居左</text>
+                  </view>
+                  <view class="tool-btn {{activityAlign === 'center' ? 'active' : ''}}" catchtap="activityAlignCenter">
+                    <text class="tool-icon" style="font-size:24rpx;">居中</text>
+                  </view>
+                  <view class="tool-btn {{activityAlign === 'right' ? 'active' : ''}}" catchtap="activityAlignRight">
+                    <text class="tool-icon" style="font-size:24rpx;">居右</text>
+                  </view>
+                  <view class="tool-btn {{activityFontWeight === 'bold' ? 'active' : ''}}" catchtap="toggleActivityBold">
                   <text class="tool-icon" style="font-weight:bold;">B</text>
                 </view>
-                <view class="tool-btn {{activityFontStyle === 'italic' ? 'active' : ''}}" catchtap="toggleActivityItalic">
+                                  <view class="tool-btn {{activityUnderline ? 'active' : ''}}" catchtap="activityToggleUnderline">
+                    <text class="tool-icon" style="text-decoration:underline;">U</text>
+                  </view>
+                  <view class="tool-btn {{activityStrike ? 'active' : ''}}" catchtap="activityToggleStrike">
+                    <text class="tool-icon" style="text-decoration:line-through;">S</text>
+                  </view>
+                  <view class="tool-btn {{activityHeader === 2 ? 'active' : ''}}" catchtap="activityToggleHeader2">
+                    <text class="tool-icon" style="font-weight:bold;">H2</text>
+                  </view>
+                  <view class="tool-btn {{activityHeader === 3 ? 'active' : ''}}" catchtap="activityToggleHeader3">
+                    <text class="tool-icon" style="font-weight:bold;">H3</text>
+                  </view>
+                  <view class="tool-btn {{activityFontStyle === 'italic' ? 'active' : ''}}" catchtap="toggleActivityItalic">
                   <text class="tool-icon" style="font-style:italic;">I</text>
                 </view>
                 <view class="tool-btn" catchtap="showActivityFontSizePicker">
@@ -541,7 +680,7 @@
                   <block wx:elif="{{item.type === 'image'}}">
                     <text class="block-image-icon">🖼️</text>
                     <view class="image-block-preview">
-                      <image src="{{item.url}}" mode="aspectFill" />
+                      <image lazy-load src="{{item.url}}" mode="aspectFill" />
                     </view>
                   </block>
                   <block wx:elif="{{item.type === 'divider'}}">

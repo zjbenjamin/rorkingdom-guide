@@ -20,25 +20,25 @@ function formatTimeShort(d) {
 }
 Page({
   data: {
-    buildTime: '',
+    buildTime: '', showLogShareBtn: true,
     balls: [
-      {id:1,name:'普通咕噜球',color:'#999',icon:'⚪',count:0,freeCount:0,rate:'基础捕捉率',price:0},
-      {id:2,name:'高级咕噜球',color:'#1565c0',icon:'🔵',count:0,freeCount:0,rate:'捕捉率+30%',price:12000},
-      {id:3,name:'国王球',color:'#f57f17',icon:'👑',count:0,freeCount:0,rate:'100%捕捉，必定了不起',price:0},
-      {id:4,name:'美妙球',color:'#e91e63',icon:'💚',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
-      {id:5,name:'好战球',color:'#d32f2f',icon:'⚔️',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
-      {id:6,name:'光合球',color:'#2e7d32',icon:'🌿',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
-      {id:7,name:'网兜球',color:'#388e3c',icon:'🪢',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
-      {id:8,name:'暗星球',color:'#37474f',icon:'🌙',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
-      {id:9,name:'奇趣球',color:'#ff6b6b',icon:'🎯',count:0,freeCount:0,rate:'100%捕捉，资质随机',price:80000},
-      {id:10,name:'补光球',color:'#ffd93d',icon:'💡',count:0,freeCount:0,rate:'100%捕捉，资质随机',price:80000},
-      {id:11,name:'棱镜球',color:'#a855f7',icon:'💎',count:0,freeCount:0,rate:'100%捕捉，必定了不起，完美无瑕，天赋随机，炫彩颜色粒子随机',price:0},
-      {id:12,name:'织梦棱镜球',color:'#ec4899',icon:'🔮',count:0,freeCount:0,rate:'100%捕捉，必定了不起，完美无瑕，天赋随机，炫彩粒子为当前赛季主题颜色统一',price:800},
-      {id:13,name:'狂欢棱镜球',color:'#f472b6',icon:'🎆',count:0,freeCount:0,rate:'狂欢系+70%',price:800},
-      {id:14,name:'变幻球',color:'#06b6d4',icon:'🌀',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
-      {id:15,name:'绝缘球',color:'#8b5cf6',icon:'🛡️',count:0,freeCount:0,rate:'绝缘精灵+45%',price:3000},
-      {id:16,name:'调温球',color:'#f97316',icon:'🌡️',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
-      {id:17,name:'淘沙球',color:'#d4a017',icon:'🏖️',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000}
+      {id:1,name:'普通咕噜球',color:'#999',icon:'⚪',img:'/images/balls/ball_1.png',count:0,freeCount:0,rate:'基础捕捉率',price:0},
+      {id:2,name:'高级咕噜球',color:'#1565c0',icon:'🔵',img:'/images/balls/ball_2.png',count:0,freeCount:0,rate:'捕捉率+30%',price:12000},
+      {id:3,name:'国王球',color:'#f57f17',icon:'👑',img:'/images/balls/ball_3.png',count:0,freeCount:0,rate:'100%捕捉，必定了不起',price:0},
+      {id:4,name:'美妙球',color:'#e91e63',icon:'💚',img:'/images/balls/ball_4.png',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:5,name:'好战球',color:'#d32f2f',icon:'⚔️',img:'/images/balls/ball_5.png',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:6,name:'光合球',color:'#2e7d32',icon:'🌿',img:'/images/balls/ball_6.png',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:7,name:'网兜球',color:'#388e3c',icon:'🪢',img:'/images/balls/ball_7.png',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:8,name:'暗星球',color:'#37474f',icon:'🌙',img:'/images/balls/ball_8.png',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:9,name:'奇趣球',color:'#ff6b6b',icon:'🎯',img:'/images/balls/ball_9.png',count:0,freeCount:0,rate:'100%捕捉，资质随机',price:80000},
+      {id:10,name:'补光球',color:'#ffd93d',icon:'💡',img:'/images/balls/ball_10.png',count:0,freeCount:0,rate:'100%捕捉，资质随机',price:80000},
+      {id:11,name:'棱镜球',color:'#a855f7',icon:'💎',img:'/images/balls/ball_11.png',count:0,freeCount:0,rate:'100%捕捉，必定了不起，完美无瑕，天赋随机，炫彩颜色粒子随机',price:0},
+      {id:12,name:'织梦棱镜球',color:'#ec4899',icon:'🔮',img:'/images/balls/ball_12.png',count:0,freeCount:0,rate:'100%捕捉，必定了不起，完美无瑕，天赋随机，炫彩粒子为当前赛季主题颜色统一',price:800},
+      {id:13,name:'狂欢棱镜球',color:'#f472b6',icon:'🎆',img:'/images/balls/ball_13.png',count:0,freeCount:0,rate:'狂欢系+70%',price:800},
+      {id:14,name:'变幻球',color:'#06b6d4',icon:'🌀',img:'/images/balls/ball_14.png',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:15,name:'绝缘球',color:'#8b5cf6',icon:'🛡️',img:'/images/balls/ball_15.png',count:0,freeCount:0,rate:'绝缘精灵+45%',price:3000},
+      {id:16,name:'调温球',color:'#f97316',icon:'🌡️',img:'/images/balls/ball_16.png',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:17,name:'淘沙球',color:'#d4a017',icon:'🏖️',img:'/images/balls/ball_17.png',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000}
     ],
     selectedBall: null, selectedBallCount: 0,
     totalCatches: 0, successCatches: 0, successRate: 0, pityCount: 0, pityHint: '基础概率', history: [], result: '',
@@ -48,9 +48,9 @@ Page({
     petNameInput: '', catchCount: 1,
     encounterTab: 'luckybox', carnivalCount: 0, luckyBoxCount: 0,
     specialTab: 'buy', specialBall: '高级咕噜球',
-    specialBalls: ['美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','奇趣球','补光球','国王球','棱镜球','织梦棱镜球','狂欢棱镜球','淘沙球'],
-    craftBalls: ['国王球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','棱镜球','淘沙球'],
-    attributeBalls: ['美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','淘沙球'],
+    specialBalls: ['绝缘球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','奇趣球','补光球','国王球','棱镜球','织梦棱镜球','狂欢棱镜球','淘沙球'],
+    craftBalls: ['国王球','绝缘球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','棱镜球','淘沙球'],
+    attributeBalls: ['绝缘球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','淘沙球'],
     specialCount: '', specialHistory: [],
     totalBallUsed: 0,
     hasActiveBalls: false,
@@ -245,7 +245,7 @@ Page({
     var result = self.data.result
     var used = balls.filter(function(b) { return b.count > 0 })
     var totalBallCost = 0
-    for (var i = 0; i < used.length; i++) totalBallCost += used[i].price * used[i].count
+    for (var i = 0; i < used.length; i++) var paidCount = Math.max(0, used[i].count - (used[i].freeCount || 0)); totalBallCost += used[i].price * paidCount
     var catchCount = 1
     var newTotalCatches = self.data.totalCatches + catchCount
     var newSuccessCatches = self.data.successCatches + (result === 'success' ? catchCount : 0)
@@ -288,7 +288,7 @@ Page({
     var result = self.data.result
     var used = balls.filter(function(b) { return b.count > 0 })
     var totalBallCost = 0
-    for (var i = 0; i < used.length; i++) totalBallCost += used[i].price * used[i].count
+    for (var i = 0; i < used.length; i++) var paidCount = Math.max(0, used[i].count - (used[i].freeCount || 0)); totalBallCost += used[i].price * paidCount
     var catchCount = 1
     var newTotalCatches = self.data.totalCatches + catchCount
     var newSuccessCatches = self.data.successCatches + (result === 'success' ? catchCount : 0)
@@ -363,6 +363,93 @@ Page({
       }
     })
   },
+    onGenerateImage: function() {
+    var self = this;
+    wx.showLoading({ title: '正在绘制海报...' });
+    
+    const query = wx.createSelectorQuery();
+    query.select('#shareCanvas').fields({ node: true, size: true }).exec((res) => {
+      if (!res[0] || !res[0].node) {
+        wx.hideLoading();
+        if(self.copyToClipboard) self.copyToClipboard();
+        wx.showToast({ title: '生图失败，已为您复制纯文本', icon: 'none' });
+        return;
+      }
+      const canvas = res[0].node;
+      const ctx = canvas.getContext('2d');
+      const dpr = wx.getSystemInfoSync().pixelRatio;
+      
+      const width = 320;
+      const height = 500;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.scale(dpr, dpr);
+      
+      ctx.fillStyle = '#1e1e1e';
+      ctx.fillRect(0, 0, width, height);
+      
+      ctx.fillStyle = '#00d4ff';
+      ctx.font = 'bold 20px sans-serif';
+      ctx.fillText('🎯 洛手助手·捕捉统计', 20, 40);
+      
+      ctx.font = '15px sans-serif';
+      ctx.fillStyle = '#dddddd';
+      let y = 80;
+      const lineHeight = 28;
+      
+      const totalEncounters = self.data.carnivalCount + self.data.luckyBoxCount;
+      const lines = [
+        '生成时间：' + self.data.buildTime,
+        '累计奇遇触发：' + totalEncounters + '次',
+        '欧皇保底进度：' + self.data.pityCount + '/80',
+        '当前欧气评价：' + (self.data.userTitle || '').replace(/[^\u4e00-\u9fa5]/g, ''),
+        '净盈亏洛克贝：' + (self.data.accumulatedWealth >= 0 ? '+' : '') + self.data.accumulatedWealth
+      ];
+      
+      lines.forEach(line => {
+        ctx.fillText(line, 20, y);
+        y += lineHeight;
+      });
+      
+      if (self.data.history && self.data.history.length > 0) {
+        const last = self.data.history[0];
+        y += 20;
+        ctx.fillStyle = '#ffab40';
+        ctx.fillText('【最新记录】', 20, y);
+        y += lineHeight;
+        
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '14px sans-serif';
+        let ballsStr = last.balls || '';
+        const logLines = [
+          '结果：' + (last.result || ''),
+          '消耗球：' + ballsStr.substring(0, 20) + (ballsStr.length > 20 ? '...' : ''),
+          last.cost > 0 ? ('洛克贝消耗：💵 ' + last.cost) : ''
+        ];
+        
+        logLines.forEach(line => {
+          if(line) {
+            ctx.fillText(line, 20, y);
+            y += lineHeight;
+          }
+        });
+      }
+      
+      setTimeout(() => {
+        wx.canvasToTempFilePath({
+          canvas: canvas,
+          success(res) {
+            wx.hideLoading();
+            wx.previewImage({ urls: [res.tempFilePath] });
+          },
+          fail() {
+            wx.hideLoading();
+            wx.showToast({ title: '图片导出失败', icon: 'none' });
+          }
+        });
+      }, 300);
+    });
+  },
   copyToClipboard: function() {
     var balls = this.data.balls, result = this.data.result
     var used = balls.filter(function(b){ return b.count > 0 })
@@ -372,7 +459,7 @@ Page({
     var totalBallCost = 0
     for (var i = 0; i < used.length; i++) {
       total += used[i].count
-      totalBallCost += used[i].price * used[i].count
+      var paidCount = Math.max(0, used[i].count - (used[i].freeCount || 0)); totalBallCost += used[i].price * paidCount
     }
     var totalEncounters = this.data.carnivalCount + this.data.luckyBoxCount
     var petInfo = this.data.petNameInput ? '\n精灵名称：' + this.data.petNameInput : ''
@@ -396,7 +483,7 @@ Page({
     var used = balls.filter(function(b){ return b.count > 0 })
     var totalBallCost = 0
     for (var i = 0; i < used.length; i++) {
-      totalBallCost += used[i].price * used[i].count
+      var paidCount = Math.max(0, used[i].count - (used[i].freeCount || 0)); totalBallCost += used[i].price * paidCount
     }
     var catchCount = this.data.catchCount || 1
     var newTotalCatches = this.data.totalCatches + catchCount

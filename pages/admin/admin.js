@@ -228,6 +228,8 @@ Page({
     isAdmin: false,
     loading: true,
     activeTab: 'announce',
+    ballsConfig: [],
+    ballsSubmitting: false,
     announcements: [],
     users: [],
     stats: { totalUsers: 0 },
@@ -360,6 +362,7 @@ Page({
     else if (tab === 'users') this.loadUsers()
     else if (tab === 'stats') this.loadStats()
     else if (tab === 'pages') this.loadPageConfigs()
+    else if (tab === 'balls') this.loadBallsConfig()
   },
   loadAnnouncements: function() {
     var self = this
@@ -1372,6 +1375,50 @@ Page({
       }
     })
   },
+  
+  onBallImgInput: function(e) {
+    var idx = e.currentTarget.dataset.idx;
+    var val = e.detail.value;
+    var field = 'ballsConfig[' + idx + '].img';
+    this.setData({ [field]: val });
+  },
+  
+  loadBallsConfig: function() {
+    var self = this;
+    if (!db) return;
+    db.collection('site_config').doc('ball_images').get().then(res => {
+      if(res.data && res.data.balls) {
+        self.setData({ ballsConfig: res.data.balls });
+      }
+    }).catch(err => {
+      // 默认数据
+      var defaultBalls = [
+        {id:1,name:'普通咕噜球',img:''}, {id:2,name:'高级咕噜球',img:''}, {id:3,name:'国王球',img:''},
+        {id:4,name:'美妙球',img:''}, {id:5,name:'好战球',img:''}, {id:6,name:'光合球',img:''},
+        {id:7,name:'网兜球',img:''}, {id:8,name:'暗星球',img:''}, {id:9,name:'奇趣球',img:''},
+        {id:10,name:'补光球',img:''}, {id:11,name:'棱镜球',img:''}, {id:12,name:'织梦棱镜球',img:''},
+        {id:13,name:'狂欢棱镜球',img:''}, {id:14,name:'变幻球',img:''}, {id:15,name:'绝缘球',img:''},
+        {id:16,name:'调温球',img:''}, {id:17,name:'淘沙球',img:''}
+      ];
+      self.setData({ ballsConfig: defaultBalls });
+    });
+  },
+  
+  saveBallsConfig: function() {
+    var self = this;
+    if (!db) { wx.showToast({ title: '云环境未就绪', icon: 'none' }); return; }
+    self.setData({ ballsSubmitting: true });
+    db.collection('site_config').doc('ball_images').set({
+      data: { balls: self.data.ballsConfig }
+    }).then(res => {
+      wx.showToast({ title: '保存成功', icon: 'success' });
+      self.setData({ ballsSubmitting: false });
+    }).catch(err => {
+      wx.showToast({ title: '保存失败', icon: 'none' });
+      self.setData({ ballsSubmitting: false });
+    });
+  },
+
   refreshData: function() {
     this.setData({ loading: true })
     var tab = this.data.activeTab
@@ -1380,6 +1427,8 @@ Page({
     else if (tab === 'subscribe') this.loadSubscribers()
     else if (tab === 'users') this.loadUsers()
     else if (tab === 'stats') this.loadStats()
+    else if (tab === 'pages') this.loadPageConfigs()
+    else if (tab === 'balls') this.loadBallsConfig()
   },
   pushSubscribe: function(type, title, content) {
     var pages = {

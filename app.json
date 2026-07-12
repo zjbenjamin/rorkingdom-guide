@@ -67,6 +67,41 @@
       "pages": [
         "privacy"
       ]
+    },
+    {
+      "root": "pages/redeem",
+      "name": "redeem",
+      "pages": [
+        "redeem"
+      ]
+    },
+    {
+      "root": "pages/map",
+      "name": "map",
+      "pages": [
+        "map"
+      ]
+    },
+    {
+      "root": "pages/swarm",
+      "name": "swarm",
+      "pages": [
+        "swarm"
+      ]
+    },
+    {
+      "root": "pages/guides",
+      "name": "guides",
+      "pages": [
+        "guides"
+      ]
+    },
+    {
+      "root": "pages/items",
+      "name": "items",
+      "pages": [
+        "items"
+      ]
     }
   ],
   "window": {
@@ -78,6 +113,13 @@
   "requiredBackgroundModes": [
     "audio"
   ],
+  "resizable": true,
+  "preloadRule": {
+    "pages/index/index": {
+      "network": "all",
+      "packages": ["activity", "map", "catch", "egg"]
+    }
+  },
   "style": "v2",
   "lazyCodeLoading": "requiredComponents"
 }

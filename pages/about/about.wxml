@@ -4,7 +4,12 @@
       <view class="header-glow"></view>
       <text class="about-icon">🏰</text>
       <text class="about-name">{{aboutData.appName || '洛手助手BENJAMIN'}}</text>
-      <text class="about-ver">{{aboutData.version || '版本 v1.0.7A'}}</text>
+      <view class="version-row">
+        <text class="about-ver">{{aboutData.version || '洛手助手1.0.1正式版'}}</text>
+        <view class="ver-edit-btn" wx:if="{{isAdmin}}" catchtap="onEdit" data-field="version" data-value="{{aboutData.version}}">
+          <text class="ver-edit-icon">✏️</text>
+        </view>
+      </view>
       <view class="header-tags">
         <view class="header-tag">离线可用</view>
         <view class="header-tag">数据安全</view>
@@ -12,10 +17,31 @@
       </view>
     </view>
 
-    <view class="card" wx:if="{{isAdmin}}">
+    <!-- 新版本更新提示卡片 -->
+    <view class="card update-card" wx:if="{{hasUpdate}}">
+      <view class="update-info-row">
+        <view class="update-info-left">
+          <text class="update-title">✨ 发现新版本可用</text>
+          <text class="update-desc">{{updateReady ? '新版本已经准备就绪，点击重启应用即可完成升级！' : '新版本正在后台下载中，请稍候...'}}</text>
+        </view>
+        <button class="update-btn" wx:if="{{updateReady}}" bindtap="triggerUpdate">立即更新</button>
+      </view>
+    </view>
+
+        <view class="card" wx:if="{{isAdmin}}">
       <view class="admin-tip">
-        <text class="admin-tip-icon">⚙</text>
-        <text class="admin-tip-text">管理模式：点击下方卡片内容可编辑</text>
+        <text class="admin-tip-icon">💡</text>
+        <text class="admin-tip-text">管理模式下，部分卡片内容可点击编辑</text>
+      </view>
+      
+      <view style="display:flex; justify-content:space-between; align-items:center; margin-top:20rpx; padding:20rpx; background:rgba(255,255,255,0.05); border-radius:12rpx;">
+        <view style="display:flex; flex-direction:column;">
+          <text style="color:#fff; font-size:28rpx; font-weight:bold;">捕捉统计分享按钮</text>
+          <text style="color:rgba(255,255,255,0.5); font-size:24rpx; margin-top:6rpx;">在捕捉日志页面显示“生成图片”按钮</text>
+        </view>
+        <view class="toggle {{showLogShareBtn ? 'on' : ''}}" catchtap="toggleShowLogShareBtn" style="margin:0;">
+          <view class="toggle-dot"></view>
+        </view>
       </view>
     </view>
 
@@ -23,7 +49,7 @@
       <view class="card-title">开发者信息</view>
       <view class="dev-row">
         <view class="avatar-wrap">
-          <image class="dev-avatar" src="{{aboutData.devAvatar || '/images/avatar.jpg'}}" mode="aspectFill"></image>
+          <image lazy-load class="dev-avatar" src="{{aboutData.devAvatar || '/images/avatar.jpg'}}" mode="aspectFill"></image>
           <view class="verified-badge">V</view>
         </view>
         <view class="dev-info" bindtap="onEdit" data-field="devName" data-value="{{aboutData.devName || '浙里本杰明'}}">
@@ -254,24 +280,38 @@
     </view>
 
     <view class="card">
-      <view class="card-title">更新日志</view>
-      <view class="changelog-list">
-        <view class="changelog-item">
-          <view class="changelog-ver">全新版 v1.0.1 体验版</view>
-          <view class="changelog-date">2026-06-18</view>
-          <view class="changelog-content">
-            <text class="changelog-add">新增：全局 iOS 26 Liquid Glass 设计语言，毛玻璃卡片、多层光影、悬浮Dock导航栏</text>
-            <text class="changelog-add">新增：编辑器支持多平台视频链接解析与内嵌播放，表格/图文混排/字体样式全面升级</text>
-            <text class="changelog-add">新增：远行商人商品补货订阅、批量编辑、全量替换、XLSX文件导入</text>
-            <text class="changelog-add">新增：远行商人上架弹窗「仅更新内容」按钮，可随时更新不推送通知</text>
-            <text class="changelog-add">新增：订阅消息推送系统，管理后台统一开关与测试推送</text>
-            <text class="changelog-opt">优化：后台编辑器触控体验全面升级，工具栏按钮放大、编辑器高度提升</text>
-            <text class="changelog-opt">优化：首页公告栏播放器独立样式，音乐/视频卡片区分展示</text>
-            <text class="changelog-opt">优化：远行商人模块重构，序列化公共函数提取、管理员精确查询、错误处理增强</text>
-            <text class="changelog-fix">修复：首页公告栏管理员检测时序问题、通知跳转页面硬编码、文件导入列对齐错位</text>
-            <text class="changelog-opt">合规：隐私政策及用户协议同步更新至最新法律法规要求</text>
+      <view class="card-title-row">
+        <text class="card-title">更新日志</text>
+        <view style="display: flex; gap: 12rpx;">
+          <view class="changelog-add-btn" catchtap="manualCheckUpdate">
+            <text class="add-icon">↻</text>
+            <text class="add-text">检查更新</text>
+          </view>
+          <view class="changelog-add-btn" wx:if="{{isAdmin}}" catchtap="openChangelogModal">
+            <text class="add-icon">+</text>
+            <text class="add-text">新增</text>
           </view>
         </view>
+      </view>
+      <view class="changelog-list" wx:if="{{changelogList.length > 0}}">
+        <view class="changelog-item" wx:for="{{changelogList}}" wx:key="index">
+          <view class="changelog-top">
+            <view class="changelog-ver">v{{item.version}}</view>
+            <view class="changelog-date">{{item.date}}</view>
+            <view class="changelog-actions" wx:if="{{isAdmin}}">
+              <view class="changelog-edit-btn" catchtap="editChangelog" data-index="{{index}}">编辑</view>
+              <view class="changelog-del-btn" catchtap="deleteChangelog" data-index="{{index}}">删除</view>
+            </view>
+          </view>
+          <view class="changelog-content">
+            <block wx:for="{{item.lines}}" wx:for-item="line" wx:key="text">
+              <text class="changelog-{{line.type}}">{{line.text}}</text>
+            </block>
+          </view>
+        </view>
+      </view>
+      <view class="changelog-empty" wx:else>
+        <text class="empty-text">暂无更新日志</text>
       </view>
     </view>
 
@@ -302,6 +342,44 @@
       <view class="modal-footer">
         <button class="modal-cancel" bindtap="closeModal">取消</button>
         <button class="modal-save" bindtap="saveEdit" disabled="{{submitting}}">{{submitting ? '保存中...' : '保存'}}</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 更新日志编辑弹窗 -->
+  <view class="modal-mask" wx:if="{{showChangelogModal}}" bindtap="closeChangelogModal">
+    <view class="modal-box changelog-modal" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">{{changelogEditIndex >= 0 ? '编辑日志' : '新增日志'}}</text>
+        <text class="modal-close" bindtap="closeChangelogModal">✕</text>
+      </view>
+      <view class="modal-body">
+        <view class="changelog-form">
+          <view class="form-row">
+            <view class="form-field">
+              <text class="field-label">版本号</text>
+              <input class="field-input" placeholder="如：1.0.3" value="{{changelogVersion}}" bindinput="onChangelogVersionInput" />
+            </view>
+            <view class="form-field">
+              <text class="field-label">日期</text>
+              <picker mode="date" value="{{changelogDate}}" bindchange="onChangelogDateChange">
+                <view class="field-picker">
+                  <text>{{changelogDate || '选择日期'}}</text>
+                  <text class="picker-arrow">▾</text>
+                </view>
+              </picker>
+            </view>
+          </view>
+          <view class="form-field full">
+            <text class="field-label">更新内容</text>
+            <text class="field-hint">每行一条，支持前缀：新增：/优化：/修复：/下线：</text>
+            <textarea class="field-textarea" placeholder="新增：xxx功能&#10;优化：xxx体验&#10;修复：xxx问题" value="{{changelogContent}}" bindinput="onChangelogContentInput" maxlength="2000" />
+          </view>
+        </view>
+      </view>
+      <view class="modal-footer">
+        <button class="modal-cancel" bindtap="closeChangelogModal">取消</button>
+        <button class="modal-save" bindtap="saveChangelog" disabled="{{changelogSaving}}">{{changelogSaving ? '保存中...' : '保存'}}</button>
       </view>
     </view>
   </view>

@@ -2,67 +2,67 @@ var app = getApp()
 var i18n = require('../../utils/i18n')
 
 var initialItems = [
-  { id: 1, name: '棱镜球', price: 3200000, effect: '100%捕捉成功，必定随机炫彩外观，完美无瑕，顶级稀有精灵捕捉道具', rarity: '传说', source: '炼金台合成/活动奖励/商城购买/远行商人', image: '', limitCount: '' },
-  { id: 2, name: '国王球', price: 160000, effect: '100%捕捉成功，无视目标等级，性格随机，必定为了不起的天分', rarity: '传说', source: '远行商人/炼金台合成/月卡', image: '', limitCount: '' },
-  { id: 3, name: '美妙球', price: 3000, effect: '更适合捕捉萌系、普通系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: '', limitCount: '' },
-  { id: 4, name: '调温球', price: 3000, effect: '更适合捕捉火系、冰系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: '', limitCount: '' },
-  { id: 5, name: '变幻球', price: 3000, effect: '更适合捕捉幻系、机械系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: '', limitCount: '' },
-  { id: 6, name: '光合球', price: 3000, effect: '更适合捕捉草系、光系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: '', limitCount: '' },
-  { id: 7, name: '淘沙球', price: 3000, effect: '更适合捕捉地系、虫系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: '', limitCount: '' },
-  { id: 8, name: '好战球', price: 3000, effect: '更适合捕捉武系、龙系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: '', limitCount: '' },
-  { id: 9, name: '网兜球', price: 3000, effect: '更适合捕捉水系、翼系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: '', limitCount: '' },
-  { id: 10, name: '绝缘球', price: 3000, effect: '更适合捕捉电系、毒系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: '', limitCount: '' },
-  { id: 11, name: '暗星球', price: 3000, effect: '更适合捕捉幽系、恶系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: '', limitCount: '' },
-  { id: 12, name: '首领血脉秘药', price: 320000, effect: '精灵突破升星、提升资质，为精灵解锁首领血脉，毕业级血脉道具', rarity: '传说', source: '远行商人/放生首领精灵', image: '', limitCount: '' },
-  { id: 13, name: '地系血脉秘药', price: 160000, effect: '将精灵血脉改为地系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉地系精灵', image: '', limitCount: '' },
-  { id: 14, name: '火系血脉秘药', price: 160000, effect: '将精灵血脉改为火系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉火系精灵', image: '', limitCount: '' },
-  { id: 15, name: '水系血脉秘药', price: 160000, effect: '将精灵血脉改为水系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉水系精灵', image: '', limitCount: '' },
-  { id: 16, name: '草系血脉秘药', price: 160000, effect: '将精灵血脉改为草系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉草系精灵', image: '', limitCount: '' },
-  { id: 17, name: '冰系血脉秘药', price: 160000, effect: '将精灵血脉改为冰系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉冰系精灵', image: '', limitCount: '' },
-  { id: 18, name: '翼系血脉秘药', price: 160000, effect: '将精灵血脉改为翼系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉翼系精灵', image: '', limitCount: '' },
-  { id: 19, name: '机械系血脉秘药', price: 160000, effect: '将精灵血脉改为机械系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉机械系精灵', image: '', limitCount: '' },
-  { id: 20, name: '萌系血脉秘药', price: 160000, effect: '将精灵血脉改为萌系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉萌系精灵', image: '', limitCount: '' },
-  { id: 21, name: '奇异血脉秘药', price: 160000, effect: '随机改变精灵血脉属性，为精灵解锁奇异血脉', rarity: '传说', source: '远行商人/捕捉任意属性精灵', image: '', limitCount: '' },
-  { id: 22, name: '普通系血脉秘药', price: 160000, effect: '将精灵血脉改为普通系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉普通系精灵', image: '', limitCount: '' },
-  { id: 23, name: '光系血脉秘药', price: 160000, effect: '将精灵血脉改为光系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉光系精灵', image: '', limitCount: '' },
-  { id: 24, name: '恶系血脉秘药', price: 160000, effect: '将精灵血脉改为恶系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉恶系精灵', image: '', limitCount: '' },
-  { id: 25, name: '幽系血脉秘药', price: 160000, effect: '将精灵血脉改为幽系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉幽系精灵', image: '', limitCount: '' },
-  { id: 26, name: '龙系血脉秘药', price: 160000, effect: '将精灵血脉改为龙系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉龙系精灵', image: '', limitCount: '' },
-  { id: 27, name: '电系血脉秘药', price: 160000, effect: '将精灵血脉改为电系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉电系精灵', image: '', limitCount: '' },
-  { id: 28, name: '毒系血脉秘药', price: 160000, effect: '将精灵血脉改为毒系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉毒系精灵', image: '', limitCount: '' },
-  { id: 29, name: '虫系血脉秘药', price: 160000, effect: '将精灵血脉改为虫系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉虫系精灵', image: '', limitCount: '' },
-  { id: 30, name: '武系血脉秘药', price: 160000, effect: '将精灵血脉改为武系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉武系精灵', image: '', limitCount: '' },
-  { id: 31, name: '翼系血脉秘药', price: 160000, effect: '将精灵血脉改为翼系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉翼系精灵', image: '', limitCount: '' },
-  { id: 32, name: '残缺魔镜', price: 480000, effect: '锁定炫彩异色，稀有精灵捕捉辅助道具，大幅提升异色精灵获取效率', rarity: '传说', source: '远行商人（周末限时）/炼金台', image: '', limitCount: '' },
-  { id: 33, name: '适格钥匙', price: 320000, effect: '精灵养成核心道具，用于精灵进阶突破', rarity: '传说', source: '远行商人（周末限时）/炼金台', image: '', limitCount: '' },
-  { id: 34, name: '能力钥匙', price: 160000, effect: '精灵养成核心道具，用于解锁精灵潜能', rarity: '传说', source: '远行商人（周末限时）/炼金台', image: '', limitCount: '' },
-  { id: 35, name: '祝福项坠', price: 800000, effect: '将极品精灵的性格、特长、个体资质完整复制到同种类普通精灵蛋上，一键批量造极品', rarity: '史诗', source: '远行商人（限时刷新）', image: '', limitCount: '' },
-  { id: 36, name: '炫彩蛋', price: 1600000, effect: '孵化必出了不起天分+炫彩外观，赛季收藏与战力双提升', rarity: '传说', source: '远行商人', image: '', limitCount: '' },
-  { id: 37, name: '神奇的蛋', price: 36000, effect: '随机开出精灵蛋，盲盒玩法，小概率出炫彩精灵', rarity: '史诗', source: '远行商人', image: '', limitCount: '' },
-  { id: 38, name: '无花果', price: 3000, effect: '为精灵提供经验值的基础果实，快速提升精灵等级', rarity: '稀有', source: '远行商人/任务奖励', image: '', limitCount: '' },
-  { id: 39, name: '魔力果', price: 6000, effect: '为精灵提供大量经验值的常见果实，献祭低等精灵可获得', rarity: '稀有', source: '远行商人/任务奖励/活动奖励', image: '', limitCount: '' },
-  { id: 40, name: '黑晶琉璃', price: 1000, effect: '稀有矿石材料，可用于合成高级道具和装备升级', rarity: '稀有', source: '采集/远行商人', image: '', limitCount: '' },
-  { id: 41, name: '黄石榴石', price: 1000, effect: '稀有矿石材料，可用于合成高级道具和装备升级', rarity: '稀有', source: '采集/远行商人', image: '', limitCount: '' },
-  { id: 42, name: '蓝晶碧玺', price: 1000, effect: '稀有矿石材料，可用于合成高级道具和装备升级', rarity: '稀有', source: '采集/远行商人', image: '', limitCount: '' },
-  { id: 43, name: '紫莲刚玉', price: 1000, effect: '稀有矿石材料，可用于合成高级道具和装备升级', rarity: '稀有', source: '采集/远行商人', image: '', limitCount: '' },
-  { id: 44, name: '龙系粉尘', price: 500, effect: '龙系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: '', limitCount: '' },
-  { id: 45, name: '萌系粉尘', price: 500, effect: '萌系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: '', limitCount: '' },
-  { id: 46, name: '草系粉尘', price: 500, effect: '草系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: '', limitCount: '' },
-  { id: 47, name: '机械粉尘', price: 500, effect: '机械系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: '', limitCount: '' },
-  { id: 48, name: '火系粉尘', price: 500, effect: '火系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: '', limitCount: '' },
-  { id: 49, name: '水系粉尘', price: 500, effect: '水系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: '', limitCount: '' },
-  { id: 50, name: '普通系粉尘', price: 500, effect: '普通系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: '', limitCount: '' },
-  { id: 51, name: '光系粉尘', price: 500, effect: '光系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: '', limitCount: '' },
-  { id: 52, name: '恶系粉尘', price: 500, effect: '恶系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: '', limitCount: '' },
-  { id: 53, name: '幽系粉尘', price: 500, effect: '幽系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: '', limitCount: '' },
-  { id: 54, name: '龙系粉尘', price: 500, effect: '龙系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: '', limitCount: '' },
-  { id: 55, name: '电系粉尘', price: 500, effect: '电系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: '', limitCount: '' },
-  { id: 56, name: '毒系粉尘', price: 500, effect: '毒系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: '', limitCount: '' },
-  { id: 57, name: '虫系粉尘', price: 500, effect: '虫系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: '', limitCount: '' },
-  { id: 58, name: '武系粉尘', price: 500, effect: '武系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: '', limitCount: '' },
-  { id: 59, name: '翼系粉尘', price: 500, effect: '翼系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: '', limitCount: '' },
-  { id: 60, name: '地系粉尘', price: 500, effect: '地系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: '', limitCount: '' },
-  { id: 61, name: '幻系粉尘', price: 500, effect: '幻系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: '', limitCount: '' }
+  { id: 1, name: '棱镜球', price: 3200000, effect: '100%捕捉成功，必定随机炫彩外观，完美无瑕，顶级稀有精灵捕捉道具', rarity: '传说', source: '炼金台合成/活动奖励/商城购买/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/9b/kkwd244su5nzzg5pj99volbt84ohied.png/100px-100795.png', limitCount: '' },
+  { id: 2, name: '国王球', price: 160000, effect: '100%捕捉成功，无视目标等级，性格随机，必定为了不起的天分', rarity: '传说', source: '远行商人/炼金台合成/月卡', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/2e/jygbfxpdbup5weqy4zaqnyaw2fcfyrq.png/100px-100255.png', limitCount: '' },
+  { id: 3, name: '美妙球', price: 3000, effect: '更适合捕捉萌系、普通系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/b/b0/6ywvdkywqprqvws7m4ogeldp9y19swt.png/100px-Img_haihaiqiu.png', limitCount: '' },
+  { id: 4, name: '调温球', price: 3000, effect: '更适合捕捉火系、冰系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/0/0d/2fx8i8qxb62s1sj8dn08h9vhsnsim1t.png/100px-Img_tiaowenqiu.png', limitCount: '' },
+  { id: 5, name: '变幻球', price: 3000, effect: '更适合捕捉幻系、机械系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/97/t58zrpfzxopvj3ke3oi3v57mf6k05s0.png/100px-Img_miwuqiu.png', limitCount: '' },
+  { id: 6, name: '光合球', price: 3000, effect: '更适合捕捉草系、光系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/d/d5/i0k2vx3nsjzsbbpfzfbwf3dlin3ixn0.png/100px-Img_guangheqiu.png', limitCount: '' },
+  { id: 7, name: '淘沙球', price: 3000, effect: '更适合捕捉地系、虫系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/8/81/7pzswfbn9l7hip6ptdg7f2mo341ztui.png/100px-Img_shaliqiu.png', limitCount: '' },
+  { id: 8, name: '好战球', price: 3000, effect: '更适合捕捉武系、龙系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/7/79/kdfs6bmfy54gk7ak70arjxug91zv1z5.png/100px-Img_lumangqiu.png', limitCount: '' },
+  { id: 9, name: '网兜球', price: 3000, effect: '更适合捕捉水系、翼系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/4/4b/60uvwzet0brdqlhtoa89domccpbo4hr.png/100px-Img_wangdiuqiu.png', limitCount: '' },
+  { id: 10, name: '绝缘球', price: 3000, effect: '更适合捕捉电系、毒系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/0/0d/k1hb59umk1sisjh8cev5bvyzvavezvb.png/100px-Img_jueyuanqiu.png', limitCount: '' },
+  { id: 11, name: '暗星球', price: 3000, effect: '更适合捕捉幽系、恶系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/5/5a/hif6470l7ojdexwm72t9brp0f0x3h4x.png/100px-Img_daodanqiu.png', limitCount: '' },
+  { id: 12, name: '首领血脉秘药', price: 320000, effect: '精灵突破升星、提升资质，为精灵解锁首领血脉，毕业级血脉道具', rarity: '传说', source: '远行商人/放生首领精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/26/fbfwlhncfo0pstpv3ibxn1mj3ayg6di.png/100px-Xuemai_shoulingxuemai.png', limitCount: '' },
+  { id: 13, name: '地系血脉秘药', price: 160000, effect: '将精灵血脉改为地系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉地系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/1/17/808i7ggttfttqexttmvtmdknqszrb7t.png/100px-Xuemai_yanshi.png', limitCount: '' },
+  { id: 14, name: '火系血脉秘药', price: 160000, effect: '将精灵血脉改为火系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉火系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/5/58/qcen9i07u68symzdrga5qcli2wq6ws3.png/100px-Xuemai_huo.png', limitCount: '' },
+  { id: 15, name: '水系血脉秘药', price: 160000, effect: '将精灵血脉改为水系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉水系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/4/45/i1hr5krh0b2oqgi3iv1m2k7geyox4n1.png/100px-Xuemai_shui.png', limitCount: '' },
+  { id: 16, name: '草系血脉秘药', price: 160000, effect: '将精灵血脉改为草系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉草系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/e/e3/q44lm9csnpdmdswihzewb1gj6yln2v6.png/100px-Xuemai_cao.png', limitCount: '' },
+  { id: 17, name: '冰系血脉秘药', price: 160000, effect: '将精灵血脉改为冰系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉冰系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/3/3f/8uweaysx83rtha1qyqpjvd9tsgkdv90.png/100px-Xuemai_bing.png', limitCount: '' },
+  { id: 18, name: '翼系血脉秘药', price: 160000, effect: '将精灵血脉改为翼系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉翼系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/1/15/t49aceulmmb7q8ohahmkyqvrdl2qdkz.png/100px-Xuemai_yi.png', limitCount: '' },
+  { id: 19, name: '机械系血脉秘药', price: 160000, effect: '将精灵血脉改为机械系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉机械系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/5/56/12jc1mzlz7nhgnterqdk6bgm6rofibn.png/100px-Xuemai_gang.png', limitCount: '' },
+  { id: 20, name: '萌系血脉秘药', price: 160000, effect: '将精灵血脉改为萌系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉萌系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/a9/f93cxq6r5qxkkt6cs8hc2jaecsj3yy9.png/100px-Xuemai_meng.png', limitCount: '' },
+  { id: 21, name: '奇异血脉秘药', price: 160000, effect: '随机改变精灵血脉属性，为精灵解锁奇异血脉', rarity: '传说', source: '远行商人/捕捉任意属性精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/ab/eg7zj03u487p1l3f91z499w1nxdzac1.png/100px-Xuemai_qiyixuemai.png', limitCount: '' },
+  { id: 22, name: '普通系血脉秘药', price: 160000, effect: '将精灵血脉改为普通系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉普通系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/a8/lx9q220586a1qpy109sy34ghfgtrs6w.png/100px-Xuemai_putong.png', limitCount: '' },
+  { id: 23, name: '光系血脉秘药', price: 160000, effect: '将精灵血脉改为光系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉光系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/3/34/cz38ekzotsvoydbhmpo5wfxrqj2b3ny.png/100px-Xuemai_guang.png', limitCount: '' },
+  { id: 24, name: '恶系血脉秘药', price: 160000, effect: '将精灵血脉改为恶系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉恶系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/e/ee/sm6n1f4ng52m6fvbr6lf2yekhw3q1a5.png/100px-Xuemai_emo.png', limitCount: '' },
+  { id: 25, name: '幽系血脉秘药', price: 160000, effect: '将精灵血脉改为幽系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉幽系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/3/31/79r65pjlgs4boduwx17vu94sqn0i2t6.png/100px-Xuemai_youling.png', limitCount: '' },
+  { id: 26, name: '龙系血脉秘药', price: 160000, effect: '将精灵血脉改为龙系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉龙系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/c/c5/88wm27imouqbkxv6d9tlof24xs20nrv.png/100px-Xuemai_long.png', limitCount: '' },
+  { id: 27, name: '电系血脉秘药', price: 160000, effect: '将精灵血脉改为电系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉电系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/a3/2n9fch8izmb6cw93rlw6ww4i7p6kotq.png/100px-Xuemai_dian.png', limitCount: '' },
+  { id: 28, name: '毒系血脉秘药', price: 160000, effect: '将精灵血脉改为毒系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉毒系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/0/0a/4vxiijlbmrgcpj1r2d5lnzfmdhnurs3.png/100px-Xuemai_du.png', limitCount: '' },
+  { id: 29, name: '虫系血脉秘药', price: 160000, effect: '将精灵血脉改为虫系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉虫系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/f/fa/kcywd1p2ikx394lixtb73roqc9fmx4a.png/100px-Xuemai_chong.png', limitCount: '' },
+  { id: 30, name: '武系血脉秘药', price: 160000, effect: '将精灵血脉改为武系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉武系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/6/60/07uvni7t86lah2a9c219z9x8smkdnzj.png/100px-Xuemai_wu.png', limitCount: '' },
+  { id: 31, name: '翼系血脉秘药', price: 160000, effect: '将精灵血脉改为翼系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉翼系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/1/15/t49aceulmmb7q8ohahmkyqvrdl2qdkz.png/100px-Xuemai_yi.png', limitCount: '' },
+  { id: 32, name: '残缺魔镜', price: 480000, effect: '锁定炫彩异色，稀有精灵捕捉辅助道具，大幅提升异色精灵获取效率', rarity: '传说', source: '远行商人（周末限时）/炼金台', image: 'https://patchwiki.biligame.com/images/rocom/thumb/1/10/nssw03fprximwkgzjqdaq8r8pq3q3le.png/100px-100716.png', limitCount: '' },
+  { id: 33, name: '适格钥匙', price: 320000, effect: '精灵养成核心道具，用于精灵进阶突破', rarity: '传说', source: '远行商人（周末限时）/炼金台', image: 'https://patchwiki.biligame.com/images/rocom/thumb/1/11/6l0tqz9gytrn8r10gk5bgcj4rxnfx57.png/100px-100714.png', limitCount: '' },
+  { id: 34, name: '能力钥匙', price: 160000, effect: '精灵养成核心道具，用于解锁精灵潜能', rarity: '传说', source: '远行商人（周末限时）/炼金台', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/2d/749ek9zbh79fvll7f5vtpxa33dz3mze.png/100px-100009.png', limitCount: '' },
+  { id: 35, name: '祝福项坠', price: 800000, effect: '将极品精灵的性格、特长、个体资质完整复制到同种类普通精灵蛋上，一键批量造极品', rarity: '史诗', source: '远行商人（限时刷新）', image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/9b/kkwd244su5nzzg5pj99volbt84ohied.png/100px-100795.png', limitCount: '' },
+  { id: 36, name: '炫彩蛋', price: 1600000, effect: '孵化必出了不起天分+炫彩外观，赛季收藏与战力双提升', rarity: '传说', source: '远行商人', image: 'https://patchwiki.biligame.com/images/rocom/0/0d/gkijb43j6tp5kadtksuux84zwrrawua.png', limitCount: '' },
+  { id: 37, name: '神奇的蛋', price: 36000, effect: '随机开出精灵蛋，盲盒玩法，小概率出炫彩精灵', rarity: '史诗', source: '远行商人', image: 'https://patchwiki.biligame.com/images/rocom/0/0d/gkijb43j6tp5kadtksuux84zwrrawua.png', limitCount: '' },
+  { id: 38, name: '无花果', price: 3000, effect: '为精灵提供经验值的基础果实，快速提升精灵等级', rarity: '稀有', source: '远行商人/任务奖励', image: 'https://patchwiki.biligame.com/images/rocom/thumb/e/e5/fc8cowshvdiendz68mg2b9e35rp0bt7.png/100px-100669.png', limitCount: '' },
+  { id: 39, name: '魔力果', price: 6000, effect: '为精灵提供大量经验值的常见果实，献祭低等精灵可获得', rarity: '稀有', source: '远行商人/任务奖励/活动奖励', image: 'https://patchwiki.biligame.com/images/rocom/thumb/c/c6/5qe6rcdtfxe1gsrvgj3lrn033athx9p.png/100px-100668.png', limitCount: '' },
+  { id: 40, name: '黑晶琉璃', price: 1000, effect: '稀有矿石材料，可用于合成高级道具和装备升级', rarity: '稀有', source: '采集/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/b/bc/khe20j8lwkt1bg9g4b0gbnsff48g93c.png/100px-100628.png', limitCount: '' },
+  { id: 41, name: '黄石榴石', price: 1000, effect: '稀有矿石材料，可用于合成高级道具和装备升级', rarity: '稀有', source: '采集/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/f/f3/c5x5f0lgk33ly801m8w1n9aod8ny4sh.png/100px-100683.png', limitCount: '' },
+  { id: 42, name: '蓝晶碧玺', price: 1000, effect: '稀有矿石材料，可用于合成高级道具和装备升级', rarity: '稀有', source: '采集/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/c/c5/k8wzdzechd88qs9bxuvcnyg0pv4tzl4.png/100px-100681.png', limitCount: '' },
+  { id: 43, name: '紫莲刚玉', price: 1000, effect: '稀有矿石材料，可用于合成高级道具和装备升级', rarity: '稀有', source: '采集/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/9c/s7ej54xr4magmv0h0zag15jah6avwlc.png/100px-100682.png', limitCount: '' },
+  { id: 44, name: '龙系粉尘', price: 500, effect: '龙系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/ac/jhbsu0fzhq55ivqu89qz81366owvkki.png/100px-100131.png', limitCount: '' },
+  { id: 45, name: '萌系粉尘', price: 500, effect: '萌系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/26/58llleh28pa33kxom2cub80nnf0y9zd.png/100px-100137.png', limitCount: '' },
+  { id: 46, name: '草系粉尘', price: 500, effect: '草系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/3/32/2k88qbruf464xxyf02grnmkvun59h0c.png/100px-100121.png', limitCount: '' },
+  { id: 47, name: '机械粉尘', price: 500, effect: '机械系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/1/1c/lcsenwszmlkz002ai6du9f32tbfpi19.png/100px-100138.png', limitCount: '' },
+  { id: 48, name: '火系粉尘', price: 500, effect: '火系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/a6/a5v60zfm9ivyri166tias4efjnp5vyt.png/100px-100122.png', limitCount: '' },
+  { id: 49, name: '水系粉尘', price: 500, effect: '水系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/c/c7/4fxef31uslze9psd9375td9zbqtbllv.png/100px-100123.png', limitCount: '' },
+  { id: 50, name: '普通系粉尘', price: 500, effect: '普通系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/0/0d/gkijb43j6tp5kadtksuux84zwrrawua.png', limitCount: '' },
+  { id: 51, name: '光系粉尘', price: 500, effect: '光系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/9d/t3udkq5fg8o3je088pcjktersn9wfrt.png/100px-100124.png', limitCount: '' },
+  { id: 52, name: '恶系粉尘', price: 500, effect: '恶系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/e/ec/mbugzr13ol6m9ay5focjw9kctt14g5h.png/100px-100125.png', limitCount: '' },
+  { id: 53, name: '幽系粉尘', price: 500, effect: '幽系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/20/okbnyp4feg52iaxuijvjzv6wodaqjmi.png/100px-100126.png', limitCount: '' },
+  { id: 54, name: '龙系粉尘', price: 500, effect: '龙系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/ac/jhbsu0fzhq55ivqu89qz81366owvkki.png/100px-100131.png', limitCount: '' },
+  { id: 55, name: '电系粉尘', price: 500, effect: '电系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/2f/2sux0g15uo8at77bwpoxrg32rv3l4dz.png/100px-100132.png', limitCount: '' },
+  { id: 56, name: '毒系粉尘', price: 500, effect: '毒系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/4/41/qgthc06nxeq4r9tzejgwwox7qtqp86w.png/100px-100133.png', limitCount: '' },
+  { id: 57, name: '虫系粉尘', price: 500, effect: '虫系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/c/c0/ihsb7b9pcs210dtaiswlsaxuhe2jfaa.png/100px-100134.png', limitCount: '' },
+  { id: 58, name: '武系粉尘', price: 500, effect: '武系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/23/su3uy9wfjwvx3ifjaia3l88j2kjr5mg.png/100px-100135.png', limitCount: '' },
+  { id: 59, name: '翼系粉尘', price: 500, effect: '翼系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/3/35/5mp1ohcm72pgsxax5kq3x1aophw3lh0.png/100px-100136.png', limitCount: '' },
+  { id: 60, name: '地系粉尘', price: 500, effect: '地系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/7/7a/n6n70lv43avntp8zie9k18a4zw41l8i.png/100px-100129.png', limitCount: '' },
+  { id: 61, name: '幻系粉尘', price: 500, effect: '幻系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/24/sgt0lc5llwfvlcmjhr1awhwq6st35fj.png/100px-100139.png', limitCount: '' }
 ]
 
 var cloudUrl = require('../../utils/cloudUrl')
@@ -107,7 +107,7 @@ Page({
       effect: '',
       rarity: '普通',
       source: '远行商人',
-      image: ''
+      image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/9d/t3udkq5fg8o3je088pcjktersn9wfrt.png/100px-100124.png'
     },
     rarityOptions: ['普通', '稀有', '史诗', '传说'],
     addingItem: false,
@@ -122,6 +122,7 @@ Page({
     showCountdown: true,
     timeSlots: ['08:00-12:00', '12:00-16:00', '16:00-20:00', '20:00-24:00'],
     timeSlotIndex: -1,
+    timeSlotLabels: ['08:00-12:00', '12:00-16:00', '16:00-20:00', '20:00-24:00'],
     remainingTimeStr: '',
     remoteSelling: [],
     remoteRound: null,
@@ -309,39 +310,28 @@ Page({
     this.stopNewItemsTimer()
     this.stopCountdownTimer()
   },
-  startCountdownTimer: function() {
-    var self = this
-    self.stopCountdownTimer()
-    if (!self.data.offlineTime) return
-    self.updateCountdown()
-    self.countdownTimer = setInterval(function() {
+      startCountdownTimer: function() {
+      var self = this
+      self.stopCountdownTimer()
+      var hasIndividual = (self.data.currentSelling || []).some(function(item) { return !!item.offlineDate })
+      if (!self.data.offlineTime && !hasIndividual) return
       self.updateCountdown()
-    }, 1000)
-  },
+      self.countdownTimer = setInterval(function() {
+        self.updateCountdown()
+      }, 1000)
+    },
   stopCountdownTimer: function() {
     if (this.countdownTimer) {
       clearInterval(this.countdownTimer)
       this.countdownTimer = null
     }
   },
-  updateCountdown: function() {
-    var self = this
-    var offlineTime = self.data.offlineTime
-    if (!offlineTime) {
-      if (self.data.remainingTimeStr) self.setData({ remainingTimeStr: '' })
-      return
-    }
-    var now = Date.now()
-    var diff = offlineTime - now
-    if (diff <= 0) {
-      self.setData({ remainingTimeStr: '已下架', currentSellingText: '' }); self.syncSellingArrays([])
-      self.stopCountdownTimer()
-      self.loadConfig()
-      return
-    }
-    
+      updateCountdown: function() {
+      var self = this
+      var now = Date.now()
+      
       var hasExpired = false;
-      var newCurrentSelling = self.data.currentSelling.filter(function(item) {
+      var newCurrentSelling = (self.data.currentSelling || []).filter(function(item) {
         if (!item.offlineDate) return true;
         var itemTime = item.offlineDate + ' ' + (item.offlineTimeStr === '23:59' ? '23:59:59' : item.offlineTimeStr + ':00');
         itemTime = itemTime.replace(/-/g, '/');
@@ -353,21 +343,73 @@ Page({
         return true;
       });
       if (hasExpired) {
-        var newText = serializeItems(newCurrentSelling);
+        var newText = self.serializeItems ? self.serializeItems(newCurrentSelling) : '';
         self.setData({ currentSellingText: newText });
         self.syncSellingArrays(newCurrentSelling);
-        self.updateSellingSilent();
+        if (typeof self.updateSellingSilent === 'function') self.updateSellingSilent();
+        // Since we synced arrays, we need to get individual items again
       }
 
-      var totalSeconds = Math.floor(diff / 1000)
-    var hours = Math.floor(totalSeconds / 3600)
-    var minutes = Math.floor((totalSeconds % 3600) / 60)
-    var seconds = totalSeconds % 60
-    var str = ''
-    if (hours > 0) str += hours + '小时'
-    str += (minutes < 10 ? '0' + minutes : minutes) + '分' + (seconds < 10 ? '0' + seconds : seconds) + '秒'
-    self.setData({ remainingTimeStr: str })
-  },
+      // Format function helper
+      var formatDiff = function(diff) {
+        if (diff <= 0) return '已下架';
+        var totalSeconds = Math.floor(diff / 1000)
+        var hours = Math.floor(totalSeconds / 3600)
+        var minutes = Math.floor((totalSeconds % 3600) / 60)
+        var seconds = totalSeconds % 60
+        var str = ''
+        if (hours > 0) str += hours + '小时'
+        str += (minutes < 10 ? '0' + minutes : minutes) + '分' + (seconds < 10 ? '0' + seconds : seconds) + '秒'
+        return str
+      }
+
+      // Calculate individual item countdowns
+      var individualItems = self.data.individualSellingItems || []
+      var indChanged = false
+      for (var i = 0; i < individualItems.length; i++) {
+        var item = individualItems[i]
+        if (item.offlineDate) {
+          var itemTime = item.offlineDate + ' ' + (item.offlineTimeStr === '23:59' ? '23:59:59' : item.offlineTimeStr + ':00');
+          itemTime = itemTime.replace(/-/g, '/');
+          var itemTimestamp = new Date(itemTime).getTime();
+          var itemDiff = itemTimestamp - now;
+          var itemStr = formatDiff(itemDiff);
+          if (item.remainingTimeStr !== itemStr) {
+            item.remainingTimeStr = itemStr;
+            indChanged = true;
+          }
+        }
+      }
+      if (indChanged) {
+        self.setData({ individualSellingItems: individualItems });
+      }
+
+      var offlineTime = self.data.offlineTime
+      if (!offlineTime) {
+        if (self.data.remainingTimeStr) self.setData({ remainingTimeStr: '' })
+        // We do not stop the timer here so it keeps polling in case items are added
+        return
+      }
+      
+      var diff = offlineTime - now
+      if (diff <= 0) {
+        // 只清除常驻商品（无单独offlineDate的），保留未到期的限时商品
+        var currentSelling = self.data.currentSelling || [];
+        var kept = currentSelling.filter(function(item) {
+          if (!item.offlineDate) return false;
+          var itemTime = item.offlineDate + ' ' + (item.offlineTimeStr === '23:59' ? '23:59:59' : item.offlineTimeStr + ':00');
+          itemTime = itemTime.replace(/-/g, '/');
+          return now < new Date(itemTime).getTime();
+        });
+        var newText = kept.length > 0 && self.serializeItems ? self.serializeItems(kept) : '';
+        self.setData({ remainingTimeStr: '已下架', currentSellingText: newText }); self.syncSellingArrays(kept)
+        // We do not stop the timer here so it keeps polling in case items are added
+        return
+      }
+      
+      self.setData({ remainingTimeStr: formatDiff(diff) })
+    },
+
   checkAdmin: function() {
     var self = this
     if (!db) return
@@ -394,9 +436,15 @@ Page({
         var currentSellingText = d.currentSelling || ''
         var currentSellingImage = d.currentSellingImage || ''
         if (d.offlineTime && now >= d.offlineTime) {
-          currentSelling = []
-          currentSellingText = ''
-          currentSellingImage = ''
+          // 只清除常驻商品（无单独offlineDate的），保留未到期的限时商品
+          currentSelling = currentSelling.filter(function(item) {
+            if (!item.offlineDate) return false;
+            var itemTime = item.offlineDate + ' ' + (item.offlineTimeStr === '23:59' ? '23:59:59' : item.offlineTimeStr + ':00');
+            itemTime = itemTime.replace(/-/g, '/');
+            return now < new Date(itemTime).getTime();
+          });
+          currentSellingText = currentSelling.length > 0 ? self.serializeItems(currentSelling) : '';
+          if (currentSelling.length === 0) currentSellingImage = '';
           d.offlineDate = ''
           d.offlineTimeStr = '23:59'
           d.offlineTime = null
@@ -431,13 +479,21 @@ Page({
               showCountdown: d.showCountdown !== undefined ? d.showCountdown : true
             }); self.syncSellingArrays(convertedSelling)
             self.markNewItems()
+            if (typeof self.startCountdownTimer === 'function') self.startCountdownTimer()
           })
         })
       })
       .catch(function() {
         self.setData({ items: initialItems })
         self.markNewItems()
+        if (typeof self.startCountdownTimer === 'function') self.startCountdownTimer()
       })
+  },
+  
+  toggleAdminCollapse: function() {
+    this.setData({
+      adminCollapse: !this.data.adminCollapse
+    });
   },
   toggleCountdown: function() {
     var self = this
@@ -481,7 +537,9 @@ Page({
           image: (parts.length > 5) ? parts[5].trim() : undefined,
           limitCount: (parts.length > 6) ? parts[6].trim() : undefined,
           offlineDate: (parts.length > 7) ? parts[7].trim() : undefined,
-          offlineTimeStr: (parts.length > 8) ? parts[8].trim() : undefined
+          offlineTimeStr: (parts.length > 8) ? parts[8].trim() : undefined,
+          _offlineDate: (parts.length > 7) ? parts[7].trim() : undefined,
+          _offlineTimeStr: (parts.length > 8) ? parts[8].trim() : undefined
         })
       }
     }
@@ -566,56 +624,205 @@ Page({
   go: function(e) { wx.navigateTo({ url: e.currentTarget.dataset.url }) },
   openAddSellingItemModal: function() {
     if (this.data.currentSelling.length >= 8) {
-      wx.showToast({ title: '最多8件商品', icon: 'none' })
+      wx.showToast({ title: '最多只能上架8件商品', icon: 'none' })
       return
     }
-    this.setData({ showAddSellingItemModal: true })
+    var available = []
+    var currentNames = this.data.currentSelling.map(function(c) { return c.name + '|' + c.price })
+    for (var i = 0; i < (this.data.items || []).length; i++) {
+      var it = this.data.items[i]
+      if (currentNames.indexOf(it.name + '|' + it.price) === -1) {
+        available.push(it)
+      }
+    }
+    this.setData({ 
+      showAddSellingItemModal: true,
+      availableItems: available,
+      selectedForSelling: {},
+      selectedCountForModal: 0
+    })
   },
   closeAddSellingItemModal: function() {
     this.setData({ showAddSellingItemModal: false })
   },
-  addSellingItemFromList: function(e) {
-    var self = this
+
+  toggleSellingItemSelection: function(e) {
     var item = e.currentTarget.dataset.item
-    if (!item || !db) return
-    var exists = false
-    for (var i = 0; i < self.data.currentSelling.length; i++) {
-      if (self.data.currentSelling[i].name === item.name && self.data.currentSelling[i].price === item.price) {
-        exists = true
-        break
-      }
-    }
-    if (exists) { wx.showToast({ title: '已在售卖列表中', icon: 'none' }); return }
-    if (self.data.currentSelling.length >= 8) { wx.showToast({ title: '最多8件商品', icon: 'none' }); return }
-    var updated = self.data.currentSelling.concat([item])
-    var text = serializeItems(updated)
-
-    var now = Date.now()
-    var updateData = { currentSelling: text, updateTime: db.serverDate() }
+    var selected = this.data.selectedForSelling || {}
+    var currentCount = this.data.currentSelling.length
+    var selectedCount = Object.keys(selected).filter(function(k){ return selected[k] }).length
     
-    if (self.data.offlineTime && now >= self.data.offlineTime) {
-      updateData.offlineTime = null
-      updateData.offlineDate = ''
-      updateData.offlineTimeStr = '23:59'
+    if (!selected[item.id] && currentCount + selectedCount >= 8) {
+      wx.showToast({ title: '最多只能上架8件商品', icon: 'none' })
+      return
     }
-
-    db.collection('page_config').doc('merchant').update({
-      data: updateData
-    }).then(function() {
-      var nextState = { /* currentSelling handled */ currentSellingText: text, showAddSellingItemModal: false }
-      if (updateData.offlineTime === null) {
-        nextState.offlineTime = null
-        nextState.offlineDate = ''
-        nextState.offlineTimeStr = '23:59'
-        nextState.timeSlotIndex = -1
-        nextState.remainingTimeStr = ''
+    
+    selected[item.id] = !selected[item.id]
+    var newSelectedCount = Object.keys(selected).filter(function(k){ return selected[k] }).length
+    this.setData({ selectedForSelling: selected, selectedCountForModal: newSelectedCount })
+  },
+  serializeItems: function(items) {
+    var lines = []
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i]
+      var offDate = item.offlineDate || item._offlineDate || ''
+      var offTime = item.offlineTimeStr || item._offlineTimeStr || ''
+      var line = item.name + '|' + item.price + '|' + (item.effect || '') + '|' + (item.rarity || '普通') + '|' + (item.source || '远行商人') + '|' + (item.image || '') + '|' + (item.limitCount || '') + '|' + offDate + '|' + offTime
+      lines.push(line)
+    }
+    return lines.join('\n')
+  },
+    
+  syncSellingArrays: function(sellingArray) {
+    var individual = [];
+    var batch = [];
+    for (var i = 0; i < (sellingArray || []).length; i++) {
+      sellingArray[i]._rawIndex = i;
+      if (sellingArray[i].offlineDate) {
+        individual.push(sellingArray[i]);
+      } else {
+        batch.push(sellingArray[i]);
       }
-      self.setData(nextState); self.syncSellingArrays(updated)
-      wx.showToast({ title: '已添加: ' + item.name, icon: 'success' })
-    }).catch(function() {
-      wx.showToast({ title: '添加失败', icon: 'none' })
-    })
-    },
+    }
+    this.setData({
+      currentSelling: sellingArray || [],
+      individualSellingItems: individual,
+      batchSellingItems: batch
+    });
+  },
+  confirmAddSellingItems: function() {
+    var self = this;
+    if (typeof db === 'undefined' || !db) {
+      wx.showToast({ title: '云开发未初始化', icon: 'none' });
+      return;
+    }
+    try {
+      var selectedIds = Object.keys(this.data.selectedForSelling || {}).filter(function(k){ return self.data.selectedForSelling[k] });
+      if (selectedIds.length === 0) {
+        this.setData({ showAddSellingItemModal: false });
+        return;
+      }
+      
+      var itemsToAdd = [];
+      for (var i = 0; i < (this.data.availableItems || []).length; i++) {
+        if (selectedIds.indexOf(String(this.data.availableItems[i].id)) !== -1) {
+          itemsToAdd.push(this.data.availableItems[i]);
+        }
+      }
+      
+      var currentSelling = this.data.currentSelling || [];
+      if (currentSelling.length + itemsToAdd.length > 8) {
+        wx.showToast({ title: '最多只能上架8个物品', icon: 'none' });
+        return;
+      }
+      
+      var updated = currentSelling.concat(itemsToAdd);
+      var text = '';
+      if (typeof serializeItems === 'function') text = serializeItems(updated);
+      else if (self.serializeItems) text = self.serializeItems(updated);
+      
+      var now = Date.now();
+      var updateData = { currentSelling: text, showCountdown: text !== '', updateTime: db.serverDate() };
+      
+      if (this.data.offlineTime && now >= this.data.offlineTime) {
+        updateData.offlineTime = null;
+        updateData.offlineDate = '';
+        updateData.offlineTimeStr = '23:59';
+      }
+  
+      wx.showLoading({ title: '上架中...' });
+      var updatePromise = db.collection('page_config').doc('merchant').update({ data: updateData });
+      updatePromise.catch(function(err) {
+        if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
+          updateData._id = 'merchant';
+          return db.collection('page_config').add({ data: updateData });
+        }
+        throw err;
+      }).then(function() {
+        wx.hideLoading();
+        var nextState = { currentSellingText: text, showAddSellingItemModal: false, selectedForSelling: {}, selectedCountForModal: 0 };
+        if (updateData.offlineTime === null) {
+          nextState.offlineTime = null;
+          nextState.offlineDate = '';
+          nextState.offlineTimeStr = '23:59';
+          nextState.timeSlotIndex = -1;
+          nextState.remainingTimeStr = '';
+        }
+        self.setData(nextState); self.syncSellingArrays(updated);
+        wx.showToast({ title: '上架成功', icon: 'success' });
+      }).catch(function(err) {
+        wx.hideLoading();
+        wx.showToast({ title: '上架失败', icon: 'none' });
+      });
+    } catch (e) {
+      wx.hideLoading();
+      wx.showToast({ title: '程序出错', icon: 'none' });
+    }
+  },
+
+    addSellingItemFromList: function(e) {
+    var self = this;
+    if (typeof db === 'undefined' || !db) {
+      wx.showToast({ title: '云开发未初始化', icon: 'none' });
+      return;
+    }
+    try {
+      var item = e.currentTarget.dataset.item;
+      if (!item) return;
+      var currentSelling = self.data.currentSelling || [];
+      var exists = false;
+      for (var i = 0; i < currentSelling.length; i++) {
+        if (currentSelling[i].name === item.name && currentSelling[i].price === item.price) {
+          exists = true;
+          break;
+        }
+      }
+      if (exists) { wx.showToast({ title: '已在上架列表中', icon: 'none' }); return; }
+      if (currentSelling.length >= 8) { wx.showToast({ title: '最多只能上架8个物品', icon: 'none' }); return; }
+      
+      var updated = currentSelling.concat([item]);
+      var text = '';
+      if (typeof serializeItems === 'function') text = serializeItems(updated);
+      else if (self.serializeItems) text = self.serializeItems(updated);
+  
+      var now = Date.now();
+      var updateData = { currentSelling: text, showCountdown: text !== '', updateTime: db.serverDate() };
+      
+      if (self.data.offlineTime && now >= self.data.offlineTime) {
+        updateData.offlineTime = null;
+        updateData.offlineDate = '';
+        updateData.offlineTimeStr = '23:59';
+      }
+  
+      wx.showLoading({ title: '上架中...' });
+      var updatePromise = db.collection('page_config').doc('merchant').update({ data: updateData });
+      updatePromise.catch(function(err) {
+        if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
+          updateData._id = 'merchant';
+          return db.collection('page_config').add({ data: updateData });
+        }
+        throw err;
+      }).then(function() {
+        wx.hideLoading();
+        var nextState = { currentSellingText: text, showAddSellingItemModal: false };
+        if (updateData.offlineTime === null) {
+          nextState.offlineTime = null;
+          nextState.offlineDate = '';
+          nextState.offlineTimeStr = '23:59';
+          nextState.timeSlotIndex = -1;
+          nextState.remainingTimeStr = '';
+        }
+        self.setData(nextState); self.syncSellingArrays(updated);
+        wx.showToast({ title: '已上架: ' + item.name, icon: 'success' });
+      }).catch(function(err) {
+        wx.hideLoading();
+        wx.showToast({ title: '上架失败', icon: 'none' });
+      });
+    } catch (e) {
+      wx.hideLoading();
+      wx.showToast({ title: '程序出错', icon: 'none' });
+    }
+  },
   openSellingModal: function() {
     this.setData({ showSellingModal: true })
   },
@@ -671,6 +878,7 @@ Page({
       offlineDate: self.data.offlineDate || '',
       offlineTimeStr: self.data.offlineTimeStr || '23:59',
       offlineTime: offlineTime,
+      showCountdown: parsed.length > 0,
       updateTime: db.serverDate()
     }
     if (itemsChanged) {
@@ -710,8 +918,9 @@ Page({
         nextState.customItems = customItemsText
         nextState.useCustom = true
       }
-      self.setData(nextState); self.syncSellingArrays(updated)
+      self.setData(nextState); self.syncSellingArrays(parsed)
       self.markNewItems()
+      if (typeof self.startCountdownTimer === 'function') self.startCountdownTimer()
       wx.showToast({ title: '上架成功', icon: 'success' })
       var itemNames = parsed.map(function(i) { return i.name })
       var notifyContent = (parsed.length > 0 ? parsed.map(function(i) { return i.name }).join('、').substring(0, 20) : '在售信息已更新')
@@ -804,7 +1013,7 @@ Page({
         nextState.customItems = customItemsText
         nextState.useCustom = true
       }
-      self.setData(nextState); self.syncSellingArrays(updated)
+      self.setData(nextState); self.syncSellingArrays(parsed)
       self.markNewItems()
       wx.showToast({ title: '已更新，未推送通知', icon: 'success' })
     }).catch(function() {
@@ -812,8 +1021,142 @@ Page({
       wx.showToast({ title: '保存失败', icon: 'none' })
     })
   },
+  
+  onItemOfflineDateChange: function(e) {
+    var index = e.currentTarget.dataset.index;
+    var currentSelling = this.data.currentSelling.slice();
+    if (currentSelling[index]) {
+      currentSelling[index]._offlineDate = e.detail.value;
+      currentSelling[index].offlineDate = e.detail.value;
+      if (!currentSelling[index]._offlineTimeStr) {
+        currentSelling[index]._offlineTimeStr = '23:59';
+        currentSelling[index].offlineTimeStr = '23:59';
+      }
+      var text = serializeItems(currentSelling);
+      this.setData({ currentSelling: currentSelling, currentSellingText: text });
+      if(typeof self !== 'undefined') self.syncSellingArrays(currentSelling); else this.syncSellingArrays(currentSelling);
+    }
+  },
+  onItemTimeChange: function(e) {
+    var index = e.currentTarget.dataset.index;
+    var timeStr = e.detail.value;
+    var currentSelling = this.data.currentSelling.slice();
+    if (currentSelling[index]) {
+      currentSelling[index]._timeSlotIndex = -1; // Unused for custom time
+      currentSelling[index]._offlineTimeStr = timeStr;
+      currentSelling[index].offlineTimeStr = timeStr;
+      var text = serializeItems(currentSelling);
+      this.setData({ currentSelling: currentSelling, currentSellingText: text });
+      if(typeof self !== 'undefined') self.syncSellingArrays(currentSelling); else this.syncSellingArrays(currentSelling);
+    }
+  },
+  clearItemOfflineDate: function(e) {
+    var index = e.currentTarget.dataset.index;
+    var currentSelling = this.data.currentSelling.slice();
+    if (currentSelling[index]) {
+      currentSelling[index]._offlineDate = '';
+      currentSelling[index]._offlineTimeStr = '23:59';
+      currentSelling[index]._timeSlotIndex = -1;
+      currentSelling[index].offlineDate = '';
+      currentSelling[index].offlineTimeStr = '23:59';
+      var text = this.serializeItems(currentSelling);
+      this.setData({ currentSelling: currentSelling, currentSellingText: text });
+      this.syncSellingArrays(currentSelling);
+    }
+  },
+  onCurrentOfflineDateChange: function(e) {
+    this.setData({ offlineDate: e.detail.value });
+  },
+  onCurrentTimeSlotChange: function(e) {
+    var index = parseInt(e.detail.value);
+    var ends = ['12:00', '16:00', '20:00', '23:59'];
+    this.setData({ 
+      timeSlotIndex: index,
+      offlineTimeStr: ends[index]
+    });
+  },
+  clearCurrentOfflineDate: function() {
+    this.setData({
+      offlineDate: '',
+      offlineTimeStr: '23:59',
+      timeSlotIndex: -1
+    });
+  },
+  openIndividualOfflineModal: function(e) {
+    var rawIndex = e.currentTarget.dataset.index;
+    var allItems = this.data.currentSelling || [];
+    var item = allItems[rawIndex];
+    if (!item) return;
+    var tsi = -1;
+    if (item.offlineDate) {
+      var ends = ['12:00', '16:00', '20:00', '23:59'];
+      tsi = ends.indexOf(item.offlineTimeStr || '23:59');
+      if (tsi === -1) tsi = 3;
+    }
+    this.setData({
+      showIndividualOfflineModal: true,
+      currentOfflineItem: item,
+      currentOfflineIndex: rawIndex,
+      offlineDate: item.offlineDate || '',
+      offlineTimeStr: item.offlineTimeStr || '23:59',
+      timeSlotIndex: tsi
+    });
+  },
+  closeIndividualOfflineModal: function() {
+    this.setData({ showIndividualOfflineModal: false });
+  },
+  setIndividualOffline: function() {
+    var self = this;
+    if (!self.data.currentOfflineItem) return;
+    if (!db) { wx.showToast({ title: '云环境未就绪', icon: 'none' }); return; }
+    var item = self.data.currentOfflineItem;
+    var currentSelling = self.data.currentSelling.slice();
+    
+    // Find the item in currentSelling
+    var targetIndex = -1;
+    for (var i = 0; i < currentSelling.length; i++) {
+      if (currentSelling[i].name === item.name && currentSelling[i].price === item.price) {
+        targetIndex = i;
+        break;
+      }
+    }
+    
+    if (targetIndex !== -1) {
+      currentSelling[targetIndex]._offlineDate = self.data.offlineDate || '';
+      currentSelling[targetIndex]._offlineTimeStr = self.data.offlineTimeStr || '23:59';
+      currentSelling[targetIndex]._timeSlotIndex = self.data.timeSlotIndex;
+      currentSelling[targetIndex].offlineDate = self.data.offlineDate || '';
+      currentSelling[targetIndex].offlineTimeStr = self.data.offlineTimeStr || '23:59';
+      var text = self.serializeItems(currentSelling);
+      
+      wx.showLoading({ title: '保存中...' });
+      db.collection('page_config').doc('merchant').update({
+        data: { currentSelling: text, showCountdown: text !== '', updateTime: db.serverDate() }
+      }).then(function() {
+        wx.hideLoading();
+        self.setData({ 
+          currentSelling: currentSelling, 
+          currentSellingText: text,
+          showIndividualOfflineModal: false
+        });
+        self.syncSellingArrays(currentSelling);
+        self.startCountdownTimer();
+        wx.showToast({ title: '设置成功', icon: 'success' });
+      }).catch(function() {
+        wx.hideLoading();
+        wx.showToast({ title: '设置失败', icon: 'none' });
+      });
+    } else {
+      self.setData({ showIndividualOfflineModal: false });
+      wx.showToast({ title: '找不到商品', icon: 'none' });
+    }
+  },
+
   onOfflineDateChange: function(e) {
     this.setData({ offlineDate: e.detail.value })
+  },
+  onOfflineTimeChange: function(e) {
+    this.setData({ offlineTimeStr: e.detail.value })
   },
   onTimeSlotChange: function(e) {
     var index = parseInt(e.detail.value)
@@ -897,7 +1240,7 @@ Page({
     items.splice(index, 1)
     var text = serializeItems(items)
     db.collection('page_config').doc('merchant').update({
-      data: { currentSelling: text, updateTime: db.serverDate() }
+      data: { currentSelling: text, showCountdown: text !== '', updateTime: db.serverDate() }
     }).then(function() {
       self.setData({ currentSellingText: text }); if(typeof self !== 'undefined') self.syncSellingArrays(items); else this.syncSellingArrays(items)
       wx.showToast({ title: '已移除', icon: 'success' })
@@ -1254,15 +1597,15 @@ Page({
   },
   closeAddItemModal: function() {
     this.setData({ showAddItemModal: false, editingItemIndex: null
-            }); if(typeof self !== 'undefined') self.syncSellingArrays(selling); else this.syncSellingArrays(selling)
+            })
   },
   openBatchEdit: function() {
     this.setData({ showBatchModal: true, batchEditItem: null, batchEditIndex: -1, selectedItems: {}, selectedCount: 0
-            }); if(typeof self !== 'undefined') self.syncSellingArrays(selling); else this.syncSellingArrays(selling)
+            })
   },
   closeBatchModal: function() {
     this.setData({ showBatchModal: false, batchEditItem: null, batchEditIndex: -1, selectedItems: {}, selectedCount: 0
-            }); if(typeof self !== 'undefined') self.syncSellingArrays(selling); else this.syncSellingArrays(selling)
+            })
   },
   toggleSelectItem: function(e) {
     var id = e.currentTarget.dataset.id
@@ -1333,9 +1676,14 @@ Page({
           var updateData = { customItems: customItemsText, updateTime: db.serverDate() }
           if (sellingChanged) updateData.currentSelling = sellingText
           
-          db.collection('page_config').doc('merchant').update({
-            data: updateData
-          }).then(function() {
+          var updatePromise = db.collection('page_config').doc('merchant').update({ data: updateData });
+    updatePromise.catch(function(err) {
+      if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
+        updateData._id = 'merchant';
+        return db.collection('page_config').add({ data: updateData });
+      }
+      throw err;
+    }).then(function() {
             wx.hideLoading()
             self.setData({
               items: updatedItems,
@@ -1344,7 +1692,7 @@ Page({
               currentSellingText: sellingText,
               selectedItems: {},
               selectedCount: 0
-            }); if(typeof self !== 'undefined') self.syncSellingArrays(selling); else this.syncSellingArrays(selling)
+            })
             wx.showToast({ title: '下架成功', icon: 'success' })
           }).catch(function() {
             wx.hideLoading()
@@ -1402,8 +1750,13 @@ Page({
     var updateData = { customItems: customItemsText, updateTime: db.serverDate() }
     if (sellingChanged) updateData.currentSelling = sellingText
     
-    db.collection('page_config').doc('merchant').update({
-      data: updateData
+    var updatePromise = db.collection('page_config').doc('merchant').update({ data: updateData });
+    updatePromise.catch(function(err) {
+      if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
+        updateData._id = 'merchant';
+        return db.collection('page_config').add({ data: updateData });
+      }
+      throw err;
     }).then(function() {
       wx.hideLoading()
       self.setData({
@@ -1413,7 +1766,7 @@ Page({
         currentSellingText: sellingText,
         selectedItems: {},
         selectedCount: 0
-            }); if(typeof self !== 'undefined') self.syncSellingArrays(selling); else this.syncSellingArrays(selling)
+            })
       wx.showToast({ title: successMsg || '修改成功', icon: 'success' })
     }).catch(function() {
       wx.hideLoading()
@@ -1505,7 +1858,7 @@ Page({
   },
   backToBatchList: function() {
     this.setData({ batchEditItem: null, batchEditIndex: -1
-            }); if(typeof self !== 'undefined') self.syncSellingArrays(selling); else this.syncSellingArrays(selling)
+            })
   },
   onBatchInput: function(e) {
     var field = e.currentTarget.dataset.field
@@ -1593,9 +1946,14 @@ Page({
           var updateData = { customItems: customItemsText, updateTime: db.serverDate() }
           if (sellingChanged) updateData.currentSelling = sellingText
           
-          db.collection('page_config').doc('merchant').update({
-            data: updateData
-          }).then(function() {
+          var updatePromise = db.collection('page_config').doc('merchant').update({ data: updateData });
+    updatePromise.catch(function(err) {
+      if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
+        updateData._id = 'merchant';
+        return db.collection('page_config').add({ data: updateData });
+      }
+      throw err;
+    }).then(function() {
             self.setData({
               items: items,
               customItems: customItemsText,
@@ -1603,7 +1961,7 @@ Page({
               currentSellingText: sellingText,
               batchEditItem: null,
               batchEditIndex: -1
-            }); if(typeof self !== 'undefined') self.syncSellingArrays(selling); else this.syncSellingArrays(selling)
+            })
             wx.showToast({ title: '已删除', icon: 'success' })
           }).catch(function() {
             wx.showToast({ title: '删除失败', icon: 'none' })
@@ -1639,9 +1997,14 @@ Page({
           var updateData = { customItems: customItemsText, updateTime: db.serverDate() }
           if (sellingChanged) updateData.currentSelling = sellingText
           
-          db.collection('page_config').doc('merchant').update({
-            data: updateData
-          }).then(function() {
+          var updatePromise = db.collection('page_config').doc('merchant').update({ data: updateData });
+    updatePromise.catch(function(err) {
+      if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
+        updateData._id = 'merchant';
+        return db.collection('page_config').add({ data: updateData });
+      }
+      throw err;
+    }).then(function() {
             self.setData({
               items: items,
               customItems: customItemsText,
@@ -1649,7 +2012,7 @@ Page({
               currentSellingText: sellingText,
               showAddItemModal: false,
               editingItemIndex: null
-            }); if(typeof self !== 'undefined') self.syncSellingArrays(selling); else this.syncSellingArrays(selling)
+            })
             wx.showToast({ title: '已删除', icon: 'success' })
           }).catch(function() {
             wx.showToast({ title: '删除失败', icon: 'none' })
@@ -1844,10 +2207,15 @@ Page({
           var sellingText = serializeItems(selling)
           var updateData = { customItems: customItemsText, updateTime: db.serverDate() }
           if (sellingChanged) updateData.currentSelling = sellingText
-          db.collection('page_config').doc('merchant').update({
-            data: updateData
-          }).then(function() {
-            self.setData({ items: items, customItems: customItemsText, currentSellingText: sellingText }); if(typeof self !== 'undefined') self.syncSellingArrays(selling); else this.syncSellingArrays(selling)
+          var updatePromise = db.collection('page_config').doc('merchant').update({ data: updateData });
+    updatePromise.catch(function(err) {
+      if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
+        updateData._id = 'merchant';
+        return db.collection('page_config').add({ data: updateData });
+      }
+      throw err;
+    }).then(function() {
+            self.setData({ items: items, customItems: customItemsText, currentSellingText: sellingText })
             wx.showToast({ title: '已删除', icon: 'success' })
           }).catch(function() {
             wx.showToast({ title: '删除失败', icon: 'none' })
@@ -1863,3 +2231,4 @@ Page({
     return { title: '洛手助手 - 远行商人今日售卖物品及价格', imageUrl: '/images/banner1.png' }
   }
 })
+

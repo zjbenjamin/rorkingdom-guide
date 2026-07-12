@@ -1,3 +1,11 @@
-<view style="display:flex;justify-content:center;align-items:center;height:100vh;background-color:#0a0e27;color:#fff;">
-  <text>正在返回首页...</text>
+<view class="page">
+  <view class="container">
+    <view class="header">
+      <text class="title">道具图鉴</text>
+      <text class="subtitle">功能开发中，敬请期待</text>
+    </view>
+    <view class="content">
+      <text class="placeholder">🎒 更多道具信息即将上线...</text>
+    </view>
+  </view>
 </view>
