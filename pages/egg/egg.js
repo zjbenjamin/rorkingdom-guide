@@ -6554,7 +6554,7 @@ Page({
             }
           })
       })
-      .catch(function() {})
+      .catch(function(e) { console.error(e) })
   },
   loadConfig: function() {
     var self = this
@@ -6568,7 +6568,7 @@ Page({
           customContent: d.customContent || ''
         })
       })
-      .catch(function() {})
+      .catch(function(e) { console.error(e) })
   },
   toggleMaintenance: function() {
     var self = this

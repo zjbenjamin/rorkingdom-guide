@@ -1,5 +1,6 @@
 const app = getApp()
 var db = null
+var notify = require('../../utils/notify')
 
 Page({
   data: {
@@ -31,6 +32,12 @@ Page({
     this.checkAdmin()
     this.loadLocationOptions()
     this.loadSwarms()
+    var self = this
+    notify.getSubscriptionStatus(function(err, status) {
+      if (status && status.announcement) {
+        self.setData({ subscribed: true })
+      }
+    })
   },
   onShow: function() {
     if (wx.cloud && !db) db = wx.cloud.database()
@@ -52,8 +59,8 @@ Page({
             wx.removeStorageSync('is_admin_user')
             self.setData({ isAdmin: false })
           }
-        }).catch(function() {})
-    }).catch(function() {})
+        }).catch(function(e) { console.error(e) })
+    }).catch(function(e) { console.error(e) })
   },
   loadLocationOptions: function() {
     var self = this
@@ -62,7 +69,7 @@ Page({
       if (res.data && res.data.locations) {
         self.setData({ locationOptions: res.data.locations })
       }
-    }).catch(function() {})
+    }).catch(function(e) { console.error(e) })
   },
   loadSwarms: function() {
     var self = this
@@ -96,7 +103,7 @@ Page({
       })
       
       self.setData({ activeSwarms: active, upcomingSwarms: upcoming })
-    }).catch(function() {})
+    }).catch(function(e) { console.error(e) })
   },
   
   // Modal handlers
@@ -267,5 +274,34 @@ Page({
         }
       }
     })
+  },
+  
+  toggleSubscribe: function() {
+    var self = this
+    notify.requestAndSave(['announcement'], function(err, result) {
+      if (err) {
+        if (!err.noConfig) {
+          wx.showToast({ title: '订阅失败', icon: 'none' })
+        }
+        return
+      }
+      if (result && result.announcement === 'accept') {
+        wx.showToast({ title: '订阅成功', icon: 'success' })
+        self.setData({ subscribed: true })
+      }
+    })
+  },
+
+  onShareAppMessage: function () {
+    return {
+      title: '大量出没监控 - 洛克王国向导',
+      path: '/pages/swarm/swarm'
+    }
+  },
+  onShareTimeline: function () {
+    return {
+      title: '大量出没监控 - 洛克王国向导'
+    }
   }
+
 })

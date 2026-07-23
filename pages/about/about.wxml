@@ -3,9 +3,12 @@
     <view class="about-header">
       <view class="header-glow"></view>
       <text class="about-icon">🏰</text>
-      <text class="about-name">{{aboutData.appName || '洛手助手BENJAMIN'}}</text>
+      <text class="about-name">{{aboutData.appName || '洛手助手洛手助手'}}</text>
       <view class="version-row">
-        <text class="about-ver">{{aboutData.version || '洛手助手1.0.1正式版'}}</text>
+        <text class="about-ver">{{aboutData.version || '加载中...'}}</text>
+        <view class="ver-edit-btn" wx:if="{{updateReady || hasUpdate}}" catchtap="manualCheckUpdate">
+          <text class="ver-edit-icon">{{updateReady ? '🔄' : '⬇️'}}</text>
+        </view>
         <view class="ver-edit-btn" wx:if="{{isAdmin}}" catchtap="onEdit" data-field="version" data-value="{{aboutData.version}}">
           <text class="ver-edit-icon">✏️</text>
         </view>
@@ -17,16 +20,7 @@
       </view>
     </view>
 
-    <!-- 新版本更新提示卡片 -->
-    <view class="card update-card" wx:if="{{hasUpdate}}">
-      <view class="update-info-row">
-        <view class="update-info-left">
-          <text class="update-title">✨ 发现新版本可用</text>
-          <text class="update-desc">{{updateReady ? '新版本已经准备就绪，点击重启应用即可完成升级！' : '新版本正在后台下载中，请稍候...'}}</text>
-        </view>
-        <button class="update-btn" wx:if="{{updateReady}}" bindtap="triggerUpdate">立即更新</button>
-      </view>
-    </view>
+
 
         <view class="card" wx:if="{{isAdmin}}">
       <view class="admin-tip">
@@ -265,7 +259,7 @@
         </view>
         <view class="privacy-item">
           <text class="privacy-icon">🔐</text>
-          <text class="privacy-text">登录数据：3天自动过期，到期自动清除本地授权</text>
+          <text class="privacy-text">登录数据：登录授权保留365天，到期或主动注销时清除本地授权</text>
         </view>
       </view>
     </view>
@@ -283,10 +277,7 @@
       <view class="card-title-row">
         <text class="card-title">更新日志</text>
         <view style="display: flex; gap: 12rpx;">
-          <view class="changelog-add-btn" catchtap="manualCheckUpdate">
-            <text class="add-icon">↻</text>
-            <text class="add-text">检查更新</text>
-          </view>
+
           <view class="changelog-add-btn" wx:if="{{isAdmin}}" catchtap="openChangelogModal">
             <text class="add-icon">+</text>
             <text class="add-text">新增</text>
@@ -316,7 +307,7 @@
     </view>
 
     <view class="about-foot">
-      <text class="foot-text">© 2026 洛手助手BENJAMIN</text>
+      <text class="foot-text">© 2026 洛手助手洛手助手</text>
       <text class="foot-text" wx:if="{{aboutData.icp}}">{{aboutData.icp}}</text>
     </view>
 

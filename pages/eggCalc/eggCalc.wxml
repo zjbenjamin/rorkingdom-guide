@@ -1,9 +1,14 @@
 <view class="page">
   <view class="container">
-    <!-- 数据来源 -->
-    <view class="egg-source">
-      <text class="egg-source-text">数据来源：洛克王国WIKI（CC BY-NC-SA 4.0）</text>
-      <text class="egg-source-link">https://wiki.biligame.com/rocom</text>
+    <view style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24rpx;">
+      <view class="egg-source" style="margin-bottom:0;">
+        <text class="egg-source-text">数据来源：洛克王国WIKI（CC BY-NC-SA 4.0）</text>
+        <text class="egg-source-link">https://wiki.biligame.com/rocom</text>
+      </view>
+      <view catchtap="go" data-url="/pages/webview/webview?url=https://wiki.biligame.com/rocom/%E7%B2%BE%E7%81%B5%E5%9B%BE%E9%89%B4" style="display:flex; align-items:center; gap:10rpx; background:rgba(0,212,255,0.1); border:1rpx solid rgba(0,212,255,0.2); padding:10rpx 20rpx; border-radius:40rpx; z-index: 10;">
+        <text style="font-size:28rpx;">📖</text>
+        <text style="font-size:24rpx; color:#00d4ff; font-weight:500;">精灵图鉴</text>
+      </view>
     </view>
 
     <!-- 蛋组计算器 -->

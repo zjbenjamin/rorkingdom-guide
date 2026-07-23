@@ -851,3 +851,7 @@
   .sub-user-item { margin-bottom: 0 !important; }
 }
 
+
+.modal-btn { flex: 1; height: 72rpx; border-radius: 36rpx; display: flex; align-items: center; justify-content: center; font-size: 28rpx; font-weight: bold; }
+.modal-btn.cancel { background: rgba(255,255,255,0.1); color: #fff; }
+.modal-btn.confirm { background: linear-gradient(90deg, #00d4ff, #0088ff); color: #fff; box-shadow: 0 4rpx 12rpx rgba(0,212,255,0.3); }

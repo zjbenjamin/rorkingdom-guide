@@ -62,7 +62,10 @@
 
           <!-- 内容主体 -->
           <view class="item-main">
-            <image lazy-load class="swarm-image" src="{{item.image || '/images/pet_placeholder.png'}}" mode="aspectFill" catchtap="previewImage" data-src="{{item.image}}" />
+            <view class="swarm-image-wrap">
+              <image lazy-load class="swarm-image" src="{{item.image || '/images/pet_placeholder.png'}}" mode="aspectFill" catchtap="previewImage" data-src="{{item.image}}" />
+              <image class="shiny-badge" src="https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png" mode="aspectFit" />
+            </view>
             <view class="item-details">
               <text class="swarm-name">{{item.name}}</text>
               <view class="detail-row">
@@ -108,7 +111,10 @@
 
           <!-- 内容主体 -->
           <view class="item-main">
-            <image lazy-load class="swarm-image" src="{{item.image || '/images/pet_placeholder.png'}}" mode="aspectFill" catchtap="previewImage" data-src="{{item.image}}" />
+            <view class="swarm-image-wrap">
+              <image lazy-load class="swarm-image" src="{{item.image || '/images/pet_placeholder.png'}}" mode="aspectFill" catchtap="previewImage" data-src="{{item.image}}" />
+              <image class="shiny-badge" src="https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png" mode="aspectFit" />
+            </view>
             <view class="item-details">
               <text class="swarm-name">{{item.name}}</text>
               <view class="detail-row">

@@ -12,7 +12,11 @@ App({
     notifyEnabled: false,
     statusBarHeight: 0
   },
+  onShow: function() {
+    this.checkUpdate()
+  },
   onLaunch: function() {
+    this.checkUpdate()
     var self = this
     try {
       var winInfo = wx.getWindowInfo()
@@ -37,6 +41,7 @@ App({
     self.globalData.loginDays = loginDays.length
     self.globalData.level = self.calcLevel(loginDays.length)
     self.checkNotifyPermission()
+    self.checkUpdate()
   },
   _initCloud: function(retryCount) {
     var self = this
@@ -62,6 +67,36 @@ App({
           self.globalData.cloudReady = false
         }
       })
+  },
+  checkUpdate: function() {
+    if (wx.canIUse('getUpdateManager')) {
+      var updateManager = wx.getUpdateManager()
+      
+      updateManager.onCheckForUpdate(function (res) {
+        // console.log("hasUpdate:", res.hasUpdate)
+      })
+
+      updateManager.onUpdateReady(function () {
+        wx.showModal({
+          title: '更新提示',
+          content: '新版本已经准备好，是否重启应用？',
+          showCancel: false,
+          success: function (res) {
+            if (res.confirm) {
+              updateManager.applyUpdate()
+            }
+          }
+        })
+      })
+
+      updateManager.onUpdateFailed(function () {
+        wx.showModal({
+          title: '更新提示',
+          content: '新版本已经上线，请您删除当前小程序，重新搜索打开体验最新版本。',
+          showCancel: false
+        })
+      })
+    }
   },
   checkNotifyPermission: function() {
     var self = this

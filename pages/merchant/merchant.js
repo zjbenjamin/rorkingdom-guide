@@ -403,6 +403,7 @@ Page({
         });
         var newText = kept.length > 0 && self.serializeItems ? self.serializeItems(kept) : '';
         self.setData({ remainingTimeStr: '已下架', currentSellingText: newText }); self.syncSellingArrays(kept)
+        if (typeof self.updateSellingSilent === 'function') self.updateSellingSilent();
         // We do not stop the timer here so it keeps polling in case items are added
         return
       }
@@ -423,7 +424,7 @@ Page({
             }
           })
       })
-      .catch(function() {})
+      .catch(function(e) { console.error(e) })
   },
   loadConfig: function() {
     var self = this
@@ -448,6 +449,18 @@ Page({
           d.offlineDate = ''
           d.offlineTimeStr = '23:59'
           d.offlineTime = null
+          // THE FIX: Save the cleared state to DB immediately!
+          if (typeof wx.getStorageSync === 'function' && (wx.getStorageSync('admin_logged_in') || wx.getStorageSync('is_admin_user'))) {
+            db.collection('page_config').doc('merchant').update({
+              data: {
+                currentSelling: currentSellingText,
+                currentSellingImage: currentSellingImage,
+                offlineDate: '',
+                offlineTimeStr: '23:59',
+                offlineTime: null
+              }
+            }).catch(function(e){ console.error(e) })
+          }
         }
         var ends = ['12:00', '16:00', '20:00', '23:59']
         var tsi = -1
@@ -723,8 +736,14 @@ Page({
       
       var now = Date.now();
       var updateData = { currentSelling: text, showCountdown: text !== '', updateTime: db.serverDate() };
+      // THE FIX: always sync the local timer state so old expired timers in DB are overwritten!
+      if (!self.data.offlineTime) {
+        updateData.offlineTime = null;
+        updateData.offlineDate = '';
+        updateData.offlineTimeStr = '23:59';
+      }
       
-      if (this.data.offlineTime && now >= this.data.offlineTime) {
+            if (self.data.offlineTime && now >= self.data.offlineTime) {
         updateData.offlineTime = null;
         updateData.offlineDate = '';
         updateData.offlineTimeStr = '23:59';
@@ -787,8 +806,14 @@ Page({
   
       var now = Date.now();
       var updateData = { currentSelling: text, showCountdown: text !== '', updateTime: db.serverDate() };
+      // THE FIX: always sync the local timer state so old expired timers in DB are overwritten!
+      if (!self.data.offlineTime) {
+        updateData.offlineTime = null;
+        updateData.offlineDate = '';
+        updateData.offlineTimeStr = '23:59';
+      }
       
-      if (self.data.offlineTime && now >= self.data.offlineTime) {
+            if (self.data.offlineTime && now >= self.data.offlineTime) {
         updateData.offlineTime = null;
         updateData.offlineDate = '';
         updateData.offlineTimeStr = '23:59';
@@ -922,8 +947,8 @@ Page({
       self.markNewItems()
       if (typeof self.startCountdownTimer === 'function') self.startCountdownTimer()
       wx.showToast({ title: '上架成功', icon: 'success' })
-      var itemNames = parsed.map(function(i) { return i.name })
-      var notifyContent = (parsed.length > 0 ? parsed.map(function(i) { return i.name }).join('、').substring(0, 20) : '在售信息已更新')
+      var itemNames = parsed.map(function(i) { return i.name + (i.limitCount ? '*' + i.limitCount : '') })
+      var notifyContent = (parsed.length > 0 ? itemNames.join('、').substring(0, 20) : '在售信息已更新')
       notify.pushToSubscribers('merchant', '商人商品更新', notifyContent, '/pages/merchant/merchant', null, itemNames)
     }).catch(function() {
       self.setData({ sellingSubmitting: false })

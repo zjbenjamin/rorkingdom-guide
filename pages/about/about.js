@@ -1,6 +1,7 @@
 var app = getApp()
 var db = null
 var cloudUrl = require('../../utils/cloudUrl')
+var admin = require('../../utils/admin')
 
 Page({
   data: {
@@ -10,8 +11,8 @@ Page({
     contact: 'flyzccboard@yeah.net',
     uid: '476200',
     aboutData: {
-      appName: '洛手助手BENJAMIN',
-      version: '洛手助手1.0.4正式版',
+      appName: '洛手助手洛手助手',
+      version: wx.getStorageSync('about_version') || '',
       devName: '浙里本杰明',
       devAvatar: '/images/avatar.jpg',
       uid: '476200',
@@ -99,33 +100,20 @@ Page({
           changelogList: changelogList,
           changelogLines: self.parseChangelog(merged.changelogContent || self.data.defaultChangelog)
         })
+        if (merged.version) wx.setStorageSync('about_version', merged.version);
         if (cloudUrl.isCloudUrl(merged.devAvatar)) {
           cloudUrl.convertList([merged], 'devAvatar', function(converted) {
             self.setData({ 'aboutData.devAvatar': converted[0].devAvatar })
           })
         }
       })
-      .catch(function() {})
+      .catch(function(e) { console.error(e) })
   },
   checkAdmin() {
     var self = this
-    if (!db) return
-    var userInfo = app.globalData.userInfo
-    var saved = wx.getStorageSync('user_info')
-    if (!userInfo && saved) userInfo = saved
-    if (!userInfo) return
-    wx.cloud.callFunction({ name: 'login' }).then(function(res) {
-      var openid = res.result.openid
-      if (!openid) return
-      db.collection('admin_config').doc('admin').get()
-        .then(function(adminRes) {
-          var adminOpenid = adminRes.data.openid
-          if (openid === adminOpenid) {
-            self.setData({ isAdmin: true })
-          }
-        })
-        .catch(function() {})
-    }).catch(function() {})
+    admin.checkAdmin(self, function(isAdmin) {
+      if (isAdmin) self.setData({ isAdmin: true })
+    })
   },
   checkUpdate() {
     var self = this
@@ -478,6 +466,6 @@ Page({
       }
     })
   },
-  onShareAppMessage() { return { title: '洛手助手BENJAMIN', path: '/pages/index/index', imageUrl: '/images/banner1.png' } },
-  onShareTimeline() { return { title: '洛手助手BENJAMIN - 洛克王国攻略工具', imageUrl: '/images/banner1.png' } }
+  onShareAppMessage() { return { title: '洛手助手洛手助手', path: '/pages/index/index', imageUrl: '/images/banner1.png' } },
+  onShareTimeline() { return { title: '洛手助手洛手助手 - 洛克王国攻略工具', imageUrl: '/images/banner1.png' } }
 })

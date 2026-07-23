@@ -2,7 +2,16 @@
   <view class="container">
     <!-- 首页大图 -->
     <view class="hero-banner" bindtap="{{isAdmin ? 'toggleBannerModal' : ''}}">
-      <image lazy-load class="hero-image" src="{{bannerUrl || '/images/banner.webp'}}" mode="widthFix"></image>
+      <block wx:if="{{bannerUrls && bannerUrls.length > 1}}">
+        <swiper class="hero-swiper" indicator-dots="true" autoplay="true" interval="4000" duration="500" circular="true">
+          <swiper-item wx:for="{{bannerUrls}}" wx:key="index">
+            <image lazy-load class="hero-image" src="{{item}}" mode="aspectFit"></image>
+          </swiper-item>
+        </swiper>
+      </block>
+      <block wx:else>
+        <image lazy-load class="hero-image" src="{{bannerUrls && bannerUrls.length === 1 ? bannerUrls[0] : (bannerUrl || '/images/banner.webp')}}" mode="widthFix"></image>
+      </block>
       <view class="hero-overlay"></view>
       <view class="hero-badge" wx:if="{{isAdmin}}">
         <text class="hero-badge-icon">✏️</text>
@@ -33,26 +42,12 @@
 
           <view class="banner-form">
             <view class="form-label">上传图片</view>
-            <view class="banner-actions">
-              <view class="image-action-btn" catchtap="chooseBannerImage">
-                <text class="action-icon">📸</text>
-                <text class="action-text">从相册选择图片</text>
-                <text class="action-hint">支持 jpg, png, webp</text>
-              </view>
-              
-              <view class="form-divider">
-                <view class="divider-line"></view>
-                <text class="divider-text">或者</text>
-                <view class="divider-line"></view>
-              </view>
-
-              <view class="input-group">
-                <view class="input-icon">🔗</view>
-                <input class="banner-input" placeholder="粘贴远程图片URL链接" placeholder-style="color:rgba(255,255,255,0.25)" value="{{bannerInput}}" bindinput="onBannerInput" cursor-spacing="140" />
+              <view class="input-group" style="align-items: flex-start;">
+                <view class="input-icon" style="margin-top: 20rpx;">🔗</view>
+                <textarea class="banner-input" style="height: 160rpx; padding: 20rpx 0; line-height: 1.5;" placeholder="单图输入单个URL；滚动图请每行输入一个URL，回车换行" placeholder-style="color:rgba(255,255,255,0.25)" value="{{bannerInput}}" bindinput="onBannerInput" maxlength="-1"></textarea>
               </view>
             </view>
           </view>
-        </view>
         <view class="modal-footer">
           <button class="modal-cancel" catchtap="toggleBannerModal">取消</button>
           <button class="modal-save" catchtap="saveBanner" disabled="{{bannerSaving}}">
@@ -167,7 +162,8 @@
                     <video class="video-player-video" src="{{block.url}}" controls show-center-play-btn object-fit="contain" style="width:100%; border-radius:12rpx; margin-top:10rpx;" />
                   </view>
                   <view wx:elif="{{block.type === 'video'}}" class="rich-video-block" catchtap="openVideo" data-url="{{block.url}}" data-name="{{block.name || '视频'}}">
-                    <text class="video-icon">
+                    <image lazy-load wx:if="{{block.cover}}" src="{{block.cover}}" mode="aspectFill" style="width: 96rpx; height: 72rpx; border-radius: 12rpx; margin-right: 24rpx; flex-shrink: 0; background: rgba(255,255,255,0.05);" />
+                    <text wx:else class="video-icon">
                       <block wx:if="{{block.platform === 'bilibili'}}">📺</block>
                       <block wx:elif="{{block.platform === 'weibo'}}">🎬</block>
                       <block wx:elif="{{block.platform === 'douyin'}}">🎵</block>
@@ -193,6 +189,14 @@
                         <view class="rich-table-cell" wx:for="{{row}}" wx:for-item="cell" wx:key="index">{{cell}}</view>
                       </view>
                     </view>
+                  </view>
+                  <!-- 滚动图片 -->
+                  <view wx:elif="{{block.type === 'swiper'}}" class="rich-swiper-block">
+                    <swiper indicator-dots="true" indicator-active-color="#00d4ff" indicator-color="rgba(255,255,255,0.3)" autoplay="true" circular="true" interval="4000" class="rich-swiper">
+                      <swiper-item wx:for="{{block.urls}}" wx:for-item="url" wx:for-index="ui" wx:key="ui">
+                        <image src="{{url}}" mode="aspectFit" class="rich-swiper-image" catchtap="previewRichImage" data-src="{{url}}"></image>
+                      </swiper-item>
+                    </swiper>
                   </view>
                   <!-- 图片 -->
                   <view wx:elif="{{block.type === 'image'}}" class="rich-image-block" catchtap="previewRichImage" data-src="{{block.url}}">

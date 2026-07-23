@@ -1,234 +1,245 @@
 const cloud = require('wx-server-sdk')
-const https = require('https')
+const http = require('http')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
-const SCF_URL = 'https://1442890784-28edxvn34i.ap-shanghai.tencentscf.com'
+const TEMPLATE_IDS = {
+  announcement: 'ZhxGKGtZi3uWIzFIQtxJrjK5XXLlwjXpEo7M0rBrfEs',
+  activity: 'hsIV8UY3gEeJnK4KNov09qRSfL196CyS5NzotPxz8hc',
+  merchant: 'lNJaEuu3rrWx4iU3xtCfnsAnlZzVf6lthZD8zraTw1Y',
+  merchant_item: 'lNJaEuu3rrWx4iU3xtCfnsAnlZzVf6lthZD8zraTw1Y'
+}
 
-// 映射模版ID到订阅类型
 const TEMPLATE_IDS_MAP = {
   'ZhxGKGtZi3uWIzFIQtxJrjK5XXLlwjXpEo7M0rBrfEs': 'announcement',
   'hsIV8UY3gEeJnK4KNov09qRSfL196CyS5NzotPxz8hc': 'activity',
   'lNJaEuu3rrWx4iU3xtCfnsAnlZzVf6lthZD8zraTw1Y': 'merchant'
 }
 
-function httpsPost(url, body) {
-  return new Promise((resolve, reject) => {
-    const postData = JSON.stringify(body)
-    const urlObj = new URL(url)
-    const options = {
-      hostname: urlObj.hostname,
-      path: urlObj.pathname + urlObj.search,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(postData) }
+function formatDate(date) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  const h = String(date.getHours()).padStart(2, '0')
+  const min = String(date.getMinutes()).padStart(2, '0')
+  return `${y}年${m}月${d}日 ${h}:${min}`
+}
+
+function getDataPayload(type, title, content) {
+  const timeStr = formatDate(new Date())
+  const safeTitle = (title || '提示').substring(0, 20)
+  const safeContent = (content || '请前往小程序查看详情').substring(0, 20)
+  
+  if (type === 'announcement') {
+    return {
+      thing1: { value: '洛克王国向导' },
+      time2: { value: timeStr },
+      thing4: { value: safeTitle }
     }
-    const req = https.request(options, (res) => {
-      let data = ''
-      res.on('data', (chunk) => data += chunk)
-      res.on('end', () => {
-        try { 
-          let parsed = JSON.parse(data)
-          // 自动解包 API 网关集成响应模式下的 body 字符串
-          if (parsed && parsed.body && typeof parsed.body === 'string') {
-            try {
-              parsed = JSON.parse(parsed.body)
-            } catch (e) {}
-          }
-          resolve(parsed) 
-        } catch (e) { 
-          resolve({ raw: data }) 
-        }
-      })
+  } else if (type === 'activity') {
+    return {
+      thing1: { value: safeTitle },
+      thing2: { value: safeContent },
+      time3: { value: timeStr }
+    }
+  } else if (type === 'merchant' || type === 'merchant_item') {
+    return {
+      thing1: { value: safeTitle },
+      time2: { value: timeStr },
+      thing3: { value: safeContent }
+    }
+  }
+  return {}
+}
+
+function pingAliyunServer(payload) {
+  return new Promise((resolve, reject) => {
+    const postData = JSON.stringify(payload)
+    const options = {
+      hostname: '121.41.6.197',
+      port: 3000,
+      path: '/api/push/send',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(postData)
+      }
+    }
+    const req = http.request(options, (res) => {
+      let body = ''
+      res.on('data', (chunk) => body += chunk)
+      res.on('end', () => resolve({ success: true, statusCode: res.statusCode, body: body }))
     })
-    req.on('error', reject)
+    req.on('error', (e) => resolve({ success: false, error: e.message }))
     req.write(postData)
     req.end()
   })
 }
 
+async function doPush(touser, templateId, page, dataPayload, targetType) {
+  try {
+    const res = await cloud.openapi.subscribeMessage.send({
+      touser: touser,
+      templateId: templateId,
+      page: page || 'pages/index/index',
+      data: dataPayload,
+      miniprogramState: 'formal'
+    })
+    
+    if (res.errCode === 0) {
+      if (targetType) {
+        const db = cloud.database()
+        const _ = db.command
+        await db.collection('subscribers').where({
+          openid: touser,
+          type: targetType,
+          status: 'active'
+        }).update({
+          data: {
+            count: _.inc(-1),
+            updateTime: db.serverDate()
+          }
+        })
+        await db.collection('subscribers').where({
+          openid: touser,
+          type: targetType,
+          count: _.lte(0)
+        }).update({
+          data: {
+            status: 'expired',
+            updateTime: db.serverDate()
+          }
+        })
+      }
+      return { success: true }
+    }
+    return { success: false, error: res.errMsg }
+  } catch (err) {
+    console.error('Push error for', touser, err)
+    return { success: false, error: err.message || err.errMsg || String(err) }
+  }
+}
+
 exports.main = async (event, context) => {
+  // 如果带有 proxyToAliyun 标志，云函数仅作为跳板，直接转发并结束，不消耗大量云资源
+  if (event.proxyToAliyun) {
+    const result = await pingAliyunServer({
+      type: event.type,
+      title: event.title,
+      content: event.content,
+      page: event.page,
+      itemName: event.itemName,
+      itemNames: event.itemNames
+    })
+    return { proxyResult: result }
+  }
+
   const db = cloud.database()
   const _ = db.command
 
-  // 0. 定时任务或前端手动检查预设的出没精灵
+  // 0. 定时检查大量出没 (Check Swarms)
   if (event.checkSwarm || (event.triggerName && event.triggerName.indexOf('Trigger') !== -1) || (!event.type && !event.touser)) {
     try {
-      // 获取 swarm 配置
-      const swarmRes = await db.collection('page_config').doc('swarm').get()
-      const d = swarmRes.data
-      const swarms = d.swarms || []
+      const swarmRes = await db.collection('swarms').where({
+        status: 1,
+        pushed: _.neq(true)
+      }).get()
       
+      const swarms = swarmRes.data || []
       const now = Date.now()
       let updated = false
       let pushedCount = 0
       
       for (let i = 0; i < swarms.length; i++) {
         const item = swarms[i]
-        // 如果预设了发布时间，且当前时间已经到达，并且还没推送过
-        if (item.publishTime && now >= item.publishTime && !item.pushed) {
-          item.pushed = true
-          item.status = 'active'
-          item.statusText = '正在出没'
+        const startStr = item.startDate ? item.startDate.replace(/-/g, '/') + ' ' + (item.startTime || '00:00:00') : null
+        const start = startStr ? new Date(startStr).getTime() : 0
+        
+        if (start && now >= start) {
           updated = true
           
-          // 发送推送给所有订阅了 announcement 的用户
-          try {
-            const subscribers = await db.collection('subscribers')
-              .where({ type: 'announcement', status: 'active' })
-              .limit(500)
-              .get()
-              
-            if (subscribers.data.length > 0) {
-              const uniqueSubs = []
-              const seenOpenids = new Set()
-              for (const s of subscribers.data) {
-                if (!seenOpenids.has(s.openid)) {
-                  uniqueSubs.push(s)
-                  seenOpenids.add(s.openid)
-                }
-              }
-              
-              const subscriberList = uniqueSubs.map(s => ({ openid: s.openid }))
-              const subscriberIds = uniqueSubs.map(s => s._id)
-              
-              const cleanPage = 'pages/swarm/swarm'
-              const title = '大量出没刷新'
-              const content = item.name + ' 在 ' + item.location + ' 限时出没！'
-              
-              const res = await httpsPost(SCF_URL, { 
-                type: 'announcement', 
-                title: title, 
-                content: content, 
-                page: cleanPage, 
-                subscribers: subscriberList 
-              })
-              
-              const isSuccess = res.success || res.sent > 0
-              if (isSuccess) {
-                pushedCount++
-                // 扣减订阅次数
-                await db.collection('subscribers').where({
-                  _id: _.in(subscriberIds)
-                }).update({
-                  data: {
-                    count: _.inc(-1),
-                    updateTime: db.serverDate()
-                  }
-                })
-                
-                // 设置次数为0的过期
-                await db.collection('subscribers').where({
-                  _id: _.in(subscriberIds),
-                  count: _.lte(0)
-                }).update({
-                  data: {
-                    status: 'expired',
-                    updateTime: db.serverDate()
-                  }
-                })
+          const subscribers = await db.collection('subscribers')
+            .where({ type: 'announcement', status: 'active' })
+            .limit(500)
+            .get()
+            
+          if (subscribers.data.length > 0) {
+            const uniqueSubs = []
+            const seenOpenids = new Set()
+            for (const s of subscribers.data) {
+              if (!seenOpenids.has(s.openid)) {
+                uniqueSubs.push(s)
+                seenOpenids.add(s.openid)
               }
             }
-          } catch (pushErr) {
-            console.error('Push error for item:', item.name, pushErr)
+            
+            const cleanPage = 'pages/swarm/swarm'
+            const title = '大量出没刷新'
+            const content = item.name + ' 在 ' + item.location + ' 限时出没'
+            const payload = getDataPayload('announcement', title, content)
+            const tId = TEMPLATE_IDS['announcement']
+            
+            for (const s of uniqueSubs) {
+              const resObj = await doPush(s.openid, tId, cleanPage, payload, 'announcement')
+              if (resObj.success) pushedCount++
+            }
           }
+          
+          await db.collection('swarms').doc(item._id).update({
+            data: { pushed: true, updateTime: db.serverDate() }
+          })
         }
       }
       
-      if (updated) {
-        await db.collection('page_config').doc('swarm').update({
-          data: {
-            swarms: swarms,
-            updateTime: db.serverDate()
-          }
-        })
-        return { success: true, message: `Checked swarms. Updated and pushed ${pushedCount} swarms.` }
-      }
-      
-      return { success: true, message: 'Checked swarms. No pending publish swarms found.' }
+      return { success: true, message: `Checked swarms. Pushed to ${pushedCount} users.` }
     } catch (e) {
       return { success: false, error: e.message }
     }
   }
 
   const { type, title, content, touser, templateId, data, page, itemName, itemNames } = event
+  const cleanPage = page ? page.replace(/^\//, '') : 'pages/index/index'
 
-  // 清洗页面路径，微信订阅消息路径不能以 / 开头
-  let cleanPage = page ? page.replace(/^\//, '') : 'pages/index/index'
-
-  // 1. 单人推送逻辑
+  // 1. 单人推送
   if (touser && templateId) {
     try {
-      const res = await httpsPost(SCF_URL, { touser, templateId, title, content, page: cleanPage, data })
+      const targetType = type || TEMPLATE_IDS_MAP[templateId] || 'announcement'
+      const payload = data || getDataPayload(targetType, title, content)
       
-      // 单人推送成功后，减少该用户的订阅次数
-      const isSuccess = res.success || res.sent > 0 || res.errcode === 0
-      if (isSuccess) {
-        const targetType = type || TEMPLATE_IDS_MAP[templateId]
-        if (targetType) {
-          await db.collection('subscribers').where({
-            openid: touser,
-            type: targetType,
-            status: 'active'
-          }).update({
-            data: {
-              count: _.inc(-1),
-              updateTime: db.serverDate()
-            }
-          })
-          
-          // 将次数为0的设为过期
-          await db.collection('subscribers').where({
-            openid: touser,
-            type: targetType,
-            count: _.lte(0)
-          }).update({
-            data: {
-              status: 'expired',
-              updateTime: db.serverDate()
-            }
-          })
-        }
-      }
-      return res
+      const resObj = await doPush(touser, templateId, cleanPage, payload, targetType)
+      return { success: resObj.success, sent: resObj.success ? 1 : 0, error: resObj.error }
     } catch (e) {
       return { success: false, error: e.message }
     }
   }
 
-  // 2. 批量推送逻辑
+  // 2. 批量推送
   try {
-    let query = { type: type, status: 'active' }
+    const targetTemplateId = TEMPLATE_IDS[type]
+    if (!targetTemplateId) {
+      return { success: false, error: 'invalid type' }
+    }
     
-    // 如果是商人推送且指定了商品名称，则同时推送给通用订阅者和特定商品订阅者
-    let subscribers;
+    let query = { type: type, status: 'active' }
+    let subscribers
+    
     if (type === 'merchant' && (itemName || (itemNames && itemNames.length > 0))) {
-      const orConditions = [
-        { type: 'merchant', status: 'active' }
-      ]
+      const orConditions = [{ type: 'merchant', status: 'active' }]
       if (itemName) {
         orConditions.push({ type: 'merchant_item', itemName: itemName, status: 'active' })
       }
       if (itemNames && itemNames.length > 0) {
         orConditions.push({ type: 'merchant_item', itemName: _.in(itemNames), status: 'active' })
       }
-
-      const res = await db.collection('subscribers')
-        .where(_.or(orConditions))
-        .limit(500)
-        .get()
-      subscribers = res
+      subscribers = await db.collection('subscribers').where(_.or(orConditions)).limit(500).get()
     } else {
-      subscribers = await db.collection('subscribers')
-        .where(query)
-        .limit(500)
-        .get()
+      subscribers = await db.collection('subscribers').where(query).limit(500).get()
     }
 
     if (subscribers.data.length === 0) {
       return { success: true, sent: 0, total: 0, message: '没有订阅者' }
     }
 
-    // 去重 openid
     const uniqueSubs = []
     const seenOpenids = new Set()
     for (const s of subscribers.data) {
@@ -238,37 +249,20 @@ exports.main = async (event, context) => {
       }
     }
 
-    const subscriberList = uniqueSubs.map(function(s) { return { openid: s.openid } })
-    const subscriberIds = uniqueSubs.map(function(s) { return s._id })
+    const payload = getDataPayload(type, title, content)
+    let sentCount = 0
+    let lastError = null
 
-    const res = await httpsPost(SCF_URL, { type, title, content, page: cleanPage, subscribers: subscriberList })
-    
-    // 推送成功后，减少订阅次数
-    const isSuccess = res.success || res.sent > 0
-    if (isSuccess) {
-      // 批量减少次数
-      await db.collection('subscribers').where({
-        _id: _.in(subscriberIds)
-      }).update({
-        data: {
-          count: _.inc(-1),
-          updateTime: db.serverDate()
-        }
-      })
-      
-      // 将次数为0的设为过期
-      await db.collection('subscribers').where({
-        _id: _.in(subscriberIds),
-        count: _.lte(0)
-      }).update({
-        data: {
-          status: 'expired',
-          updateTime: db.serverDate()
-        }
-      })
+    for (const s of uniqueSubs) {
+      const resObj = await doPush(s.openid, targetTemplateId, cleanPage, payload, type)
+      if (resObj.success) {
+        sentCount++
+      } else {
+        lastError = resObj.error
+      }
     }
 
-    return res
+    return { success: true, sent: sentCount, total: uniqueSubs.length, error: lastError }
   } catch (e) {
     return { success: false, error: e.message }
   }

@@ -252,10 +252,17 @@ function requestAndSaveItem(type, itemName, callback) {
 }
 
 function pushToSubscribers(type, title, content, page, itemName, itemNames) {
-  wx.request({
-    url: 'http://121.41.6.197:3000/api/push/send',
-    method: 'POST',
+  if (!wx.cloud) {
+    console.error('云开发环境不可用，无法执行云函数推送');
+    return;
+  }
+  
+  // 因为服务器尚未配置 HTTPS，手机端直接请求会被拦截或报 ERR_CONNECTION_CLOSED
+  // 这里使用云函数作为“中转跳板”，在云端用纯 HTTP 转发给您的阿里云服务器，完美绕过微信限制
+  wx.cloud.callFunction({
+    name: 'sendSubscribe',
     data: {
+      proxyToAliyun: true,
       type: type,
       title: title,
       content: content,
@@ -264,10 +271,10 @@ function pushToSubscribers(type, title, content, page, itemName, itemNames) {
       itemNames: itemNames
     },
     success: function(res) {
-      console.log('推送请求成功', res.data)
+      console.log('已成功通过云函数中转给阿里云服务器', res.result)
     },
     fail: function(err) {
-      console.error('推送失败:', err)
+      console.error('云函数中转失败:', err)
     }
   })
 }
@@ -302,6 +309,65 @@ function getOpenidByNickname(nickname, callback) {
     })
 }
 
+function resolveOpenid(callback) {
+  var openid = ''
+  try {
+    openid = wx.getStorageSync('openid') || ''
+  } catch (e) {}
+  if (openid) {
+    callback(openid)
+    return
+  }
+  wx.cloud.callFunction({
+    name: 'login',
+    timeout: 3000,
+    success: function(loginRes) {
+      if (loginRes.result && loginRes.result.openid) {
+        var oid = loginRes.result.openid
+        wx.setStorageSync('openid', oid)
+        callback(oid)
+      } else {
+        callback(null)
+      }
+    },
+    fail: function() {
+      callback(null)
+    }
+  })
+}
+
+function upsertSubscriber(db, openid, type, maxCount, callback) {
+  var limit = maxCount || 99
+  db.collection('subscribers').where({ openid: openid, type: type }).get()
+    .then(function(res) {
+      if (res.data.length > 0) {
+        var sub = res.data[0]
+        var newCount = (sub.count || 0) + 1
+        if (newCount > limit) newCount = limit
+        return db.collection('subscribers').doc(sub._id).update({
+          data: { count: newCount, status: 'active', updateTime: db.serverDate() }
+        }).then(function() {
+          callback(null, newCount)
+        })
+      } else {
+        return db.collection('subscribers').add({
+          data: {
+            openid: openid,
+            type: type,
+            count: 1,
+            status: 'active',
+            createTime: db.serverDate()
+          }
+        }).then(function() {
+          callback(null, 1)
+        })
+      }
+    })
+    .catch(function(err) {
+      callback(err)
+    })
+}
+
 module.exports = {
   TEMPLATES: TEMPLATES,
   getAllTemplateIds: getAllTemplateIds,
@@ -312,5 +378,7 @@ module.exports = {
   requestAndSave: requestAndSave,
   requestAndSaveItem: requestAndSaveItem,
   getOpenidByNickname: getOpenidByNickname,
-  pushToSubscribers: pushToSubscribers
+  pushToSubscribers: pushToSubscribers,
+  resolveOpenid: resolveOpenid,
+  upsertSubscriber: upsertSubscriber
 }

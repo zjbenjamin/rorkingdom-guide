@@ -5,6 +5,7 @@ const mapPoints = require('./mapPoints.js')
 Page({
   data: {
     isAdmin: false,
+    maintenance: true,
     markers: [],
     isNavigating: false,
     navTarget: null,
@@ -42,7 +43,20 @@ Page({
             wx.removeStorageSync('is_admin_user')
             self.setData({ isAdmin: false })
           }
-        }).catch(function() {})
-    }).catch(function() {})
+        }).catch(function(e) { console.error(e) })
+    }).catch(function(e) { console.error(e) })
+  },
+
+  onShareAppMessage: function () {
+    return {
+      title: '地图资源助手 - 洛克王国向导',
+      path: '/pages/map/map'
+    }
+  },
+  onShareTimeline: function () {
+    return {
+      title: '地图资源助手 - 洛克王国向导'
+    }
   }
+
 })

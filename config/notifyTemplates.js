@@ -35,5 +35,8 @@ module.exports = {
   activity: 'hsIV8UY3gEeJnK4KNov09qRSfL196CyS5NzotPxz8hc',
   
   // 远行商人提醒模板ID
-  merchant: 'lNJaEuu3rrWx4iU3xtCfnsAnlZzVf6lthZD8zraTw1Y'
+  merchant: 'lNJaEuu3rrWx4iU3xtCfnsAnlZzVf6lthZD8zraTw1Y',
+
+  // 互动提醒模板ID（如评论回复等）
+  interaction: '' // 暂未配置，请在微信公众平台申请后填入
 }

@@ -229,7 +229,13 @@ Page({
     loading: true,
     activeTab: 'announce',
     ballsConfig: [],
-    ballsSubmitting: false,
+      ballsSubmitting: false,
+      showBallModal: false,
+      editingBall: null,
+      ballForm: {
+        id: '', name: '', isBuy: false, isCraft: false, price: 0,
+              craftMaterials: '', craftMaterials: '', desc: '', source: '', img: '', color: '', icon: ''
+      },
     announcements: [],
     users: [],
     stats: { totalUsers: 0 },
@@ -239,6 +245,8 @@ Page({
     formTitle: '',
     formContent: '',
     formType: 'notice',
+      formSubType: 'regular',
+      formCollabLogo: '',
     formPinned: false,
     formImage: '',
     formStartDate: '',
@@ -312,10 +320,17 @@ Page({
     subscribeConfig: { announcement: true, activity: true, merchant: true }
   },
   onLoad: function() {
+    this.subscribersWatcher = null;
     if (wx.cloud) db = wx.cloud.database()
     var deletedIds = wx.getStorageSync('deleted_local_activities') || []
     this.setData({ deletedLocalIds: deletedIds })
     this.checkAdmin()
+  },
+  onUnload: function() {
+    if (this.subscribersWatcher) {
+      this.subscribersWatcher.close()
+      this.subscribersWatcher = null
+    }
   },
   checkAdmin: function() {
     var self = this
@@ -327,9 +342,7 @@ Page({
     db.collection('admin_config').doc('admin').get()
       .then(function(res) {
         var adminOpenid = res.data.openid
-        db.collection('users').where({ _openid: adminOpenid }).get()
-          .then(function(userRes) {
-            if (userRes.data.length > 0) {
+        wx.cloud.callFunction({ name: 'login' }).then(function(loginRes) { if (loginRes.result.openid === adminOpenid) {
               self.setData({ isAdmin: true })
               self.loadData()
               return
@@ -351,10 +364,14 @@ Page({
       .then(function(res) {
         self.setData({ bannerUrl: res.data.url || '' })
       })
-      .catch(function() {})
+      .catch(function(e) { console.error(e) })
   },
   switchTab: function(e) {
     var tab = e.currentTarget.dataset.tab
+    if (tab !== 'subscribe' && this.subscribersWatcher) {
+      this.subscribersWatcher.close()
+      this.subscribersWatcher = null
+    }
     this.setData({ activeTab: tab })
     if (tab === 'announce') this.loadAnnouncements()
     else if (tab === 'activity') this.loadAdminActivities()
@@ -460,43 +477,74 @@ Page({
       })(i)
     }
   },
-  togglePageMaintenance: function(e) {
-    var self = this
-    var id = e.currentTarget.dataset.id
-    if (!db) return
-    db.collection('page_config').doc(id).get()
-      .then(function(res) {
-        var newVal = !res.data.maintenance
-        return db.collection('page_config').doc(id).update({ data: { maintenance: newVal, updateTime: db.serverDate() } })
-      })
-      .catch(function() {
-        return db.collection('page_config').add({ data: { _id: id, maintenance: true, useCustom: false, updateTime: db.serverDate() } })
-      })
-      .then(function() {
-        wx.showToast({ title: '操作成功', icon: 'success' })
-        self.loadPageConfigs()
-      })
-      .catch(function() { wx.showToast({ title: '操作失败', icon: 'none' }) })
-  },
-  togglePageCustom: function(e) {
-    var self = this
-    var id = e.currentTarget.dataset.id
-    if (!db) return
-    db.collection('page_config').doc(id).get()
-      .then(function(res) {
-        var newVal = !res.data.useCustom
-        return db.collection('page_config').doc(id).update({ data: { useCustom: newVal, updateTime: db.serverDate() } })
-      })
-      .catch(function() {
-        return db.collection('page_config').add({ data: { _id: id, useCustom: true, maintenance: false, updateTime: db.serverDate() } })
-      })
-      .then(function() {
-        wx.showToast({ title: '操作成功', icon: 'success' })
-        self.loadPageConfigs()
-      })
-      .catch(function() { wx.showToast({ title: '操作失败', icon: 'none' }) })
-  },
-  openModal: function(e) {
+  
+    
+    togglePageMaintenance: function(e) {
+      var self = this;
+      var id = e.currentTarget.dataset.id;
+      if (!db) return;
+      
+      db.collection('page_config').doc(id).get().then(function(res) {
+        var newVal = !res.data.maintenance;
+        wx.cloud.callFunction({
+          name: 'updatePageConfig',
+          data: { docId: id, updateData: { maintenance: newVal, updateTime: db.serverDate() } }
+        }).then(function(result) {
+          if (result.result && result.result.success) {
+            wx.showToast({ title: '设置成功', icon: 'success' });
+            self.loadPageConfigs();
+          } else {
+            wx.showToast({ title: '云函数更新失败', icon: 'none' });
+          }
+        }).catch(function(err) {
+          wx.showToast({ title: '调用失败，请先部署云函数 updatePageConfig', icon: 'none' });
+        });
+      }).catch(function(err) {
+        wx.cloud.callFunction({
+          name: 'updatePageConfig',
+          data: { docId: id, updateData: { maintenance: true, useCustom: false, updateTime: db.serverDate() } }
+        }).then(function(result) {
+          wx.showToast({ title: '初始化并设置成功', icon: 'success' });
+          self.loadPageConfigs();
+        }).catch(function(err2) {
+          wx.showToast({ title: '调用失败，请部署云函数', icon: 'none' });
+        });
+      });
+    },
+
+    togglePageCustom: function(e) {
+      var self = this;
+      var id = e.currentTarget.dataset.id;
+      if (!db) return;
+
+      db.collection('page_config').doc(id).get().then(function(res) {
+        var newVal = !res.data.useCustom;
+        wx.cloud.callFunction({
+          name: 'updatePageConfig',
+          data: { docId: id, updateData: { useCustom: newVal, updateTime: db.serverDate() } }
+        }).then(function(result) {
+          if (result.result && result.result.success) {
+            wx.showToast({ title: '设置成功', icon: 'success' });
+            self.loadPageConfigs();
+          } else {
+            wx.showToast({ title: '云函数更新失败', icon: 'none' });
+          }
+        }).catch(function(err) {
+          wx.showToast({ title: '调用失败，请先部署云函数 updatePageConfig', icon: 'none' });
+        });
+      }).catch(function(err) {
+        wx.cloud.callFunction({
+          name: 'updatePageConfig',
+          data: { docId: id, updateData: { useCustom: true, maintenance: false, updateTime: db.serverDate() } }
+        }).then(function(result) {
+          wx.showToast({ title: '初始化并设置成功', icon: 'success' });
+          self.loadPageConfigs();
+        }).catch(function(err2) {
+          wx.showToast({ title: '调用失败，请部署云函数', icon: 'none' });
+        });
+      });
+    },
+openModal: function(e) {
     var item = (e && e.currentTarget && e.currentTarget.dataset) ? e.currentTarget.dataset.item || null : null
     var richContent = []
     var source = ''
@@ -514,6 +562,9 @@ Page({
       formTitle: item ? item.title : '',
       formContent: (item && item.richContent && item.richContent.length > 0) ? '' : (item ? item.content : ''),
       formType: item ? item.type : 'notice',
+        formSubType: item ? (item.subType || 'regular') : 'regular',
+        formCollabLogo: item ? (item.collabLogo || '') : '',
+        formCollabCover: (item && item.subType === 'collab') ? (item.image || '') : '',
       formPinned: item ? item.pinned : false,
       formImage: item ? (item.image || '') : '',
       formRichContent: richContent,
@@ -591,6 +642,13 @@ Page({
     })
   },
   _addMusicBlock: function(self, block) {
+    if (block.cover === undefined) {
+      self._askForCover(function(cover) {
+        block.cover = cover;
+        self._addMusicBlock(self, block);
+      });
+      return;
+    }
     var richContent = (self.data.formRichContent || []).concat([block])
     var formContent = self.data.formContent
     if (block.url) formContent = formContent.replace(block.url, '').replace(/\s{2,}/g, ' ').trim()
@@ -656,11 +714,7 @@ Page({
                   editable: true,
                   success: function(nameRes) {
                     var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
-                    var block = { type: 'video', platform: 'other', platformName: '其他', name: name, url: inputUrl, vid: '' }
-                    var richContent = (self.data.formRichContent || []).concat([block])
-                    var formContent = self.data.formContent.replace(inputUrl, '').replace(/\s{2,}/g, ' ').trim()
-                    self.setData({ formRichContent: richContent, formContent: formContent })
-                    wx.showToast({ title: '已添加视频', icon: 'success' })
+                    self._addVideoBlock(self, { platform: 'other', platformName: '其他', url: inputUrl, id: '' }, name)
                   }
                 })
               } else {
@@ -675,11 +729,7 @@ Page({
               editable: true,
               success: function(nameRes) {
                 var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
-                var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id }
-                var richContent = (self.data.formRichContent || []).concat([block])
-                var formContent = self.data.formContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
-                self.setData({ formRichContent: richContent, formContent: formContent })
-                wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
+                self._addVideoBlock(self, videoInfo, name)
               }
             })
           }
@@ -691,7 +741,14 @@ Page({
     })
   },
   _addVideoBlock: function(self, videoInfo, name) {
-    var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name || '', url: videoInfo.url, vid: videoInfo.id }
+    if (videoInfo.cover === undefined) {
+      self._askForCover(function(cover) {
+        videoInfo.cover = cover;
+        self._addVideoBlock(self, videoInfo, name);
+      });
+      return;
+    }
+    var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name || '', url: videoInfo.url, vid: videoInfo.id, cover: videoInfo.cover }
     var richContent = (self.data.formRichContent || []).concat([block])
     var formContent = self.data.formContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
     self.setData({ formRichContent: richContent, formContent: formContent })
@@ -776,8 +833,14 @@ Page({
   onImageInput: function(e) { this.setData({ formImage: e.detail.value }) },
   onSourceInput: function(e) { this.setData({ formSource: e.detail.value }) },
   onStartDateChange: function(e) { this.setData({ formStartDate: e.detail.value }) },
+  onStartTimeChange: function(e) { this.setData({ formStartTime: e.detail.value }) },
   onEndDateChange: function(e) { this.setData({ formEndDate: e.detail.value }) },
+  onEndTimeChange: function(e) { this.setData({ formEndTime: e.detail.value }) },
   onTypeChange: function(e) { var types = ['notice', 'update', 'event', 'tip']; this.setData({ formType: types[e.detail.value] }) },
+    onSubTypeChange: function(e) { var types = ['regular', 'season', 'collab']; this.setData({ formSubType: types[e.detail.value] }) },
+    onCollabLogoInput: function(e) { this.setData({ formCollabLogo: e.detail.value }) },
+    onCollabCoverInput: function(e) { this.setData({ formCollabCover: e.detail.value }) },
+
   togglePinned: function() { this.setData({ formPinned: !this.data.formPinned }) },
   _autoCommitText: function(updates) {
     var content = this.data.formContent.trim()
@@ -902,6 +965,49 @@ Page({
       this.editorCtx.clear()
     }
   },
+  moveRichBlock: function(e) {
+    var idx = e.currentTarget.dataset.idx;
+    var pos = e.currentTarget.dataset.pos;
+    var richContent = this.data.formRichContent.slice();
+    var block = richContent.splice(idx, 1)[0];
+    if (pos === 'top1') richContent.unshift(block);
+    else if (pos === 'top2') richContent.splice(Math.min(1, richContent.length), 0, block);
+    else if (pos === 'bottom1') richContent.push(block);
+    else if (pos === 'bottom2') richContent.splice(Math.max(0, richContent.length - 1), 0, block);
+    this.setData({ formRichContent: richContent });
+  },
+  showMoveTopActionSheet: function(e) {
+    var self = this;
+    var idx = e.currentTarget.dataset.idx;
+    var target = e.currentTarget.dataset.target;
+    wx.showActionSheet({
+      itemList: ['置顶到第1位', '置顶到第2位'],
+      success: function(res) {
+        var pos = res.tapIndex === 0 ? 'top1' : 'top2';
+        if (target === 'form') {
+          self.moveRichBlock({ currentTarget: { dataset: { idx: idx, pos: pos } } });
+        } else {
+          self.moveActivityRichBlock({ currentTarget: { dataset: { idx: idx, pos: pos } } });
+        }
+      }
+    });
+  },
+  showMoveBottomActionSheet: function(e) {
+    var self = this;
+    var idx = e.currentTarget.dataset.idx;
+    var target = e.currentTarget.dataset.target;
+    wx.showActionSheet({
+      itemList: ['沉底到最后1位', '沉底到倒数第2位'],
+      success: function(res) {
+        var pos = res.tapIndex === 0 ? 'bottom1' : 'bottom2';
+        if (target === 'form') {
+          self.moveRichBlock({ currentTarget: { dataset: { idx: idx, pos: pos } } });
+        } else {
+          self.moveActivityRichBlock({ currentTarget: { dataset: { idx: idx, pos: pos } } });
+        }
+      }
+    });
+  },
   removeRichBlock: function(e) {
     var idx = e.currentTarget.dataset.idx
     var richContent = this.data.formRichContent.slice()
@@ -920,6 +1026,26 @@ Page({
     var idx = e.currentTarget.dataset.idx
     var block = this.data.formRichContent[idx]
     var richContent = this.data.formRichContent
+    if (block.type === 'swiper') {
+      var self = this;
+      var itemList = [];
+      for (var i = 0; i < block.urls.length; i++) {
+        if (i < 5) itemList.push('删除第 ' + (i+1) + ' 张');
+      }
+      if (block.urls.length > 5) itemList.push('删除最后一张 (第' + block.urls.length + '张)');
+      wx.showActionSheet({
+        itemList: itemList,
+        success: function(res) {
+          var deleteIdx = res.tapIndex;
+          if (deleteIdx === 5) deleteIdx = block.urls.length - 1;
+          block.urls.splice(deleteIdx, 1);
+          if (block.urls.length === 0) richContent.splice(idx, 1);
+          self.setData({ formRichContent: richContent });
+          wx.showToast({ title: '已删除图片', icon: 'success' });
+        }
+      });
+      return;
+    }
     richContent.splice(idx, 1)
     this.setData({
       formRichContent: richContent,
@@ -1228,11 +1354,19 @@ Page({
     }
     finalContent = htmlParts.join('')
     
-    var coverImage = ''
-    for (var i = 0; i < richContent.length; i++) {
-      if (richContent[i].type === 'image' && richContent[i].url) {
-        coverImage = richContent[i].url
-        break
+    var coverImage = self.data.formImage || ''
+    if (self.data.formType === 'event' && self.data.formSubType === 'collab') {
+      coverImage = self.data.formCollabCover ? self.data.formCollabCover.trim() : coverImage
+    }
+    if (!coverImage) {
+      for (var i = 0; i < richContent.length; i++) {
+        if (richContent[i].type === 'image' && richContent[i].url) {
+          coverImage = richContent[i].url
+          break
+        } else if ((richContent[i].type === 'video' || richContent[i].type === 'music') && richContent[i].cover) {
+          coverImage = richContent[i].cover
+          break
+        }
       }
     }
 
@@ -1242,6 +1376,8 @@ Page({
       richContent: richContent,
       source: self.data.formSource.trim(),
       type: self.data.formType,
+      subType: self.data.formType === 'event' ? self.data.formSubType : '',
+      collabLogo: (self.data.formType === 'event' && self.data.formSubType === 'collab') ? self.data.formCollabLogo.trim() : '',
       pinned: self.data.formPinned,
       image: coverImage,
       startDate: self.data.formStartDate,
@@ -1393,24 +1529,133 @@ Page({
     }).catch(err => {
       // 默认数据
       var defaultBalls = [
-        {id:1,name:'普通咕噜球',img:''}, {id:2,name:'高级咕噜球',img:''}, {id:3,name:'国王球',img:''},
-        {id:4,name:'美妙球',img:''}, {id:5,name:'好战球',img:''}, {id:6,name:'光合球',img:''},
-        {id:7,name:'网兜球',img:''}, {id:8,name:'暗星球',img:''}, {id:9,name:'奇趣球',img:''},
-        {id:10,name:'补光球',img:''}, {id:11,name:'棱镜球',img:''}, {id:12,name:'织梦棱镜球',img:''},
-        {id:13,name:'狂欢棱镜球',img:''}, {id:14,name:'变幻球',img:''}, {id:15,name:'绝缘球',img:''},
-        {id:16,name:'调温球',img:''}, {id:17,name:'淘沙球',img:''}
-      ];
+      {id:1,name:'普通咕噜球',color:'#999',icon:'⚪',count:0,freeCount:0,desc:'基础捕捉率',price:0},
+      {id:2,name:'高级咕噜球',color:'#1565c0',icon:'🔵',count:0,freeCount:0,desc:'捕捉率+30%',price:12000},
+      {id:3,name:'国王球',color:'#f57f17',icon:'👑',count:0,freeCount:0,desc:'100%捕捉，必定了不起',price:0},
+      {id:4,name:'美妙球',color:'#e91e63',icon:'💚',count:0,freeCount:0,desc:'提升对应属性50%捕捉概率',price:3000},
+      {id:5,name:'好战球',color:'#d32f2f',icon:'⚔️',count:0,freeCount:0,desc:'提升对应属性50%捕捉概率',price:3000},
+      {id:6,name:'光合球',color:'#2e7d32',icon:'🌿',count:0,freeCount:0,desc:'提升对应属性50%捕捉概率',price:3000},
+      {id:7,name:'网兜球',color:'#388e3c',icon:'🪢',count:0,freeCount:0,desc:'提升对应属性50%捕捉概率',price:3000},
+      {id:8,name:'暗星球',color:'#37474f',icon:'🌙',count:0,freeCount:0,desc:'提升对应属性50%捕捉概率',price:3000},
+      {id:9,name:'奇趣球',color:'#ff6b6b',icon:'🎯',count:0,freeCount:0,desc:'100%捕捉，资质随机',price:80000},
+      {id:10,name:'补光球',color:'#ffd93d',icon:'💡',count:0,freeCount:0,desc:'100%捕捉，资质随机',price:80000},
+      {id:11,name:'棱镜球',color:'#a855f7',icon:'💎',count:0,freeCount:0,desc:'100%捕捉，必定了不起，完美无瑕，天赋随机，炫彩颜色粒子随机',price:0},
+      {id:12,name:'织梦棱镜球',color:'#ec4899',icon:'🔮',count:0,freeCount:0,desc:'100%捕捉，必定了不起，完美无瑕，天赋随机，炫彩粒子为当前赛季主题颜色统一',price:800},
+      {id:13,name:'狂欢棱镜球',color:'#f472b6',icon:'🎆',count:0,freeCount:0,desc:'狂欢系+70%',price:800},
+      {id:14,name:'变幻球',color:'#06b6d4',icon:'🌀',count:0,freeCount:0,desc:'提升对应属性50%捕捉概率',price:3000},
+      {id:15,name:'绝缘球',color:'#8b5cf6',icon:'🛡️',count:0,freeCount:0,desc:'绝缘精灵+45%',price:3000},
+      {id:16,name:'调温球',color:'#f97316',icon:'🌡️',count:0,freeCount:0,desc:'提升对应属性50%捕捉概率',price:3000},
+      {id:17,name:'淘沙球',color:'#d4a017',icon:'🏖️',count:0,freeCount:0,desc:'提升对应属性50%捕捉概率',price:3000}
+    ];
       self.setData({ ballsConfig: defaultBalls });
     });
   },
   
-  saveBallsConfig: function() {
+  
+    openBallModal: function(e) {
+      
+      var item = (e && e.currentTarget && e.currentTarget.dataset) ? e.currentTarget.dataset.item || null : null;
+      if (item) {
+        this.setData({
+          editingBall: item,
+          ballForm: {
+            id: item.id || '',
+            name: item.name || '',
+            isBuy: item.isBuy || false,
+            isCraft: item.isCraft || false,
+            price: item.price || 0,
+              craftMaterials: item.craftMaterials || '',
+            desc: item.desc || item.rate || '',
+            source: item.source || '',
+            img: item.img || '',
+            color: item.color || '',
+            icon: item.icon || ''
+          },
+          showBallModal: true
+        });
+      } else {
+        this.setData({
+          editingBall: null,
+          ballForm: {
+            id: 'ball_' + Date.now(),
+            name: '',
+            isBuy: false,
+            isCraft: false,
+            price: 0,
+              craftMaterials: '',
+            desc: '',
+            source: '',
+            img: '',
+            color: '',
+            icon: ''
+          },
+          showBallModal: true
+        });
+      }
+    },
+    
+    closeBallModal: function() {
+      this.setData({ showBallModal: false });
+    },
+    preventClose: function() {},
+    onBallFormInput: function(e) {
+      var field = e.currentTarget.dataset.field;
+      var val = e.detail.value;
+      if (field === 'price') val = parseInt(val) || 0;
+      this.setData({ ['ballForm.' + field]: val });
+    },
+    onBallFormSwitch: function(e) {
+      var field = e.currentTarget.dataset.field;
+      var val = e.detail.value;
+      this.setData({ ['ballForm.' + field]: val });
+    },
+    confirmBallForm: function() {
+      var form = this.data.ballForm;
+      if (!form.name) {
+        wx.showToast({ title: '请输入名称', icon: 'none' });
+        return;
+      }
+      var balls = this.data.ballsConfig;
+      if (this.data.editingBall) {
+        for (var i = 0; i < balls.length; i++) {
+          if (balls[i].id === form.id) {
+            balls[i] = Object.assign({}, balls[i], form);
+            break;
+          }
+        }
+      } else {
+        balls.push(Object.assign({}, form, { count: 0, freeCount: 0 }));
+      }
+      this.setData({
+        ballsConfig: balls,
+        showBallModal: false
+      });
+      wx.showToast({ title: '请记得点击保存修改到云端', icon: 'none' });
+    },
+    deleteBall: function(e) {
+      var self = this;
+      var id = e.currentTarget.dataset.id;
+      wx.showModal({
+        title: '提示',
+        content: '确定要删除这个道具球吗？',
+        success: function(res) {
+          if (res.confirm) {
+            var balls = self.data.ballsConfig.filter(function(b) { return b.id !== id; });
+            self.setData({ ballsConfig: balls });
+            wx.showToast({ title: '请记得点击保存修改到云端', icon: 'none' });
+          }
+        }
+      });
+    },
+
+    saveBallsConfig: function() {
     var self = this;
     if (!db) { wx.showToast({ title: '云环境未就绪', icon: 'none' }); return; }
     self.setData({ ballsSubmitting: true });
     db.collection('site_config').doc('ball_images').set({
       data: { balls: self.data.ballsConfig }
     }).then(res => {
+        wx.setStorageSync('balls_config_updated', true);
       wx.showToast({ title: '保存成功', icon: 'success' });
       self.setData({ ballsSubmitting: false });
     }).catch(err => {
@@ -1470,13 +1715,21 @@ Page({
     var config = wx.getStorageSync('subscribe_config') || { announcement: true, activity: true, merchant: true }
     self.setData({ subscribeConfig: config })
     if (!db) return
-    db.collection('subscribers').orderBy('createTime', 'desc').limit(100).get()
-      .then(function(res) {
-        var list = res.data || []
+    if (this.subscribersWatcher) {
+      this.subscribersWatcher.close()
+    }
+    this.setData({ loading: true })
+    this.subscribersWatcher = db.collection('subscribers').orderBy('createTime', 'desc').limit(100).watch({
+      onChange: function(snapshot) {
+        var list = snapshot.docs || []
         for (var i = 0; i < list.length; i++) list[i].timeStr = self.formatTime(list[i].createTime)
         self.setData({ subscribers: list, loading: false })
-      })
-      .catch(function() { self.setData({ loading: false }) })
+      },
+      onError: function(err) {
+        console.error('Watch subscribers error', err)
+        self.setData({ loading: false })
+      }
+    })
   },
   toggleSubscribeType: function(e) {
     var type = e.currentTarget.dataset.type
@@ -1536,9 +1789,11 @@ Page({
                 editable: true,
                 success: function(nameRes) {
                   var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : shareText.substring(0, 20)
-                  self._addActivityMusicBlock(self, { type: 'music', name: name || '音乐', url: url })
-                }
-              })
+                    self._askForCover(function(cover) {
+                      self._addActivityMusicBlock(self, { type: 'music', name: name || '推荐单曲', url: url, cover: cover })
+                    })
+                  }
+                })
             } else {
               wx.showToast({ title: '未找到有效的音乐链接', icon: 'none' })
             }
@@ -1564,9 +1819,11 @@ Page({
                   editable: true,
                   success: function(nameRes) {
                     var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : shareText.substring(0, 20)
-                    self._addActivityMusicBlock(self, { type: 'music', name: name || '音乐', url: url })
-                  }
-                })
+                      self._askForCover(function(cover) {
+                        self._addActivityMusicBlock(self, { type: 'music', name: name || '推荐单曲', url: url, cover: cover })
+                      })
+                    }
+                  })
               } else {
                 wx.showToast({ title: '未找到有效的音乐链接', icon: 'none' })
               }
@@ -1808,11 +2065,13 @@ Page({
                   editable: true,
                   success: function(nameRes) {
                     var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
-                    var block = { type: 'video', platform: 'other', platformName: '其他', name: name, url: inputUrl, vid: '' }
-                    var richContent = (self.data.activityRichContent || []).concat([block])
-                    var formContent = self.data.activityFormContent.replace(inputUrl, '').replace(/\s{2,}/g, ' ').trim()
-                    self.setData({ activityRichContent: richContent, activityFormContent: formContent })
-                    wx.showToast({ title: '已添加视频', icon: 'success' })
+                    self._askForCover(function(cover) {
+                      var block = { type: 'video', platform: 'other', platformName: '其他', name: name, url: inputUrl, vid: '', cover: cover }
+                      var richContent = (self.data.activityRichContent || []).concat([block])
+                      var formContent = self.data.activityFormContent.replace(inputUrl, '').replace(/\s{2,}/g, ' ').trim()
+                      self.setData({ activityRichContent: richContent, activityFormContent: formContent })
+                      wx.showToast({ title: '已添加视频', icon: 'success' })
+                    })
                   }
                 })
               } else {
@@ -1827,11 +2086,13 @@ Page({
               editable: true,
               success: function(nameRes) {
                 var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
-                var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id }
-                var richContent = (self.data.activityRichContent || []).concat([block])
-                var formContent = self.data.activityFormContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
-                self.setData({ activityRichContent: richContent, activityFormContent: formContent })
-                wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
+                self._askForCover(function(cover) {
+                  var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id, cover: cover }
+                  var richContent = (self.data.activityRichContent || []).concat([block])
+                  var formContent = self.data.activityFormContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
+                  self.setData({ activityRichContent: richContent, activityFormContent: formContent })
+                  wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
+                })
               }
             })
           }
@@ -1849,20 +2110,22 @@ Page({
               if (!url) { wx.showToast({ title: '请输入有效链接', icon: 'none' }); return }
               var videoInfo = parseVideoUrl(url)
               if (!videoInfo) { wx.showToast({ title: '未识别视频链接', icon: 'none' }); return }
-              wx.showModal({
-                title: '视频标题（可选）',
-                content: '',
-                placeholderText: '输入视频标题',
-                editable: true,
-                success: function(nameRes) {
-                  var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
-                  var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id }
-                  var richContent = (self.data.activityRichContent || []).concat([block])
-                  var formContent = self.data.activityFormContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
-                  self.setData({ activityRichContent: richContent, activityFormContent: formContent })
-                  wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
-                }
-              })
+                  wx.showModal({
+                    title: '视频标题（可选）',
+                    content: '',
+                    placeholderText: '输入视频标题',
+                    editable: true,
+                    success: function(nameRes) {
+                      var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
+                      self._askForCover(function(cover) {
+                        var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id, cover: cover }
+                        var richContent = (self.data.activityRichContent || []).concat([block])
+                        var formContent = self.data.activityFormContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
+                        self.setData({ activityRichContent: richContent, activityFormContent: formContent })
+                        wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
+                      })
+                    }
+                  })
             }
           }
         })
@@ -1912,6 +2175,9 @@ Page({
   onActivityStartInput: function(e) { this.setData({ activityFormStart: e.detail.value }) },
   onActivityEndInput: function(e) { this.setData({ activityFormEnd: e.detail.value }) },
   onActivityStartChange: function(e) { this.setData({ activityFormStart: e.detail.value }) },
+    onActivityStartTimeChange: function(e) { this.setData({ activityFormStartTime: e.detail.value }) },
+    onActivityEndTimeChange: function(e) { this.setData({ activityFormEndTime: e.detail.value }) },
+
   onActivityEndChange: function(e) { this.setData({ activityFormEnd: e.detail.value }) },
   onActivitySourceInput: function(e) { this.setData({ activityFormSource: e.detail.value }) },
   onActivityStatusChange: function(e) { var statuses = ['进行中','即将开始','置顶']; this.setData({ activityFormStatus: statuses[e.detail.value] }) },
@@ -2038,6 +2304,17 @@ Page({
       this.activityEditorCtx.clear()
     }
   },
+  moveActivityRichBlock: function(e) {
+    var idx = e.currentTarget.dataset.idx;
+    var pos = e.currentTarget.dataset.pos;
+    var richContent = this.data.activityRichContent.slice();
+    var block = richContent.splice(idx, 1)[0];
+    if (pos === 'top1') richContent.unshift(block);
+    else if (pos === 'top2') richContent.splice(Math.min(1, richContent.length), 0, block);
+    else if (pos === 'bottom1') richContent.push(block);
+    else if (pos === 'bottom2') richContent.splice(Math.max(0, richContent.length - 1), 0, block);
+    this.setData({ activityRichContent: richContent });
+  },
   removeActivityRichBlock: function(e) {
     var idx = e.currentTarget.dataset.idx
     var richContent = this.data.activityRichContent.slice()
@@ -2056,6 +2333,26 @@ Page({
     var idx = e.currentTarget.dataset.idx
     var block = this.data.activityRichContent[idx]
     var richContent = this.data.activityRichContent
+    if (block.type === 'swiper') {
+      var self = this;
+      var itemList = [];
+      for (var i = 0; i < block.urls.length; i++) {
+        if (i < 5) itemList.push('删除第 ' + (i+1) + ' 张');
+      }
+      if (block.urls.length > 5) itemList.push('删除最后一张 (第' + block.urls.length + '张)');
+      wx.showActionSheet({
+        itemList: itemList,
+        success: function(res) {
+          var deleteIdx = res.tapIndex;
+          if (deleteIdx === 5) deleteIdx = block.urls.length - 1;
+          block.urls.splice(deleteIdx, 1);
+          if (block.urls.length === 0) richContent.splice(idx, 1);
+          self.setData({ activityRichContent: richContent });
+          wx.showToast({ title: '已删除图片', icon: 'success' });
+        }
+      });
+      return;
+    }
     richContent.splice(idx, 1)
     this.setData({
       activityRichContent: richContent,
@@ -2337,11 +2634,16 @@ Page({
     }
     finalContent = htmlParts.join('')
     
-    var coverImage = ''
-    for (var i = 0; i < richContent.length; i++) {
-      if (richContent[i].type === 'image' && richContent[i].url) {
-        coverImage = richContent[i].url
-        break
+    var coverImage = self.data.activityFormImage || ''
+    if (!coverImage) {
+      for (var i = 0; i < richContent.length; i++) {
+        if (richContent[i].type === 'image' && richContent[i].url) {
+          coverImage = richContent[i].url
+          break
+        } else if ((richContent[i].type === 'video' || richContent[i].type === 'music') && richContent[i].cover) {
+          coverImage = richContent[i].cover
+          break
+        }
       }
     }
 
@@ -2404,32 +2706,192 @@ Page({
       }
     })
   },
-  testPush: function(e) {
-    var type = e.currentTarget.dataset.type
-    var names = { announcement: '公告', activity: '活动', merchant: '商人' }
-    var self = this
-    wx.showModal({ title: '测试推送', content: '发送一条测试' + names[type] + '推送？',
-      success: function(res) {
-        if (res.confirm) {
-          wx.showLoading({ title: '发送中...' })
-          wx.cloud.callFunction({
-            name: 'sendSubscribe',
-            data: {
-              type: type,
-              title: '测试推送',
-              content: '这是一条测试推送消息'
-            }
-          }).then(function(httpRes) {
-            wx.hideLoading()
-            var result = httpRes.result
-            var msg = result && result.sent > 0 ? '发送成功(' + result.sent + '条)' : (result && result.total === 0 ? '该类型无订阅者' : '发送失败')
-            wx.showToast({ title: msg, icon: 'none' })
-          }).catch(function() {
-            wx.hideLoading()
-            wx.showToast({ title: '发送失败', icon: 'none' })
-          })
+      testPush: function(e) {
+      var type = e.currentTarget.dataset.type
+      var names = { announcement: '公告', activity: '活动', merchant: '商户' }
+      var self = this
+      wx.showModal({ title: '测试推送', content: '将发送一条' + names[type] + '推送，请确认是否继续？',
+        success: function(res) {
+          if (res.confirm) {
+            wx.showLoading({ title: '正在发送...' })
+            wx.request({
+              url: 'https://rockzj.top/api/push/send',
+              method: 'POST',
+              data: {
+                type: type,
+                title: '测试推送',
+                content: '这是一条由专属阿里云发出的测试消息'
+              },
+              success: function(httpRes) {
+                wx.hideLoading()
+                var result = httpRes.data
+                var msg = result && result.sent > 0 ? '推送成功(' + result.sent + '人)' : (result && result.total === 0 ? '无人订阅' : '失败: ' + (result.error || '未知错误'))
+                wx.showToast({ title: msg, icon: 'none', duration: 4000 })
+                if (self.loadSubscribers) self.loadSubscribers();
+              },
+              fail: function(err) {
+                wx.hideLoading()
+                wx.showToast({ title: '网络请求失败，请检查域名或服务器', icon: 'none', duration: 3000 })
+              }
+            })
+          }
+        }
+      })
+    },
+  
+  undo: function() {
+    if (this.editorCtx) {
+      this.editorCtx.undo();
+    }
+  },
+  alignLeft: function() {
+    if (this.editorCtx) {
+      this.editorCtx.format('align', 'left');
+      this.setData({ currentAlign: 'left' });
+    }
+  },
+  alignCenter: function() {
+    if (this.editorCtx) {
+      this.editorCtx.format('align', 'center');
+      this.setData({ currentAlign: 'center' });
+    }
+  },
+  alignRight: function() {
+    if (this.editorCtx) {
+      this.editorCtx.format('align', 'right');
+      this.setData({ currentAlign: 'right' });
+    }
+  },
+  activityUndo: function() {
+    if (this.activityEditorCtx) {
+      this.activityEditorCtx.undo();
+    }
+  },
+  activityAlignLeft: function() {
+    if (this.activityEditorCtx) {
+      this.activityEditorCtx.format('align', 'left');
+      this.setData({ activityAlign: 'left' });
+    }
+  },
+  activityAlignCenter: function() {
+    if (this.activityEditorCtx) {
+      this.activityEditorCtx.format('align', 'center');
+      this.setData({ activityAlign: 'center' });
+    }
+  },
+  activityAlignRight: function() {
+    if (this.activityEditorCtx) {
+      this.activityEditorCtx.format('align', 'right');
+      this.setData({ activityAlign: 'right' });
+    }
+  },
+
+  editMediaCover: function(e) {
+    var self = this;
+    var idx = e.currentTarget.dataset.idx;
+    var target = e.currentTarget.dataset.target;
+    self._askForCover(function(cover) {
+      if (cover === undefined) return;
+      if (target === 'activity') {
+        var richContent = self.data.activityRichContent;
+        if (richContent[idx]) {
+          richContent[idx].cover = cover;
+          self.setData({ activityRichContent: richContent });
+        }
+      } else {
+        var richContent = self.data.formRichContent;
+        if (richContent[idx]) {
+          richContent[idx].cover = cover;
+          self.setData({ formRichContent: richContent });
         }
       }
+    });
+  },
+  
+  _askForCover: function(callback) {
+    wx.showActionSheet({
+      itemList: ['从相册上传封面', '粘贴图片链接', '不添加封面'],
+      success: function(res) {
+        if (res.tapIndex === 0) {
+          wx.chooseImage({
+            count: 1,
+            sizeType: ['compressed'],
+            sourceType: ['album', 'camera'],
+            success: function(imgRes) {
+              wx.showLoading({ title: '上传中...' })
+              var ext = imgRes.tempFilePaths[0].split('.').pop() || 'jpg'
+              wx.cloud.uploadFile({ cloudPath: 'cover/' + Date.now() + '.' + ext, filePath: imgRes.tempFilePaths[0] })
+                .then(function(uploadRes) {
+                  wx.hideLoading()
+                  callback(uploadRes.fileID)
+                })
+                .catch(function() {
+                  wx.hideLoading()
+                  wx.showToast({ title: '上传失败', icon: 'none' })
+                  callback('')
+                })
+            },
+            fail: function() { callback('') }
+          })
+        } else if (res.tapIndex === 1) {
+          wx.showModal({
+            title: '输入图片链接',
+            editable: true,
+            success: function(urlRes) {
+              callback((urlRes.confirm && urlRes.content) ? urlRes.content.trim() : '')
+            },
+            fail: function() { callback('') }
+          })
+        } else {
+          callback('')
+        }
+      },
+      fail: function() { callback('') }
     })
-  }
+  },
+  showActivitySwiperDialog: function() {
+    var self = this;
+    wx.showModal({
+      title: '创建/追加滚动图(活动)',
+      content: '',
+      editable: true,
+      placeholderText: '请输入单张滚动图片URL...',
+      success: function(res) {
+        if (res.confirm && res.content && res.content.trim()) {
+          var url = res.content.trim();
+          var richContent = self.data.activityRichContent || [];
+          if (richContent.length > 0 && richContent[richContent.length - 1].type === 'swiper') {
+            richContent[richContent.length - 1].urls.push(url);
+          } else {
+            richContent.push({ type: 'swiper', urls: [url] });
+          }
+          self.setData({ activityRichContent: richContent });
+          wx.showToast({ title: '已追加滚动图', icon: 'success' });
+        }
+      }
+    });
+  },
+
+  showSwiperDialog: function() {
+    var self = this;
+    wx.showModal({
+      title: '添加/追加滚动图',
+      content: '',
+      editable: true,
+      placeholderText: '请输入单张滚动图片URL...',
+      success: function(res) {
+        if (res.confirm && res.content && res.content.trim()) {
+          var url = res.content.trim();
+          var richContent = self.data.formRichContent || [];
+          if (richContent.length > 0 && richContent[richContent.length - 1].type === 'swiper') {
+            richContent[richContent.length - 1].urls.push(url);
+          } else {
+            richContent.push({ type: 'swiper', urls: [url] });
+          }
+          self.setData({ formRichContent: richContent });
+          wx.showToast({ title: '已添加滚动图', icon: 'success' });
+        }
+      }
+    });
+  },
 })

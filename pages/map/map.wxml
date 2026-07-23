@@ -1,5 +1,15 @@
 <view class="page">
-  <view class="map-wrapper">
+  <!-- 维护模式 -->
+  <view class="maintain-wrapper" wx:if="{{maintenance}}">
+    <view class="maintain-card">
+      <text class="maintain-icon">🚧</text>
+      <text class="maintain-title">洛手地图维护中</text>
+      <text class="maintain-desc">迎接S3赛季，新版地图正在加急更新中，敬请期待！</text>
+    </view>
+  </view>
+
+  <!-- 地图主界面 -->
+  <view class="map-wrapper" wx:if="{{!maintenance}}">
     <game-map
       id="gameMap"
       class="map-view"

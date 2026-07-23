@@ -114,12 +114,6 @@
     "audio"
   ],
   "resizable": true,
-  "preloadRule": {
-    "pages/index/index": {
-      "network": "all",
-      "packages": ["activity", "map", "catch", "egg"]
-    }
-  },
   "style": "v2",
   "lazyCodeLoading": "requiredComponents"
 }

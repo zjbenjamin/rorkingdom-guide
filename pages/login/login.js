@@ -2,6 +2,7 @@ var app = getApp()
 var notify = require('../../utils/notify')
 var templateConfig = require('../../config/notifyTemplates')
 var levelUtil = require('../../utils/level')
+var admin = require('../../utils/admin')
 var db = null
 
 Page({
@@ -93,8 +94,8 @@ Page({
             self.setData({ userRole: r.data[0].role })
           }
         })
-        .catch(function() {})
-    }).catch(function() {})
+        .catch(function(e) { console.error(e) })
+    }).catch(function(e) { console.error(e) })
   },
   recordLoginDay: function() {
     var today = new Date()
@@ -150,8 +151,8 @@ Page({
             })
           }
         })
-        .catch(function() {})
-    }).catch(function() {})
+        .catch(function(e) { console.error(e) })
+    }).catch(function(e) { console.error(e) })
   },
   syncLevel: function(level) {
     if (!wx.cloud) return
@@ -166,8 +167,8 @@ Page({
             })
           }
         })
-        .catch(function() {})
-    }).catch(function() {})
+        .catch(function(e) { console.error(e) })
+    }).catch(function(e) { console.error(e) })
   },
   checkLoginStatus: function() {
     var self = this
@@ -176,7 +177,7 @@ Page({
     var gameUid = wx.getStorageSync('game_uid') || ''
     if (saved && loginTime) {
       var now = Date.now()
-      var expire = 3 * 24 * 60 * 60 * 1000
+      var expire = 365 * 24 * 60 * 60 * 1000
       if (now - loginTime > expire) {
         wx.removeStorageSync('user_info')
         wx.removeStorageSync('login_time')
@@ -225,8 +226,8 @@ Page({
                 db.collection('users').doc(r.data[0]._id).update({ data: { gameUid: uid } })
               }
             })
-            .catch(function() {})
-        }).catch(function() {})
+            .catch(function(e) { console.error(e) })
+        }).catch(function(e) { console.error(e) })
       }
     }
   },
@@ -273,7 +274,7 @@ Page({
     wx.setStorageSync('login_time', loginTime)
     var app = getApp()
     app.globalData.userInfo = userInfo
-    var expire = 3 * 24 * 60 * 60 * 1000
+    var expire = 365 * 24 * 60 * 60 * 1000
     self.setData({ userInfo: userInfo, hasUserInfo: true, isLogging: false, loginExpire: '3天0小时' })
     self.syncToCloud(userInfo)
     wx.showModal({
@@ -360,8 +361,8 @@ Page({
             db.collection('users').add({ data: cloudData })
           }
         })
-        .catch(function() {})
-    }).catch(function() {})
+        .catch(function(e) { console.error(e) })
+    }).catch(function(e) { console.error(e) })
   },
   onLogout: function() {
     var self = this
@@ -501,38 +502,42 @@ Page({
   onResetSubscribe: function(e) {
     var self = this
     var type = e.currentTarget.dataset.type
-    var names = { announcement: '公告', activity: '活动', merchant: '商人' }
-    wx.showModal({
-      title: '重置订阅',
-      content: '确定重置「' + names[type] + '」订阅？重置后需重新授权',
-      success: function(res) {
-        if (res.confirm) {
-          if (!db) return
-          wx.cloud.callFunction({ name: 'login' }).then(function(loginRes) {
-            var openid = loginRes.result.openid
-            db.collection('subscribers').where({ openid: openid, type: type }).get()
-              .then(function(subRes) {
-                if (subRes.data.length > 0) {
-                  return db.collection('subscribers').doc(subRes.data[0]._id).update({
-                    data: { status: 'expired', count: 0, updateTime: db.serverDate() }
-                  })
-                }
-              })
-              .then(function() {
-                self.setData({ ['notifyCount.' + type]: 0 })
-                self.loadNotifyStatus()
-                wx.showToast({ title: '已重置', icon: 'success' })
-                notify.requestAndSave([type], function(err, result) {
-                  if (!err && result && result[type] === 'accept') {
-                    self.setData({ ['notifyCount.' + type]: 1 })
-                    self.loadNotifyStatus()
-                    wx.showToast({ title: '已重新授权', icon: 'success' })
-                  }
+    if (!wx.cloud) return
+    
+    // 微信硬性规定：订阅接口必须同步调用，绝不能放在Promise或弹窗回调里！
+    notify.requestSubscribe([type], function(err, result) {
+      if (!err && result && result[type] === 'accept') {
+        wx.cloud.callFunction({ name: 'login' }).then(function(loginRes) {
+          var openid = loginRes.result.openid
+          db.collection('subscribers').where({ openid: openid, type: type }).get()
+            .then(function(subRes) {
+              if (subRes.data.length > 0) {
+                return db.collection('subscribers').doc(subRes.data[0]._id).update({
+                  data: { status: 'active', count: 1, updateTime: db.serverDate() }
                 })
-              })
-              .catch(function() { wx.showToast({ title: '重置失败', icon: 'none' }) })
-          }).catch(function() {})
-        }
+              } else {
+                return db.collection('subscribers').add({
+                  data: { openid: openid, type: type, status: 'active', count: 1, createTime: db.serverDate(), updateTime: db.serverDate() }
+                })
+              }
+            })
+            .then(function() {
+              self.setData({ ['notifyCount.' + type]: 1 })
+              self.loadNotifyStatus()
+              wx.showToast({ title: '已重置并授权', icon: 'success' })
+            })
+        })
+      } else {
+        wx.showModal({
+          title: '重新授权失败',
+          content: '未获得订阅权限，可能是您曾经勾选了“总是保持以上选择”并拒绝。请点击“去设置”手动开启。',
+          confirmText: '去设置',
+          success: function(modalRes) {
+            if (modalRes.confirm) {
+              wx.openSetting({})
+            }
+          }
+        })
       }
     })
   },
@@ -625,33 +630,17 @@ Page({
   },
   checkAdmin: function() {
     var self = this
-    if (!wx.cloud) return
-    var db = wx.cloud.database()
-    var app = getApp()
-    var userInfo = app.globalData.userInfo
-    if (!userInfo) return
-    db.collection('admin_config').doc('admin').get()
-      .then(function(res) {
-        var adminOpenid = res.data.openid
-        db.collection('users').where({ _openid: adminOpenid }).get()
-          .then(function(userRes) {
-            if (userRes.data.length > 0) {
-              self.setData({ isAdmin: true })
-            }
-          })
-          .catch(function() {})
-      })
-      .catch(function(e) {
-        console.log('检查管理员失败:', e)
-      })
+    admin.checkAdmin(self, function(isAdmin) {
+      if (isAdmin) self.setData({ isAdmin: true })
+    })
   },
   goAdmin: function() {
     wx.navigateTo({ url: '/pages/admin/admin' })
   },
   onShareAppMessage: function() {
-    return { title: '洛手助手BENJAMIN - 个人中心', path: '/pages/index/index', imageUrl: '/images/banner1.png' }
+    return { title: '洛手助手洛手助手 - 个人中心', path: '/pages/index/index', imageUrl: '/images/banner1.png' }
   },
   onShareTimeline: function() {
-    return { title: '洛手助手BENJAMIN - 精灵图鉴·捕捉统计·活动日历', imageUrl: '/images/banner1.png' }
+    return { title: '洛手助手洛手助手 - 精灵图鉴·捕捉统计·活动日历', imageUrl: '/images/banner1.png' }
   }
 })

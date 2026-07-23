@@ -45,7 +45,6 @@
       <scroll-view scroll-x class="admin-tabs-scroll">
         <view class="admin-tabs">
           <view class="admin-tab {{activeTab === 'announce' ? 'on' : ''}}" bindtap="switchTab" data-tab="announce">公告</view>
-          <view class="admin-tab {{activeTab === 'activity' ? 'on' : ''}}" bindtap="switchTab" data-tab="activity">活动</view>
           <view class="admin-tab {{activeTab === 'balls' ? 'on' : ''}}" bindtap="switchTab" data-tab="balls">道具球</view>
           <view class="admin-tab {{activeTab === 'subscribe' ? 'on' : ''}}" bindtap="switchTab" data-tab="subscribe">订阅</view>
           <view class="admin-tab {{activeTab === 'users' ? 'on' : ''}}" bindtap="switchTab" data-tab="users">用户</view>
@@ -103,6 +102,39 @@
           </view>
         </view>
         <view class="empty" wx:if="{{adminActivities.length === 0}}"><text class="empty-text">暂无活动</text></view>
+      </view>
+
+      <!-- 咕噜球管理 -->
+      <view wx:if="{{activeTab === 'balls'}}">
+        <view class="section-header">
+          <text class="section-title">咕噜球仓库配置</text>
+          <view class="add-btn" bindtap="openBallModal"><text>+ 新增</text></view>
+        </view>
+        <view class="card-item" wx:for="{{ballsConfig}}" wx:key="id">
+          <view class="card-top" style="justify-content: space-between;">
+            <view style="display:flex; align-items:center;">
+              <image wx:if="{{item.img}}" src="{{item.img}}" style="width:40rpx; height:40rpx; margin-right:12rpx;" mode="aspectFit" />
+              <text wx:else style="margin-right:12rpx; font-size: 32rpx;">{{item.icon || '⚪'}}</text>
+              <text style="font-weight:bold; color:{{item.color || '#fff'}}">{{item.name}}</text>
+            </view>
+            <view style="display:flex; gap:10rpx;">
+              <view class="tag tag-notice" wx:if="{{item.isBuy}}">购买球</view>
+              <view class="tag tag-update" wx:if="{{item.isCraft}}">合成球</view>
+            </view>
+          </view>
+          <view style="padding: 24rpx; background: rgba(0,0,0,0.2); border-radius: 12rpx; margin-bottom: 24rpx;">
+            <view style="font-size:24rpx; color:#aaa; margin-bottom: 8rpx;">价格: {{item.price}} 洛克贝</view>
+            <view style="font-size:24rpx; color:#aaa; margin-bottom: 8rpx;">描述: {{item.desc}}</view>
+            <view style="font-size:24rpx; color:#aaa;">获取: {{item.source || '未知'}}</view>
+          </view>
+          <view class="card-actions">
+            <view class="btn-edit" bindtap="openBallModal" data-item="{{item}}">编辑</view>
+            <view class="btn-delete" bindtap="deleteBall" data-id="{{item.id}}">删除</view>
+          </view>
+        </view>
+        <view class="modal-submit" bindtap="saveBallsConfig" style="margin: 40rpx 0; width: 100%; box-sizing: border-box; justify-content:center; {{ballsSubmitting ? 'opacity: 0.5; filter: grayscale(1);' : ''}}">
+          <text>{{ballsSubmitting ? '保存中...' : '保存修改到云端'}}</text>
+        </view>
       </view>
 
       <!-- 订阅管理 -->
@@ -187,7 +219,7 @@
         <view class="section-header"><text class="section-title">用户列表</text></view>
         <view class="card-item" wx:for="{{users}}" wx:key="_id">
           <view class="card-top">
-            <image lazy-load class="card-avatar" src="{{item.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill" />
+            <image class="card-avatar" src="{{item.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill" />
             <view class="card-user-info">
               <text class="card-author">{{item.nickName}}</text>
               <text class="card-meta">Lv.{{item.level}} · 登录{{item.loginDays ? item.loginDays.length : 0}}天 · {{item.timeStr}}</text>
@@ -287,7 +319,21 @@
             <picker class="form-picker" range="{{['公告', '更新', '活动', '提示']}}" bindchange="onTypeChange">
               <text class="picker-text">{{formType === 'notice' ? '公告' : formType === 'update' ? '更新' : formType === 'event' ? '活动' : '提示'}} ▾</text>
             </picker>
-          </view>
+            </view>
+            <view class="form-group" wx:if="{{formType === 'event'}}">
+              <text class="form-label">活动板块</text>
+              <picker class="form-picker" range="{{['常规', '赛季', '联动']}}" bindchange="onSubTypeChange">
+                <text class="picker-text">{{formSubType === 'regular' ? '常规' : formSubType === 'season' ? '赛季' : formSubType === 'collab' ? '联动' : '常规'}} ▾</text>
+              </picker>
+            </view>
+            <view class="form-group" wx:if="{{formType === 'event' && formSubType === 'collab'}}">
+              <text class="form-label">联动Logo</text>
+              <input class="form-input" placeholder-class="form-input-placeholder" placeholder="请输入联动品牌Logo URL (选填)" value="{{formCollabLogo}}" bindinput="onCollabLogoInput" />
+            </view>
+            <view class="form-group" wx:if="{{formType === 'event' && formSubType === 'collab'}}">
+              <text class="form-label">联动封面</text>
+              <input class="form-input" placeholder-class="form-input-placeholder" placeholder="请输入封面图片 URL (选填)" value="{{formCollabCover}}" bindinput="onCollabCoverInput" />
+            </view>
           <view class="form-group">
             <text class="form-label">标题</text>
             <input class="form-input" placeholder-class="form-input-placeholder" placeholder="输入公告标题" value="{{formTitle}}" bindinput="onTitleInput" maxlength="50" />
@@ -312,18 +358,7 @@
                   <view class="tool-btn {{currentAlign === 'right' ? 'active' : ''}}" catchtap="alignRight">
                     <text class="tool-icon" style="font-size:24rpx;">居右</text>
                   </view>
-                                    <view class="tool-btn" catchtap="undo">
-                    <text class="tool-icon">↩️</text>
-                  </view>
-                  <view class="tool-btn {{currentAlign === 'left' ? 'active' : ''}}" catchtap="alignLeft">
-                    <text class="tool-icon" style="font-size:24rpx;">居左</text>
-                  </view>
-                  <view class="tool-btn {{currentAlign === 'center' ? 'active' : ''}}" catchtap="alignCenter">
-                    <text class="tool-icon" style="font-size:24rpx;">居中</text>
-                  </view>
-                  <view class="tool-btn {{currentAlign === 'right' ? 'active' : ''}}" catchtap="alignRight">
-                    <text class="tool-icon" style="font-size:24rpx;">居右</text>
-                  </view>
+
                   <view class="tool-btn {{currentFontWeight === 'bold' ? 'active' : ''}}" catchtap="toggleBold">
                   <text class="tool-icon" style="font-weight:bold;">B</text>
                 </view>
@@ -376,6 +411,10 @@
                   <text class="tool-icon">🖼️</text>
                   <text class="tool-text">正文插图</text>
                 </view>
+                <view class="tool-btn" catchtap="showSwiperDialog">
+                  <text class="tool-icon">🔄</text>
+                  <text class="tool-text">滚动图</text>
+                </view>
                 <view class="tool-btn" catchtap="showDividerDialog">
                   <text class="tool-icon">➖</text>
                   <text class="tool-text">分割线</text>
@@ -389,7 +428,6 @@
                   <text class="tool-text">新起一段</text>
                 </view>
               </view>
-              
               <!-- 字号选择器 -->
               <view class="size-picker" wx:if="{{showSizePicker}}">
                 <view class="size-option {{currentFontSize === item ? 'active' : ''}}" wx:for="{{fontSizeOptions}}" wx:key="*this" catchtap="setFontSize" data-size="{{item}}">
@@ -419,12 +457,18 @@
                 <view class="block-content">
                   <text wx:if="{{item.type === 'quote'}}" class="block-quote-icon">❝</text>
                   <block wx:elif="{{item.type === 'music'}}">
-                    <text class="block-music-icon">🎵</text>
+                    <image wx:if="{{item.cover}}" class="block-cover-preview" src="{{item.cover}}" mode="aspectFill" style="width: 40rpx; height: 40rpx; border-radius: 50%; margin-right: 12rpx; border: 2rpx solid #3d2b1f;" />
+                    <text wx:else class="block-music-icon">🎵</text>
                     <text class="block-text music-text-info">{{item.name || '推荐单曲'}}</text>
                   </block>
                   <block wx:elif="{{item.type === 'video'}}">
-                    <text class="block-video-icon">{{item.platform === 'bilibili' ? '📺' : '🎬'}}</text>
+                    <image wx:if="{{item.cover}}" class="block-cover-preview" src="{{item.cover}}" mode="aspectFill" style="width: 50rpx; height: 36rpx; border-radius: 6rpx; margin-right: 12rpx; border: 2rpx solid #3d2b1f;" />
+                    <text wx:else class="block-video-icon">{{item.platform === 'bilibili' ? '📺' : '🎬'}}</text>
                     <text class="block-text video-text-info">{{item.platformName || '在线'}}视频{{item.name ? ': ' + item.name : ''}}</text>
+                  </block>
+                  <block wx:elif="{{item.type === 'swiper'}}">
+                    <text class="block-video-icon">🔄</text>
+                    <text class="block-text video-text-info">滚动图片 (共{{item.urls.length}}张)</text>
                   </block>
                   <block wx:elif="{{item.type === 'table'}}">
                     <view class="table-block-preview">
@@ -440,7 +484,7 @@
                   <block wx:elif="{{item.type === 'image'}}">
                     <text class="block-image-icon">🖼️</text>
                     <view class="image-block-preview">
-                      <image lazy-load src="{{item.url}}" mode="aspectFill" />
+                      <image src="{{item.url}}" mode="aspectFill" />
                     </view>
                   </block>
                   <block wx:elif="{{item.type === 'divider'}}">
@@ -466,6 +510,11 @@
                   <text wx:else class="block-text" style="font-size:{{item.size}}rpx;color:{{item.color}};font-weight:{{item.weight}};font-style:{{item.style}};{{item.fontFamily && item.fontFamily !== 'sans-serif' ? 'font-family:' + item.fontFamily + ';' : ''}}">{{item.content}}</text>
                 </view>
                 <view class="block-actions">
+                  <block wx:if="{{item.type === 'music' || item.type === 'video'}}">
+                    <view class="block-btn" catchtap="editMediaCover" data-idx="{{index}}" data-target="form">换封面</view>
+                    <view class="block-btn" catchtap="showMoveTopActionSheet" data-idx="{{index}}" data-target="form">置顶</view>
+                    <view class="block-btn" catchtap="showMoveBottomActionSheet" data-idx="{{index}}" data-target="form">置底</view>
+                  </block>
                   <view class="block-btn" wx:if="{{item.type !== 'music' && item.type !== 'video' && item.type !== 'table' && item.type !== 'image' && item.type !== 'divider' && item.type !== 'link' && item.type !== 'attachment'}}" catchtap="editRichBlock" data-idx="{{index}}">编辑</view>
                   <view class="block-btn delete" catchtap="removeRichBlock" data-idx="{{index}}">删除</view>
                 </view>
@@ -557,18 +606,7 @@
                   <view class="tool-btn {{activityAlign === 'right' ? 'active' : ''}}" catchtap="activityAlignRight">
                     <text class="tool-icon" style="font-size:24rpx;">居右</text>
                   </view>
-                                    <view class="tool-btn" catchtap="activityUndo">
-                    <text class="tool-icon">↩️</text>
-                  </view>
-                  <view class="tool-btn {{activityAlign === 'left' ? 'active' : ''}}" catchtap="activityAlignLeft">
-                    <text class="tool-icon" style="font-size:24rpx;">居左</text>
-                  </view>
-                  <view class="tool-btn {{activityAlign === 'center' ? 'active' : ''}}" catchtap="activityAlignCenter">
-                    <text class="tool-icon" style="font-size:24rpx;">居中</text>
-                  </view>
-                  <view class="tool-btn {{activityAlign === 'right' ? 'active' : ''}}" catchtap="activityAlignRight">
-                    <text class="tool-icon" style="font-size:24rpx;">居右</text>
-                  </view>
+
                   <view class="tool-btn {{activityFontWeight === 'bold' ? 'active' : ''}}" catchtap="toggleActivityBold">
                   <text class="tool-icon" style="font-weight:bold;">B</text>
                 </view>
@@ -621,6 +659,259 @@
                   <text class="tool-icon">🖼️</text>
                   <text class="tool-text">正文插图</text>
                 </view>
+                <view class="tool-btn" catchtap="showActivitySwiperDialog">
+                  <text class="tool-icon">🔄</text>
+                  <text class="tool-text">滚动图</text>
+                </view>
+                <view class="tool-btn" catchtap="showActivityDividerDialog">
+                  <text class="tool-icon">➖</text>
+                  <text class="tool-text">分割线</text>
+                </view>
+                <view class="tool-btn" catchtap="showActivityLinkDialog">
+                  <text class="tool-icon">🔗</text>
+                  <text class="tool-text">超链接</text>
+                </view>
+                <view class="tool-btn" catchtap="addActivityRichTextBlock">
+                  <text class="tool-icon">＋</text>
+                  <text class="tool-text">新起一段</text>
+                </view>
+              </view>
+              
+              <!-- 字号选择器 -->
+              <view class="size-picker" wx:if="{{showSizePicker}}">
+                <view class="size-option {{currentFontSize === item ? 'active' : ''}}" wx:for="{{fontSizeOptions}}" wx:key="*this" catchtap="setFontSize" data-size="{{item}}">
+                  <text style="font-size:{{item}}rpx;">{{item}}</text>
+                </view>
+              </view>
+              
+              <!-- 颜色选择器 -->
+              <view class="color-picker" wx:if="{{showColorPicker}}">
+                <view class="color-option {{currentFontColor === item.value ? 'active' : ''}}" wx:for="{{fontColorOptions}}" wx:key="value" catchtap="setFontColor" data-color="{{item.value}}">
+                  <view class="color-dot" style="background:{{item.value}};"></view>
+                  <text class="color-name">{{item.name}}</text>
+                </view>
+              </view>
+
+              <!-- 字体选择器 -->
+              <view class="font-picker" wx:if="{{showFontFamilyPicker}}">
+                <view class="font-option {{currentFontFamily === item.value ? 'active' : ''}}" wx:for="{{fontFamilyOptions}}" wx:key="value" catchtap="setFontFamily" data-family="{{item.value}}">
+                  <text class="font-preview" style="font-family:{{item.value}};">{{item.name}}</text>
+                </view>
+              </view>
+            </view>
+            
+            <!-- 已添加的富文本块 -->
+            <view class="rich-blocks" wx:if="{{formRichContent.length > 0}}">
+              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}} {{item.type === 'music' ? 'music-block-item' : ''}} {{item.type === 'video' ? 'video-block-item' : ''}} {{item.type === 'table' ? 'table-block-item' : ''}} {{item.type === 'divider' ? 'divider-block-item' : ''}} {{item.type === 'link' ? 'link-block-item' : ''}}" wx:for="{{formRichContent}}" wx:key="index">
+                <view class="block-content">
+                  <text wx:if="{{item.type === 'quote'}}" class="block-quote-icon">❝</text>
+                  <block wx:elif="{{item.type === 'music'}}">
+                    <image wx:if="{{item.cover}}" class="block-cover-preview" src="{{item.cover}}" mode="aspectFill" style="width: 40rpx; height: 40rpx; border-radius: 50%; margin-right: 12rpx; border: 2rpx solid #3d2b1f;" />
+                    <text wx:else class="block-music-icon">🎵</text>
+                    <text class="block-text music-text-info">{{item.name || '推荐单曲'}}</text>
+                  </block>
+                  <block wx:elif="{{item.type === 'video'}}">
+                    <image wx:if="{{item.cover}}" class="block-cover-preview" src="{{item.cover}}" mode="aspectFill" style="width: 50rpx; height: 36rpx; border-radius: 6rpx; margin-right: 12rpx; border: 2rpx solid #3d2b1f;" />
+                    <text wx:else class="block-video-icon">{{item.platform === 'bilibili' ? '📺' : '🎬'}}</text>
+                    <text class="block-text video-text-info">{{item.platformName || '在线'}}视频{{item.name ? ': ' + item.name : ''}}</text>
+                  </block>
+                  <block wx:elif="{{item.type === 'swiper'}}">
+                    <text class="block-video-icon">🔄</text>
+                    <text class="block-text video-text-info">滚动图片 (共{{item.urls.length}}张)</text>
+                  </block>
+                  <block wx:elif="{{item.type === 'table'}}">
+                    <view class="table-block-preview">
+                      <text class="table-block-icon">📊</text>
+                      <view class="table-mini">
+                        <view class="table-mini-row" wx:for="{{item.headers}}" wx:for-item="h" wx:for-index="hi" wx:key="hi">
+                          <view class="table-mini-header-cell">{{h}}</view>
+                        </view>
+                      </view>
+                      <text class="table-block-info">{{item.colCount}}列 × {{item.rowCount}}行</text>
+                    </view>
+                  </block>
+                  <block wx:elif="{{item.type === 'image'}}">
+                    <text class="block-image-icon">🖼️</text>
+                    <view class="image-block-preview">
+                      <image src="{{item.url}}" mode="aspectFill" />
+                    </view>
+                  </block>
+                  <block wx:elif="{{item.type === 'divider'}}">
+                    <view class="divider-block" style="width: 100%;">
+                      <view class="divider-line {{item.style}}"></view>
+                    </view>
+                  </block>
+                  <block wx:elif="{{item.type === 'link'}}">
+                    <view class="link-block-preview {{item.isVideo ? 'video-style' : ''}}" style="width: 100%;">
+                      <text class="link-preview-icon">{{item.isVideo ? '📺' : '🔗'}}</text>
+                      <text class="link-preview-text">{{item.text}}</text>
+                    </view>
+                  </block>
+                  <block wx:elif="{{item.type === 'attachment'}}">
+                    <view class="attachment-block-preview" style="width: 100%;">
+                      <text style="font-size: 28rpx; color: #ffab40; margin-right: 12rpx;">📎</text>
+                      <view style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+                        <text style="font-size: 26rpx; color: #ffab40; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">{{item.name}}</text>
+                        <text style="font-size: 20rpx; color: rgba(255,255,255,0.4);" wx:if="{{item.sizeText}}">{{item.sizeText}}</text>
+                      </view>
+                    </view>
+                  </block>
+                  <text wx:else class="block-text" style="font-size:{{item.size}}rpx;color:{{item.color}};font-weight:{{item.weight}};font-style:{{item.style}};{{item.fontFamily && item.fontFamily !== 'sans-serif' ? 'font-family:' + item.fontFamily + ';' : ''}}">{{item.content}}</text>
+                </view>
+                <view class="block-actions">
+                  <block wx:if="{{item.type === 'music' || item.type === 'video'}}">
+                    <view class="block-btn" catchtap="editMediaCover" data-idx="{{index}}" data-target="form">换封面</view>
+                    <view class="block-btn" catchtap="showMoveTopActionSheet" data-idx="{{index}}" data-target="form">置顶</view>
+                    <view class="block-btn" catchtap="showMoveBottomActionSheet" data-idx="{{index}}" data-target="form">置底</view>
+                  </block>
+                  <view class="block-btn" wx:if="{{item.type !== 'music' && item.type !== 'video' && item.type !== 'table' && item.type !== 'image' && item.type !== 'divider' && item.type !== 'link' && item.type !== 'attachment'}}" catchtap="editRichBlock" data-idx="{{index}}">编辑</view>
+                  <view class="block-btn delete" catchtap="removeRichBlock" data-idx="{{index}}">删除</view>
+                </view>
+              </view>
+            </view>
+            
+            <editor id="editor" class="form-editor" placeholder="输入公告内容" bindstatuschange="onStatusChange" bindready="onEditorReady" bindinput="onEditorInput" show-img-size show-img-toolbar show-img-resize></editor>
+          </view>
+          <view class="form-group">
+            <text class="form-label">引用来源（可选）</text>
+            <input class="form-input" placeholder-class="form-input-placeholder" placeholder="输入引用来源或出处" value="{{formSource}}" bindinput="onSourceInput" maxlength="100" />
+          </view>
+          <view class="form-group row">
+            <text class="form-label">置顶</text>
+            <view class="toggle {{formPinned ? 'on' : ''}}" catchtap="togglePinned"><view class="toggle-dot"></view></view>
+          </view>
+
+          <view class="form-row" style="display:flex; flex-direction:column; gap:20rpx;">
+            <view class="form-group" style="width:100%;">
+              <text class="form-label">开始时间</text>
+              <view style="display:flex; gap:20rpx;">
+                <picker class="form-picker" mode="date" value="{{formStartDate}}" bindchange="onStartDateChange" style="flex:1;">
+                  <text class="picker-text">{{formStartDate || '选择日期'}} ▾</text>
+                </picker>
+                <picker class="form-picker" mode="time" value="{{formStartTime}}" bindchange="onStartTimeChange" style="flex:1;">
+                  <text class="picker-text">{{formStartTime || '选择时间'}} ▾</text>
+                </picker>
+              </view>
+            </view>
+            <view class="form-group" style="width:100%;">
+              <text class="form-label">结束时间/倒计时</text>
+              <view style="display:flex; gap:20rpx;">
+                <picker class="form-picker" mode="date" value="{{formEndDate}}" bindchange="onEndDateChange" style="flex:1;">
+                  <text class="picker-text">{{formEndDate || '选择日期'}} ▾</text>
+                </picker>
+                <picker class="form-picker" mode="time" value="{{formEndTime}}" bindchange="onEndTimeChange" style="flex:1;">
+                  <text class="picker-text">{{formEndTime || '选择时间'}} ▾</text>
+                </picker>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view class="modal-footer">
+          <text class="char-count">{{formContent.length}}/5000</text>
+          <button class="modal-submit" catchtap="submitAnnouncement" disabled="{{submitting}}">{{submitting ? '提交中...' : (editingItem ? '更新' : '发布')}}</button>
+        </view>
+      </view>
+    </view>
+
+
+    <!-- 活动编辑弹窗 -->
+    <view class="modal-mask" wx:if="{{showActivityModal}}" bindtap="closeActivityModal">
+      <view class="modal-box" catchtap="preventClose">
+        <view class="modal-header">
+          <text class="modal-title">{{activityEditingItem ? '编辑活动' : '新增活动'}}</text>
+          <text class="modal-close" catchtap="closeActivityModal">✕</text>
+        </view>
+        <view class="modal-body">
+          <view class="form-group">
+            <text class="form-label">标题</text>
+            <input class="form-input" placeholder-class="form-input-placeholder" placeholder="活动标题" value="{{activityFormTitle}}" bindinput="onActivityTitleInput" maxlength="50" />
+          </view>
+          <view class="form-group">
+            <text class="form-label">类型</text>
+            <input class="form-input" placeholder-class="form-input-placeholder" placeholder="如：限时活动、日常活动" value="{{activityFormType}}" bindinput="onActivityTypeInput" />
+          </view>
+          <view class="form-group">
+            <text class="form-label">状态</text>
+            <picker class="form-picker" range="{{['进行中','即将开始','置顶']}}" bindchange="onActivityStatusChange">
+              <text class="picker-text">{{activityFormStatus}} ▾</text>
+            </picker>
+          </view>
+          <view class="form-group">
+            <view class="form-label-row">
+              <text class="form-label">描述</text>
+            </view>
+            <!-- 富文本编辑工具栏 -->
+            <view class="rich-toolbar">
+              <view class="toolbar-row">
+                                  <view class="tool-btn" catchtap="activityUndo">
+                    <text class="tool-icon">↩️</text>
+                  </view>
+                  <view class="tool-btn {{activityAlign === 'left' ? 'active' : ''}}" catchtap="activityAlignLeft">
+                    <text class="tool-icon" style="font-size:24rpx;">居左</text>
+                  </view>
+                  <view class="tool-btn {{activityAlign === 'center' ? 'active' : ''}}" catchtap="activityAlignCenter">
+                    <text class="tool-icon" style="font-size:24rpx;">居中</text>
+                  </view>
+                  <view class="tool-btn {{activityAlign === 'right' ? 'active' : ''}}" catchtap="activityAlignRight">
+                    <text class="tool-icon" style="font-size:24rpx;">居右</text>
+                  </view>
+
+                  <view class="tool-btn {{activityFontWeight === 'bold' ? 'active' : ''}}" catchtap="toggleActivityBold">
+                  <text class="tool-icon" style="font-weight:bold;">B</text>
+                </view>
+                                  <view class="tool-btn {{activityUnderline ? 'active' : ''}}" catchtap="activityToggleUnderline">
+                    <text class="tool-icon" style="text-decoration:underline;">U</text>
+                  </view>
+                  <view class="tool-btn {{activityStrike ? 'active' : ''}}" catchtap="activityToggleStrike">
+                    <text class="tool-icon" style="text-decoration:line-through;">S</text>
+                  </view>
+                  <view class="tool-btn {{activityHeader === 2 ? 'active' : ''}}" catchtap="activityToggleHeader2">
+                    <text class="tool-icon" style="font-weight:bold;">H2</text>
+                  </view>
+                  <view class="tool-btn {{activityHeader === 3 ? 'active' : ''}}" catchtap="activityToggleHeader3">
+                    <text class="tool-icon" style="font-weight:bold;">H3</text>
+                  </view>
+                  <view class="tool-btn {{activityFontStyle === 'italic' ? 'active' : ''}}" catchtap="toggleActivityItalic">
+                  <text class="tool-icon" style="font-style:italic;">I</text>
+                </view>
+                <view class="tool-btn" catchtap="showActivityFontSizePicker">
+                  <text class="tool-icon">Aa</text>
+                </view>
+                <view class="tool-btn" catchtap="showActivityFontColorPicker">
+                  <view class="color-preview" style="background:{{activityFontColor}};"></view>
+                </view>
+                <view class="tool-btn" catchtap="showActivityFontFamilyPicker">
+                  <text class="tool-icon">𝐓</text>
+                  <text class="tool-text">字体</text>
+                </view>
+                <view class="tool-btn" catchtap="addActivityRichQuoteBlock">
+                  <text class="tool-icon">❝</text>
+                  <text class="tool-text">引用</text>
+                </view>
+                <view class="tool-btn" catchtap="showActivityMusicDialog">
+                  <text class="tool-icon">🎵</text>
+                  <text class="tool-text">音乐</text>
+                </view>
+                <view class="tool-btn" catchtap="showActivityVideoDialog">
+                  <text class="tool-icon">🎬</text>
+                  <text class="tool-text">视频</text>
+                </view>
+                <view class="tool-btn" catchtap="importActivityFileToTable">
+                  <text class="tool-icon">📊</text>
+                  <text class="tool-text">表格</text>
+                </view>
+                <view class="tool-btn" catchtap="showActivityAttachmentDialog">
+                  <text class="tool-icon">📎</text>
+                  <text class="tool-text">附件</text>
+                </view>
+                <view class="tool-btn" catchtap="showActivityImageBlockDialog">
+                  <text class="tool-icon">🖼️</text>
+                  <text class="tool-text">正文插图</text>
+                </view>
+                <view class="tool-btn" catchtap="showActivitySwiperDialog">
+                  <text class="tool-icon">🔄</text>
+                  <text class="tool-text">滚动图</text>
+                </view>
                 <view class="tool-btn" catchtap="showActivityDividerDialog">
                   <text class="tool-icon">➖</text>
                   <text class="tool-text">分割线</text>
@@ -659,12 +950,18 @@
                 <view class="block-content">
                   <text wx:if="{{item.type === 'quote'}}" class="block-quote-icon">❝</text>
                   <block wx:elif="{{item.type === 'music'}}">
-                    <text class="block-music-icon">🎵</text>
+                    <image wx:if="{{item.cover}}" class="block-cover-preview" src="{{item.cover}}" mode="aspectFill" style="width: 40rpx; height: 40rpx; border-radius: 50%; margin-right: 12rpx; border: 2rpx solid #3d2b1f;" />
+                    <text wx:else class="block-music-icon">🎵</text>
                     <text class="block-text music-text-info">{{item.name || '推荐单曲'}}</text>
                   </block>
                   <block wx:elif="{{item.type === 'video'}}">
-                    <text class="block-video-icon">{{item.platform === 'bilibili' ? '📺' : '🎬'}}</text>
+                    <image wx:if="{{item.cover}}" class="block-cover-preview" src="{{item.cover}}" mode="aspectFill" style="width: 50rpx; height: 36rpx; border-radius: 6rpx; margin-right: 12rpx; border: 2rpx solid #3d2b1f;" />
+                    <text wx:else class="block-video-icon">{{item.platform === 'bilibili' ? '📺' : '🎬'}}</text>
                     <text class="block-text video-text-info">{{item.platformName || '在线'}}视频{{item.name ? ': ' + item.name : ''}}</text>
+                  </block>
+                  <block wx:elif="{{item.type === 'swiper'}}">
+                    <text class="block-video-icon">🔄</text>
+                    <text class="block-text video-text-info">滚动图片 (共{{item.urls.length}}张)</text>
                   </block>
                   <block wx:elif="{{item.type === 'table'}}">
                     <view class="table-block-preview">
@@ -680,7 +977,7 @@
                   <block wx:elif="{{item.type === 'image'}}">
                     <text class="block-image-icon">🖼️</text>
                     <view class="image-block-preview">
-                      <image lazy-load src="{{item.url}}" mode="aspectFill" />
+                      <image src="{{item.url}}" mode="aspectFill" />
                     </view>
                   </block>
                   <block wx:elif="{{item.type === 'divider'}}">
@@ -706,6 +1003,11 @@
                   <text wx:else class="block-text" style="font-size:{{item.size}}rpx;color:{{item.color}};font-weight:{{item.weight}};font-style:{{item.style}};{{item.fontFamily && item.fontFamily !== 'sans-serif' ? 'font-family:' + item.fontFamily + ';' : ''}}">{{item.content}}</text>
                 </view>
                 <view class="block-actions">
+                  <block wx:if="{{item.type === 'music' || item.type === 'video'}}">
+                    <view class="block-btn" catchtap="editMediaCover" data-idx="{{index}}" data-target="activity">换封面</view>
+                    <view class="block-btn" catchtap="showMoveTopActionSheet" data-idx="{{index}}" data-target="activity">置顶</view>
+                    <view class="block-btn" catchtap="showMoveBottomActionSheet" data-idx="{{index}}" data-target="activity">置底</view>
+                  </block>
                   <view class="block-btn" wx:if="{{item.type !== 'music' && item.type !== 'video' && item.type !== 'table' && item.type !== 'image' && item.type !== 'divider' && item.type !== 'link' && item.type !== 'attachment'}}" catchtap="editActivityRichBlock" data-idx="{{index}}">编辑</view>
                   <view class="block-btn delete" catchtap="removeActivityRichBlock" data-idx="{{index}}">删除</view>
                 </view>
@@ -713,20 +1015,30 @@
             </view>
             <editor id="activityEditor" class="form-editor" placeholder="活动内容描述" bindstatuschange="onActivityEditorStatusChange" bindready="onActivityEditorReady" bindinput="onActivityEditorInput" show-img-size show-img-toolbar show-img-resize></editor>
           </view>
-          <view class="form-row">
-            <view class="form-group half">
-              <text class="form-label">开始日期</text>
-              <picker class="form-picker" mode="date" value="{{activityFormStart}}" bindchange="onActivityStartChange">
-                <text class="picker-text">{{activityFormStart || '选择日期'}} ▾</text>
-              </picker>
+          
+            <view class="form-group" style="width:100%;">
+              <text class="form-label">开始日期/时间</text>
+              <view style="display:flex; gap:20rpx;">
+                <picker class="form-picker" mode="date" value="{{activityFormStart}}" bindchange="onActivityStartChange" style="flex:1;">
+                  <text class="picker-text">{{activityFormStart || '选择日期'}} ▼</text>
+                </picker>
+                <picker class="form-picker" mode="time" value="{{activityFormStartTime}}" bindchange="onActivityStartTimeChange" style="flex:1;">
+                  <text class="picker-text">{{activityFormStartTime || '选择时间'}} ▼</text>
+                </picker>
+              </view>
             </view>
-            <view class="form-group half">
-              <text class="form-label">结束日期</text>
-              <picker class="form-picker" mode="date" value="{{activityFormEnd}}" bindchange="onActivityEndChange">
-                <text class="picker-text">{{activityFormEnd || '选择日期'}} ▾</text>
-              </picker>
+            <view class="form-group" style="width:100%;">
+              <text class="form-label">结束日期/时间</text>
+              <view style="display:flex; gap:20rpx;">
+                <picker class="form-picker" mode="date" value="{{activityFormEnd}}" bindchange="onActivityEndChange" style="flex:1;">
+                  <text class="picker-text">{{activityFormEnd || '选择日期'}} ▼</text>
+                </picker>
+                <picker class="form-picker" mode="time" value="{{activityFormEndTime}}" bindchange="onActivityEndTimeChange" style="flex:1;">
+                  <text class="picker-text">{{activityFormEndTime || '选择时间'}} ▼</text>
+                </picker>
+              </view>
             </view>
-          </view>
+
 
           <view class="form-group">
             <text class="form-label">来源（可选）</text>
@@ -738,5 +1050,81 @@
         </view>
       </view>
     </view>
+
+    <!-- 咕噜球编辑弹窗 -->
+    <view class="modal-mask" wx:if="{{showBallModal}}" bindtap="closeBallModal">
+      <view class="modal-box" catchtap="preventClose">
+        <view class="modal-header">
+          <text class="modal-title">{{editingBall ? '编辑咕噜球' : '新增咕噜球'}}</text>
+          <text class="modal-close" catchtap="closeBallModal">✕</text>
+        </view>
+        <scroll-view scroll-y style="max-height: 60vh; padding-right: 12rpx;">
+          <view class="form-group">
+            <text class="form-label">名称</text>
+            <input class="form-input" value="{{ballForm.name}}" bindinput="onBallFormInput" data-field="name" placeholder="请输入名称" />
+          </view>
+
+          <view style="background: rgba(255,255,255,0.02); border-radius: 16rpx; padding: 24rpx; margin-bottom: 24rpx;">
+            <view class="form-row">
+              <view class="form-group row half" style="margin-bottom:0;">
+                <text class="form-label">【购买球】</text>
+                <switch checked="{{ballForm.isBuy}}" bindchange="onBallFormSwitch" data-field="isBuy" color="#00d4ff" />
+              </view>
+              <view class="form-group row half" style="margin-bottom:0;">
+                <text class="form-label">【合成球】</text>
+                <switch checked="{{ballForm.isCraft}}" bindchange="onBallFormSwitch" data-field="isCraft" color="#00d4ff" />
+              </view>
+            </view>
+            <view class="form-row" style="margin-top:24rpx;" wx:if="{{ballForm.isBuy || ballForm.isCraft}}">
+              <view class="form-group half" wx:if="{{ballForm.isBuy}}" style="margin-bottom:0;">
+                <text class="form-label">价格 (洛克贝)</text>
+                <input class="form-input" type="number" value="{{ballForm.price}}" bindinput="onBallFormInput" data-field="price" placeholder="例如：200" />
+              </view>
+              <view class="form-group half" wx:if="{{ballForm.isCraft}}" style="margin-bottom:0;">
+                <text class="form-label">合成材料 (可选)</text>
+                <input class="form-input" value="{{ballForm.craftMaterials}}" bindinput="onBallFormInput" data-field="craftMaterials" placeholder="例如：魔法石x2" />
+              </view>
+            </view>
+          </view>
+
+          <view class="form-group">
+            <text class="form-label">效果描述</text>
+            <input class="form-input" value="{{ballForm.desc}}" bindinput="onBallFormInput" data-field="desc" placeholder="例如：捕获率+30%" />
+          </view>
+
+          <view class="form-group">
+            <text class="form-label">获取途径</text>
+            <input class="form-input" value="{{ballForm.source}}" bindinput="onBallFormInput" data-field="source" placeholder="例如：宠物农庄" />
+          </view>
+
+          <view class="form-group">
+            <view style="display:flex; justify-content:space-between; align-items:flex-end;">
+              <text class="form-label">图片URL (可选)</text>
+              <image wx:if="{{ballForm.img}}" src="{{ballForm.img}}" style="width: 40rpx; height: 40rpx; border-radius: 50%; border: 2rpx solid #00d4ff; margin-bottom: 8rpx;" mode="aspectFill" />
+            </view>
+            <input class="form-input" value="{{ballForm.img}}" bindinput="onBallFormInput" data-field="img" placeholder="cloud://..." />
+          </view>
+
+          <view class="form-row">
+            <view class="form-group half">
+              <text class="form-label">主题颜色</text>
+              <view style="display:flex; align-items:center; gap: 12rpx;">
+                <view style="width:24rpx; height:24rpx; border-radius:50%; background:{{ballForm.color || '#fff'}}; border: 2rpx solid rgba(255,255,255,0.2);"></view>
+                <input class="form-input" style="flex:1;" value="{{ballForm.color}}" bindinput="onBallFormInput" data-field="color" placeholder="#ffffff" />
+              </view>
+            </view>
+            <view class="form-group half">
+              <text class="form-label">默认图标</text>
+              <input class="form-input" value="{{ballForm.icon}}" bindinput="onBallFormInput" data-field="icon" placeholder="⚪" />
+            </view>
+          </view>
+        </scroll-view>
+        <view class="modal-footer">
+          <view class="modal-btn cancel" catchtap="closeBallModal">取消</view>
+          <view class="modal-btn confirm" catchtap="confirmBallForm">确认</view>
+        </view>
+      </view>
+    </view>
   </view>
 </view>
+

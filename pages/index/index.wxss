@@ -12,6 +12,8 @@
   box-shadow: 0 8rpx 32rpx rgba(0,0,0,0.3);
 }
 .hero-image { width: 100%; display: block; }
+.hero-swiper { width: 100%; height: 360rpx; }
+.hero-swiper .hero-image { width: 100%; height: 100%; display: block; }
 .hero-overlay {
   position: absolute;
   bottom: 0;
@@ -115,6 +117,8 @@
   box-shadow: 0 16rpx 48rpx rgba(0,0,0,0.35), inset 0 1rpx 0 rgba(255,255,255,0.05);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  box-sizing: border-box;
+  width: 100%;
 }
 .announce-card-header {
   display: flex;
@@ -235,7 +239,7 @@
 .banner-actions { display: flex; flex-direction: column; gap: 24rpx; }
 
 .image-action-btn { background: rgba(0,212,255,0.08); border: 1rpx solid rgba(0,212,255,0.2); border-radius: 16rpx; padding: 32rpx; display: flex; flex-direction: column; align-items: center; transition: all 0.2s cubic-bezier(0.16,1,0.3,1); }
-.image-action-btn:active { background: rgba(0,212,255,0.15); transform: scale(0.98); border-color: rgba(0,212,255,0.4); }
+.image-action-btn:active { background: rgba(255,255,255,0.08); transform: scale(0.98); border-color: rgba(0,212,255,0.4); }
 .action-icon { font-size: 48rpx; margin-bottom: 12rpx; }
 .action-text { font-size: 28rpx; color: #fff; font-weight: 600; }
 .action-hint { font-size: 20rpx; color: rgba(0,212,255,0.5); margin-top: 6rpx; }
@@ -259,14 +263,14 @@
 
 /* 热门榜单 */
 .hot-list { display: flex; flex-direction: column; gap: 8rpx; max-height: 280rpx; overflow: hidden; }
-.hot-item { display: flex; align-items: center; gap: 16rpx; padding: 14rpx 16rpx; background: rgba(255,255,255,0.03); border-radius: 12rpx; border: 1rpx solid rgba(255,255,255,0.06); transition: all 0.3s cubic-bezier(0.16,1,0.3,1); opacity: 0; animation: hotEnter 0.4s cubic-bezier(0.22,0.61,0.36,1) forwards; }
+.hot-item { display: flex; align-items: center; gap: 16rpx; padding: 14rpx 16rpx; background: rgba(255,255,255,0.03); border-radius: 12rpx; border: 1rpx solid rgba(255,255,255,0.06); transition: all 0.3s cubic-bezier(0.16,1,0.3,1); opacity: 0; animation: hotEnter 0.4s cubic-bezier(0.22,0.61,0.36,1) forwards; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
 .hot-item:nth-child(1) { animation-delay: 0s; }
 .hot-item:nth-child(2) { animation-delay: 0.04s; }
 .hot-item:nth-child(3) { animation-delay: 0.08s; }
 .hot-item:nth-child(4) { animation-delay: 0.12s; }
 .hot-item:nth-child(5) { animation-delay: 0.16s; }
 @keyframes hotEnter { from { opacity: 0; transform: translateY(10rpx); } to { opacity: 1; transform: translateY(0); } }
-.hot-item:active { background: rgba(0,200,255,0.06); }
+.hot-item:active { background: rgba(255,255,255,0.08); }
 .hot-rank { width: 40rpx; height: 40rpx; border-radius: 10rpx; display: flex; align-items: center; justify-content: center; font-size: 22rpx; font-weight: 700; color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.05); flex-shrink: 0; }
 .rank-1 { background: linear-gradient(135deg, #ff4757, #cc3a48); color: #fff; }
 .rank-2 { background: linear-gradient(135deg, #ffab40, #ff9100); color: #fff; }
@@ -289,3 +293,8 @@
   max-height: 30vh;
   margin-top: 16rpx;
 }
+
+/* 滚动图片组件 */
+.rich-swiper-block { margin: 16rpx 0; border-radius: 16rpx; overflow: hidden; box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.3); border: 1rpx solid rgba(255,255,255,0.1); }
+.rich-swiper { width: 100%; height: 360rpx; }
+.rich-swiper-image { width: 100%; height: 100%; display: block; }
