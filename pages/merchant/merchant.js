@@ -2,67 +2,67 @@ var app = getApp()
 var i18n = require('../../utils/i18n')
 
 var initialItems = [
-  { id: 1, name: '棱镜�?, price: 3200000, effect: '100%捕捉成功，必定随机炫彩外观，完美无瑕，顶级稀有精灵捕捉道�?, rarity: '传说', source: '炼金台合�?活动奖励/商城购买/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/9b/kkwd244su5nzzg5pj99volbt84ohied.png/100px-100795.png', limitCount: '' },
-  { id: 2, name: '国王�?, price: 160000, effect: '100%捕捉成功，无视目标等级，性格随机，必定为了不起的天分', rarity: '传说', source: '远行商人/炼金台合�?月卡', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/2e/jygbfxpdbup5weqy4zaqnyaw2fcfyrq.png/100px-100255.png', limitCount: '' },
-  { id: 3, name: '美妙�?, price: 3000, effect: '更适合捕捉萌系、普通系精灵，捕捉其他属性概率会降低', rarity: '稀�?, source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/b/b0/6ywvdkywqprqvws7m4ogeldp9y19swt.png/100px-Img_haihaiqiu.png', limitCount: '' },
-  { id: 4, name: '调温�?, price: 3000, effect: '更适合捕捉火系、冰系精灵，捕捉其他属性概率会降低', rarity: '稀�?, source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/0/0d/2fx8i8qxb62s1sj8dn08h9vhsnsim1t.png/100px-Img_tiaowenqiu.png', limitCount: '' },
-  { id: 5, name: '变幻�?, price: 3000, effect: '更适合捕捉幻系、机械系精灵，捕捉其他属性概率会降低', rarity: '稀�?, source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/97/t58zrpfzxopvj3ke3oi3v57mf6k05s0.png/100px-Img_miwuqiu.png', limitCount: '' },
-  { id: 6, name: '光合�?, price: 3000, effect: '更适合捕捉草系、光系精灵，捕捉其他属性概率会降低', rarity: '稀�?, source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/d/d5/i0k2vx3nsjzsbbpfzfbwf3dlin3ixn0.png/100px-Img_guangheqiu.png', limitCount: '' },
-  { id: 7, name: '淘沙�?, price: 3000, effect: '更适合捕捉地系、虫系精灵，捕捉其他属性概率会降低', rarity: '稀�?, source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/8/81/7pzswfbn9l7hip6ptdg7f2mo341ztui.png/100px-Img_shaliqiu.png', limitCount: '' },
-  { id: 8, name: '好战�?, price: 3000, effect: '更适合捕捉武系、龙系精灵，捕捉其他属性概率会降低', rarity: '稀�?, source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/7/79/kdfs6bmfy54gk7ak70arjxug91zv1z5.png/100px-Img_lumangqiu.png', limitCount: '' },
-  { id: 9, name: '网兜�?, price: 3000, effect: '更适合捕捉水系、翼系精灵，捕捉其他属性概率会降低', rarity: '稀�?, source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/4/4b/60uvwzet0brdqlhtoa89domccpbo4hr.png/100px-Img_wangdiuqiu.png', limitCount: '' },
-  { id: 10, name: '绝缘�?, price: 3000, effect: '更适合捕捉电系、毒系精灵，捕捉其他属性概率会降低', rarity: '稀�?, source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/0/0d/k1hb59umk1sisjh8cev5bvyzvavezvb.png/100px-Img_jueyuanqiu.png', limitCount: '' },
-  { id: 11, name: '暗星�?, price: 3000, effect: '更适合捕捉幽系、恶系精灵，捕捉其他属性概率会降低', rarity: '稀�?, source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/5/5a/hif6470l7ojdexwm72t9brp0f0x3h4x.png/100px-Img_daodanqiu.png', limitCount: '' },
-  { id: 12, name: '首领血脉秘�?, price: 320000, effect: '精灵突破升星、提升资质，为精灵解锁首领血脉，毕业级血脉道�?, rarity: '传说', source: '远行商人/放生首领精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/26/fbfwlhncfo0pstpv3ibxn1mj3ayg6di.png/100px-Xuemai_shoulingxuemai.png', limitCount: '' },
-  { id: 13, name: '地系血脉秘�?, price: 160000, effect: '将精灵血脉改为地系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉地系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/1/17/808i7ggttfttqexttmvtmdknqszrb7t.png/100px-Xuemai_yanshi.png', limitCount: '' },
-  { id: 14, name: '火系血脉秘�?, price: 160000, effect: '将精灵血脉改为火系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉火系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/5/58/qcen9i07u68symzdrga5qcli2wq6ws3.png/100px-Xuemai_huo.png', limitCount: '' },
-  { id: 15, name: '水系血脉秘�?, price: 160000, effect: '将精灵血脉改为水系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉水系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/4/45/i1hr5krh0b2oqgi3iv1m2k7geyox4n1.png/100px-Xuemai_shui.png', limitCount: '' },
-  { id: 16, name: '草系血脉秘�?, price: 160000, effect: '将精灵血脉改为草系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉草系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/e/e3/q44lm9csnpdmdswihzewb1gj6yln2v6.png/100px-Xuemai_cao.png', limitCount: '' },
-  { id: 17, name: '冰系血脉秘�?, price: 160000, effect: '将精灵血脉改为冰系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉冰系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/3/3f/8uweaysx83rtha1qyqpjvd9tsgkdv90.png/100px-Xuemai_bing.png', limitCount: '' },
-  { id: 18, name: '翼系血脉秘�?, price: 160000, effect: '将精灵血脉改为翼系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉翼系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/1/15/t49aceulmmb7q8ohahmkyqvrdl2qdkz.png/100px-Xuemai_yi.png', limitCount: '' },
-  { id: 19, name: '机械系血脉秘�?, price: 160000, effect: '将精灵血脉改为机械系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉机械系精�?, image: 'https://patchwiki.biligame.com/images/rocom/thumb/5/56/12jc1mzlz7nhgnterqdk6bgm6rofibn.png/100px-Xuemai_gang.png', limitCount: '' },
-  { id: 20, name: '萌系血脉秘�?, price: 160000, effect: '将精灵血脉改为萌系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉萌系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/a9/f93cxq6r5qxkkt6cs8hc2jaecsj3yy9.png/100px-Xuemai_meng.png', limitCount: '' },
-  { id: 21, name: '奇异血脉秘�?, price: 160000, effect: '随机改变精灵血脉属性，为精灵解锁奇异血�?, rarity: '传说', source: '远行商人/捕捉任意属性精�?, image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/ab/eg7zj03u487p1l3f91z499w1nxdzac1.png/100px-Xuemai_qiyixuemai.png', limitCount: '' },
-  { id: 22, name: '普通系血脉秘�?, price: 160000, effect: '将精灵血脉改为普通系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉普通系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/a8/lx9q220586a1qpy109sy34ghfgtrs6w.png/100px-Xuemai_putong.png', limitCount: '' },
-  { id: 23, name: '光系血脉秘�?, price: 160000, effect: '将精灵血脉改为光系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉光系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/3/34/cz38ekzotsvoydbhmpo5wfxrqj2b3ny.png/100px-Xuemai_guang.png', limitCount: '' },
-  { id: 24, name: '恶系血脉秘�?, price: 160000, effect: '将精灵血脉改为恶系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉恶系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/e/ee/sm6n1f4ng52m6fvbr6lf2yekhw3q1a5.png/100px-Xuemai_emo.png', limitCount: '' },
-  { id: 25, name: '幽系血脉秘�?, price: 160000, effect: '将精灵血脉改为幽系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉幽系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/3/31/79r65pjlgs4boduwx17vu94sqn0i2t6.png/100px-Xuemai_youling.png', limitCount: '' },
-  { id: 26, name: '龙系血脉秘�?, price: 160000, effect: '将精灵血脉改为龙系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉龙系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/c/c5/88wm27imouqbkxv6d9tlof24xs20nrv.png/100px-Xuemai_long.png', limitCount: '' },
-  { id: 27, name: '电系血脉秘�?, price: 160000, effect: '将精灵血脉改为电系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉电系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/a3/2n9fch8izmb6cw93rlw6ww4i7p6kotq.png/100px-Xuemai_dian.png', limitCount: '' },
-  { id: 28, name: '毒系血脉秘�?, price: 160000, effect: '将精灵血脉改为毒系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉毒系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/0/0a/4vxiijlbmrgcpj1r2d5lnzfmdhnurs3.png/100px-Xuemai_du.png', limitCount: '' },
-  { id: 29, name: '虫系血脉秘�?, price: 160000, effect: '将精灵血脉改为虫系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉虫系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/f/fa/kcywd1p2ikx394lixtb73roqc9fmx4a.png/100px-Xuemai_chong.png', limitCount: '' },
-  { id: 30, name: '武系血脉秘�?, price: 160000, effect: '将精灵血脉改为武系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉武系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/6/60/07uvni7t86lah2a9c219z9x8smkdnzj.png/100px-Xuemai_wu.png', limitCount: '' },
-  { id: 31, name: '翼系血脉秘�?, price: 160000, effect: '将精灵血脉改为翼系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉翼系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/1/15/t49aceulmmb7q8ohahmkyqvrdl2qdkz.png/100px-Xuemai_yi.png', limitCount: '' },
-  { id: 32, name: '残缺魔镜', price: 480000, effect: '锁定炫彩异色，稀有精灵捕捉辅助道具，大幅提升异色精灵获取效率', rarity: '传说', source: '远行商人（周末限时）/炼金�?, image: 'https://patchwiki.biligame.com/images/rocom/thumb/1/10/nssw03fprximwkgzjqdaq8r8pq3q3le.png/100px-100716.png', limitCount: '' },
-  { id: 33, name: '适格钥匙', price: 320000, effect: '精灵养成核心道具，用于精灵进阶突�?, rarity: '传说', source: '远行商人（周末限时）/炼金�?, image: 'https://patchwiki.biligame.com/images/rocom/thumb/1/11/6l0tqz9gytrn8r10gk5bgcj4rxnfx57.png/100px-100714.png', limitCount: '' },
-  { id: 34, name: '能力钥匙', price: 160000, effect: '精灵养成核心道具，用于解锁精灵潜�?, rarity: '传说', source: '远行商人（周末限时）/炼金�?, image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/2d/749ek9zbh79fvll7f5vtpxa33dz3mze.png/100px-100009.png', limitCount: '' },
-  { id: 35, name: '祝福项坠', price: 800000, effect: '将极品精灵的性格、特长、个体资质完整复制到同种类普通精灵蛋上，一键批量造极�?, rarity: '史诗', source: '远行商人（限时刷新）', image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/9b/kkwd244su5nzzg5pj99volbt84ohied.png/100px-100795.png', limitCount: '' },
-  { id: 36, name: '炫彩�?, price: 1600000, effect: '孵化必出了不起天�?炫彩外观，赛季收藏与战力双提�?, rarity: '传说', source: '远行商人', image: 'https://patchwiki.biligame.com/images/rocom/0/0d/gkijb43j6tp5kadtksuux84zwrrawua.png', limitCount: '' },
+  { id: 1, name: '棱镜球', price: 3200000, effect: '100%捕捉成功，必定随机炫彩外观，完美无瑕，顶级稀有精灵捕捉道具', rarity: '传说', source: '炼金台合成/活动奖励/商城购买/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/9b/kkwd244su5nzzg5pj99volbt84ohied.png/100px-100795.png', limitCount: '' },
+  { id: 2, name: '国王球', price: 160000, effect: '100%捕捉成功，无视目标等级，性格随机，必定为了不起的天分', rarity: '传说', source: '远行商人/炼金台合成/月卡', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/2e/jygbfxpdbup5weqy4zaqnyaw2fcfyrq.png/100px-100255.png', limitCount: '' },
+  { id: 3, name: '美妙球', price: 3000, effect: '更适合捕捉萌系、普通系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/b/b0/6ywvdkywqprqvws7m4ogeldp9y19swt.png/100px-Img_haihaiqiu.png', limitCount: '' },
+  { id: 4, name: '调温球', price: 3000, effect: '更适合捕捉火系、冰系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/0/0d/2fx8i8qxb62s1sj8dn08h9vhsnsim1t.png/100px-Img_tiaowenqiu.png', limitCount: '' },
+  { id: 5, name: '变幻球', price: 3000, effect: '更适合捕捉幻系、机械系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/97/t58zrpfzxopvj3ke3oi3v57mf6k05s0.png/100px-Img_miwuqiu.png', limitCount: '' },
+  { id: 6, name: '光合球', price: 3000, effect: '更适合捕捉草系、光系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/d/d5/i0k2vx3nsjzsbbpfzfbwf3dlin3ixn0.png/100px-Img_guangheqiu.png', limitCount: '' },
+  { id: 7, name: '淘沙球', price: 3000, effect: '更适合捕捉地系、虫系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/8/81/7pzswfbn9l7hip6ptdg7f2mo341ztui.png/100px-Img_shaliqiu.png', limitCount: '' },
+  { id: 8, name: '好战球', price: 3000, effect: '更适合捕捉武系、龙系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/7/79/kdfs6bmfy54gk7ak70arjxug91zv1z5.png/100px-Img_lumangqiu.png', limitCount: '' },
+  { id: 9, name: '网兜球', price: 3000, effect: '更适合捕捉水系、翼系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/4/4b/60uvwzet0brdqlhtoa89domccpbo4hr.png/100px-Img_wangdiuqiu.png', limitCount: '' },
+  { id: 10, name: '绝缘球', price: 3000, effect: '更适合捕捉电系、毒系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/0/0d/k1hb59umk1sisjh8cev5bvyzvavezvb.png/100px-Img_jueyuanqiu.png', limitCount: '' },
+  { id: 11, name: '暗星球', price: 3000, effect: '更适合捕捉幽系、恶系精灵，捕捉其他属性概率会降低', rarity: '稀有', source: '炼金造物合成/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/5/5a/hif6470l7ojdexwm72t9brp0f0x3h4x.png/100px-Img_daodanqiu.png', limitCount: '' },
+  { id: 12, name: '首领血脉秘药', price: 320000, effect: '精灵突破升星、提升资质，为精灵解锁首领血脉，毕业级血脉道具', rarity: '传说', source: '远行商人/放生首领精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/26/fbfwlhncfo0pstpv3ibxn1mj3ayg6di.png/100px-Xuemai_shoulingxuemai.png', limitCount: '' },
+  { id: 13, name: '地系血脉秘药', price: 160000, effect: '将精灵血脉改为地系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉地系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/1/17/808i7ggttfttqexttmvtmdknqszrb7t.png/100px-Xuemai_yanshi.png', limitCount: '' },
+  { id: 14, name: '火系血脉秘药', price: 160000, effect: '将精灵血脉改为火系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉火系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/5/58/qcen9i07u68symzdrga5qcli2wq6ws3.png/100px-Xuemai_huo.png', limitCount: '' },
+  { id: 15, name: '水系血脉秘药', price: 160000, effect: '将精灵血脉改为水系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉水系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/4/45/i1hr5krh0b2oqgi3iv1m2k7geyox4n1.png/100px-Xuemai_shui.png', limitCount: '' },
+  { id: 16, name: '草系血脉秘药', price: 160000, effect: '将精灵血脉改为草系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉草系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/e/e3/q44lm9csnpdmdswihzewb1gj6yln2v6.png/100px-Xuemai_cao.png', limitCount: '' },
+  { id: 17, name: '冰系血脉秘药', price: 160000, effect: '将精灵血脉改为冰系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉冰系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/3/3f/8uweaysx83rtha1qyqpjvd9tsgkdv90.png/100px-Xuemai_bing.png', limitCount: '' },
+  { id: 18, name: '翼系血脉秘药', price: 160000, effect: '将精灵血脉改为翼系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉翼系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/1/15/t49aceulmmb7q8ohahmkyqvrdl2qdkz.png/100px-Xuemai_yi.png', limitCount: '' },
+  { id: 19, name: '机械系血脉秘药', price: 160000, effect: '将精灵血脉改为机械系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉机械系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/5/56/12jc1mzlz7nhgnterqdk6bgm6rofibn.png/100px-Xuemai_gang.png', limitCount: '' },
+  { id: 20, name: '萌系血脉秘药', price: 160000, effect: '将精灵血脉改为萌系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉萌系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/a9/f93cxq6r5qxkkt6cs8hc2jaecsj3yy9.png/100px-Xuemai_meng.png', limitCount: '' },
+  { id: 21, name: '奇异血脉秘药', price: 160000, effect: '随机改变精灵血脉属性，为精灵解锁奇异血脉', rarity: '传说', source: '远行商人/捕捉任意属性精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/ab/eg7zj03u487p1l3f91z499w1nxdzac1.png/100px-Xuemai_qiyixuemai.png', limitCount: '' },
+  { id: 22, name: '普通系血脉秘药', price: 160000, effect: '将精灵血脉改为普通系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉普通系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/a8/lx9q220586a1qpy109sy34ghfgtrs6w.png/100px-Xuemai_putong.png', limitCount: '' },
+  { id: 23, name: '光系血脉秘药', price: 160000, effect: '将精灵血脉改为光系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉光系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/3/34/cz38ekzotsvoydbhmpo5wfxrqj2b3ny.png/100px-Xuemai_guang.png', limitCount: '' },
+  { id: 24, name: '恶系血脉秘药', price: 160000, effect: '将精灵血脉改为恶系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉恶系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/e/ee/sm6n1f4ng52m6fvbr6lf2yekhw3q1a5.png/100px-Xuemai_emo.png', limitCount: '' },
+  { id: 25, name: '幽系血脉秘药', price: 160000, effect: '将精灵血脉改为幽系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉幽系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/3/31/79r65pjlgs4boduwx17vu94sqn0i2t6.png/100px-Xuemai_youling.png', limitCount: '' },
+  { id: 26, name: '龙系血脉秘药', price: 160000, effect: '将精灵血脉改为龙系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉龙系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/c/c5/88wm27imouqbkxv6d9tlof24xs20nrv.png/100px-Xuemai_long.png', limitCount: '' },
+  { id: 27, name: '电系血脉秘药', price: 160000, effect: '将精灵血脉改为电系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉电系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/a3/2n9fch8izmb6cw93rlw6ww4i7p6kotq.png/100px-Xuemai_dian.png', limitCount: '' },
+  { id: 28, name: '毒系血脉秘药', price: 160000, effect: '将精灵血脉改为毒系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉毒系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/0/0a/4vxiijlbmrgcpj1r2d5lnzfmdhnurs3.png/100px-Xuemai_du.png', limitCount: '' },
+  { id: 29, name: '虫系血脉秘药', price: 160000, effect: '将精灵血脉改为虫系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉虫系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/f/fa/kcywd1p2ikx394lixtb73roqc9fmx4a.png/100px-Xuemai_chong.png', limitCount: '' },
+  { id: 30, name: '武系血脉秘药', price: 160000, effect: '将精灵血脉改为武系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉武系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/6/60/07uvni7t86lah2a9c219z9x8smkdnzj.png/100px-Xuemai_wu.png', limitCount: '' },
+  { id: 31, name: '翼系血脉秘药', price: 160000, effect: '将精灵血脉改为翼系，改变精灵属性适配', rarity: '传说', source: '远行商人/捕捉翼系精灵', image: 'https://patchwiki.biligame.com/images/rocom/thumb/1/15/t49aceulmmb7q8ohahmkyqvrdl2qdkz.png/100px-Xuemai_yi.png', limitCount: '' },
+  { id: 32, name: '残缺魔镜', price: 480000, effect: '锁定炫彩异色，稀有精灵捕捉辅助道具，大幅提升异色精灵获取效率', rarity: '传说', source: '远行商人（周末限时）/炼金台', image: 'https://patchwiki.biligame.com/images/rocom/thumb/1/10/nssw03fprximwkgzjqdaq8r8pq3q3le.png/100px-100716.png', limitCount: '' },
+  { id: 33, name: '适格钥匙', price: 320000, effect: '精灵养成核心道具，用于精灵进阶突破', rarity: '传说', source: '远行商人（周末限时）/炼金台', image: 'https://patchwiki.biligame.com/images/rocom/thumb/1/11/6l0tqz9gytrn8r10gk5bgcj4rxnfx57.png/100px-100714.png', limitCount: '' },
+  { id: 34, name: '能力钥匙', price: 160000, effect: '精灵养成核心道具，用于解锁精灵潜能', rarity: '传说', source: '远行商人（周末限时）/炼金台', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/2d/749ek9zbh79fvll7f5vtpxa33dz3mze.png/100px-100009.png', limitCount: '' },
+  { id: 35, name: '祝福项坠', price: 800000, effect: '将极品精灵的性格、特长、个体资质完整复制到同种类普通精灵蛋上，一键批量造极品', rarity: '史诗', source: '远行商人（限时刷新）', image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/9b/kkwd244su5nzzg5pj99volbt84ohied.png/100px-100795.png', limitCount: '' },
+  { id: 36, name: '炫彩蛋', price: 1600000, effect: '孵化必出了不起天分+炫彩外观，赛季收藏与战力双提升', rarity: '传说', source: '远行商人', image: 'https://patchwiki.biligame.com/images/rocom/0/0d/gkijb43j6tp5kadtksuux84zwrrawua.png', limitCount: '' },
   { id: 37, name: '神奇的蛋', price: 36000, effect: '随机开出精灵蛋，盲盒玩法，小概率出炫彩精灵', rarity: '史诗', source: '远行商人', image: 'https://patchwiki.biligame.com/images/rocom/0/0d/gkijb43j6tp5kadtksuux84zwrrawua.png', limitCount: '' },
-  { id: 38, name: '无花�?, price: 3000, effect: '为精灵提供经验值的基础果实，快速提升精灵等�?, rarity: '稀�?, source: '远行商人/任务奖励', image: 'https://patchwiki.biligame.com/images/rocom/thumb/e/e5/fc8cowshvdiendz68mg2b9e35rp0bt7.png/100px-100669.png', limitCount: '' },
-  { id: 39, name: '魔力�?, price: 6000, effect: '为精灵提供大量经验值的常见果实，献祭低等精灵可获得', rarity: '稀�?, source: '远行商人/任务奖励/活动奖励', image: 'https://patchwiki.biligame.com/images/rocom/thumb/c/c6/5qe6rcdtfxe1gsrvgj3lrn033athx9p.png/100px-100668.png', limitCount: '' },
-  { id: 40, name: '黑晶琉璃', price: 1000, effect: '稀有矿石材料，可用于合成高级道具和装备升级', rarity: '稀�?, source: '采集/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/b/bc/khe20j8lwkt1bg9g4b0gbnsff48g93c.png/100px-100628.png', limitCount: '' },
-  { id: 41, name: '黄石榴石', price: 1000, effect: '稀有矿石材料，可用于合成高级道具和装备升级', rarity: '稀�?, source: '采集/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/f/f3/c5x5f0lgk33ly801m8w1n9aod8ny4sh.png/100px-100683.png', limitCount: '' },
-  { id: 42, name: '蓝晶碧玺', price: 1000, effect: '稀有矿石材料，可用于合成高级道具和装备升级', rarity: '稀�?, source: '采集/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/c/c5/k8wzdzechd88qs9bxuvcnyg0pv4tzl4.png/100px-100681.png', limitCount: '' },
-  { id: 43, name: '紫莲刚玉', price: 1000, effect: '稀有矿石材料，可用于合成高级道具和装备升级', rarity: '稀�?, source: '采集/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/9c/s7ej54xr4magmv0h0zag15jah6avwlc.png/100px-100682.png', limitCount: '' },
-  { id: 44, name: '龙系粉尘', price: 500, effect: '龙系精灵培养材料，用于合成技能石和精灵突�?, rarity: '普�?, source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/ac/jhbsu0fzhq55ivqu89qz81366owvkki.png/100px-100131.png', limitCount: '' },
-  { id: 45, name: '萌系粉尘', price: 500, effect: '萌系精灵培养材料，用于合成技能石和精灵突�?, rarity: '普�?, source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/26/58llleh28pa33kxom2cub80nnf0y9zd.png/100px-100137.png', limitCount: '' },
-  { id: 46, name: '草系粉尘', price: 500, effect: '草系精灵培养材料，用于合成技能石和精灵突�?, rarity: '普�?, source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/3/32/2k88qbruf464xxyf02grnmkvun59h0c.png/100px-100121.png', limitCount: '' },
-  { id: 47, name: '机械粉尘', price: 500, effect: '机械系精灵培养材料，用于合成技能石和精灵突�?, rarity: '普�?, source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/1/1c/lcsenwszmlkz002ai6du9f32tbfpi19.png/100px-100138.png', limitCount: '' },
-  { id: 48, name: '火系粉尘', price: 500, effect: '火系精灵培养材料，用于合成技能石和精灵突�?, rarity: '普�?, source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/a6/a5v60zfm9ivyri166tias4efjnp5vyt.png/100px-100122.png', limitCount: '' },
-  { id: 49, name: '水系粉尘', price: 500, effect: '水系精灵培养材料，用于合成技能石和精灵突�?, rarity: '普�?, source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/c/c7/4fxef31uslze9psd9375td9zbqtbllv.png/100px-100123.png', limitCount: '' },
-  { id: 50, name: '普通系粉尘', price: 500, effect: '普通系精灵培养材料，用于合成技能石和精灵突�?, rarity: '普�?, source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/0/0d/gkijb43j6tp5kadtksuux84zwrrawua.png', limitCount: '' },
-  { id: 51, name: '光系粉尘', price: 500, effect: '光系精灵培养材料，用于合成技能石和精灵突�?, rarity: '普�?, source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/9d/t3udkq5fg8o3je088pcjktersn9wfrt.png/100px-100124.png', limitCount: '' },
-  { id: 52, name: '恶系粉尘', price: 500, effect: '恶系精灵培养材料，用于合成技能石和精灵突�?, rarity: '普�?, source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/e/ec/mbugzr13ol6m9ay5focjw9kctt14g5h.png/100px-100125.png', limitCount: '' },
-  { id: 53, name: '幽系粉尘', price: 500, effect: '幽系精灵培养材料，用于合成技能石和精灵突�?, rarity: '普�?, source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/20/okbnyp4feg52iaxuijvjzv6wodaqjmi.png/100px-100126.png', limitCount: '' },
-  { id: 54, name: '龙系粉尘', price: 500, effect: '龙系精灵培养材料，用于合成技能石和精灵突�?, rarity: '普�?, source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/ac/jhbsu0fzhq55ivqu89qz81366owvkki.png/100px-100131.png', limitCount: '' },
-  { id: 55, name: '电系粉尘', price: 500, effect: '电系精灵培养材料，用于合成技能石和精灵突�?, rarity: '普�?, source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/2f/2sux0g15uo8at77bwpoxrg32rv3l4dz.png/100px-100132.png', limitCount: '' },
-  { id: 56, name: '毒系粉尘', price: 500, effect: '毒系精灵培养材料，用于合成技能石和精灵突�?, rarity: '普�?, source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/4/41/qgthc06nxeq4r9tzejgwwox7qtqp86w.png/100px-100133.png', limitCount: '' },
-  { id: 57, name: '虫系粉尘', price: 500, effect: '虫系精灵培养材料，用于合成技能石和精灵突�?, rarity: '普�?, source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/c/c0/ihsb7b9pcs210dtaiswlsaxuhe2jfaa.png/100px-100134.png', limitCount: '' },
-  { id: 58, name: '武系粉尘', price: 500, effect: '武系精灵培养材料，用于合成技能石和精灵突�?, rarity: '普�?, source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/23/su3uy9wfjwvx3ifjaia3l88j2kjr5mg.png/100px-100135.png', limitCount: '' },
-  { id: 59, name: '翼系粉尘', price: 500, effect: '翼系精灵培养材料，用于合成技能石和精灵突�?, rarity: '普�?, source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/3/35/5mp1ohcm72pgsxax5kq3x1aophw3lh0.png/100px-100136.png', limitCount: '' },
-  { id: 60, name: '地系粉尘', price: 500, effect: '地系精灵培养材料，用于合成技能石和精灵突�?, rarity: '普�?, source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/7/7a/n6n70lv43avntp8zie9k18a4zw41l8i.png/100px-100129.png', limitCount: '' },
-  { id: 61, name: '幻系粉尘', price: 500, effect: '幻系精灵培养材料，用于合成技能石和精灵突�?, rarity: '普�?, source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/24/sgt0lc5llwfvlcmjhr1awhwq6st35fj.png/100px-100139.png', limitCount: '' }
+  { id: 38, name: '无花果', price: 3000, effect: '为精灵提供经验值的基础果实，快速提升精灵等级', rarity: '稀有', source: '远行商人/任务奖励', image: 'https://patchwiki.biligame.com/images/rocom/thumb/e/e5/fc8cowshvdiendz68mg2b9e35rp0bt7.png/100px-100669.png', limitCount: '' },
+  { id: 39, name: '魔力果', price: 6000, effect: '为精灵提供大量经验值的常见果实，献祭低等精灵可获得', rarity: '稀有', source: '远行商人/任务奖励/活动奖励', image: 'https://patchwiki.biligame.com/images/rocom/thumb/c/c6/5qe6rcdtfxe1gsrvgj3lrn033athx9p.png/100px-100668.png', limitCount: '' },
+  { id: 40, name: '黑晶琉璃', price: 1000, effect: '稀有矿石材料，可用于合成高级道具和装备升级', rarity: '稀有', source: '采集/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/b/bc/khe20j8lwkt1bg9g4b0gbnsff48g93c.png/100px-100628.png', limitCount: '' },
+  { id: 41, name: '黄石榴石', price: 1000, effect: '稀有矿石材料，可用于合成高级道具和装备升级', rarity: '稀有', source: '采集/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/f/f3/c5x5f0lgk33ly801m8w1n9aod8ny4sh.png/100px-100683.png', limitCount: '' },
+  { id: 42, name: '蓝晶碧玺', price: 1000, effect: '稀有矿石材料，可用于合成高级道具和装备升级', rarity: '稀有', source: '采集/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/c/c5/k8wzdzechd88qs9bxuvcnyg0pv4tzl4.png/100px-100681.png', limitCount: '' },
+  { id: 43, name: '紫莲刚玉', price: 1000, effect: '稀有矿石材料，可用于合成高级道具和装备升级', rarity: '稀有', source: '采集/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/9c/s7ej54xr4magmv0h0zag15jah6avwlc.png/100px-100682.png', limitCount: '' },
+  { id: 44, name: '龙系粉尘', price: 500, effect: '龙系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/ac/jhbsu0fzhq55ivqu89qz81366owvkki.png/100px-100131.png', limitCount: '' },
+  { id: 45, name: '萌系粉尘', price: 500, effect: '萌系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/26/58llleh28pa33kxom2cub80nnf0y9zd.png/100px-100137.png', limitCount: '' },
+  { id: 46, name: '草系粉尘', price: 500, effect: '草系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/3/32/2k88qbruf464xxyf02grnmkvun59h0c.png/100px-100121.png', limitCount: '' },
+  { id: 47, name: '机械粉尘', price: 500, effect: '机械系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/1/1c/lcsenwszmlkz002ai6du9f32tbfpi19.png/100px-100138.png', limitCount: '' },
+  { id: 48, name: '火系粉尘', price: 500, effect: '火系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/a6/a5v60zfm9ivyri166tias4efjnp5vyt.png/100px-100122.png', limitCount: '' },
+  { id: 49, name: '水系粉尘', price: 500, effect: '水系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/c/c7/4fxef31uslze9psd9375td9zbqtbllv.png/100px-100123.png', limitCount: '' },
+  { id: 50, name: '普通系粉尘', price: 500, effect: '普通系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/0/0d/gkijb43j6tp5kadtksuux84zwrrawua.png', limitCount: '' },
+  { id: 51, name: '光系粉尘', price: 500, effect: '光系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/9d/t3udkq5fg8o3je088pcjktersn9wfrt.png/100px-100124.png', limitCount: '' },
+  { id: 52, name: '恶系粉尘', price: 500, effect: '恶系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/e/ec/mbugzr13ol6m9ay5focjw9kctt14g5h.png/100px-100125.png', limitCount: '' },
+  { id: 53, name: '幽系粉尘', price: 500, effect: '幽系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/20/okbnyp4feg52iaxuijvjzv6wodaqjmi.png/100px-100126.png', limitCount: '' },
+  { id: 54, name: '龙系粉尘', price: 500, effect: '龙系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/a/ac/jhbsu0fzhq55ivqu89qz81366owvkki.png/100px-100131.png', limitCount: '' },
+  { id: 55, name: '电系粉尘', price: 500, effect: '电系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/2f/2sux0g15uo8at77bwpoxrg32rv3l4dz.png/100px-100132.png', limitCount: '' },
+  { id: 56, name: '毒系粉尘', price: 500, effect: '毒系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/4/41/qgthc06nxeq4r9tzejgwwox7qtqp86w.png/100px-100133.png', limitCount: '' },
+  { id: 57, name: '虫系粉尘', price: 500, effect: '虫系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/c/c0/ihsb7b9pcs210dtaiswlsaxuhe2jfaa.png/100px-100134.png', limitCount: '' },
+  { id: 58, name: '武系粉尘', price: 500, effect: '武系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/23/su3uy9wfjwvx3ifjaia3l88j2kjr5mg.png/100px-100135.png', limitCount: '' },
+  { id: 59, name: '翼系粉尘', price: 500, effect: '翼系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/3/35/5mp1ohcm72pgsxax5kq3x1aophw3lh0.png/100px-100136.png', limitCount: '' },
+  { id: 60, name: '地系粉尘', price: 500, effect: '地系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/7/7a/n6n70lv43avntp8zie9k18a4zw41l8i.png/100px-100129.png', limitCount: '' },
+  { id: 61, name: '幻系粉尘', price: 500, effect: '幻系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/24/sgt0lc5llwfvlcmjhr1awhwq6st35fj.png/100px-100139.png', limitCount: '' }
 ]
 
 var cloudUrl = require('../../utils/cloudUrl')
@@ -105,11 +105,11 @@ Page({
       name: '',
       price: '',
       effect: '',
-      rarity: '普�?,
+      rarity: '普通',
       source: '远行商人',
       image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/9d/t3udkq5fg8o3je088pcjktersn9wfrt.png/100px-100124.png'
     },
-    rarityOptions: ['普�?, '稀�?, '史诗', '传说'],
+    rarityOptions: ['普通', '稀有', '史诗', '传说'],
     addingItem: false,
     showAddSellingItemModal: false,
     addingSellingItem: false,
@@ -166,7 +166,7 @@ Page({
         if (durationHours / 24 >= 2) {
           category = 'weekend'
         } else {
-          // 检查是否覆盖全�?
+          // 检查是否覆盖全天
           var startDate = new Date(start)
           var startH = startDate.getHours()
           var endDate = new Date(end)
@@ -227,7 +227,7 @@ Page({
     var marketEnd = 24 * 3600
     
     if (secondsOfDay < marketStart || secondsOfDay >= marketEnd) {
-      return { is_open: false, countdown: '未开�? }
+      return { is_open: false, countdown: '未开市' }
     }
     
     var roundWindow = 4 * 3600
@@ -352,14 +352,14 @@ Page({
 
       // Format function helper
       var formatDiff = function(diff) {
-        if (diff <= 0) return '已下�?;
+        if (diff <= 0) return '已下架';
         var totalSeconds = Math.floor(diff / 1000)
         var hours = Math.floor(totalSeconds / 3600)
         var minutes = Math.floor((totalSeconds % 3600) / 60)
         var seconds = totalSeconds % 60
         var str = ''
         if (hours > 0) str += hours + '小时'
-        str += (minutes < 10 ? '0' + minutes : minutes) + '�? + (seconds < 10 ? '0' + seconds : seconds) + '�?
+        str += (minutes < 10 ? '0' + minutes : minutes) + '分' + (seconds < 10 ? '0' + seconds : seconds) + '秒'
         return str
       }
 
@@ -393,7 +393,7 @@ Page({
       
       var diff = offlineTime - now
       if (diff <= 0) {
-        // 只清除常驻商品（无单独offlineDate的），保留未到期的限时商�?
+        // 只清除常驻商品（无单独offlineDate的），保留未到期的限时商品
         var currentSelling = self.data.currentSelling || [];
         var kept = currentSelling.filter(function(item) {
           if (!item.offlineDate) return false;
@@ -402,7 +402,7 @@ Page({
           return now < new Date(itemTime).getTime();
         });
         var newText = kept.length > 0 && self.serializeItems ? self.serializeItems(kept) : '';
-        self.setData({ remainingTimeStr: '已下�?, currentSellingText: newText }); self.syncSellingArrays(kept)
+        self.setData({ remainingTimeStr: '已下架', currentSellingText: newText }); self.syncSellingArrays(kept)
         if (typeof self.updateSellingSilent === 'function') self.updateSellingSilent();
         // We do not stop the timer here so it keeps polling in case items are added
         return
@@ -437,7 +437,7 @@ Page({
         var currentSellingText = d.currentSelling || ''
         var currentSellingImage = d.currentSellingImage || ''
         if (d.offlineTime && now >= d.offlineTime) {
-          // 只清除常驻商品（无单独offlineDate的），保留未到期的限时商�?
+          // 只清除常驻商品（无单独offlineDate的），保留未到期的限时商品
           currentSelling = currentSelling.filter(function(item) {
             if (!item.offlineDate) return false;
             var itemTime = item.offlineDate + ' ' + (item.offlineTimeStr === '23:59' ? '23:59:59' : item.offlineTimeStr + ':00');
@@ -519,7 +519,7 @@ Page({
       if (newVal) {
         if (self.data.offlineTime) {
           self.startCountdownTimer()
-          wx.showToast({ title: '倒计时已开�?, icon: 'success' })
+          wx.showToast({ title: '倒计时已开启', icon: 'success' })
         } else {
           wx.showToast({ title: '倒计时已开启，请先设置下架时间', icon: 'none' })
         }
@@ -545,7 +545,7 @@ Page({
           name: parts[0].trim(),
           price: parseInt(parts[1]) || 0,
           effect: parts[2].trim(),
-          rarity: parts[3].trim() || '普�?,
+          rarity: parts[3].trim() || '普通',
           source: (parts.length > 4) ? parts[4].trim() : '远行商人',
           image: (parts.length > 5) ? parts[5].trim() : undefined,
           limitCount: (parts.length > 6) ? parts[6].trim() : undefined,
@@ -573,7 +573,7 @@ Page({
       throw err
     }).then(function() {
       self.setData({ maintenance: newVal })
-      wx.showToast({ title: newVal ? '已下�? : '已上�?, icon: 'success' })
+      wx.showToast({ title: newVal ? '已下线' : '已上线', icon: 'success' })
     }).catch(function() {
       wx.showToast({ title: '操作失败', icon: 'none' })
     })
@@ -593,7 +593,7 @@ Page({
       throw err
     }).then(function() {
       self.setData({ merchantAway: newVal })
-      wx.showToast({ title: newVal ? '已开启出差提�? : '已关闭出差提�?, icon: 'success' })
+      wx.showToast({ title: newVal ? '已开启出差提示' : '已关闭出差提示', icon: 'success' })
     }).catch(function() {
       wx.showToast({ title: '操作失败', icon: 'none' })
     })
@@ -609,7 +609,7 @@ Page({
     if (self.data.submitting) return
     if (!db) { wx.showToast({ title: '云环境未就绪', icon: 'none' }); return }
     var value = self.data.editValue.trim()
-    if (!value) { wx.showToast({ title: '请输入内�?, icon: 'none' }); return }
+    if (!value) { wx.showToast({ title: '请输入内容', icon: 'none' }); return }
     self.setData({ submitting: true })
     var updateData = {}
     updateData[self.data.editingField] = value
@@ -632,12 +632,12 @@ Page({
   showItem: function(e) {
     var d = e.currentTarget.dataset.d
     var t = this.data.t
-    wx.showModal({ title: d.name, content: (t.price || '价格') + ': ' + d.price + (t.currency || '洛克�?) + '\n' + (t.effect || '效果') + ': ' + d.effect + '\n' + (t.rarity || '稀有度') + ': ' + d.rarity + '\n' + (t.source || '来源') + ': ' + d.source, showCancel: false })
+    wx.showModal({ title: d.name, content: (t.price || '价格') + ': ' + d.price + (t.currency || '洛克贝') + '\n' + (t.effect || '效果') + ': ' + d.effect + '\n' + (t.rarity || '稀有度') + ': ' + d.rarity + '\n' + (t.source || '来源') + ': ' + d.source, showCancel: false })
   },
   go: function(e) { wx.navigateTo({ url: e.currentTarget.dataset.url }) },
   openAddSellingItemModal: function() {
     if (this.data.currentSelling.length >= 8) {
-      wx.showToast({ title: '最多只能上�?件商�?, icon: 'none' })
+      wx.showToast({ title: '最多只能上架8件商品', icon: 'none' })
       return
     }
     var available = []
@@ -666,7 +666,7 @@ Page({
     var selectedCount = Object.keys(selected).filter(function(k){ return selected[k] }).length
     
     if (!selected[item.id] && currentCount + selectedCount >= 8) {
-      wx.showToast({ title: '最多只能上�?件商�?, icon: 'none' })
+      wx.showToast({ title: '最多只能上架8件商品', icon: 'none' })
       return
     }
     
@@ -680,7 +680,7 @@ Page({
       var item = items[i]
       var offDate = item.offlineDate || item._offlineDate || ''
       var offTime = item.offlineTimeStr || item._offlineTimeStr || ''
-      var line = item.name + '|' + item.price + '|' + (item.effect || '') + '|' + (item.rarity || '普�?) + '|' + (item.source || '远行商人') + '|' + (item.image || '') + '|' + (item.limitCount || '') + '|' + offDate + '|' + offTime
+      var line = item.name + '|' + item.price + '|' + (item.effect || '') + '|' + (item.rarity || '普通') + '|' + (item.source || '远行商人') + '|' + (item.image || '') + '|' + (item.limitCount || '') + '|' + offDate + '|' + offTime
       lines.push(line)
     }
     return lines.join('\n')
@@ -706,7 +706,7 @@ Page({
   confirmAddSellingItems: function() {
     var self = this;
     if (typeof db === 'undefined' || !db) {
-      wx.showToast({ title: '云开发未初始�?, icon: 'none' });
+      wx.showToast({ title: '云开发未初始化', icon: 'none' });
       return;
     }
     try {
@@ -725,7 +725,7 @@ Page({
       
       var currentSelling = this.data.currentSelling || [];
       if (currentSelling.length + itemsToAdd.length > 8) {
-        wx.showToast({ title: '最多只能上�?个物�?, icon: 'none' });
+        wx.showToast({ title: '最多只能上架8个物品', icon: 'none' });
         return;
       }
       
@@ -749,7 +749,7 @@ Page({
         updateData.offlineTimeStr = '23:59';
       }
   
-      wx.showLoading({ title: '上架�?..' });
+      wx.showLoading({ title: '上架中...' });
       var updatePromise = db.collection('page_config').doc('merchant').update({ data: updateData });
       updatePromise.catch(function(err) {
         if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
@@ -782,7 +782,7 @@ Page({
     addSellingItemFromList: function(e) {
     var self = this;
     if (typeof db === 'undefined' || !db) {
-      wx.showToast({ title: '云开发未初始�?, icon: 'none' });
+      wx.showToast({ title: '云开发未初始化', icon: 'none' });
       return;
     }
     try {
@@ -796,8 +796,8 @@ Page({
           break;
         }
       }
-      if (exists) { wx.showToast({ title: '已在上架列表�?, icon: 'none' }); return; }
-      if (currentSelling.length >= 8) { wx.showToast({ title: '最多只能上�?个物�?, icon: 'none' }); return; }
+      if (exists) { wx.showToast({ title: '已在上架列表中', icon: 'none' }); return; }
+      if (currentSelling.length >= 8) { wx.showToast({ title: '最多只能上架8个物品', icon: 'none' }); return; }
       
       var updated = currentSelling.concat([item]);
       var text = '';
@@ -819,7 +819,7 @@ Page({
         updateData.offlineTimeStr = '23:59';
       }
   
-      wx.showLoading({ title: '上架�?..' });
+      wx.showLoading({ title: '上架中...' });
       var updatePromise = db.collection('page_config').doc('merchant').update({ data: updateData });
       updatePromise.catch(function(err) {
         if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
@@ -838,7 +838,7 @@ Page({
           nextState.remainingTimeStr = '';
         }
         self.setData(nextState); self.syncSellingArrays(updated);
-        wx.showToast({ title: '已上�? ' + item.name, icon: 'success' });
+        wx.showToast({ title: '已上架: ' + item.name, icon: 'success' });
       }).catch(function(err) {
         wx.hideLoading();
         wx.showToast({ title: '上架失败', icon: 'none' });
@@ -867,7 +867,7 @@ Page({
     var parsed = text ? self.parseItems(text) : []
     if (parsed.length > 8) {
       parsed = parsed.slice(0, 8)
-      wx.showToast({ title: '最�?件，已截取前8�?, icon: 'none' })
+      wx.showToast({ title: '最多8件，已截取前8件', icon: 'none' })
     }
     
     // 自动回写图片到商品库 items
@@ -948,7 +948,7 @@ Page({
       if (typeof self.startCountdownTimer === 'function') self.startCountdownTimer()
       wx.showToast({ title: '上架成功', icon: 'success' })
       var itemNames = parsed.map(function(i) { return i.name + (i.limitCount ? '*' + i.limitCount : '') })
-      var notifyContent = (parsed.length > 0 ? itemNames.join('�?).substring(0, 20) : '在售信息已更�?)
+      var notifyContent = (parsed.length > 0 ? itemNames.join('、').substring(0, 20) : '在售信息已更新')
       notify.pushToSubscribers('merchant', '商人商品更新', notifyContent, '/pages/merchant/merchant', null, itemNames)
     }).catch(function() {
       self.setData({ sellingSubmitting: false })
@@ -964,7 +964,7 @@ Page({
     var parsed = text ? self.parseItems(text) : []
     if (parsed.length > 8) {
       parsed = parsed.slice(0, 8)
-      wx.showToast({ title: '最�?件，已截取前8�?, icon: 'none' })
+      wx.showToast({ title: '最多8件，已截取前8件', icon: 'none' })
     }
 
     var itemsChanged = false
@@ -1154,7 +1154,7 @@ Page({
       currentSelling[targetIndex].offlineTimeStr = self.data.offlineTimeStr || '23:59';
       var text = self.serializeItems(currentSelling);
       
-      wx.showLoading({ title: '保存�?..' });
+      wx.showLoading({ title: '保存中...' });
       db.collection('page_config').doc('merchant').update({
         data: { currentSelling: text, showCountdown: text !== '', updateTime: db.serverDate() }
       }).then(function() {
@@ -1173,7 +1173,7 @@ Page({
       });
     } else {
       self.setData({ showIndividualOfflineModal: false });
-      wx.showToast({ title: '找不到商�?, icon: 'none' });
+      wx.showToast({ title: '找不到商品', icon: 'none' });
     }
   },
 
@@ -1226,7 +1226,7 @@ Page({
       sourceType: ['album', 'camera'],
       success: function(res) {
         var filePath = res.tempFilePaths[0]
-        wx.showLoading({ title: '上传�?..' })
+        wx.showLoading({ title: '上传中...' })
         var ext = filePath.split('.').pop() || 'jpg'
         var cloudPath = 'merchant/' + Date.now() + '.' + ext
         wx.cloud.uploadFile({ cloudPath: cloudPath, filePath: filePath })
@@ -1268,7 +1268,7 @@ Page({
       data: { currentSelling: text, showCountdown: text !== '', updateTime: db.serverDate() }
     }).then(function() {
       self.setData({ currentSellingText: text }); if(typeof self !== 'undefined') self.syncSellingArrays(items); else this.syncSellingArrays(items)
-      wx.showToast({ title: '已移�?, icon: 'success' })
+      wx.showToast({ title: '已移除', icon: 'success' })
     }).catch(function() {
       wx.showToast({ title: '操作失败', icon: 'none' })
     })
@@ -1298,7 +1298,7 @@ Page({
     }
     var currentCount = self.data.subscribeCount || 0
     if (currentCount >= 99) {
-      wx.showToast({ title: '已达上限99�?, icon: 'none' })
+      wx.showToast({ title: '已达上限99条', icon: 'none' })
       return
     }
     notify.requestAndSave(['merchant'], function(err, result) {
@@ -1316,11 +1316,11 @@ Page({
       wx.showToast({ title: '请先登录', icon: 'none' })
       return
     }
-    // 已订�?�?弹窗取消订阅
+    // 已订阅 → 弹窗取消订阅
     if (self.data.itemSubStatus[name]) {
       wx.showModal({
         title: '取消订阅',
-        content: '确定取消�? + name + '」的补货通知�?,
+        content: '确定取消「' + name + '」的补货通知？',
         confirmText: '取消订阅',
         confirmColor: '#ff4757',
         success: function(res) {
@@ -1332,7 +1332,7 @@ Page({
     notify.requestAndSaveItem('merchant_item', name, function(err, result) {
       if (err) return
       if (result.merchant_item === 'accept') {
-        wx.showToast({ title: '已订�? ' + name, icon: 'success' })
+        wx.showToast({ title: '已订阅: ' + name, icon: 'success' })
         self.checkSubscription()
       }
     })
@@ -1357,7 +1357,7 @@ Page({
           var count = 0
           for (var k in itemSubStatus) { if (itemSubStatus[k]) count++ }
           self.setData({ itemSubStatus: itemSubStatus, totalItemSubs: count })
-          wx.showToast({ title: '已取消订�? ' + name, icon: 'success' })
+          wx.showToast({ title: '已取消订阅: ' + name, icon: 'success' })
         })
         .catch(function() {
           wx.showToast({ title: '操作失败', icon: 'none' })
@@ -1376,7 +1376,7 @@ Page({
         name: '',
         price: '',
         effect: '',
-        rarity: '普�?,
+        rarity: '普通',
         source: '远行商人',
         image: ''
       }
@@ -1387,10 +1387,10 @@ Page({
     if (!self.data.isAdmin || !db) return
     wx.showModal({
       title: '恢复初始商品',
-      content: '确定要导入基础商品吗？这不会删除您现有的自定义商品，只会将缺失的基础商品追加到库中�?,
+      content: '确定要导入基础商品吗？这不会删除您现有的自定义商品，只会将缺失的基础商品追加到库中。',
       success: function(res) {
         if (res.confirm) {
-          wx.showLoading({ title: '导入�?..' })
+          wx.showLoading({ title: '导入中...' })
           var currentItems = self.data.items.slice()
           var added = 0
           initialItems.forEach(function(initItem) {
@@ -1416,7 +1416,7 @@ Page({
           }).then(function() {
             wx.hideLoading()
             self.setData({ items: currentItems, customItems: customItemsText })
-            wx.showToast({ title: '成功导入' + added + '件商�?, icon: 'success' })
+            wx.showToast({ title: '成功导入' + added + '件商品', icon: 'success' })
           }).catch(function() {
             wx.hideLoading()
             wx.showToast({ title: '导入失败', icon: 'none' })
@@ -1430,11 +1430,11 @@ Page({
     if (!self.data.isAdmin || !db) return
     wx.showModal({
       title: '全量替换商品',
-      content: '确定要用最新内置数据替换全部现有商品吗？此操作不可撤销�?,
+      content: '确定要用最新内置数据替换全部现有商品吗？此操作不可撤销。',
       confirmColor: '#ff4757',
       success: function(res) {
         if (res.confirm) {
-          wx.showLoading({ title: '替换�?..' })
+          wx.showLoading({ title: '替换中...' })
           var newItems = initialItems.slice()
           var customItemsText = serializeItems(newItems)
           db.collection('page_config').doc('merchant').update({
@@ -1446,7 +1446,7 @@ Page({
           }).then(function() {
             wx.hideLoading()
             self.setData({ items: newItems, customItems: customItemsText, useCustom: true })
-            wx.showToast({ title: '已替�? + newItems.length + '件商�?, icon: 'success' })
+            wx.showToast({ title: '已替换' + newItems.length + '件商品', icon: 'success' })
           }).catch(function() {
             wx.hideLoading()
             wx.showToast({ title: '替换失败', icon: 'none' })
@@ -1469,7 +1469,7 @@ Page({
           wx.showToast({ title: '请选择XML或XLSX文件', icon: 'none' })
           return
         }
-        wx.showLoading({ title: '解析文件�?..' })
+        wx.showLoading({ title: '解析文件中...' })
         wx.cloud.uploadFile({
           cloudPath: 'import/' + Date.now() + '_' + Math.random().toString(36).slice(2, 8) + '.' + ext,
           filePath: file.path
@@ -1517,7 +1517,7 @@ Page({
         var name = cells[0]
         var price = parseInt(cells[1]) || 0
         var effect = cells[2] || ''
-        var rarity = cells[3] || '普�?
+        var rarity = cells[3] || '普通'
         var source = cells[4] || '远行商人'
         var image = cells[5] || ''
         var limitCount = cells[6] || ''
@@ -1541,7 +1541,7 @@ Page({
     }
     wx.showModal({
       title: '导入商品确认',
-      content: '识别�?' + items.length + ' 件商品，是否导入�?,
+      content: '识别到 ' + items.length + ' 件商品，是否导入？',
       success: function(res) {
         if (res.confirm) {
           self.saveImportedItems(items)
@@ -1551,7 +1551,7 @@ Page({
   },
   saveImportedItems: function(newItems) {
     var self = this
-    wx.showLoading({ title: '保存�?..' })
+    wx.showLoading({ title: '保存中...' })
     var currentItems = self.data.items.slice()
     var added = 0
     var updated = 0
@@ -1594,8 +1594,8 @@ Page({
       .then(function() {
         wx.hideLoading()
         self.setData({ items: currentItems, customItems: customItemsText, useCustom: true })
-        var msg = '导入成功：新�? + added + '�?
-        if (updated > 0) msg += '，更�? + updated + '�?
+        var msg = '导入成功：新增' + added + '件'
+        if (updated > 0) msg += '，更新' + updated + '件'
         wx.showToast({ title: msg, icon: 'success' })
       })
       .catch(function() {
@@ -1664,15 +1664,15 @@ Page({
       return selectedItems[id] === true
     })
     if (selectedIds.length === 0) {
-      wx.showToast({ title: '请先勾选商�?, icon: 'none' })
+      wx.showToast({ title: '请先勾选商品', icon: 'none' })
       return
     }
     wx.showModal({
       title: '批量下架',
-      content: '确定要将选中�?' + selectedIds.length + ' 个商品批量下架（永久删除）吗�?,
+      content: '确定要将选中的 ' + selectedIds.length + ' 个商品批量下架（永久删除）吗？',
       success: function(res) {
         if (res.confirm) {
-          wx.showLoading({ title: '处理�?..' })
+          wx.showLoading({ title: '处理中...' })
           var items = self.data.items.slice()
           var deletedMap = {}
           selectedIds.forEach(function(id) {
@@ -1734,14 +1734,14 @@ Page({
       return selectedItems[id] === true
     })
     
-    wx.showLoading({ title: '处理�?..' })
+    wx.showLoading({ title: '处理中...' })
     var items = self.data.items.slice()
     var selectedMap = {}
     selectedIds.forEach(function(id) {
       selectedMap[id] = true
     })
     
-    // 更新商品库对应属�?
+    // 更新商品库对应属性
     var updatedItems = items.map(function(item) {
       if (selectedMap[item.id]) {
         item[property] = newValue
@@ -1751,12 +1751,12 @@ Page({
     
     var customItemsText = serializeItems(updatedItems)
     
-    // 获取被选中的商品原数据，用来匹配正在售卖的商品（按名字匹配�?
+    // 获取被选中的商品原数据，用来匹配正在售卖的商品（按名字匹配）
     var selectedOriginalItems = items.filter(function(item) {
       return selectedMap[item.id]
     })
     
-    // 同步更新正在售卖列表里的属�?
+    // 同步更新正在售卖列表里的属性
     var selling = self.data.currentSelling || []
     var sellingChanged = false
     
@@ -1806,7 +1806,7 @@ Page({
       return selectedItems[id] === true
     })
     if (selectedIds.length === 0) {
-      wx.showToast({ title: '请先勾选商�?, icon: 'none' })
+      wx.showToast({ title: '请先勾选商品', icon: 'none' })
       return
     }
     
@@ -1819,13 +1819,13 @@ Page({
           wx.showModal({
             title: '批量调整售价',
             content: '',
-            placeholderText: '请输入新价格（正整数�?,
+            placeholderText: '请输入新价格（正整数）',
             editable: true,
             success: function(mRes) {
               if (mRes.confirm) {
                 var priceStr = mRes.content ? mRes.content.trim() : ''
                 if (!priceStr || isNaN(parseInt(priceStr)) || parseInt(priceStr) < 0) {
-                  wx.showToast({ title: '请输入有效价�?, icon: 'none' })
+                  wx.showToast({ title: '请输入有效价格', icon: 'none' })
                   return
                 }
                 self.updateBatchItemsProperty('price', parseInt(priceStr), '价格调整成功')
@@ -1837,7 +1837,7 @@ Page({
           wx.showModal({
             title: '批量修改商品来源',
             content: '',
-            placeholderText: '请输入新的来源（如：远行商人�?,
+            placeholderText: '请输入新的来源（如：远行商人）',
             editable: true,
             success: function(mRes) {
               if (mRes.confirm) {
@@ -1855,7 +1855,7 @@ Page({
           wx.showModal({
             title: '批量修改效果描述',
             content: '',
-            placeholderText: '请输入新的效果说�?,
+            placeholderText: '请输入新的效果说明',
             editable: true,
             success: function(mRes) {
               if (mRes.confirm) {
@@ -1899,7 +1899,7 @@ Page({
     wx.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'],
       success: function(res) {
         var filePath = res.tempFilePaths[0]
-        wx.showLoading({ title: '上传�?..' })
+        wx.showLoading({ title: '上传中...' })
         var ext = filePath.split('.').pop() || 'jpg'
         wx.cloud.uploadFile({ cloudPath: 'merchant/' + Date.now() + '.' + ext, filePath: filePath })
           .then(function(r) { wx.hideLoading(); self.setData({ 'batchEditItem.image': r.fileID }) })
@@ -1920,8 +1920,8 @@ Page({
     var item = self.data.batchEditItem
     var index = self.data.batchEditIndex
     if (!item || index < 0) return
-    if (!item.name.trim()) { wx.showToast({ title: '请输入物品名�?, icon: 'none' }); return }
-    if (!item.price || isNaN(parseInt(item.price))) { wx.showToast({ title: '请输入有效价�?, icon: 'none' }); return }
+    if (!item.name.trim()) { wx.showToast({ title: '请输入物品名称', icon: 'none' }); return }
+    if (!item.price || isNaN(parseInt(item.price))) { wx.showToast({ title: '请输入有效价格', icon: 'none' }); return }
     self.setData({ batchSaving: true })
     var items = self.data.items.slice()
     items[index] = {
@@ -1938,7 +1938,7 @@ Page({
       data: { customItems: customItemsText, updateTime: db.serverDate() }
     }).then(function() {
       self.setData({ batchSaving: false, batchEditItem: null, batchEditIndex: -1, items: items, customItems: customItemsText })
-      wx.showToast({ title: '已保�?, icon: 'success' })
+      wx.showToast({ title: '已保存', icon: 'success' })
     }).catch(function() {
       self.setData({ batchSaving: false })
       wx.showToast({ title: '保存失败', icon: 'none' })
@@ -1987,7 +1987,7 @@ Page({
               batchEditItem: null,
               batchEditIndex: -1
             })
-            wx.showToast({ title: '已删�?, icon: 'success' })
+            wx.showToast({ title: '已删除', icon: 'success' })
           }).catch(function() {
             wx.showToast({ title: '删除失败', icon: 'none' })
           })
@@ -2038,7 +2038,7 @@ Page({
               showAddItemModal: false,
               editingItemIndex: null
             })
-            wx.showToast({ title: '已删�?, icon: 'success' })
+            wx.showToast({ title: '已删除', icon: 'success' })
           }).catch(function() {
             wx.showToast({ title: '删除失败', icon: 'none' })
           })
@@ -2054,7 +2054,7 @@ Page({
       sourceType: ['album', 'camera'],
       success: function(res) {
         var filePath = res.tempFilePaths[0]
-        wx.showLoading({ title: '上传�?..' })
+        wx.showLoading({ title: '上传中...' })
         var ext = filePath.split('.').pop() || 'jpg'
         var cloudPath = 'merchant/' + Date.now() + '.' + ext
         wx.cloud.uploadFile({ cloudPath: cloudPath, filePath: filePath })
@@ -2104,15 +2104,15 @@ Page({
     if (self.data.addingItem) return
     var item = self.data.newItem
     if (!item.name.trim()) {
-      wx.showToast({ title: '请输入物品名�?, icon: 'none' })
+      wx.showToast({ title: '请输入物品名称', icon: 'none' })
       return
     }
     if (!item.price.trim() || isNaN(parseInt(item.price))) {
-      wx.showToast({ title: '请输入有效价�?, icon: 'none' })
+      wx.showToast({ title: '请输入有效价格', icon: 'none' })
       return
     }
     if (!item.effect.trim()) {
-      wx.showToast({ title: '请输入物品效�?, icon: 'none' })
+      wx.showToast({ title: '请输入物品效果', icon: 'none' })
       return
     }
     self.setData({ addingItem: true })
@@ -2134,14 +2134,14 @@ Page({
         data: { customItems: customItemsText, updateTime: db.serverDate() }
       }).then(function() {
         self.setData({ addingItem: false, showAddItemModal: false, editingItemIndex: null, items: items, customItems: customItemsText })
-        wx.showToast({ title: '已更�?, icon: 'success' })
+        wx.showToast({ title: '已更新', icon: 'success' })
       }).catch(function() {
         // 文档不存在时创建
         db.collection('page_config').add({
           data: { _id: 'merchant', useCustom: true, customItems: customItemsText, maintenance: false, updateTime: db.serverDate() }
         }).then(function() {
           self.setData({ addingItem: false, showAddItemModal: false, editingItemIndex: null, items: items, customItems: customItemsText })
-          wx.showToast({ title: '已更�?, icon: 'success' })
+          wx.showToast({ title: '已更新', icon: 'success' })
         }).catch(function() {
           self.setData({ addingItem: false })
           wx.showToast({ title: '更新失败', icon: 'none' })
@@ -2200,8 +2200,8 @@ Page({
         self.markNewItems()
         self.startNewItemsTimer()
         wx.showToast({ title: '添加成功', icon: 'success' })
-        // 添加商品到基础数据库默认不推送通知，只在上架时推�?
-        // notify.pushToSubscribers('merchant', newItemData.name, newItemData.name + ' · ' + newItemData.price + '洛克�?, '/pages/merchant/merchant', newItemData.name)
+        // 添加商品到基础数据库默认不推送通知，只在上架时推送
+        // notify.pushToSubscribers('merchant', newItemData.name, newItemData.name + ' · ' + newItemData.price + '洛克贝', '/pages/merchant/merchant', newItemData.name)
       })
       .catch(function() {
         self.setData({ addingItem: false })
@@ -2241,7 +2241,7 @@ Page({
       throw err;
     }).then(function() {
             self.setData({ items: items, customItems: customItemsText, currentSellingText: sellingText })
-            wx.showToast({ title: '已删�?, icon: 'success' })
+            wx.showToast({ title: '已删除', icon: 'success' })
           }).catch(function() {
             wx.showToast({ title: '删除失败', icon: 'none' })
           })
@@ -2253,7 +2253,7 @@ Page({
     return { title: '洛手助手 - 远行商人', path: '/pages/merchant/merchant', imageUrl: '/images/banner.webp' }
   },
   onShareTimeline: function() {
-    return { title: '洛手助手 - 远行商人今日售卖物品及价�?, imageUrl: '/images/banner.webp' }
+    return { title: '洛手助手 - 远行商人今日售卖物品及价格', imageUrl: '/images/banner.webp' }
   }
 })
 
