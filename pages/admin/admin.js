@@ -258,6 +258,7 @@ Page({
     showSwarmModal: false,
     swarmLocationInput: '',
     siteConfig: { loginLogoUrl: '' },
+    showLogShareBtn: true,
     bannerUrl: '',
     bannerLoading: false,
     pageConfigs: [],
@@ -2982,6 +2983,11 @@ openModal: function(e) {
   },
 
   // ── Site Config ──
+  toggleShowLogShareBtn: function() {
+    var newVal = !this.data.showLogShareBtn
+    wx.setStorageSync('show_log_share_btn', newVal)
+    this.setData({ showLogShareBtn: newVal })
+  },
   onLoginLogoInput: function(e) {
     this.setData({ 'siteConfig.loginLogoUrl': e.detail.value })
   },

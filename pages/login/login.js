@@ -17,7 +17,7 @@ Page({
     tempNickName: '',
     loginDays: 0,
     level: 1,
-    levelName: '小洛�?,
+    levelName: '小洛克',
     levelColor: { bg: 'rgba(255,255,255,0.1)', text: 'rgba(255,255,255,0.5)', border: 'rgba(255,255,255,0.2)' },
     levelIcon: '🐣',
     nextLevelDays: 3,
@@ -184,12 +184,12 @@ Page({
         wx.removeStorageSync('is_admin_user')
         wx.removeStorageSync('admin_logged_in')
         self.setData({ userInfo: null, hasUserInfo: false, gameUid: '' })
-        wx.showToast({ title: '登录已过期，请重新登�?, icon: 'none' })
+        wx.showToast({ title: '登录已过期，请重新登�?, icon: 'none' })
       } else {
         var remain = expire - (now - loginTime)
         var days = Math.floor(remain / (24 * 60 * 60 * 1000))
         var hours = Math.floor((remain % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000))
-        self.setData({ userInfo: saved, hasUserInfo: true, loginExpire: days + '�? + hours + '小时', gameUid: gameUid })
+        self.setData({ userInfo: saved, hasUserInfo: true, loginExpire: days + '�? + hours + '小时', gameUid: gameUid })
       }
     }
   },
@@ -209,12 +209,12 @@ Page({
     var self = this
     var uid = self.data.uidInput.trim()
     if (uid && !/^\d+$/.test(uid)) {
-      wx.showToast({ title: 'UID应为纯数�?, icon: 'none' })
+      wx.showToast({ title: 'UID应为纯数�?, icon: 'none' })
       return
     }
     wx.setStorageSync('game_uid', uid)
     self.setData({ gameUid: uid, showUidModal: false })
-    wx.showToast({ title: uid ? 'UID已保�? : 'UID已清�?, icon: 'success' })
+    wx.showToast({ title: uid ? 'UID已保�? : 'UID已清�?, icon: 'success' })
     if (uid && wx.cloud) {
       var db = wx.cloud.database()
       if (db) {
@@ -248,23 +248,23 @@ Page({
       this.resolvePrivacyAuthorization({ event: 'disagree' })
       this.resolvePrivacyAuthorization = null
     }
-    wx.showToast({ title: '拒绝隐私指引将无法进行登录授�?, icon: 'none' })
+    wx.showToast({ title: '拒绝隐私指引将无法进行登录授�?, icon: 'none' })
   },
   onLogin: function() {
     var self = this
     if (self.data.isLogging) return
     if (!self.data.isAgreed) {
-      wx.showToast({ title: '请先勾选同意《用户协议》和《隐私政策�?, icon: 'none' })
+      wx.showToast({ title: '请先勾选同意《用户协议》和《隐私政策�?, icon: 'none' })
       return
     }
     var avatar = self.data.tempAvatar
     var nickName = self.data.tempNickName.trim()
     if (!avatar) {
-      wx.showToast({ title: '请点击头像获取微信头�?, icon: 'none' })
+      wx.showToast({ title: '请点击头像获取微信头�?, icon: 'none' })
       return
     }
     if (!nickName) {
-      wx.showToast({ title: '请输入昵�?, icon: 'none' })
+      wx.showToast({ title: '请输入昵�?, icon: 'none' })
       return
     }
     self.setData({ isLogging: true })
@@ -275,11 +275,11 @@ Page({
     var app = getApp()
     app.globalData.userInfo = userInfo
     var expire = 365 * 24 * 60 * 60 * 1000
-    self.setData({ userInfo: userInfo, hasUserInfo: true, isLogging: false, loginExpire: '3�?小时' })
+    self.setData({ userInfo: userInfo, hasUserInfo: true, isLogging: false, loginExpire: '3�?小时' })
     self.syncToCloud(userInfo)
     wx.showModal({
       title: '数据同步说明',
-      content: '为提供更好体验，登录后将同步以下数据到云端：\n\n�?头像和昵�?�?评论身份标识\n�?累计登录天数 �?等级系统计算\n�?用户偏好设置 �?多设备同步\n\n数据仅用于本应用功能，不会向第三方共享�?,
+      content: '为提供更好体验，登录后将同步以下数据到云端：\n\n�?头像和昵�?�?评论身份标识\n�?累计登录天数 �?等级系统计算\n�?用户偏好设置 �?多设备同步\n\n数据仅用于本应用功能，不会向第三方共享�?,
       showCancel: false,
       confirmText: '我知道了'
     })
@@ -367,12 +367,12 @@ Page({
   onLogout: function() {
     var self = this
     wx.showModal({
-      title: '退出登�?,
-      content: '确定要退出登录吗�?,
+      title: '退出登�?,
+      content: '确定要退出登录吗�?,
       success: function(res) {
         if (res.confirm) {
           self.clearLocalUserData()
-          wx.showToast({ title: '已退�?, icon: 'success' })
+          wx.showToast({ title: '已退�?, icon: 'success' })
         }
       }
     })
@@ -385,7 +385,7 @@ Page({
       confirmColor: '#ff4757',
       success: function(res) {
         if (res.confirm) {
-          wx.showLoading({ title: '注销�?..' })
+          wx.showLoading({ title: '注销�?..' })
           if (!wx.cloud) {
             wx.hideLoading()
             self.clearLocalUserData()
@@ -477,16 +477,16 @@ Page({
       }
       if (result[type] === 'accept') {
         self.setData({ ['notifyStatus.' + type]: true })
-        wx.showToast({ title: '已开�?, icon: 'success' })
+        wx.showToast({ title: '已开�?, icon: 'success' })
       } else if (result[type] === 'reject') {
         self.setData({ ['notifyStatus.' + type]: false })
-        wx.showToast({ title: '已拒�?, icon: 'none' })
+        wx.showToast({ title: '已拒�?, icon: 'none' })
       } else if (result[type] === 'ban') {
         self.setData({ ['notifyStatus.' + type]: false })
         wx.showModal({
-          title: '通知已关�?,
-          content: '您已关闭该类通知，请在小程序设置中手动开�?,
-          confirmText: '去设�?,
+          title: '通知已关�?,
+          content: '您已关闭该类通知，请在小程序设置中手动开�?,
+          confirmText: '去设�?,
           success: function(modalRes) {
             if (modalRes.confirm) {
               wx.openSetting({})
@@ -504,7 +504,7 @@ Page({
     var type = e.currentTarget.dataset.type
     if (!wx.cloud) return
     
-    // 微信硬性规定：订阅接口必须同步调用，绝不能放在Promise或弹窗回调里�?
+    // 微信硬性规定：订阅接口必须同步调用，绝不能放在Promise或弹窗回调里�?
     notify.requestSubscribe([type], function(err, result) {
       if (!err && result && result[type] === 'accept') {
         wx.cloud.callFunction({ name: 'login' }).then(function(loginRes) {
@@ -530,8 +530,8 @@ Page({
       } else {
         wx.showModal({
           title: '重新授权失败',
-          content: '未获得订阅权限，可能是您曾经勾选了“总是保持以上选择”并拒绝。请点击“去设置”手动开启�?,
-          confirmText: '去设�?,
+          content: '未获得订阅权限，可能是您曾经勾选了“总是保持以上选择”并拒绝。请点击“去设置”手动开启�?,
+          confirmText: '去设�?,
           success: function(modalRes) {
             if (modalRes.confirm) {
               wx.openSetting({})
@@ -552,7 +552,7 @@ Page({
     }
     var currentCount = self.data.notifyCount[type] || 0
     if (currentCount >= 99) {
-      wx.showToast({ title: '已达上限99�?, icon: 'none' })
+      wx.showToast({ title: '已达上限99�?, icon: 'none' })
       return
     }
     self._notifyAddingLock = true
@@ -577,13 +577,13 @@ Page({
             if (err.errMsg && err.errMsg.indexOf('openid') >= 0) {
               wx.showToast({ title: '请先登录后再设置', icon: 'none' })
             } else {
-              wx.showToast({ title: '设置失败�? + (err.errMsg || '请重�?), icon: 'none' })
+              wx.showToast({ title: '设置失败�? + (err.errMsg || '请重�?), icon: 'none' })
             }
           }
           return
         }
         if (!result) {
-          wx.showToast({ title: '订阅请求已发�?, icon: 'none' })
+          wx.showToast({ title: '订阅请求已发�?, icon: 'none' })
           return
         }
         if (result[type] === 'accept') {
@@ -596,15 +596,15 @@ Page({
             notifyCount: notifyCount,
             notifyStatus: notifyStatus
           })
-          wx.showToast({ title: '已添�?' + newCount + '/99)', icon: 'success' })
+          wx.showToast({ title: '已添�?' + newCount + '/99)', icon: 'success' })
           self.loadNotifyStatus()
         } else if (result[type] === 'reject') {
-          wx.showToast({ title: '已拒�?, icon: 'none' })
+          wx.showToast({ title: '已拒�?, icon: 'none' })
         } else if (result[type] === 'ban') {
           wx.showModal({
-            title: '通知已关�?,
-            content: '您已关闭该类通知，请在小程序设置中手动开�?,
-            confirmText: '去设�?,
+            title: '通知已关�?,
+            content: '您已关闭该类通知，请在小程序设置中手动开�?,
+            confirmText: '去设�?,
             success: function(modalRes) {
               if (modalRes.confirm) {
                 wx.openSetting({})
@@ -618,7 +618,7 @@ Page({
       self._notifyAddingLock = false
       self.setData({ notifyAdding: false })
       console.error('[onNotifyAdd] Exception caught:', ex)
-      wx.showToast({ title: '异常�? + (ex.message || '请重�?), icon: 'none' })
+      wx.showToast({ title: '异常�? + (ex.message || '请重�?), icon: 'none' })
     }
   },
   go: function(e) { wx.navigateTo({ url: e.currentTarget.dataset.url }) },

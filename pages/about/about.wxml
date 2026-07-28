@@ -31,15 +31,6 @@
           <text class="admin-tip-icon">💡</text>
           <text class="admin-tip-text">管理模式下，部分卡片内容可点击编辑</text>
         </view>
-        <view class="setting-row">
-          <view class="setting-info">
-            <text class="setting-name">捕捉统计分享按钮</text>
-            <text class="setting-desc">在捕捉日志页面显示"生成图片"按钮</text>
-          </view>
-          <view class="toggle {{showLogShareBtn ? 'on' : ''}}" catchtap="toggleShowLogShareBtn">
-            <view class="toggle-dot"></view>
-          </view>
-        </view>
       </view>
     </view>
 

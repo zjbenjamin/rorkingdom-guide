@@ -203,14 +203,8 @@ Page({
     wx.navigateTo({
       url: url,
       fail: function(err) {
-        console.error("导航失败 navigateTo failed:", err)
-        // 尝试用 switchTab 兼容，以防某些页面被临时改为了 TabBar 页面
-        wx.switchTab({
-          url: url,
-          fail: function(tabErr) {
-            console.error("切换 TabBar 也失败 switchTab failed:", tabErr)
-          }
-        })
+        console.error("导航失败:", url, err)
+        wx.showToast({ title: '页面加载失败', icon: 'none' })
       }
     })
   },

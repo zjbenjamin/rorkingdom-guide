@@ -259,6 +259,19 @@
           </view>
         </view>
       </view>
+      <view class="card-item">
+        <view class="card-top">
+          <view class="page-icon">📷</view>
+          <view class="card-user-info">
+            <text class="card-author">捕捉统计生成图片</text>
+            <text class="card-meta">状态：{{showLogShareBtn ? '已开启' : '已关闭'}}</text>
+          </view>
+          <view class="toggle {{showLogShareBtn ? 'on' : ''}}" catchtap="toggleShowLogShareBtn">
+            <view class="toggle-dot"></view>
+          </view>
+        </view>
+      </view>
+    </view>
 
       <!-- 统计面板 -->
       <view wx:if="{{activeTab === 'stats'}}">

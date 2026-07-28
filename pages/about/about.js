@@ -10,6 +10,8 @@ Page({
     buildTime: '',
     contact: 'flyzccboard@yeah.net',
     uid: '476200',
+    isAdmin: false,
+    showLogShareBtn: true,
     aboutData: {
       appName: '洛手助手洛手助手',
       version: wx.getStorageSync('about_version') || '',
