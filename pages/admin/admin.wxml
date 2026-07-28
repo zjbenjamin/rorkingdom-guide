@@ -1125,6 +1125,21 @@
         </view>
       </view>
     </view>
+
+    <!-- Swarm Location Modal -->
+    <view class="modal-mask" wx:if="{{showSwarmModal}}" bindtap="closeSwarmModal">
+      <view class="modal-box" catchtap="preventClose">
+        <view class="modal-header">
+          <text class="modal-title">添加地点</text>
+          <text class="modal-close" bindtap="closeSwarmModal">✕</text>
+        </view>
+        <input class="modal-input" placeholder="输入地点名称" placeholder-style="color:#484f58" value="{{swarmLocationInput}}" bindinput="onSwarmInput" />
+        <view class="modal-footer">
+          <button class="modal-cancel" bindtap="closeSwarmModal">取消</button>
+          <button class="modal-save" bindtap="saveSwarmLocation">保存</button>
+        </view>
+      </view>
+    </view>
   </view>
 </view>
 

@@ -14,7 +14,7 @@ Page({
       appName: '洛手助手洛手助手',
       version: wx.getStorageSync('about_version') || '',
       devName: '浙里本杰明',
-      devAvatar: '/images/avatar.jpg',
+      devAvatar: 'https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEYA3JqaA4lW5JDNpmiDiR7kV6jjeMAAW0AAscgAAKo-ElXhfFJA7eEXyo9BA.jpeg',
       uid: '476200',
       contact: 'flyzccboard@yeah.net',
       icp: '浙ICP备2026043884号',
@@ -28,13 +28,7 @@ Page({
     showModal: false,
     platformName: '',
     platformUrl: '',
-    changelogList: [
-      {
-        version: '1.0.4',
-        date: '2026-06-22',
-        content: '新增：全局页面渐入动效体验\n优化：倒计时数据局部渲染，大幅提高性能\n优化：页面按钮和卡片增加物理点击反馈\n优化：启用分包静默预下载，实现多页面秒开'
-      }
-    ],
+    changelogList: [],
     showChangelogModal: false,
     changelogVersion: '',
     changelogDate: '',
@@ -48,7 +42,10 @@ Page({
   onShow() {
     var self = this
     var n = new Date()
+    var showLogShareBtn = wx.getStorageSync('show_log_share_btn')
+    if (showLogShareBtn === '') showLogShareBtn = true
     self.setData({
+      showLogShareBtn: showLogShareBtn !== false,
       buildTime: n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')+' '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0')
     })
     self.loadAboutData()
@@ -163,6 +160,11 @@ Page({
     } else {
       wx.showToast({ title: '当前已是最新版本', icon: 'none' })
     }
+  },
+  toggleShowLogShareBtn() {
+    var newVal = !this.data.showLogShareBtn
+    wx.setStorageSync('show_log_share_btn', newVal)
+    this.setData({ showLogShareBtn: newVal })
   },
   onEdit(e) {
     if (!this.data.isAdmin) return
@@ -466,6 +468,6 @@ Page({
       }
     })
   },
-  onShareAppMessage() { return { title: '洛手助手洛手助手', path: '/pages/index/index', imageUrl: '/images/banner1.png' } },
-  onShareTimeline() { return { title: '洛手助手洛手助手 - 洛克王国攻略工具', imageUrl: '/images/banner1.png' } }
+  onShareAppMessage() { return { title: '洛手助手洛手助手', path: '/pages/index/index', imageUrl: '/images/banner.webp' } },
+  onShareTimeline() { return { title: '洛手助手洛手助手 - 洛克王国攻略工具', imageUrl: '/images/banner.webp' } }
 })

@@ -6,56 +6,56 @@ var eggData = {
       "name": "普通蛋",
       "color": "#999",
       "icon": "🥚",
-      "desc": "包含基础属性精灵",
+      "desc": "包含基础属性精�?,
       "prob": "60%",
-      "bonus": "无"
+      "bonus": "�?
     },
     {
       "id": 2,
       "name": "神奇的蛋",
       "color": "#a855f7",
-      "icon": "✨",
+      "icon": "�?,
       "desc": "包含稀有属性及活动精灵",
       "prob": "25%",
-      "bonus": "全属性+1%"
+      "bonus": "全属�?1%"
     },
     {
       "id": 3,
-      "name": "炫彩蛋",
+      "name": "炫彩�?,
       "color": "#ec4899",
       "icon": "🌈",
       "desc": "包含异色及高品质精灵",
       "prob": "10%",
-      "bonus": "异色率提升"
+      "bonus": "异色率提�?
     },
     {
       "id": 4,
-      "name": "同乘蛋",
+      "name": "同乘�?,
       "color": "#f59e0b",
       "icon": "🏇",
       "desc": "包含可骑乘的精灵",
       "prob": "5%",
-      "bonus": "骑乘加速"
+      "bonus": "骑乘加�?
     }
   ],
   "eggItems": [
     {
       "name": "普通蛋",
-      "rarity": "普通",
+      "rarity": "普�?,
       "icon": "🥚"
     },
     {
       "name": "神奇的蛋",
-      "rarity": "稀有",
-      "icon": "✨"
+      "rarity": "稀�?,
+      "icon": "�?
     },
     {
-      "name": "炫彩蛋",
+      "name": "炫彩�?,
       "rarity": "传说",
       "icon": "🌈"
     },
     {
-      "name": "同乘蛋",
+      "name": "同乘�?,
       "rarity": "传说",
       "icon": "🏇"
     }
@@ -63,30 +63,30 @@ var eggData = {
   "sizes": [
     {
       "id": 1,
-      "name": "大块头",
+      "name": "大块�?,
       "icon": "💪",
       "color": "#d32f2f",
-      "desc": "体型较大的精灵蛋，孵化出的精灵体型偏大",
+      "desc": "体型较大的精灵蛋，孵化出的精灵体型偏�?,
       "prob": "10%",
-      "bonus": "生命值+5%"
+      "bonus": "生命�?5%"
     },
     {
       "id": 2,
-      "name": "小块头",
+      "name": "小块�?,
       "icon": "👶",
       "color": "#1a6d37",
-      "desc": "体型较小的精灵蛋，孵化出的精灵体型偏小",
+      "desc": "体型较小的精灵蛋，孵化出的精灵体型偏�?,
       "prob": "10%",
       "bonus": "速度+5%"
     },
     {
       "id": 3,
-      "name": "炫彩蛋",
+      "name": "炫彩�?,
       "icon": "🌈",
       "color": "#9c27b0",
-      "desc": "稀有炫彩外观的精灵蛋，有概率孵出闪光精灵",
+      "desc": "稀有炫彩外观的精灵蛋，有概率孵出闪光精�?,
       "prob": "5%",
-      "bonus": "全属性+3%"
+      "bonus": "全属�?3%"
     },
     {
       "id": 4,
@@ -95,13 +95,13 @@ var eggData = {
       "color": "#999",
       "desc": "最常见的精灵蛋",
       "prob": "75%",
-      "bonus": "无"
+      "bonus": "�?
     }
   ],
   "pets": [
     {
       "name": "迪莫",
-      "type1": "光",
+      "type1": "�?,
       "type2": "",
       "group": [
         "无法孵蛋"
@@ -117,10 +117,10 @@ var eggData = {
     },
     {
       "name": "喵喵",
-      "type1": "草",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -133,10 +133,10 @@ var eggData = {
     },
     {
       "name": "喵呜",
-      "type1": "草",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -148,11 +148,11 @@ var eggData = {
       "maxWeight": 15.6
     },
     {
-      "name": "魔力猫",
-      "type1": "草",
+      "name": "魔力�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -165,11 +165,11 @@ var eggData = {
     },
     {
       "name": "火花",
-      "type1": "火",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "巨灵组",
-        "魔力组"
+        "巨灵�?,
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -182,11 +182,11 @@ var eggData = {
     },
     {
       "name": "焰火",
-      "type1": "火",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "巨灵组",
-        "魔力组"
+        "巨灵�?,
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -199,11 +199,11 @@ var eggData = {
     },
     {
       "name": "火神",
-      "type1": "火",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "巨灵组",
-        "魔力组"
+        "巨灵�?,
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -215,11 +215,11 @@ var eggData = {
       "maxWeight": 110
     },
     {
-      "name": "水蓝蓝",
-      "type1": "水",
+      "name": "水蓝�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "魔力组"
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -231,11 +231,11 @@ var eggData = {
       "maxWeight": 4.21
     },
     {
-      "name": "波波拉",
-      "type1": "水",
+      "name": "波波�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "魔力组"
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -248,10 +248,10 @@ var eggData = {
     },
     {
       "name": "水灵",
-      "type1": "水",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "魔力组"
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -263,14 +263,14 @@ var eggData = {
       "maxWeight": 85.5
     },
     {
-      "name": "鸭吉吉",
-      "type1": "普通",
+      "name": "鸭吉�?,
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": false,
-      "variant": "蓬松的样子",
+      "variant": "蓬松的样�?,
       "height": "0.65~0.94",
       "weight": "15.8~19.2",
       "minHeight": 0.65,
@@ -279,14 +279,14 @@ var eggData = {
       "maxWeight": 19.2
     },
     {
-      "name": "鸭吉吉",
-      "type1": "普通",
+      "name": "鸭吉�?,
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": false,
-      "variant": "紧实的样子",
+      "variant": "紧实的样�?,
       "height": "0.65~0.94",
       "weight": "15.8~19.2",
       "minHeight": 0.65,
@@ -295,11 +295,11 @@ var eggData = {
       "maxWeight": 19.2
     },
     {
-      "name": "鸭吉吉",
-      "type1": "普通",
+      "name": "鸭吉�?,
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "急急急鸭",
@@ -311,11 +311,11 @@ var eggData = {
       "maxWeight": 19.2
     },
     {
-      "name": "鸭吉吉",
-      "type1": "普通",
+      "name": "鸭吉�?,
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "等一等鸭",
@@ -327,14 +327,14 @@ var eggData = {
       "maxWeight": 19.2
     },
     {
-      "name": "鸭吉吉",
-      "type1": "普通",
+      "name": "鸭吉�?,
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": false,
-      "variant": "起来鸭",
+      "variant": "起来�?,
       "height": "0.65~0.94",
       "weight": "15.8~19.2",
       "minHeight": 0.65,
@@ -343,14 +343,14 @@ var eggData = {
       "maxWeight": 19.2
     },
     {
-      "name": "鸭吉吉",
-      "type1": "普通",
+      "name": "鸭吉�?,
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": false,
-      "variant": "燃了鸭",
+      "variant": "燃了�?,
       "height": "0.65~0.94",
       "weight": "15.8~19.2",
       "minHeight": 0.65,
@@ -359,14 +359,14 @@ var eggData = {
       "maxWeight": 19.2
     },
     {
-      "name": "板板壳",
-      "type1": "水",
+      "name": "板板�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "两栖组"
+        "两栖�?
       ],
       "hasShiny": false,
-      "variant": "本来的样子",
+      "variant": "本来的样�?,
       "height": "",
       "weight": "",
       "minHeight": 0,
@@ -375,14 +375,14 @@ var eggData = {
       "maxWeight": 0
     },
     {
-      "name": "咔咔壳",
-      "type1": "水",
+      "name": "咔咔�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "两栖组"
+        "两栖�?
       ],
       "hasShiny": false,
-      "variant": "本来的样子",
+      "variant": "本来的样�?,
       "height": "",
       "weight": "",
       "minHeight": 0,
@@ -391,14 +391,14 @@ var eggData = {
       "maxWeight": 0
     },
     {
-      "name": "水泡壳",
-      "type1": "水",
+      "name": "水泡�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "两栖组"
+        "两栖�?
       ],
       "hasShiny": false,
-      "variant": "本来的样子",
+      "variant": "本来的样�?,
       "height": "",
       "weight": "",
       "minHeight": 0,
@@ -407,11 +407,11 @@ var eggData = {
       "maxWeight": 0
     },
     {
-      "name": "锥尾羊",
-      "type1": "幽",
+      "name": "锥尾�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -423,11 +423,11 @@ var eggData = {
       "maxWeight": 16.5
     },
     {
-      "name": "铃兰羊",
-      "type1": "幽",
+      "name": "铃兰�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -440,10 +440,10 @@ var eggData = {
     },
     {
       "name": "花影羚羊",
-      "type1": "幽",
-      "type2": "恶",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -455,14 +455,14 @@ var eggData = {
       "maxWeight": 98
     },
     {
-      "name": "雪绒鸟",
-      "type1": "翼",
+      "name": "雪绒�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": false,
-      "variant": "本来的样子",
+      "variant": "本来的样�?,
       "height": "",
       "weight": "",
       "minHeight": 0,
@@ -472,13 +472,13 @@ var eggData = {
     },
     {
       "name": "冬羽雀",
-      "type1": "翼",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": false,
-      "variant": "本来的样子",
+      "variant": "本来的样�?,
       "height": "",
       "weight": "",
       "minHeight": 0,
@@ -488,13 +488,13 @@ var eggData = {
     },
     {
       "name": "岚鸟",
-      "type1": "翼",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": false,
-      "variant": "本来的样子",
+      "variant": "本来的样�?,
       "height": "",
       "weight": "",
       "minHeight": 0,
@@ -503,12 +503,12 @@ var eggData = {
       "maxWeight": 0
     },
     {
-      "name": "小灵菇",
-      "type1": "幽",
+      "name": "小灵�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "植物组",
-        "魔力组"
+        "植物�?,
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -520,12 +520,12 @@ var eggData = {
       "maxWeight": 7.1
     },
     {
-      "name": "幻灵菇",
-      "type1": "幽",
-      "type2": "草",
+      "name": "幻灵�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "植物组",
-        "魔力组"
+        "植物�?,
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -538,11 +538,11 @@ var eggData = {
     },
     {
       "name": "幻影灵菇",
-      "type1": "幽",
-      "type2": "草",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "植物组",
-        "魔力组"
+        "植物�?,
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -554,15 +554,15 @@ var eggData = {
       "maxWeight": 48.4
     },
     {
-      "name": "石肤蜥",
-      "type1": "地",
+      "name": "石肤�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "两栖组",
-        "大地组"
+        "两栖�?,
+        "大地�?
       ],
       "hasShiny": false,
-      "variant": "本来的样子",
+      "variant": "本来的样�?,
       "height": "",
       "weight": "",
       "minHeight": 0,
@@ -571,15 +571,15 @@ var eggData = {
       "maxWeight": 0
     },
     {
-      "name": "石刺蜥",
-      "type1": "地",
+      "name": "石刺�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "两栖组",
-        "大地组"
+        "两栖�?,
+        "大地�?
       ],
       "hasShiny": false,
-      "variant": "本来的样子",
+      "variant": "本来的样�?,
       "height": "",
       "weight": "",
       "minHeight": 0,
@@ -589,14 +589,14 @@ var eggData = {
     },
     {
       "name": "石冠王蜥",
-      "type1": "地",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "两栖组",
-        "大地组"
+        "两栖�?,
+        "大地�?
       ],
       "hasShiny": false,
-      "variant": "本来的样子",
+      "variant": "本来的样�?,
       "height": "",
       "weight": "",
       "minHeight": 0,
@@ -605,12 +605,12 @@ var eggData = {
       "maxWeight": 0
     },
     {
-      "name": "布是石",
-      "type1": "地",
+      "name": "布是�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "大地组",
-        "巨灵组"
+        "大地�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -622,12 +622,12 @@ var eggData = {
       "maxWeight": 32.5
     },
     {
-      "name": "布是岩",
-      "type1": "地",
+      "name": "布是�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "大地组",
-        "巨灵组"
+        "大地�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -640,11 +640,11 @@ var eggData = {
     },
     {
       "name": "布克棱岩",
-      "type1": "地",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "大地组",
-        "巨灵组"
+        "大地�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -656,11 +656,11 @@ var eggData = {
       "maxWeight": 315
     },
     {
-      "name": "恶魔叮",
-      "type1": "恶",
-      "type2": "翼",
+      "name": "恶魔�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组"
+        "妖精�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -673,10 +673,10 @@ var eggData = {
     },
     {
       "name": "叮叮恶魔",
-      "type1": "恶",
-      "type2": "翼",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组"
+        "妖精�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -689,11 +689,11 @@ var eggData = {
     },
     {
       "name": "毛毛",
-      "type1": "虫",
-      "type2": "萌",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "昆虫组",
-        "软体组"
+        "昆虫�?,
+        "软体�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -706,11 +706,11 @@ var eggData = {
     },
     {
       "name": "爬爬",
-      "type1": "虫",
-      "type2": "萌",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "昆虫组",
-        "软体组"
+        "昆虫�?,
+        "软体�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -723,14 +723,14 @@ var eggData = {
     },
     {
       "name": "化蝶",
-      "type1": "虫",
-      "type2": "萌",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "昆虫组",
-        "软体组"
+        "昆虫�?,
+        "软体�?
       ],
       "hasShiny": false,
-      "variant": "平常的样子",
+      "variant": "平常的样�?,
       "height": "0.76~1.08",
       "weight": "15.6~17.8",
       "minHeight": 0.76,
@@ -739,12 +739,12 @@ var eggData = {
       "maxWeight": 17.8
     },
     {
-      "name": "幽影树",
-      "type1": "幽",
-      "type2": "草",
+      "name": "幽影�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "植物组"
+        "妖精�?,
+        "植物�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -756,12 +756,12 @@ var eggData = {
       "maxWeight": 37.5
     },
     {
-      "name": "小鼠獭",
-      "type1": "普通",
-      "type2": "水",
+      "name": "小鼠�?,
+      "type1": "普�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "动物组"
+        "两栖�?,
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -773,12 +773,12 @@ var eggData = {
       "maxWeight": 7.5
     },
     {
-      "name": "燕尾獭",
-      "type1": "普通",
-      "type2": "水",
+      "name": "燕尾�?,
+      "type1": "普�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "动物组"
+        "两栖�?,
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -791,11 +791,11 @@ var eggData = {
     },
     {
       "name": "卷胡巨獭",
-      "type1": "普通",
-      "type2": "水",
+      "type1": "普�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "动物组"
+        "两栖�?,
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -807,12 +807,12 @@ var eggData = {
       "maxWeight": 90
     },
     {
-      "name": "矿晶虫",
-      "type1": "光",
-      "type2": "地",
+      "name": "矿晶�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "大地组",
-        "软体组"
+        "大地�?,
+        "软体�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -824,15 +824,15 @@ var eggData = {
       "maxWeight": 10.53
     },
     {
-      "name": "晶石蜗",
-      "type1": "光",
-      "type2": "地",
+      "name": "晶石�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "大地组",
-        "软体组"
+        "大地�?,
+        "软体�?
       ],
       "hasShiny": false,
-      "variant": "西瓜碧玺的样子",
+      "variant": "西瓜碧玺的样�?,
       "height": "1.03~1.35",
       "weight": "59.1~71.05",
       "minHeight": 1.03,
@@ -841,11 +841,11 @@ var eggData = {
       "maxWeight": 71.05
     },
     {
-      "name": "奇丽草",
-      "type1": "草",
+      "name": "奇丽�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "植物组"
+        "植物�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -857,11 +857,11 @@ var eggData = {
       "maxWeight": 5.7
     },
     {
-      "name": "奇丽叶",
-      "type1": "草",
+      "name": "奇丽�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "植物组"
+        "植物�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -873,11 +873,11 @@ var eggData = {
       "maxWeight": 31
     },
     {
-      "name": "奇丽花",
-      "type1": "草",
+      "name": "奇丽�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "植物组"
+        "植物�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -890,13 +890,13 @@ var eggData = {
     },
     {
       "name": "丢丢",
-      "type1": "草",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "两栖组"
+        "两栖�?
       ],
       "hasShiny": false,
-      "variant": "草地附近的样子",
+      "variant": "草地附近的样�?,
       "height": "0.35~0.51",
       "weight": "4.3~6.1",
       "minHeight": 0.35,
@@ -905,14 +905,14 @@ var eggData = {
       "maxWeight": 6.1
     },
     {
-      "name": "卡卡虫",
-      "type1": "草",
+      "name": "卡卡�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "两栖组"
+        "两栖�?
       ],
       "hasShiny": false,
-      "variant": "草地附近的样子",
+      "variant": "草地附近的样�?,
       "height": "0.53~0.76",
       "weight": "18.5~21.6",
       "minHeight": 0.53,
@@ -921,14 +921,14 @@ var eggData = {
       "maxWeight": 21.6
     },
     {
-      "name": "卡瓦重",
-      "type1": "草",
+      "name": "卡瓦�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "两栖组"
+        "两栖�?
       ],
       "hasShiny": false,
-      "variant": "草地附近的样子",
+      "variant": "草地附近的样�?,
       "height": "0.76~1.09",
       "weight": "29~35.85",
       "minHeight": 0.76,
@@ -937,11 +937,11 @@ var eggData = {
       "maxWeight": 35.85
     },
     {
-      "name": "护主犬",
-      "type1": "火",
+      "name": "护主�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -954,10 +954,10 @@ var eggData = {
     },
     {
       "name": "音速犬",
-      "type1": "火",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -969,11 +969,11 @@ var eggData = {
       "maxWeight": 51.5
     },
     {
-      "name": "绿耳松鼠",
-      "type1": "普通",
+      "name": "绿耳松�?,
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -986,10 +986,10 @@ var eggData = {
     },
     {
       "name": "抱枕松鼠",
-      "type1": "普通",
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1002,10 +1002,10 @@ var eggData = {
     },
     {
       "name": "蹦床松鼠",
-      "type1": "普通",
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1017,12 +1017,12 @@ var eggData = {
       "maxWeight": 68.4
     },
     {
-      "name": "嘟嘟煲",
-      "type1": "毒",
+      "name": "嘟嘟�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "大地组",
-        "妖精组"
+        "大地�?,
+        "妖精�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -1034,12 +1034,12 @@ var eggData = {
       "maxWeight": 56
     },
     {
-      "name": "嘟嘟锅",
-      "type1": "毒",
+      "name": "嘟嘟�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "大地组",
-        "妖精组"
+        "大地�?,
+        "妖精�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -1051,11 +1051,11 @@ var eggData = {
       "maxWeight": 89.2
     },
     {
-      "name": "小灵面",
-      "type1": "幽",
+      "name": "小灵�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "魔力组"
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1068,13 +1068,13 @@ var eggData = {
     },
     {
       "name": "暗影灵面",
-      "type1": "幽",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "魔力组"
+        "魔力�?
       ],
       "hasShiny": false,
-      "variant": "睁眼的样子",
+      "variant": "睁眼的样�?,
       "height": "0.75~0.86",
       "weight": "0.12~1.16",
       "minHeight": 0.75,
@@ -1083,14 +1083,14 @@ var eggData = {
       "maxWeight": 1.16
     },
     {
-      "name": "幽冥眼",
-      "type1": "幽",
+      "name": "幽冥�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "魔力组"
+        "魔力�?
       ],
       "hasShiny": false,
-      "variant": "睁眼的样子",
+      "variant": "睁眼的样�?,
       "height": "1.55~1.65",
       "weight": "1.5~2.86",
       "minHeight": 1.55,
@@ -1100,14 +1100,14 @@ var eggData = {
     },
     {
       "name": "梦游",
-      "type1": "幽",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "魔力组"
+        "妖精�?,
+        "魔力�?
       ],
       "hasShiny": false,
-      "variant": "穿旧睡衣的样子",
+      "variant": "穿旧睡衣的样�?,
       "height": "0.5~0.6",
       "weight": "0.6~1.87",
       "minHeight": 0.5,
@@ -1116,15 +1116,15 @@ var eggData = {
       "maxWeight": 1.87
     },
     {
-      "name": "梦悠悠",
-      "type1": "幽",
+      "name": "梦悠�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "魔力组"
+        "妖精�?,
+        "魔力�?
       ],
       "hasShiny": false,
-      "variant": "穿旧睡衣的样子",
+      "variant": "穿旧睡衣的样�?,
       "height": "1~1.2",
       "weight": "1.25~3.1",
       "minHeight": 1,
@@ -1133,11 +1133,11 @@ var eggData = {
       "maxWeight": 3.1
     },
     {
-      "name": "兽花蕾",
-      "type1": "光",
-      "type2": "草",
+      "name": "兽花�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "植物组"
+        "植物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1149,11 +1149,11 @@ var eggData = {
       "maxWeight": 6.5
     },
     {
-      "name": "伏地兽",
-      "type1": "普通",
+      "name": "伏地�?,
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1165,11 +1165,11 @@ var eggData = {
       "maxWeight": 15.8
     },
     {
-      "name": "贪食鼹",
-      "type1": "普通",
+      "name": "贪食�?,
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1182,10 +1182,10 @@ var eggData = {
     },
     {
       "name": "巨噬针鼹",
-      "type1": "普通",
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1198,13 +1198,13 @@ var eggData = {
     },
     {
       "name": "蹦蹦种子",
-      "type1": "草",
-      "type2": "毒",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "植物组"
+        "植物�?
       ],
       "hasShiny": false,
-      "variant": "海神球形态",
+      "variant": "海神球形�?,
       "height": "0.46~0.67",
       "weight": "4.3~5.6",
       "minHeight": 0.46,
@@ -1213,14 +1213,14 @@ var eggData = {
       "maxWeight": 5.6
     },
     {
-      "name": "蹦蹦草",
-      "type1": "草",
-      "type2": "毒",
+      "name": "蹦蹦�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "植物组"
+        "植物�?
       ],
       "hasShiny": false,
-      "variant": "海神球形态",
+      "variant": "海神球形�?,
       "height": "0.59~0.85",
       "weight": "34.3~42.9",
       "minHeight": 0.59,
@@ -1229,14 +1229,14 @@ var eggData = {
       "maxWeight": 42.9
     },
     {
-      "name": "蹦蹦花",
-      "type1": "草",
-      "type2": "毒",
+      "name": "蹦蹦�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "植物组"
+        "植物�?
       ],
       "hasShiny": false,
-      "variant": "海神球形态",
+      "variant": "海神球形�?,
       "height": "1.33~1.9",
       "weight": "75~86",
       "minHeight": 1.33,
@@ -1245,11 +1245,11 @@ var eggData = {
       "maxWeight": 86
     },
     {
-      "name": "电咩咩",
-      "type1": "电",
+      "name": "电咩�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1261,11 +1261,11 @@ var eggData = {
       "maxWeight": 9.1
     },
     {
-      "name": "粉咩咩",
-      "type1": "电",
+      "name": "粉咩�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1278,10 +1278,10 @@ var eggData = {
     },
     {
       "name": "电球咩咩",
-      "type1": "电",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1293,12 +1293,12 @@ var eggData = {
       "maxWeight": 58
     },
     {
-      "name": "蒲公英",
-      "type1": "草",
-      "type2": "萌",
+      "name": "蒲公�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组",
-        "植物组"
+        "天空�?,
+        "植物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1310,12 +1310,12 @@ var eggData = {
       "maxWeight": 0.6
     },
     {
-      "name": "蒲公英娃娃",
-      "type1": "草",
-      "type2": "萌",
+      "name": "蒲公英娃�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组",
-        "植物组"
+        "天空�?,
+        "植物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1327,12 +1327,12 @@ var eggData = {
       "maxWeight": 1.35
     },
     {
-      "name": "伊贝儿",
-      "type1": "草",
+      "name": "伊贝�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "植物组",
-        "软体组"
+        "植物�?,
+        "软体�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1345,11 +1345,11 @@ var eggData = {
     },
     {
       "name": "伊贝粉粉",
-      "type1": "草",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "植物组",
-        "软体组"
+        "植物�?,
+        "软体�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1362,11 +1362,11 @@ var eggData = {
     },
     {
       "name": "白发懒人",
-      "type1": "普通",
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "巨灵组",
-        "拟人组"
+        "巨灵�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1378,12 +1378,12 @@ var eggData = {
       "maxWeight": 23.5
     },
     {
-      "name": "动力猿",
-      "type1": "普通",
-      "type2": "武",
+      "name": "动力�?,
+      "type1": "普�?,
+      "type2": "�?,
       "group": [
-        "巨灵组",
-        "拟人组"
+        "巨灵�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1395,12 +1395,12 @@ var eggData = {
       "maxWeight": 63.5
     },
     {
-      "name": "瞌睡王",
-      "type1": "普通",
-      "type2": "武",
+      "name": "瞌睡�?,
+      "type1": "普�?,
+      "type2": "�?,
       "group": [
-        "巨灵组",
-        "拟人组"
+        "巨灵�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1412,15 +1412,15 @@ var eggData = {
       "maxWeight": 136.5
     },
     {
-      "name": "海盔虫",
-      "type1": "水",
-      "type2": "毒",
+      "name": "海盔�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "巨灵组",
-        "海洋组"
+        "巨灵�?,
+        "海洋�?
       ],
       "hasShiny": false,
-      "variant": "本来的样子",
+      "variant": "本来的样�?,
       "height": "",
       "weight": "",
       "minHeight": 0,
@@ -1429,15 +1429,15 @@ var eggData = {
       "maxWeight": 0
     },
     {
-      "name": "刺盔虫",
-      "type1": "水",
-      "type2": "毒",
+      "name": "刺盔�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "巨灵组",
-        "海洋组"
+        "巨灵�?,
+        "海洋�?
       ],
       "hasShiny": false,
-      "variant": "本来的样子",
+      "variant": "本来的样�?,
       "height": "",
       "weight": "",
       "minHeight": 0,
@@ -1446,15 +1446,15 @@ var eggData = {
       "maxWeight": 0
     },
     {
-      "name": "千棘盔",
-      "type1": "水",
-      "type2": "毒",
+      "name": "千棘�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "巨灵组",
-        "海洋组"
+        "巨灵�?,
+        "海洋�?
       ],
       "hasShiny": false,
-      "variant": "本来的样子",
+      "variant": "本来的样�?,
       "height": "",
       "weight": "",
       "minHeight": 0,
@@ -1463,11 +1463,11 @@ var eggData = {
       "maxWeight": 0
     },
     {
-      "name": "菊花梨",
-      "type1": "萌",
+      "name": "菊花�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "植物组"
+        "植物�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -1479,14 +1479,14 @@ var eggData = {
       "maxWeight": 5.8
     },
     {
-      "name": "小星光",
-      "type1": "电",
+      "name": "小星�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
-      "variant": "星光能量的样子",
+      "variant": "星光能量的样�?,
       "height": "0.78~1.12",
       "weight": "27.5~36.2",
       "minHeight": 0.78,
@@ -1495,14 +1495,14 @@ var eggData = {
       "maxWeight": 36.2
     },
     {
-      "name": "星光狮",
-      "type1": "电",
+      "name": "星光�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
-      "variant": "星光能量的样子",
+      "variant": "星光能量的样�?,
       "height": "1.08~1.54",
       "weight": "49.5~58.1",
       "minHeight": 1.08,
@@ -1512,11 +1512,11 @@ var eggData = {
     },
     {
       "name": "一窝蜂",
-      "type1": "虫",
-      "type2": "翼",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组",
-        "昆虫组"
+        "天空�?,
+        "昆虫�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1528,12 +1528,12 @@ var eggData = {
       "maxWeight": 5.5
     },
     {
-      "name": "黄蜂后",
-      "type1": "虫",
-      "type2": "翼",
+      "name": "黄蜂�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组",
-        "昆虫组"
+        "天空�?,
+        "昆虫�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1546,11 +1546,11 @@ var eggData = {
     },
     {
       "name": "花魁蜂后",
-      "type1": "虫",
-      "type2": "翼",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组",
-        "昆虫组"
+        "天空�?,
+        "昆虫�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1563,11 +1563,11 @@ var eggData = {
     },
     {
       "name": "小夜",
-      "type1": "恶",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "拟人组"
+        "妖精�?,
+        "拟人�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -1580,11 +1580,11 @@ var eggData = {
     },
     {
       "name": "紫夜",
-      "type1": "恶",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "拟人组"
+        "妖精�?,
+        "拟人�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -1597,11 +1597,11 @@ var eggData = {
     },
     {
       "name": "朔夜伊芙",
-      "type1": "恶",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "拟人组"
+        "妖精�?,
+        "拟人�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -1613,12 +1613,12 @@ var eggData = {
       "maxWeight": 57.5
     },
     {
-      "name": "乖乖鹄",
-      "type1": "翼",
-      "type2": "水",
+      "name": "乖乖�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "天空组"
+        "两栖�?,
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1631,11 +1631,11 @@ var eggData = {
     },
     {
       "name": "蓝珠天鹅",
-      "type1": "翼",
-      "type2": "水",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "天空组"
+        "两栖�?,
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1648,11 +1648,11 @@ var eggData = {
     },
     {
       "name": "翠顶夫人",
-      "type1": "翼",
-      "type2": "水",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "天空组"
+        "两栖�?,
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1665,11 +1665,11 @@ var eggData = {
     },
     {
       "name": "黑羽夫人",
-      "type1": "翼",
-      "type2": "恶",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "天空组"
+        "两栖�?,
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1681,12 +1681,12 @@ var eggData = {
       "maxWeight": 28.06
     },
     {
-      "name": "锤头鹳",
-      "type1": "翼",
-      "type2": "水",
+      "name": "锤头�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "天空组"
+        "两栖�?,
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1699,11 +1699,11 @@ var eggData = {
     },
     {
       "name": "绿草精灵",
-      "type1": "草",
-      "type2": "幻",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "拟人组"
+        "妖精�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1716,11 +1716,11 @@ var eggData = {
     },
     {
       "name": "魔草巫灵",
-      "type1": "草",
-      "type2": "幻",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "拟人组"
+        "妖精�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1732,11 +1732,11 @@ var eggData = {
       "maxWeight": 34
     },
     {
-      "name": "记忆石",
-      "type1": "地",
+      "name": "记忆�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "大地组"
+        "大地�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1749,10 +1749,10 @@ var eggData = {
     },
     {
       "name": "咔咔羽毛",
-      "type1": "翼",
-      "type2": "普通",
+      "type1": "�?,
+      "type2": "普�?,
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1765,10 +1765,10 @@ var eggData = {
     },
     {
       "name": "咔咔雀",
-      "type1": "翼",
-      "type2": "普通",
+      "type1": "�?,
+      "type2": "普�?,
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1780,11 +1780,11 @@ var eggData = {
       "maxWeight": 18.5
     },
     {
-      "name": "咔咔鸟",
-      "type1": "翼",
-      "type2": "普通",
+      "name": "咔咔�?,
+      "type1": "�?,
+      "type2": "普�?,
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1796,12 +1796,12 @@ var eggData = {
       "maxWeight": 33.72
     },
     {
-      "name": "小草虫",
-      "type1": "虫",
-      "type2": "草",
+      "name": "小草�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "拟人组",
-        "昆虫组"
+        "拟人�?,
+        "昆虫�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1813,12 +1813,12 @@ var eggData = {
       "maxWeight": 3.4
     },
     {
-      "name": "草衣虫",
-      "type1": "虫",
-      "type2": "草",
+      "name": "草衣�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "拟人组",
-        "昆虫组"
+        "拟人�?,
+        "昆虫�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1830,12 +1830,12 @@ var eggData = {
       "maxWeight": 8.6
     },
     {
-      "name": "花衣蝶",
-      "type1": "虫",
-      "type2": "草",
+      "name": "花衣�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "拟人组",
-        "昆虫组"
+        "拟人�?,
+        "昆虫�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1847,12 +1847,12 @@ var eggData = {
       "maxWeight": 23.4
     },
     {
-      "name": "绿翼鸟",
-      "type1": "萌",
-      "type2": "翼",
+      "name": "绿翼�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组",
-        "妖精组"
+        "天空�?,
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1864,12 +1864,12 @@ var eggData = {
       "maxWeight": 4.8
     },
     {
-      "name": "魔翼鸟",
-      "type1": "萌",
-      "type2": "翼",
+      "name": "魔翼�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组",
-        "妖精组"
+        "天空�?,
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1881,12 +1881,12 @@ var eggData = {
       "maxWeight": 13.8
     },
     {
-      "name": "魔眷鸟",
-      "type1": "萌",
-      "type2": "翼",
+      "name": "魔眷�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组",
-        "妖精组"
+        "天空�?,
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1899,11 +1899,11 @@ var eggData = {
     },
     {
       "name": "阿米亚特",
-      "type1": "地",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "大地组",
-        "巨灵组"
+        "大地�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1915,12 +1915,12 @@ var eggData = {
       "maxWeight": 49.2
     },
     {
-      "name": "阿米樱",
-      "type1": "地",
+      "name": "阿米�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "大地组",
-        "巨灵组"
+        "大地�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1933,11 +1933,11 @@ var eggData = {
     },
     {
       "name": "罗隐",
-      "type1": "地",
-      "type2": "恶",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "大地组",
-        "巨灵组"
+        "大地�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1949,12 +1949,12 @@ var eggData = {
       "maxWeight": 305
     },
     {
-      "name": "风铃鲨",
-      "type1": "水",
-      "type2": "翼",
+      "name": "风铃�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组",
-        "海洋组"
+        "天空�?,
+        "海洋�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1966,12 +1966,12 @@ var eggData = {
       "maxWeight": 16.8
     },
     {
-      "name": "蓝蝶鲨",
-      "type1": "水",
-      "type2": "翼",
+      "name": "蓝蝶�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组",
-        "海洋组"
+        "天空�?,
+        "海洋�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -1983,12 +1983,12 @@ var eggData = {
       "maxWeight": 48.6
     },
     {
-      "name": "彩蝶鲨",
-      "type1": "水",
-      "type2": "翼",
+      "name": "彩蝶�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组",
-        "海洋组"
+        "天空�?,
+        "海洋�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2001,11 +2001,11 @@ var eggData = {
     },
     {
       "name": "石石",
-      "type1": "地",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "大地组",
-        "魔力组"
+        "大地�?,
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2017,12 +2017,12 @@ var eggData = {
       "maxWeight": 75
     },
     {
-      "name": "巨灵石",
-      "type1": "地",
-      "type2": "幽",
+      "name": "巨灵�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "大地组",
-        "魔力组"
+        "大地�?,
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2034,12 +2034,12 @@ var eggData = {
       "maxWeight": 240
     },
     {
-      "name": "仪使者",
-      "type1": "地",
-      "type2": "幻",
+      "name": "仪使�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "大地组",
-        "妖精组"
+        "大地�?,
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2052,11 +2052,11 @@ var eggData = {
     },
     {
       "name": "仪式之星",
-      "type1": "地",
-      "type2": "幻",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "大地组",
-        "妖精组"
+        "大地�?,
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2069,11 +2069,11 @@ var eggData = {
     },
     {
       "name": "仪式巨像",
-      "type1": "地",
-      "type2": "幻",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "大地组",
-        "妖精组"
+        "大地�?,
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2086,11 +2086,11 @@ var eggData = {
     },
     {
       "name": "小独角兽",
-      "type1": "光",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组",
-        "巨灵组"
+        "动物�?,
+        "巨灵�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -2102,12 +2102,12 @@ var eggData = {
       "maxWeight": 55.6
     },
     {
-      "name": "白金独角兽",
-      "type1": "光",
+      "name": "白金独角�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组",
-        "巨灵组"
+        "动物�?,
+        "巨灵�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -2119,15 +2119,15 @@ var eggData = {
       "maxWeight": 105
     },
     {
-      "name": "旋叶虫",
-      "type1": "普通",
-      "type2": "虫",
+      "name": "旋叶�?,
+      "type1": "普�?,
+      "type2": "�?,
       "group": [
-        "昆虫组",
-        "植物组"
+        "昆虫�?,
+        "植物�?
       ],
       "hasShiny": false,
-      "variant": "金黄的样子",
+      "variant": "金黄的样�?,
       "height": "0.1~0.15",
       "weight": "0.1~0.85",
       "minHeight": 0.1,
@@ -2136,15 +2136,15 @@ var eggData = {
       "maxWeight": 0.85
     },
     {
-      "name": "蓬叶虫",
-      "type1": "普通",
-      "type2": "虫",
+      "name": "蓬叶�?,
+      "type1": "普�?,
+      "type2": "�?,
       "group": [
-        "昆虫组",
-        "植物组"
+        "昆虫�?,
+        "植物�?
       ],
       "hasShiny": false,
-      "variant": "金黄的样子",
+      "variant": "金黄的样�?,
       "height": "0.53~0.76",
       "weight": "0.65~1.68",
       "minHeight": 0.53,
@@ -2154,14 +2154,14 @@ var eggData = {
     },
     {
       "name": "风滚暮虫",
-      "type1": "普通",
-      "type2": "虫",
+      "type1": "普�?,
+      "type2": "�?,
       "group": [
-        "昆虫组",
-        "植物组"
+        "昆虫�?,
+        "植物�?
       ],
       "hasShiny": false,
-      "variant": "金黄的样子",
+      "variant": "金黄的样�?,
       "height": "0.6~0.7",
       "weight": "1.45~3.43",
       "minHeight": 0.6,
@@ -2170,12 +2170,12 @@ var eggData = {
       "maxWeight": 3.43
     },
     {
-      "name": "小黑猫",
-      "type1": "普通",
+      "name": "小黑�?,
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "动物组",
-        "妖精组"
+        "动物�?,
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2188,11 +2188,11 @@ var eggData = {
     },
     {
       "name": "黑猫巫师",
-      "type1": "普通",
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "动物组",
-        "妖精组"
+        "动物�?,
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2204,12 +2204,12 @@ var eggData = {
       "maxWeight": 9.5
     },
     {
-      "name": "忽幽狸",
-      "type1": "幽",
-      "type2": "毒",
+      "name": "忽幽�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组",
-        "拟人组"
+        "动物�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2222,11 +2222,11 @@ var eggData = {
     },
     {
       "name": "影狸",
-      "type1": "幽",
-      "type2": "毒",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组",
-        "拟人组"
+        "动物�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2239,10 +2239,10 @@ var eggData = {
     },
     {
       "name": "多多",
-      "type1": "毒",
-      "type2": "地",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "拟人组"
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2254,11 +2254,11 @@ var eggData = {
       "maxWeight": 18.6
     },
     {
-      "name": "多啦多",
-      "type1": "毒",
-      "type2": "地",
+      "name": "多啦�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "拟人组"
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2270,11 +2270,11 @@ var eggData = {
       "maxWeight": 34.6
     },
     {
-      "name": "古啦多",
-      "type1": "毒",
-      "type2": "地",
+      "name": "古啦�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "拟人组"
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2286,11 +2286,11 @@ var eggData = {
       "maxWeight": 58.6
     },
     {
-      "name": "哭哭菇",
-      "type1": "幻",
+      "name": "哭哭�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "植物组"
+        "植物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2302,11 +2302,11 @@ var eggData = {
       "maxWeight": 3.2
     },
     {
-      "name": "怖须菇",
-      "type1": "幻",
+      "name": "怖须�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "植物组"
+        "植物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2318,11 +2318,11 @@ var eggData = {
       "maxWeight": 15.6
     },
     {
-      "name": "怖哭菇",
-      "type1": "幻",
+      "name": "怖哭�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "植物组"
+        "植物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2334,11 +2334,11 @@ var eggData = {
       "maxWeight": 28.6
     },
     {
-      "name": "恶魔狼",
-      "type1": "恶",
+      "name": "恶魔�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -2351,10 +2351,10 @@ var eggData = {
     },
     {
       "name": "小电企鹅",
-      "type1": "冰",
-      "type2": "电",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2366,11 +2366,11 @@ var eggData = {
       "maxWeight": 5.39
     },
     {
-      "name": "电企鹅",
-      "type1": "冰",
-      "type2": "电",
+      "name": "电企�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2382,12 +2382,12 @@ var eggData = {
       "maxWeight": 26.9
     },
     {
-      "name": "雪豆丁",
-      "type1": "冰",
+      "name": "雪豆�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "巨灵组",
-        "拟人组"
+        "巨灵�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2399,12 +2399,12 @@ var eggData = {
       "maxWeight": 12.5
     },
     {
-      "name": "雪蛮人",
-      "type1": "冰",
+      "name": "雪蛮�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "巨灵组",
-        "拟人组"
+        "巨灵�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2416,12 +2416,12 @@ var eggData = {
       "maxWeight": 76
     },
     {
-      "name": "雪巨人",
-      "type1": "冰",
+      "name": "雪巨�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "巨灵组",
-        "拟人组"
+        "巨灵�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2433,11 +2433,11 @@ var eggData = {
       "maxWeight": 187
     },
     {
-      "name": "呼呼猪",
-      "type1": "冰",
-      "type2": "地",
+      "name": "呼呼�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -2449,11 +2449,11 @@ var eggData = {
       "maxWeight": 8.9
     },
     {
-      "name": "獠牙猪",
-      "type1": "冰",
-      "type2": "地",
+      "name": "獠牙�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -2465,11 +2465,11 @@ var eggData = {
       "maxWeight": 67.4
     },
     {
-      "name": "雪娃娃",
-      "type1": "冰",
+      "name": "雪娃�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组"
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2482,10 +2482,10 @@ var eggData = {
     },
     {
       "name": "冰封怨灵",
-      "type1": "冰",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组"
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2498,10 +2498,10 @@ var eggData = {
     },
     {
       "name": "雪灵",
-      "type1": "冰",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组"
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2513,12 +2513,12 @@ var eggData = {
       "maxWeight": 68.4
     },
     {
-      "name": "大耳帽兜",
-      "type1": "冰",
-      "type2": "萌",
+      "name": "大耳帽�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "拟人组"
+        "妖精�?,
+        "拟人�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -2531,11 +2531,11 @@ var eggData = {
     },
     {
       "name": "帽兜娃娃",
-      "type1": "冰",
-      "type2": "萌",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "拟人组"
+        "妖精�?,
+        "拟人�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -2548,11 +2548,11 @@ var eggData = {
     },
     {
       "name": "雪影娃娃",
-      "type1": "冰",
-      "type2": "萌",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "拟人组"
+        "妖精�?,
+        "拟人�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -2564,11 +2564,11 @@ var eggData = {
       "maxWeight": 36.6
     },
     {
-      "name": "权杖-Ⅱ",
+      "name": "权杖-�?,
       "type1": "机械",
       "type2": "",
       "group": [
-        "机械组"
+        "机械�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2580,11 +2580,11 @@ var eggData = {
       "maxWeight": 35.7
     },
     {
-      "name": "权杖-Ⅴ",
+      "name": "权杖-�?,
       "type1": "机械",
       "type2": "",
       "group": [
-        "机械组"
+        "机械�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2597,10 +2597,10 @@ var eggData = {
     },
     {
       "name": "灵狐",
-      "type1": "火",
-      "type2": "冰",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -2612,11 +2612,11 @@ var eggData = {
       "maxWeight": 8.9
     },
     {
-      "name": "九尾狐",
-      "type1": "火",
-      "type2": "冰",
+      "name": "九尾�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -2629,10 +2629,10 @@ var eggData = {
     },
     {
       "name": "尖嘴狐仙",
-      "type1": "火",
-      "type2": "冰",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -2645,7 +2645,7 @@ var eggData = {
     },
     {
       "name": "里奥",
-      "type1": "翼",
+      "type1": "�?,
       "type2": "",
       "group": [
         "无法孵蛋"
@@ -2661,7 +2661,7 @@ var eggData = {
     },
     {
       "name": "灵羽勇士",
-      "type1": "翼",
+      "type1": "�?,
       "type2": "",
       "group": [
         "无法孵蛋"
@@ -2677,7 +2677,7 @@ var eggData = {
     },
     {
       "name": "圣羽翼王",
-      "type1": "翼",
+      "type1": "�?,
       "type2": "",
       "group": [
         "无法孵蛋"
@@ -2693,10 +2693,10 @@ var eggData = {
     },
     {
       "name": "松仔",
-      "type1": "草",
-      "type2": "武",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2708,11 +2708,11 @@ var eggData = {
       "maxWeight": 7.85
     },
     {
-      "name": "松叶羊",
-      "type1": "草",
-      "type2": "武",
+      "name": "松叶�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2725,10 +2725,10 @@ var eggData = {
     },
     {
       "name": "针叶巡林",
-      "type1": "草",
-      "type2": "武",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2740,11 +2740,11 @@ var eggData = {
       "maxWeight": 69.02
     },
     {
-      "name": "小勇狮",
-      "type1": "火",
-      "type2": "武",
+      "name": "小勇�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2756,11 +2756,11 @@ var eggData = {
       "maxWeight": 12.05
     },
     {
-      "name": "炽焰狮",
-      "type1": "火",
-      "type2": "武",
+      "name": "炽焰�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2773,10 +2773,10 @@ var eggData = {
     },
     {
       "name": "炽心勇狮",
-      "type1": "火",
-      "type2": "武",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2788,12 +2788,12 @@ var eggData = {
       "maxWeight": 118.05
     },
     {
-      "name": "水滴蛇",
-      "type1": "水",
-      "type2": "武",
+      "name": "水滴�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "妖精组"
+        "两栖�?,
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2805,12 +2805,12 @@ var eggData = {
       "maxWeight": 4.1
     },
     {
-      "name": "水蛇锁",
-      "type1": "水",
-      "type2": "武",
+      "name": "水蛇�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "妖精组"
+        "两栖�?,
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2823,11 +2823,11 @@ var eggData = {
     },
     {
       "name": "游蛇魔使",
-      "type1": "水",
-      "type2": "武",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "妖精组"
+        "两栖�?,
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2839,11 +2839,11 @@ var eggData = {
       "maxWeight": 86.05
     },
     {
-      "name": "公平鸽",
-      "type1": "普通",
+      "name": "公平�?,
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -2856,11 +2856,11 @@ var eggData = {
     },
     {
       "name": "小怂猫",
-      "type1": "武",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组",
-        "拟人组"
+        "动物�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2873,11 +2873,11 @@ var eggData = {
     },
     {
       "name": "怒目怂猫",
-      "type1": "武",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组",
-        "拟人组"
+        "动物�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2889,12 +2889,12 @@ var eggData = {
       "maxWeight": 78.5
     },
     {
-      "name": "小狮鹫",
-      "type1": "翼",
+      "name": "小狮�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组",
-        "天空组"
+        "动物�?,
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "崖间地的样子",
@@ -2907,11 +2907,11 @@ var eggData = {
     },
     {
       "name": "神圣狮鹫",
-      "type1": "翼",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组",
-        "天空组"
+        "动物�?,
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "崖间地的样子",
@@ -2924,11 +2924,11 @@ var eggData = {
     },
     {
       "name": "皇家狮鹫",
-      "type1": "翼",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组",
-        "天空组"
+        "动物�?,
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "崖间地的样子",
@@ -2941,10 +2941,10 @@ var eggData = {
     },
     {
       "name": "圆眼蜘蛛",
-      "type1": "虫",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "昆虫组"
+        "昆虫�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2957,10 +2957,10 @@ var eggData = {
     },
     {
       "name": "尖角蜘蛛",
-      "type1": "虫",
-      "type2": "毒",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "昆虫组"
+        "昆虫�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2972,11 +2972,11 @@ var eggData = {
       "maxWeight": 9.6
     },
     {
-      "name": "芋香巨角蛛",
-      "type1": "虫",
-      "type2": "毒",
+      "name": "芋香巨角�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "昆虫组"
+        "昆虫�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -2988,12 +2988,12 @@ var eggData = {
       "maxWeight": 43.6
     },
     {
-      "name": "波波螺",
-      "type1": "地",
-      "type2": "水",
+      "name": "波波�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "大地组"
+        "两栖�?,
+        "大地�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3005,12 +3005,12 @@ var eggData = {
       "maxWeight": 5.65
     },
     {
-      "name": "消波螺",
-      "type1": "地",
-      "type2": "水",
+      "name": "消波�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "大地组"
+        "两栖�?,
+        "大地�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3022,12 +3022,12 @@ var eggData = {
       "maxWeight": 69.9
     },
     {
-      "name": "嗜波螺",
-      "type1": "地",
-      "type2": "水",
+      "name": "嗜波�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "大地组"
+        "两栖�?,
+        "大地�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3039,11 +3039,11 @@ var eggData = {
       "maxWeight": 113
     },
     {
-      "name": "菇菇丁",
-      "type1": "地",
-      "type2": "草",
+      "name": "菇菇�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "植物组"
+        "植物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3055,11 +3055,11 @@ var eggData = {
       "maxWeight": 2.76
     },
     {
-      "name": "多菇丁",
-      "type1": "地",
-      "type2": "草",
+      "name": "多菇�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "植物组"
+        "植物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3071,11 +3071,11 @@ var eggData = {
       "maxWeight": 6.8
     },
     {
-      "name": "九幽菇",
-      "type1": "地",
-      "type2": "草",
+      "name": "九幽�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "植物组"
+        "植物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3088,10 +3088,10 @@ var eggData = {
     },
     {
       "name": "斑斑",
-      "type1": "翼",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3104,10 +3104,10 @@ var eggData = {
     },
     {
       "name": "斑枭",
-      "type1": "翼",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3119,12 +3119,12 @@ var eggData = {
       "maxWeight": 23.8
     },
     {
-      "name": "草头鸭",
-      "type1": "草",
+      "name": "草头�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "两栖组",
-        "天空组"
+        "两栖�?,
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3136,12 +3136,12 @@ var eggData = {
       "maxWeight": 6.57
     },
     {
-      "name": "卷毛鸭",
-      "type1": "草",
-      "type2": "武",
+      "name": "卷毛�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "天空组"
+        "两栖�?,
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3154,11 +3154,11 @@ var eggData = {
     },
     {
       "name": "海豹战士",
-      "type1": "武",
-      "type2": "水",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "动物组"
+        "两栖�?,
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3171,11 +3171,11 @@ var eggData = {
     },
     {
       "name": "海豹船长",
-      "type1": "武",
-      "type2": "水",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "动物组"
+        "两栖�?,
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3187,12 +3187,12 @@ var eggData = {
       "maxWeight": 165
     },
     {
-      "name": "号儿鱼",
-      "type1": "水",
+      "name": "号儿�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "海洋组"
+        "妖精�?,
+        "海洋�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3204,12 +3204,12 @@ var eggData = {
       "maxWeight": 5.25
     },
     {
-      "name": "圆号鱼",
-      "type1": "水",
+      "name": "圆号�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "海洋组"
+        "妖精�?,
+        "海洋�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3221,12 +3221,12 @@ var eggData = {
       "maxWeight": 15.8
     },
     {
-      "name": "甜田螺",
-      "type1": "水",
-      "type2": "萌",
+      "name": "甜田�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "软体组"
+        "妖精�?,
+        "软体�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3238,12 +3238,12 @@ var eggData = {
       "maxWeight": 9.4
     },
     {
-      "name": "壳乙螺",
-      "type1": "水",
-      "type2": "萌",
+      "name": "壳乙�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "软体组"
+        "妖精�?,
+        "软体�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3255,12 +3255,12 @@ var eggData = {
       "maxWeight": 19.04
     },
     {
-      "name": "卡洛儿",
-      "type1": "水",
-      "type2": "萌",
+      "name": "卡洛�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "软体组"
+        "妖精�?,
+        "软体�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3273,10 +3273,10 @@ var eggData = {
     },
     {
       "name": "棋棋",
-      "type1": "武",
-      "type2": "地",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组"
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "白子",
@@ -3288,11 +3288,11 @@ var eggData = {
       "maxWeight": 14.5
     },
     {
-      "name": "棋骑士",
-      "type1": "武",
-      "type2": "地",
+      "name": "棋骑�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组"
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "白子",
@@ -3304,11 +3304,11 @@ var eggData = {
       "maxWeight": 60.09
     },
     {
-      "name": "棋齐垒",
-      "type1": "武",
-      "type2": "地",
+      "name": "棋齐�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组"
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "白子",
@@ -3320,11 +3320,11 @@ var eggData = {
       "maxWeight": 70.05
     },
     {
-      "name": "棋祈督",
-      "type1": "武",
-      "type2": "地",
+      "name": "棋祈�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组"
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "白子",
@@ -3336,11 +3336,11 @@ var eggData = {
       "maxWeight": 47.05
     },
     {
-      "name": "棋绮后",
-      "type1": "武",
-      "type2": "地",
+      "name": "棋绮�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组"
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "白子",
@@ -3352,12 +3352,12 @@ var eggData = {
       "maxWeight": 41.02
     },
     {
-      "name": "奔波鼠",
-      "type1": "地",
+      "name": "奔波�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组",
-        "拟人组"
+        "动物�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3369,12 +3369,12 @@ var eggData = {
       "maxWeight": 6.4
     },
     {
-      "name": "流浪鼠",
-      "type1": "地",
+      "name": "流浪�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组",
-        "拟人组"
+        "动物�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3386,12 +3386,12 @@ var eggData = {
       "maxWeight": 74.3
     },
     {
-      "name": "呆小路",
-      "type1": "草",
-      "type2": "萌",
+      "name": "呆小�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组",
-        "拟人组"
+        "动物�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3404,11 +3404,11 @@ var eggData = {
     },
     {
       "name": "舞动路路",
-      "type1": "草",
-      "type2": "萌",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组",
-        "拟人组"
+        "动物�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3421,11 +3421,11 @@ var eggData = {
     },
     {
       "name": "白发路路",
-      "type1": "草",
-      "type2": "萌",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组",
-        "拟人组"
+        "动物�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3437,12 +3437,12 @@ var eggData = {
       "maxWeight": 21.6
     },
     {
-      "name": "逗逗",
-      "type1": "萌",
+      "name": "逗�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组",
-        "巨灵组"
+        "动物�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3454,12 +3454,12 @@ var eggData = {
       "maxWeight": 1.53
     },
     {
-      "name": "气球猫",
-      "type1": "萌",
+      "name": "气球�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组",
-        "巨灵组"
+        "动物�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3472,11 +3472,11 @@ var eggData = {
     },
     {
       "name": "梦想三三",
-      "type1": "萌",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组",
-        "巨灵组"
+        "动物�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3489,10 +3489,10 @@ var eggData = {
     },
     {
       "name": "花怨鳗",
-      "type1": "地",
-      "type2": "草",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "海洋组"
+        "海洋�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3504,11 +3504,11 @@ var eggData = {
       "maxWeight": 4
     },
     {
-      "name": "鳗尾兽",
-      "type1": "地",
-      "type2": "草",
+      "name": "鳗尾�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "海洋组"
+        "海洋�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3520,11 +3520,11 @@ var eggData = {
       "maxWeight": 36.5
     },
     {
-      "name": "伊雷龙",
-      "type1": "龙",
+      "name": "伊雷�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "巨龙组"
+        "巨龙�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3537,10 +3537,10 @@ var eggData = {
     },
     {
       "name": "伊兰亚龙",
-      "type1": "龙",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "巨龙组"
+        "巨龙�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3553,10 +3553,10 @@ var eggData = {
     },
     {
       "name": "拉特",
-      "type1": "电",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组"
+        "妖精�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -3569,10 +3569,10 @@ var eggData = {
     },
     {
       "name": "酷拉",
-      "type1": "电",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组"
+        "妖精�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -3584,11 +3584,11 @@ var eggData = {
       "maxWeight": 23.5
     },
     {
-      "name": "闪电环",
-      "type1": "电",
+      "name": "闪电�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "魔力组"
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3600,11 +3600,11 @@ var eggData = {
       "maxWeight": 3.1
     },
     {
-      "name": "刺电环",
-      "type1": "电",
+      "name": "刺电�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "魔力组"
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3617,10 +3617,10 @@ var eggData = {
     },
     {
       "name": "荆棘电环",
-      "type1": "电",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "魔力组"
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3632,12 +3632,12 @@ var eggData = {
       "maxWeight": 34.3
     },
     {
-      "name": "小箱怪",
+      "name": "小箱�?,
       "type1": "机械",
-      "type2": "幻",
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "机械组"
+        "妖精�?,
+        "机械�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3649,12 +3649,12 @@ var eggData = {
       "maxWeight": 6.81
     },
     {
-      "name": "迷迷箱怪",
+      "name": "迷迷箱�?,
       "type1": "机械",
-      "type2": "幻",
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "机械组"
+        "妖精�?,
+        "机械�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3666,15 +3666,15 @@ var eggData = {
       "maxWeight": 24.4
     },
     {
-      "name": "古钟蛇",
-      "type1": "萌",
-      "type2": "毒",
+      "name": "古钟�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "动物组"
+        "两栖�?,
+        "动物�?
       ],
       "hasShiny": false,
-      "variant": "本来的样子",
+      "variant": "本来的样�?,
       "height": "0.95~1.1",
       "weight": "6.9~7.8",
       "minHeight": 0.95,
@@ -3683,15 +3683,15 @@ var eggData = {
       "maxWeight": 7.8
     },
     {
-      "name": "寒音蛇",
-      "type1": "萌",
-      "type2": "毒",
+      "name": "寒音�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "动物组"
+        "两栖�?,
+        "动物�?
       ],
       "hasShiny": false,
-      "variant": "本来的样子",
+      "variant": "本来的样�?,
       "height": "1.85~2",
       "weight": "65~78",
       "minHeight": 1.85,
@@ -3701,11 +3701,11 @@ var eggData = {
     },
     {
       "name": "矮脚爬爬",
-      "type1": "虫",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "巨灵组",
-        "昆虫组"
+        "巨灵�?,
+        "昆虫�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3718,11 +3718,11 @@ var eggData = {
     },
     {
       "name": "恶魔红钻",
-      "type1": "虫",
-      "type2": "恶",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "巨灵组",
-        "昆虫组"
+        "巨灵�?,
+        "昆虫�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3735,10 +3735,10 @@ var eggData = {
     },
     {
       "name": "火尾瓦特",
-      "type1": "火",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "巨灵组"
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3751,10 +3751,10 @@ var eggData = {
     },
     {
       "name": "火尾战士",
-      "type1": "火",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "巨灵组"
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3767,10 +3767,10 @@ var eggData = {
     },
     {
       "name": "烈火守护",
-      "type1": "火",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "巨灵组"
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3782,12 +3782,12 @@ var eggData = {
       "maxWeight": 87.5
     },
     {
-      "name": "里拉鳐",
-      "type1": "水",
+      "name": "里拉�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "海洋组"
+        "妖精�?,
+        "海洋�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3799,12 +3799,12 @@ var eggData = {
       "maxWeight": 49.5
     },
     {
-      "name": "海枝枝",
-      "type1": "水",
-      "type2": "幽",
+      "name": "海枝�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "植物组",
-        "海洋组"
+        "植物�?,
+        "海洋�?
       ],
       "hasShiny": false,
       "variant": "碧蓝珊瑚",
@@ -3818,10 +3818,10 @@ var eggData = {
     {
       "name": "多西",
       "type1": "机械",
-      "type2": "地",
+      "type2": "�?,
       "group": [
-        "巨灵组",
-        "机械组"
+        "巨灵�?,
+        "机械�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3833,12 +3833,12 @@ var eggData = {
       "maxWeight": 7.1
     },
     {
-      "name": "库多西",
+      "name": "库多�?,
       "type1": "机械",
-      "type2": "地",
+      "type2": "�?,
       "group": [
-        "巨灵组",
-        "机械组"
+        "巨灵�?,
+        "机械�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3850,12 +3850,12 @@ var eggData = {
       "maxWeight": 175.02
     },
     {
-      "name": "波多西",
+      "name": "波多�?,
       "type1": "机械",
-      "type2": "地",
+      "type2": "�?,
       "group": [
-        "巨灵组",
-        "机械组"
+        "巨灵�?,
+        "机械�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3867,12 +3867,12 @@ var eggData = {
       "maxWeight": 295
     },
     {
-      "name": "小翼龙",
-      "type1": "龙",
-      "type2": "翼",
+      "name": "小翼�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组",
-        "巨龙组"
+        "天空�?,
+        "巨龙�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3885,11 +3885,11 @@ var eggData = {
     },
     {
       "name": "翼龙",
-      "type1": "龙",
-      "type2": "翼",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组",
-        "巨龙组"
+        "天空�?,
+        "巨龙�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3901,11 +3901,11 @@ var eggData = {
       "maxWeight": 265
     },
     {
-      "name": "电动长颈鹿",
-      "type1": "电",
+      "name": "电动长颈�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3917,11 +3917,11 @@ var eggData = {
       "maxWeight": 36.8
     },
     {
-      "name": "奔乐鹿",
-      "type1": "电",
+      "name": "奔乐�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3933,11 +3933,11 @@ var eggData = {
       "maxWeight": 77.5
     },
     {
-      "name": "爵士鹿",
-      "type1": "电",
+      "name": "爵士�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3953,7 +3953,7 @@ var eggData = {
       "type1": "机械",
       "type2": "",
       "group": [
-        "机械组"
+        "机械�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3969,7 +3969,7 @@ var eggData = {
       "type1": "机械",
       "type2": "",
       "group": [
-        "机械组"
+        "机械�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3982,10 +3982,10 @@ var eggData = {
     },
     {
       "name": "小鹬",
-      "type1": "翼",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -3997,11 +3997,11 @@ var eggData = {
       "maxWeight": 2.2
     },
     {
-      "name": "鄙目鹬",
-      "type1": "翼",
+      "name": "鄙目�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4013,11 +4013,11 @@ var eggData = {
       "maxWeight": 8.9
     },
     {
-      "name": "高脚鹬",
-      "type1": "翼",
+      "name": "高脚�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "天空组"
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4030,11 +4030,11 @@ var eggData = {
     },
     {
       "name": "脆筒甜甜",
-      "type1": "冰",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "软体组",
-        "魔力组"
+        "软体�?,
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4047,11 +4047,11 @@ var eggData = {
     },
     {
       "name": "香草甜甜",
-      "type1": "冰",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "软体组",
-        "魔力组"
+        "软体�?,
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4064,11 +4064,11 @@ var eggData = {
     },
     {
       "name": "圣代甜甜",
-      "type1": "冰",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "软体组",
-        "魔力组"
+        "软体�?,
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4080,14 +4080,14 @@ var eggData = {
       "maxWeight": 22.75
     },
     {
-      "name": "刺轮砣",
-      "type1": "毒",
-      "type2": "萌",
+      "name": "刺轮�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "海洋组"
+        "海洋�?
       ],
       "hasShiny": false,
-      "variant": "上弦的样子",
+      "variant": "上弦的样�?,
       "height": "0.18~0.31",
       "weight": "2.7~4",
       "minHeight": 0.18,
@@ -4096,14 +4096,14 @@ var eggData = {
       "maxWeight": 4
     },
     {
-      "name": "月亮砣",
-      "type1": "毒",
-      "type2": "萌",
+      "name": "月亮�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "海洋组"
+        "海洋�?
       ],
       "hasShiny": false,
-      "variant": "上弦的样子",
+      "variant": "上弦的样�?,
       "height": "1.85~2.1",
       "weight": "137.5~182.4",
       "minHeight": 1.85,
@@ -4112,12 +4112,12 @@ var eggData = {
       "maxWeight": 182.4
     },
     {
-      "name": "豆丁鱼",
-      "type1": "水",
-      "type2": "龙",
+      "name": "豆丁�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "巨龙组",
-        "海洋组"
+        "巨龙�?,
+        "海洋�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4129,12 +4129,12 @@ var eggData = {
       "maxWeight": 3.4
     },
     {
-      "name": "快鳍鱼",
-      "type1": "水",
-      "type2": "龙",
+      "name": "快鳍�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "巨龙组",
-        "海洋组"
+        "巨龙�?,
+        "海洋�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4147,11 +4147,11 @@ var eggData = {
     },
     {
       "name": "龙鱼",
-      "type1": "水",
-      "type2": "龙",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "巨龙组",
-        "海洋组"
+        "巨龙�?,
+        "海洋�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4164,10 +4164,10 @@ var eggData = {
     },
     {
       "name": "胆小鳗鱼",
-      "type1": "电",
-      "type2": "水",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "海洋组"
+        "海洋�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4180,10 +4180,10 @@ var eggData = {
     },
     {
       "name": "闪电鳗鱼",
-      "type1": "电",
-      "type2": "水",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "海洋组"
+        "海洋�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4196,11 +4196,11 @@ var eggData = {
     },
     {
       "name": "翡翠水母",
-      "type1": "水",
-      "type2": "毒",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "海洋组",
-        "软体组"
+        "海洋�?,
+        "软体�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4213,11 +4213,11 @@ var eggData = {
     },
     {
       "name": "琉璃水母",
-      "type1": "水",
-      "type2": "毒",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "海洋组",
-        "软体组"
+        "海洋�?,
+        "软体�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4230,11 +4230,11 @@ var eggData = {
     },
     {
       "name": "裘洛",
-      "type1": "毒",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组",
-        "妖精组"
+        "动物�?,
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4247,11 +4247,11 @@ var eggData = {
     },
     {
       "name": "裘力",
-      "type1": "毒",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组",
-        "妖精组"
+        "动物�?,
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4264,11 +4264,11 @@ var eggData = {
     },
     {
       "name": "裘卡",
-      "type1": "毒",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组",
-        "妖精组"
+        "动物�?,
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4280,12 +4280,12 @@ var eggData = {
       "maxWeight": 58.6
     },
     {
-      "name": "可爱猿",
-      "type1": "火",
+      "name": "可爱�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "巨灵组",
-        "拟人组"
+        "巨灵�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4297,12 +4297,12 @@ var eggData = {
       "maxWeight": 31.5
     },
     {
-      "name": "炽热猿",
-      "type1": "火",
+      "name": "炽热�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "巨灵组",
-        "拟人组"
+        "巨灵�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4314,12 +4314,12 @@ var eggData = {
       "maxWeight": 63.5
     },
     {
-      "name": "火焰猿",
-      "type1": "火",
+      "name": "火焰�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "巨灵组",
-        "拟人组"
+        "巨灵�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4331,12 +4331,12 @@ var eggData = {
       "maxWeight": 136.5
     },
     {
-      "name": "布鲁斯",
-      "type1": "冰",
+      "name": "布鲁�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "海洋组",
-        "软体组"
+        "海洋�?,
+        "软体�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4348,12 +4348,12 @@ var eggData = {
       "maxWeight": 4.6
     },
     {
-      "name": "雪顶布鲁斯",
-      "type1": "冰",
+      "name": "雪顶布鲁�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "海洋组",
-        "软体组"
+        "海洋�?,
+        "软体�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4365,12 +4365,12 @@ var eggData = {
       "maxWeight": 15.6
     },
     {
-      "name": "冰钻布鲁斯",
-      "type1": "冰",
+      "name": "冰钻布鲁�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "海洋组",
-        "软体组"
+        "海洋�?,
+        "软体�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4382,12 +4382,12 @@ var eggData = {
       "maxWeight": 58.6
     },
     {
-      "name": "治愈兔",
-      "type1": "火",
-      "type2": "萌",
+      "name": "治愈�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组",
-        "妖精组"
+        "动物�?,
+        "妖精�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -4399,12 +4399,12 @@ var eggData = {
       "maxWeight": 14.42
     },
     {
-      "name": "红丝绒",
-      "type1": "火",
-      "type2": "萌",
+      "name": "红丝�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组",
-        "妖精组"
+        "动物�?,
+        "妖精�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -4417,11 +4417,11 @@ var eggData = {
     },
     {
       "name": "红绒十字",
-      "type1": "火",
-      "type2": "萌",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组",
-        "妖精组"
+        "动物�?,
+        "妖精�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -4434,13 +4434,13 @@ var eggData = {
     },
     {
       "name": "乌达",
-      "type1": "恶",
-      "type2": "火",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "巨灵组"
+        "巨灵�?
       ],
       "hasShiny": false,
-      "variant": "极昼的样子",
+      "variant": "极昼的样�?,
       "height": "0.44~0.58",
       "weight": "4.6~6.1",
       "minHeight": 0.44,
@@ -4449,14 +4449,14 @@ var eggData = {
       "maxWeight": 6.1
     },
     {
-      "name": "迷你乌",
-      "type1": "恶",
-      "type2": "火",
+      "name": "迷你�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "巨灵组"
+        "巨灵�?
       ],
       "hasShiny": false,
-      "variant": "极昼的样子",
+      "variant": "极昼的样�?,
       "height": "0.97~1.2",
       "weight": "27.9~39.1",
       "minHeight": 0.97,
@@ -4465,14 +4465,14 @@ var eggData = {
       "maxWeight": 39.1
     },
     {
-      "name": "乌拉塔",
-      "type1": "恶",
-      "type2": "火",
+      "name": "乌拉�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "巨灵组"
+        "巨灵�?
       ],
       "hasShiny": false,
-      "variant": "极昼的样子",
+      "variant": "极昼的样�?,
       "height": "1.85~2.1",
       "weight": "48.8~63.29",
       "minHeight": 1.85,
@@ -4483,10 +4483,10 @@ var eggData = {
     {
       "name": "螺旋帕帕",
       "type1": "机械",
-      "type2": "翼",
+      "type2": "�?,
       "group": [
-        "天空组",
-        "机械组"
+        "天空�?,
+        "机械�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4500,10 +4500,10 @@ var eggData = {
     {
       "name": "帕帕斯卡",
       "type1": "机械",
-      "type2": "翼",
+      "type2": "�?,
       "group": [
-        "天空组",
-        "机械组"
+        "天空�?,
+        "机械�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4519,8 +4519,8 @@ var eggData = {
       "type1": "机械",
       "type2": "",
       "group": [
-        "拟人组",
-        "机械组"
+        "拟人�?,
+        "机械�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -4536,8 +4536,8 @@ var eggData = {
       "type1": "机械",
       "type2": "",
       "group": [
-        "拟人组",
-        "机械组"
+        "拟人�?,
+        "机械�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -4549,12 +4549,12 @@ var eggData = {
       "maxWeight": 34.6
     },
     {
-      "name": "立方人",
+      "name": "立方�?,
       "type1": "机械",
       "type2": "",
       "group": [
-        "拟人组",
-        "机械组"
+        "拟人�?,
+        "机械�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -4566,12 +4566,12 @@ var eggData = {
       "maxWeight": 139.07
     },
     {
-      "name": "可立鸡",
-      "type1": "火",
+      "name": "可立�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "天空组",
-        "拟人组"
+        "天空�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4583,12 +4583,12 @@ var eggData = {
       "maxWeight": 7.4
     },
     {
-      "name": "晕晕鸡",
-      "type1": "火",
+      "name": "晕晕�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "天空组",
-        "拟人组"
+        "天空�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4600,12 +4600,12 @@ var eggData = {
       "maxWeight": 18.06
     },
     {
-      "name": "绅士鸡",
-      "type1": "火",
-      "type2": "武",
+      "name": "绅士�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组",
-        "拟人组"
+        "天空�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4618,11 +4618,11 @@ var eggData = {
     },
     {
       "name": "武者鸡",
-      "type1": "火",
-      "type2": "武",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组",
-        "拟人组"
+        "天空�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4635,10 +4635,10 @@ var eggData = {
     },
     {
       "name": "优优",
-      "type1": "地",
-      "type2": "光",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4651,10 +4651,10 @@ var eggData = {
     },
     {
       "name": "绒光优优",
-      "type1": "地",
-      "type2": "光",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4666,12 +4666,12 @@ var eggData = {
       "maxWeight": 19.6
     },
     {
-      "name": "噼啪鸟",
-      "type1": "电",
-      "type2": "翼",
+      "name": "噼啪�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组",
-        "巨灵组"
+        "天空�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4683,12 +4683,12 @@ var eggData = {
       "maxWeight": 127.5
     },
     {
-      "name": "深蓝鲸",
-      "type1": "水",
+      "name": "深蓝�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "巨灵组",
-        "海洋组"
+        "巨灵�?,
+        "海洋�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4701,11 +4701,11 @@ var eggData = {
     },
     {
       "name": "格兰种子",
-      "type1": "草",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "植物组"
+        "妖精�?,
+        "植物�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -4717,12 +4717,12 @@ var eggData = {
       "maxWeight": 5.4
     },
     {
-      "name": "格兰花",
-      "type1": "草",
+      "name": "格兰�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "植物组"
+        "妖精�?,
+        "植物�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -4734,12 +4734,12 @@ var eggData = {
       "maxWeight": 7.8
     },
     {
-      "name": "格兰球",
-      "type1": "草",
+      "name": "格兰�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "植物组"
+        "妖精�?,
+        "植物�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -4752,10 +4752,10 @@ var eggData = {
     },
     {
       "name": "地鼠",
-      "type1": "地",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "枯水期的样子",
@@ -4768,10 +4768,10 @@ var eggData = {
     },
     {
       "name": "遁鼠",
-      "type1": "地",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "枯水期的样子",
@@ -4783,11 +4783,11 @@ var eggData = {
       "maxWeight": 4.8
     },
     {
-      "name": "遁地鼠",
-      "type1": "地",
+      "name": "遁地�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": false,
       "variant": "枯水期的样子",
@@ -4799,12 +4799,12 @@ var eggData = {
       "maxWeight": 7.5
     },
     {
-      "name": "墨鱿士",
-      "type1": "幽",
+      "name": "墨鱿�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "海洋组",
-        "软体组"
+        "海洋�?,
+        "软体�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4817,11 +4817,11 @@ var eggData = {
     },
     {
       "name": "混乱鱿彩",
-      "type1": "幽",
-      "type2": "恶",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "海洋组",
-        "软体组"
+        "海洋�?,
+        "软体�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4834,11 +4834,11 @@ var eggData = {
     },
     {
       "name": "秩序鱿墨",
-      "type1": "幽",
-      "type2": "萌",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "海洋组",
-        "软体组"
+        "海洋�?,
+        "软体�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4850,12 +4850,12 @@ var eggData = {
       "maxWeight": 60.1
     },
     {
-      "name": "小甲虫",
-      "type1": "虫",
+      "name": "小甲�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "天空组",
-        "昆虫组"
+        "天空�?,
+        "昆虫�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4867,12 +4867,12 @@ var eggData = {
       "maxWeight": 8.4
     },
     {
-      "name": "铠甲虫",
-      "type1": "虫",
+      "name": "铠甲�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "天空组",
-        "昆虫组"
+        "天空�?,
+        "昆虫�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4888,8 +4888,8 @@ var eggData = {
       "type1": "机械",
       "type2": "",
       "group": [
-        "巨灵组",
-        "机械组"
+        "巨灵�?,
+        "机械�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4905,8 +4905,8 @@ var eggData = {
       "type1": "机械",
       "type2": "",
       "group": [
-        "巨灵组",
-        "机械组"
+        "巨灵�?,
+        "机械�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4918,12 +4918,12 @@ var eggData = {
       "maxWeight": 658
     },
     {
-      "name": "吸泥鸥",
-      "type1": "地",
-      "type2": "翼",
+      "name": "吸泥�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "天空组"
+        "两栖�?,
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4935,12 +4935,12 @@ var eggData = {
       "maxWeight": 12.5
     },
     {
-      "name": "泥吼牙",
-      "type1": "地",
-      "type2": "翼",
+      "name": "泥吼�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "天空组"
+        "两栖�?,
+        "天空�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4953,11 +4953,11 @@ var eggData = {
     },
     {
       "name": "大头骨龙",
-      "type1": "龙",
-      "type2": "幽",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "巨灵组",
-        "巨龙组"
+        "巨灵�?,
+        "巨龙�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4970,11 +4970,11 @@ var eggData = {
     },
     {
       "name": "寂灭骨龙",
-      "type1": "龙",
-      "type2": "幽",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "巨灵组",
-        "巨龙组"
+        "巨灵�?,
+        "巨龙�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -4987,11 +4987,11 @@ var eggData = {
     },
     {
       "name": "厉毒小萝",
-      "type1": "毒",
-      "type2": "恶",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组",
-        "拟人组"
+        "天空�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5004,11 +5004,11 @@ var eggData = {
     },
     {
       "name": "厉毒修萝",
-      "type1": "毒",
-      "type2": "恶",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组",
-        "拟人组"
+        "天空�?,
+        "拟人�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5020,8 +5020,8 @@ var eggData = {
       "maxWeight": 41.6
     },
     {
-      "name": "小帕尔",
-      "type1": "恶",
+      "name": "小帕�?,
+      "type1": "�?,
       "type2": "",
       "group": [
         "无法孵蛋"
@@ -5037,7 +5037,7 @@ var eggData = {
     },
     {
       "name": "帕尔萨斯",
-      "type1": "恶",
+      "type1": "�?,
       "type2": "",
       "group": [
         "无法孵蛋"
@@ -5053,7 +5053,7 @@ var eggData = {
     },
     {
       "name": "龙息帕尔",
-      "type1": "恶",
+      "type1": "�?,
       "type2": "",
       "group": [
         "无法孵蛋"
@@ -5069,11 +5069,11 @@ var eggData = {
     },
     {
       "name": "毛头小蛛",
-      "type1": "虫",
-      "type2": "地",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "昆虫组"
+        "妖精�?,
+        "昆虫�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5086,11 +5086,11 @@ var eggData = {
     },
     {
       "name": "捕尘长绒",
-      "type1": "虫",
-      "type2": "地",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "昆虫组"
+        "妖精�?,
+        "昆虫�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5103,11 +5103,11 @@ var eggData = {
     },
     {
       "name": "食尘短绒",
-      "type1": "虫",
-      "type2": "地",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "昆虫组"
+        "妖精�?,
+        "昆虫�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5119,12 +5119,12 @@ var eggData = {
       "maxWeight": 5.15
     },
     {
-      "name": "画精灵",
-      "type1": "普通",
+      "name": "画精�?,
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "巨灵组"
+        "妖精�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5137,11 +5137,11 @@ var eggData = {
     },
     {
       "name": "画像守护",
-      "type1": "普通",
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "巨灵组"
+        "妖精�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5153,12 +5153,12 @@ var eggData = {
       "maxWeight": 6.9
     },
     {
-      "name": "画间法师手",
-      "type1": "普通",
-      "type2": "幻",
+      "name": "画间法师�?,
+      "type1": "普�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "巨灵组"
+        "妖精�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5170,12 +5170,12 @@ var eggData = {
       "maxWeight": 58.1
     },
     {
-      "name": "画间沉铁兽",
-      "type1": "普通",
-      "type2": "武",
+      "name": "画间沉铁�?,
+      "type1": "普�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "巨灵组"
+        "妖精�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5187,12 +5187,12 @@ var eggData = {
       "maxWeight": 0
     },
     {
-      "name": "书魔虫",
-      "type1": "普通",
+      "name": "书魔�?,
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "巨灵组"
+        "妖精�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5205,11 +5205,11 @@ var eggData = {
     },
     {
       "name": "书卷守护",
-      "type1": "普通",
+      "type1": "普�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "巨灵组"
+        "妖精�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5221,12 +5221,12 @@ var eggData = {
       "maxWeight": 14.8
     },
     {
-      "name": "古卷执政官",
-      "type1": "普通",
-      "type2": "幻",
+      "name": "古卷执政�?,
+      "type1": "普�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "巨灵组"
+        "妖精�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5238,12 +5238,12 @@ var eggData = {
       "maxWeight": 135.5
     },
     {
-      "name": "古卷匣魔像",
-      "type1": "普通",
-      "type2": "武",
+      "name": "古卷匣魔�?,
+      "type1": "普�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "巨灵组"
+        "妖精�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5256,8 +5256,8 @@ var eggData = {
     },
     {
       "name": "绒绒",
-      "type1": "光",
-      "type2": "虫",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
         "无法孵蛋"
       ],
@@ -5271,9 +5271,9 @@ var eggData = {
       "maxWeight": 2.5
     },
     {
-      "name": "小绒茧",
-      "type1": "光",
-      "type2": "虫",
+      "name": "小绒�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
         "无法孵蛋"
       ],
@@ -5287,9 +5287,9 @@ var eggData = {
       "maxWeight": 9.2
     },
     {
-      "name": "绒仙子",
-      "type1": "光",
-      "type2": "虫",
+      "name": "绒仙�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
         "无法孵蛋"
       ],
@@ -5304,7 +5304,7 @@ var eggData = {
     },
     {
       "name": "犀角鸟",
-      "type1": "光",
+      "type1": "�?,
       "type2": "",
       "group": [
         "无法孵蛋"
@@ -5319,8 +5319,8 @@ var eggData = {
       "maxWeight": 11.5
     },
     {
-      "name": "光纤兽",
-      "type1": "光",
+      "name": "光纤�?,
+      "type1": "�?,
       "type2": "",
       "group": [
         "无法孵蛋"
@@ -5336,7 +5336,7 @@ var eggData = {
     },
     {
       "name": "疾光千兽",
-      "type1": "光",
+      "type1": "�?,
       "type2": "",
       "group": [
         "无法孵蛋"
@@ -5352,11 +5352,11 @@ var eggData = {
     },
     {
       "name": "果冻",
-      "type1": "水",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "海洋组",
-        "魔力组"
+        "海洋�?,
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5369,11 +5369,11 @@ var eggData = {
     },
     {
       "name": "抹茶布丁",
-      "type1": "水",
-      "type2": "草",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "海洋组",
-        "魔力组"
+        "海洋�?,
+        "魔力�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5386,10 +5386,10 @@ var eggData = {
     },
     {
       "name": "椰浆布丁",
-      "type1": "水",
-      "type2": "冰",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "海洋组"
+        "海洋�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5402,10 +5402,10 @@ var eggData = {
     },
     {
       "name": "熔岩布丁",
-      "type1": "水",
-      "type2": "火",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "海洋组"
+        "海洋�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5417,11 +5417,11 @@ var eggData = {
       "maxWeight": 7.9
     },
     {
-      "name": "星尘虫",
-      "type1": "虫",
+      "name": "星尘�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "昆虫组"
+        "昆虫�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5433,11 +5433,11 @@ var eggData = {
       "maxWeight": 1.4
     },
     {
-      "name": "落星虫",
-      "type1": "虫",
+      "name": "落星�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "昆虫组"
+        "昆虫�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5449,11 +5449,11 @@ var eggData = {
       "maxWeight": 2.25
     },
     {
-      "name": "陨星虫",
-      "type1": "虫",
+      "name": "陨星�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "昆虫组"
+        "昆虫�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5465,11 +5465,11 @@ var eggData = {
       "maxWeight": 6.8
     },
     {
-      "name": "双灯鱼",
-      "type1": "水",
-      "type2": "电",
+      "name": "双灯�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "海洋组"
+        "海洋�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5481,11 +5481,11 @@ var eggData = {
       "maxWeight": 17.8
     },
     {
-      "name": "利灯鱼",
-      "type1": "水",
-      "type2": "电",
+      "name": "利灯�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "海洋组"
+        "海洋�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5498,11 +5498,11 @@ var eggData = {
     },
     {
       "name": "月牙雪熊",
-      "type1": "冰",
-      "type2": "幻",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组",
-        "巨灵组"
+        "动物�?,
+        "巨灵�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5515,10 +5515,10 @@ var eggData = {
     },
     {
       "name": "嗜光嗡嗡",
-      "type1": "恶",
-      "type2": "光",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "昆虫组"
+        "昆虫�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5530,11 +5530,11 @@ var eggData = {
       "maxWeight": 3.05
     },
     {
-      "name": "窃光蚊",
-      "type1": "恶",
-      "type2": "光",
+      "name": "窃光�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "昆虫组"
+        "昆虫�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5546,12 +5546,12 @@ var eggData = {
       "maxWeight": 9.62
     },
     {
-      "name": "柴渣虫",
-      "type1": "火",
-      "type2": "草",
+      "name": "柴渣�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "昆虫组",
-        "植物组"
+        "昆虫�?,
+        "植物�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5563,12 +5563,12 @@ var eggData = {
       "maxWeight": 18.6
     },
     {
-      "name": "燃薪虫",
-      "type1": "火",
-      "type2": "草",
+      "name": "燃薪�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "昆虫组",
-        "植物组"
+        "昆虫�?,
+        "植物�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5580,12 +5580,12 @@ var eggData = {
       "maxWeight": 87.5
     },
     {
-      "name": "空空颅",
-      "type1": "幽",
+      "name": "空空�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "巨灵组",
-        "魔力组"
+        "巨灵�?,
+        "魔力�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5597,12 +5597,12 @@ var eggData = {
       "maxWeight": 8.7
     },
     {
-      "name": "夜宿颅",
-      "type1": "幽",
+      "name": "夜宿�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "巨灵组",
-        "魔力组"
+        "巨灵�?,
+        "魔力�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5615,11 +5615,11 @@ var eggData = {
     },
     {
       "name": "夜枭",
-      "type1": "幽",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "巨灵组",
-        "魔力组"
+        "巨灵�?,
+        "魔力�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5631,12 +5631,12 @@ var eggData = {
       "maxWeight": 66.5
     },
     {
-      "name": "粉粉星",
-      "type1": "电",
-      "type2": "幻",
+      "name": "粉粉�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "软体组"
+        "妖精�?,
+        "软体�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5648,12 +5648,12 @@ var eggData = {
       "maxWeight": 3
     },
     {
-      "name": "小皮球",
-      "type1": "电",
-      "type2": "幻",
+      "name": "小皮�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "软体组"
+        "妖精�?,
+        "软体�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5667,9 +5667,9 @@ var eggData = {
     {
       "name": "贝瑟",
       "type1": "机械",
-      "type2": "火",
+      "type2": "�?,
       "group": [
-        "机械组"
+        "机械�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5681,11 +5681,11 @@ var eggData = {
       "maxWeight": 34.6
     },
     {
-      "name": "贝加尔",
+      "name": "贝加�?,
       "type1": "机械",
-      "type2": "火",
+      "type2": "�?,
       "group": [
-        "机械组"
+        "机械�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5697,11 +5697,11 @@ var eggData = {
       "maxWeight": 97.5
     },
     {
-      "name": "贝古斯",
+      "name": "贝古�?,
       "type1": "机械",
-      "type2": "火",
+      "type2": "�?,
       "group": [
-        "机械组"
+        "机械�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5713,12 +5713,12 @@ var eggData = {
       "maxWeight": 286
     },
     {
-      "name": "粉星仔",
-      "type1": "幻",
+      "name": "粉星�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "天空组",
-        "妖精组"
+        "天空�?,
+        "妖精�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5730,12 +5730,12 @@ var eggData = {
       "maxWeight": 12.8
     },
     {
-      "name": "粉耳星兔",
-      "type1": "幻",
+      "name": "粉耳星�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "天空组",
-        "妖精组"
+        "天空�?,
+        "妖精�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5748,11 +5748,11 @@ var eggData = {
     },
     {
       "name": "落陨星兔",
-      "type1": "幻",
-      "type2": "幽",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "天空组",
-        "妖精组"
+        "天空�?,
+        "妖精�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5764,11 +5764,11 @@ var eggData = {
       "maxWeight": 23.81
     },
     {
-      "name": "布瓜蝌",
-      "type1": "幻",
+      "name": "布瓜�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "两栖组"
+        "两栖�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5780,11 +5780,11 @@ var eggData = {
       "maxWeight": 1.65
     },
     {
-      "name": "上岸蛙",
-      "type1": "幻",
+      "name": "上岸�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "两栖组"
+        "两栖�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5796,11 +5796,11 @@ var eggData = {
       "maxWeight": 8.1
     },
     {
-      "name": "火红尾",
-      "type1": "火",
+      "name": "火红�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5812,11 +5812,11 @@ var eggData = {
       "maxWeight": 30.5
     },
     {
-      "name": "雅丹鬃",
-      "type1": "火",
+      "name": "雅丹�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组"
+        "动物�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -5829,11 +5829,11 @@ var eggData = {
     },
     {
       "name": "春团",
-      "type1": "草",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组",
-        "妖精组"
+        "动物�?,
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5846,11 +5846,11 @@ var eggData = {
     },
     {
       "name": "春兔",
-      "type1": "草",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组",
-        "妖精组"
+        "动物�?,
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5862,12 +5862,12 @@ var eggData = {
       "maxWeight": 8.5
     },
     {
-      "name": "春花兔",
-      "type1": "草",
+      "name": "春花�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "动物组",
-        "妖精组"
+        "动物�?,
+        "妖精�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5879,12 +5879,12 @@ var eggData = {
       "maxWeight": 33.5
     },
     {
-      "name": "幽星光",
-      "type1": "幻",
+      "name": "幽星�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "巨灵组"
+        "妖精�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5896,12 +5896,12 @@ var eggData = {
       "maxWeight": 1.65
     },
     {
-      "name": "曜星光",
-      "type1": "幻",
-      "type2": "翼",
+      "name": "曜星�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "巨灵组"
+        "妖精�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5913,12 +5913,12 @@ var eggData = {
       "maxWeight": 4.5
     },
     {
-      "name": "暮星辰",
-      "type1": "幻",
-      "type2": "翼",
+      "name": "暮星�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "妖精组",
-        "巨灵组"
+        "妖精�?,
+        "巨灵�?
       ],
       "hasShiny": false,
       "variant": "",
@@ -5979,7 +5979,7 @@ var eggData = {
     },
     {
       "name": "凡雀",
-      "type1": "翼",
+      "type1": "�?,
       "type2": "",
       "group": [
         "无法孵蛋"
@@ -5994,8 +5994,8 @@ var eggData = {
       "maxWeight": 6
     },
     {
-      "name": "紫翎鹰",
-      "type1": "翼",
+      "name": "紫翎�?,
+      "type1": "�?,
       "type2": "",
       "group": [
         "无法孵蛋"
@@ -6011,7 +6011,7 @@ var eggData = {
     },
     {
       "name": "凡鹰",
-      "type1": "翼",
+      "type1": "�?,
       "type2": "",
       "group": [
         "无法孵蛋"
@@ -6026,8 +6026,8 @@ var eggData = {
       "maxWeight": 68.27
     },
     {
-      "name": "小雪人",
-      "type1": "冰",
+      "name": "小雪�?,
+      "type1": "�?,
       "type2": "",
       "group": [
         "无法孵蛋"
@@ -6042,8 +6042,8 @@ var eggData = {
       "maxWeight": 87.5
     },
     {
-      "name": "雪怪",
-      "type1": "冰",
+      "name": "雪�?,
+      "type1": "�?,
       "type2": "",
       "group": [
         "无法孵蛋"
@@ -6058,9 +6058,9 @@ var eggData = {
       "maxWeight": 187.4
     },
     {
-      "name": "爆焰仔",
-      "type1": "火",
-      "type2": "龙",
+      "name": "爆焰�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
         "无法孵蛋"
       ],
@@ -6075,8 +6075,8 @@ var eggData = {
     },
     {
       "name": "爆焰喷喷",
-      "type1": "火",
-      "type2": "龙",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
         "无法孵蛋"
       ],
@@ -6090,12 +6090,12 @@ var eggData = {
       "maxWeight": 69.5
     },
     {
-      "name": "猴麦仔",
-      "type1": "普通",
+      "name": "猴麦�?,
+      "type1": "普�?,
       "type2": "机械",
       "group": [
-        "动物组",
-        "机械组"
+        "动物�?,
+        "机械�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -6107,12 +6107,12 @@ var eggData = {
       "maxWeight": 17.6
     },
     {
-      "name": "音碟吼",
-      "type1": "普通",
+      "name": "音碟�?,
+      "type1": "普�?,
       "type2": "机械",
       "group": [
-        "动物组",
-        "机械组"
+        "动物�?,
+        "机械�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -6125,11 +6125,11 @@ var eggData = {
     },
     {
       "name": "加油海葵",
-      "type1": "水",
-      "type2": "萌",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "妖精组"
+        "两栖�?,
+        "妖精�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -6141,12 +6141,12 @@ var eggData = {
       "maxWeight": 4.15
     },
     {
-      "name": "加油蟹",
-      "type1": "水",
-      "type2": "萌",
+      "name": "加油�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "两栖组",
-        "妖精组"
+        "两栖�?,
+        "妖精�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -6159,11 +6159,11 @@ var eggData = {
     },
     {
       "name": "小丑豆豆",
-      "type1": "恶",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "拟人组"
+        "妖精�?,
+        "拟人�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -6175,12 +6175,12 @@ var eggData = {
       "maxWeight": 6.35
     },
     {
-      "name": "小丑兔",
-      "type1": "恶",
+      "name": "小丑�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "拟人组"
+        "妖精�?,
+        "拟人�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -6193,11 +6193,11 @@ var eggData = {
     },
     {
       "name": "小丑公爵",
-      "type1": "恶",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "拟人组"
+        "妖精�?,
+        "拟人�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -6209,12 +6209,12 @@ var eggData = {
       "maxWeight": 47.6
     },
     {
-      "name": "烟花团",
-      "type1": "火",
-      "type2": "毒",
+      "name": "烟花�?,
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "机械组",
-        "魔力组"
+        "机械�?,
+        "魔力�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -6227,11 +6227,11 @@ var eggData = {
     },
     {
       "name": "烟花伯爵",
-      "type1": "火",
-      "type2": "毒",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "机械组",
-        "魔力组"
+        "机械�?,
+        "魔力�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -6243,11 +6243,11 @@ var eggData = {
       "maxWeight": 22.5
     },
     {
-      "name": "咕咕帽",
-      "type1": "幽",
+      "name": "咕咕�?,
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组"
+        "妖精�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -6260,10 +6260,10 @@ var eggData = {
     },
     {
       "name": "咕德帽帽",
-      "type1": "幽",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组"
+        "妖精�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -6276,11 +6276,11 @@ var eggData = {
     },
     {
       "name": "炫光迪迪",
-      "type1": "电",
-      "type2": "光",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组",
-        "大地组"
+        "动物�?,
+        "大地�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -6293,11 +6293,11 @@ var eggData = {
     },
     {
       "name": "霹雳迪迪",
-      "type1": "电",
-      "type2": "光",
+      "type1": "�?,
+      "type2": "�?,
       "group": [
-        "动物组",
-        "大地组"
+        "动物�?,
+        "大地�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -6309,12 +6309,12 @@ var eggData = {
       "maxWeight": 89.3
     },
     {
-      "name": "小鼓象",
+      "name": "小鼓�?,
       "type1": "机械",
       "type2": "",
       "group": [
-        "动物组",
-        "机械组"
+        "动物�?,
+        "机械�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -6326,12 +6326,12 @@ var eggData = {
       "maxWeight": 8.3
     },
     {
-      "name": "巨鼓象",
+      "name": "巨鼓�?,
       "type1": "机械",
       "type2": "",
       "group": [
-        "动物组",
-        "机械组"
+        "动物�?,
+        "机械�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -6344,11 +6344,11 @@ var eggData = {
     },
     {
       "name": "牵线木偶",
-      "type1": "幻",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "拟人组"
+        "妖精�?,
+        "拟人�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -6361,11 +6361,11 @@ var eggData = {
     },
     {
       "name": "帅帅魔偶",
-      "type1": "幻",
+      "type1": "�?,
       "type2": "",
       "group": [
-        "妖精组",
-        "拟人组"
+        "妖精�?,
+        "拟人�?
       ],
       "hasShiny": true,
       "variant": "",
@@ -6378,7 +6378,7 @@ var eggData = {
     },
     {
       "name": "学院呱呱",
-      "type1": "武",
+      "type1": "�?,
       "type2": "",
       "group": [
         "无法孵蛋"
@@ -6425,7 +6425,7 @@ var eggData = {
       "req": "等级40以上"
     },
     {
-      "pet": "上岸蛙",
+      "pet": "上岸�?,
       "mount": "蛙跳飞行",
       "bonus": "跳跃高度+50%",
       "req": "等级30以上"
@@ -6442,18 +6442,18 @@ var eggData = {
 var db = null
 
 var typeClassMap = {
-  '草': 'grass', '火': 'fire', '水': 'water', '电': 'electric',
-  '光': 'light', '普通': 'normal', '机械': 'machinery', '冰': 'ice',
-  '龙': 'dragon', '恶': 'dark', '飞行': 'flying', '幻': 'magic',
-  '格斗': 'fight', '岩石': 'rock', '钢': 'steel', '妖精': 'fairy',
-  '超能力': 'psychic', '鬼': 'ghost', '毒': 'poison', '地面': 'ground',
-  '虫': 'bug', '武': 'martial', '幽': 'shadow', '萌': 'cute',
-  '翼': 'wing', '暗': 'darkness', '石': 'stone'
+  '�?: 'grass', '�?: 'fire', '�?: 'water', '�?: 'electric',
+  '�?: 'light', '普�?: 'normal', '机械': 'machinery', '�?: 'ice',
+  '�?: 'dragon', '�?: 'dark', '飞行': 'flying', '�?: 'magic',
+  '格斗': 'fight', '岩石': 'rock', '�?: 'steel', '妖精': 'fairy',
+  '超能�?: 'psychic', '�?: 'ghost', '�?: 'poison', '地面': 'ground',
+  '�?: 'bug', '�?: 'martial', '�?: 'shadow', '�?: 'cute',
+  '�?: 'wing', '�?: 'darkness', '�?: 'stone'
 }
 
 function getEggImgUrl(name, variant) {
   var fullPetMap = require('./fullPetMap.js');
-  var fullName = variant ? name + '（' + variant + '）' : name;
+  var fullName = variant ? name + '�? + variant + '�? : name;
   if (fullPetMap[fullName]) return fullPetMap[fullName];
   if (fullPetMap[name]) return fullPetMap[name];
   return 'https://wiki.biligame.com/rocom/Special:FilePath/精灵_头像_' + fullName + '.png';
@@ -6464,10 +6464,10 @@ var localPets = eggData.pets.map(function(p) {
   var mountNames = eggData.mounts.map(function(m) { return m.pet })
   
   if (mountNames.indexOf(p.name) >= 0) {
-    copy.egg = '同乘蛋'
+    copy.egg = '同乘�?
   } else if (p.hasShiny) {
-    copy.egg = '炫彩蛋'
-  } else if (['光', '暗', '龙', '翼', '幽', '萌', '机械', '武', '幻', '钢', '妖精', '超能力', '鬼'].indexOf(p.type1) >= 0) {
+    copy.egg = '炫彩�?
+  } else if (['�?, '�?, '�?, '�?, '�?, '�?, '机械', '�?, '�?, '�?, '妖精', '超能�?, '�?].indexOf(p.type1) >= 0) {
     copy.egg = '神奇的蛋'
   } else {
     copy.egg = '普通蛋'
@@ -6505,7 +6505,7 @@ Page({
     lookupResults: [],
     hasSearched: false,
     selectedLookupPet: null,
-    eggNameList: ['全部', '普通蛋', '神奇的蛋', '炫彩蛋', '同乘蛋']
+    eggNameList: ['全部', '普通蛋', '神奇的蛋', '炫彩�?, '同乘�?]
   },
   onShow: function() {
     if (wx.cloud) db = wx.cloud.database()
@@ -6587,7 +6587,7 @@ Page({
       })
       .then(function() {
         self.setData({ maintenance: newVal })
-        wx.showToast({ title: newVal ? '已下线' : '已上线', icon: 'success' })
+        wx.showToast({ title: newVal ? '已下�? : '已上�?, icon: 'success' })
       })
   },
   toggleMode: function() {
@@ -6607,7 +6607,7 @@ Page({
       })
       .then(function() {
         self.setData({ useCustom: newMode })
-        wx.showToast({ title: newMode ? '已切换为自定义' : '已切换为默认', icon: 'success' })
+        wx.showToast({ title: newMode ? '已切换为自定�? : '已切换为默认', icon: 'success' })
       })
   },
   onEdit: function(e) {
@@ -6621,7 +6621,7 @@ Page({
     if (!db) { wx.showToast({ title: '云环境未就绪', icon: 'none' }); return }
     if (self.data.submitting) return
     var value = self.data.editValue.trim()
-    if (!value) { wx.showToast({ title: '请输入内容', icon: 'none' }); return }
+    if (!value) { wx.showToast({ title: '请输入内�?, icon: 'none' }); return }
     self.setData({ submitting: true })
     var updateData = {}
     updateData[self.data.editingField] = value
@@ -6670,7 +6670,7 @@ Page({
     wx.setClipboardData({
       data: 'https://wiki.biligame.com/rocom/%E5%AD%B5%E8%9B%8B%E6%9F%A5%E8%AF%A2',
       success: function() {
-        wx.showToast({ title: '链接已复制', icon: 'success' })
+        wx.showToast({ title: '链接已复�?, icon: 'success' })
       }
     })
   },
@@ -6721,7 +6721,7 @@ Page({
     var pets = this.data.pets
     var results = []
     
-    // 使用范围比例容差（30%），与 WIKI 匹配逻辑一致
+    // 使用范围比例容差�?0%），�?WIKI 匹配逻辑一�?
     var tolerancePct = 0.3
     
     for (var i = 0; i < pets.length; i++) {
@@ -6729,7 +6729,7 @@ Page({
       var matchH = true
       var matchW = true
       var matchEgg = true
-      var score = 0 // 越小越精确
+      var score = 0 // 越小越精�?
       
       if (queryH) {
         if (typeof p.minHeight !== 'number' || typeof p.maxHeight !== 'number' || p.minHeight === 0) {
@@ -6792,7 +6792,7 @@ Page({
     
     self.setData({ selectedLookupPet: item })
     
-    // 保存到本地存储
+    // 保存到本地存�?
     var syncData = {
       petName: item.name,
       petType1: item.type1,
@@ -6811,10 +6811,10 @@ Page({
       timestamp: Date.now()
     }
     
-    // 保存到本地
+    // 保存到本�?
     var records = wx.getStorageSync('egg_lookup_records') || []
     records.unshift(syncData)
-    // 只保留最近100条记录
+    // 只保留最�?00条记�?
     if (records.length > 100) records = records.slice(0, 100)
     wx.setStorageSync('egg_lookup_records', records)
     
@@ -6823,7 +6823,7 @@ Page({
       db.collection('egg_lookup_records').add({
         data: syncData
       }).catch(function() {
-        // 云端同步失败，静默处理
+        // 云端同步失败，静默处�?
         console.log('Cloud sync failed, data saved locally')
       })
     }
@@ -6831,16 +6831,16 @@ Page({
     // 显示感谢提示
     wx.showModal({
       title: '感谢反馈 🎉',
-      content: '你选择的「' + item.name + '」已记录，数据将用于优化反查精准度！',
+      content: '你选择的�? + item.name + '」已记录，数据将用于优化反查精准度！',
       showCancel: false,
       confirmText: '好的',
       confirmColor: '#00d4ff'
     })
   },
   onShareAppMessage: function() {
-    return { title: '洛手助手 - 孵蛋查询', path: '/pages/egg/egg', imageUrl: '/images/banner1.png' }
+    return { title: '洛手助手 - 孵蛋查询', path: '/pages/egg/egg', imageUrl: '/images/banner.webp' }
   },
   onShareTimeline: function() {
-    return { title: '洛手助手 - 洛克王国精灵图鉴及孵蛋查询', imageUrl: '/images/banner1.png' }
+    return { title: '洛手助手 - 洛克王国精灵图鉴及孵蛋查�?, imageUrl: '/images/banner.webp' }
   }
 })

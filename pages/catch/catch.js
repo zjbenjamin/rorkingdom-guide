@@ -313,7 +313,7 @@ Page({
     arr[idx].remain = e.detail.value;
     this.setData({ checkMultiBalls: arr });
   },
-  onResult: function(e) {
+  onLongResult: function(e) { this.onResult(e) },
     var r = e.currentTarget.dataset.r
     var self = this
     if (r === 'success') {
@@ -405,7 +405,7 @@ Page({
     var multi = self.data.resultMultiBalls || [];
     
     // 收集混刷精灵名称
-    self.data.resultMixedPetNames = '';
+    var resultMixedPetNames = '';
     if (self.data.brushMode === 'mixed') {
       var mixedNames = [];
       var mixedArr = self.data.resultMixedPets || [];
@@ -413,14 +413,15 @@ Page({
         var n = (mixedArr[p].name || '').trim();
         if (n) mixedNames.push(n);
       }
-      self.data.resultMixedPetNames = mixedNames.join(', ');
+      resultMixedPetNames = mixedNames.join(', ');
     }
     
     // 结果目标精灵: 单刷= petName, 混刷= picker选择
+    var resultTargetPet = '';
     if (self.data.brushMode === 'mixed') {
-      self.data.resultTargetPet = self.data.resultTargetPet || '';
+      resultTargetPet = self.data.resultTargetPet || '';
     } else {
-      self.data.resultTargetPet = self.data.resultPetName || '';
+      resultTargetPet = self.data.resultPetName || '';
     }
     
     self.setData({ showResultBallModal: false, result: r, resultGainInput: '' });
@@ -458,7 +459,7 @@ Page({
           totalUsedCount += usedCount;
           usedBallNames.push(balls[i].name + 'x' + usedCount);
           if (usedCount > 0) {
-            if(!self.data.lastUsedBallImageUrl && balls[i].img) self.data.lastUsedBallImageUrl = balls[i].img;
+            if(!self._lastUsedBallImg && balls[i].img) self._lastUsedBallImg = balls[i].img;
             var freeConsume = Math.min(usedCount, balls[i].freeCount);
             balls[i].freeCount = Math.max(0, balls[i].freeCount - freeConsume);
           }
@@ -477,20 +478,20 @@ Page({
     
     var lastUsedStr = usedBallNames.join(', ');
     // 自动计时：如果用户没有手动修改，则保持自动计算结果
-    self.data.resultElapsedAuto = (self.data.resultElapsedTime || '').indexOf('(自动)') >= 0;
-    if (!self.data.resultElapsedTime || self.data.resultElapsedTime.indexOf('(自动)') >= 0) {
+    var resultElapsedAuto = (self.data.resultElapsedTime || '').indexOf('(自动)') >= 0;
+    var resultElapsedTime = self.data.resultElapsedTime || '';
+    if (!resultElapsedTime || resultElapsedTime.indexOf('(自动)') >= 0) {
       if (self.data.captureStartTime) {
         var elapsed = Math.floor((Date.now() - self.data.captureStartTime) / 1000);
         var h = Math.floor(elapsed / 3600);
         var m = Math.floor((elapsed % 3600) / 60);
         var s = elapsed % 60;
-        self.data.resultElapsedTime = (h > 0 ? h + '小时' : '') + (m > 0 ? m + '分' : '') + s + '秒';
-        self.data.resultElapsedAuto = true;
+        resultElapsedTime = (h > 0 ? h + '小时' : '') + (m > 0 ? m + '分' : '') + s + '秒';
+        resultElapsedAuto = true;
       }
-    } else if (self.data.resultElapsedTime) {
-      // 手动修改：去掉 (自动) 标记
-      self.data.resultElapsedTime = self.data.resultElapsedTime.replace(' (自动)', '');
-      self.data.resultElapsedAuto = false;
+    } else if (resultElapsedTime) {
+      resultElapsedTime = resultElapsedTime.replace(' (自动)', '');
+      resultElapsedAuto = false;
     }
     self.setData({ balls: balls, totalBallUsed: totalBallUsed, usedBallTotal: newUsedBallTotal, hasActiveBalls: hasActive, canStartCapture: self.data.wealthSet && hasActive, lastUsedCount: totalUsedCount, lastUsedBallName: lastUsedStr });
     if (gainVal !== 0) {
@@ -532,7 +533,8 @@ Page({
       var resultText = result === 'success' ? '异色捕获成功' : '歪了'
       var remark = self.data.resultRemark || ''
       var totalEncountersForRecord = self.data.carnivalCount + self.data.luckyBoxCount;
-      var record = { time: formatTimeShort(), balls: usedStr, result: resultText, remark: remark, total: catchCount, cost: 0, pet: self.data.resultPetName || '', petImageUrl: self.data.resultPetImageUrl || '', resultRaw: result, elapsedTimeText: self.data.resultElapsedTime ? '耗时: ' + self.data.resultElapsedTime : '', ballImageUrl: self.data.lastUsedBallImageUrl || '', encounters: totalEncountersForRecord, brushMode: self.data.brushMode || 'single', mixedPets: self.data.resultMixedPetNames || '', targetPet: self.data.resultTargetPet || '', carnivalCount: self.data.carnivalCount || 0, luckyBoxCount: self.data.luckyBoxCount || 0, pityBefore: self.data.pityCount || 0, elapsedAuto: self.data.resultElapsedAuto || false }
+      var record = { time: formatTimeShort(), balls: usedStr, result: resultText, remark: remark, total: catchCount, cost: 0, pet: self.data.resultPetName || '', petImageUrl: self.data.resultPetImageUrl || '', resultRaw: result, elapsedTimeText: resultElapsedTime ? '耗时: ' + resultElapsedTime : '', ballImageUrl: self._lastUsedBallImg || '', encounters: totalEncountersForRecord, brushMode: self.data.brushMode || 'single', mixedPets: resultMixedPetNames || '', targetPet: resultTargetPet || '', carnivalCount: self.data.carnivalCount || 0, luckyBoxCount: self.data.luckyBoxCount || 0, pityBefore: self.data.pityCount || 0, elapsedAuto: resultElapsedAuto || false }
+      if (resultElapsedTime) self.setData({ resultElapsedTime: resultElapsedTime, resultElapsedAuto: resultElapsedAuto })
       
       self.setData({ lastUsedBallName: '', lastUsedCount: 0 }); // reset
     var h = [record].concat(self.data.history).slice(0, 20)
@@ -581,7 +583,8 @@ Page({
       var resultText = result === 'success' ? '异色捕获成功' : '歪了'
       var remark = self.data.resultRemark || ''
       var totalEncountersForRecord = self.data.carnivalCount + self.data.luckyBoxCount;
-      var record = { time: formatTimeShort(), balls: usedStr, result: resultText, remark: remark, total: catchCount, cost: 0, pet: self.data.resultPetName || '', petImageUrl: self.data.resultPetImageUrl || '', resultRaw: result, elapsedTimeText: self.data.resultElapsedTime ? '耗时: ' + self.data.resultElapsedTime : '', ballImageUrl: self.data.lastUsedBallImageUrl || '', encounters: totalEncountersForRecord, brushMode: self.data.brushMode || 'single', mixedPets: self.data.resultMixedPetNames || '', targetPet: self.data.resultTargetPet || '', carnivalCount: self.data.carnivalCount || 0, luckyBoxCount: self.data.luckyBoxCount || 0, pityBefore: self.data.pityCount || 0, elapsedAuto: self.data.resultElapsedAuto || false }
+      var record = { time: formatTimeShort(), balls: usedStr, result: resultText, remark: remark, total: catchCount, cost: 0, pet: self.data.resultPetName || '', petImageUrl: self.data.resultPetImageUrl || '', resultRaw: result, elapsedTimeText: resultElapsedTime ? '耗时: ' + resultElapsedTime : '', ballImageUrl: self._lastUsedBallImg || '', encounters: totalEncountersForRecord, brushMode: self.data.brushMode || 'single', mixedPets: resultMixedPetNames || '', targetPet: resultTargetPet || '', carnivalCount: self.data.carnivalCount || 0, luckyBoxCount: self.data.luckyBoxCount || 0, pityBefore: self.data.pityCount || 0, elapsedAuto: resultElapsedAuto || false }
+      if (resultElapsedTime) self.setData({ resultElapsedTime: resultElapsedTime, resultElapsedAuto: resultElapsedAuto })
       
       self.setData({ lastUsedBallName: '', lastUsedCount: 0 }); // reset
     var h = [record].concat(self.data.history).slice(0, 20)
@@ -913,7 +916,7 @@ Page({
           if (ball.img) {
             var bs = Math.round(20 * imgScale);
             loadImg(ball.img, function(ix, iy, s) { return function(img) {
-              ctx.drawImage(img, ix, iy - 10, s, s);
+              ctx.drawImage(img, ix, iy - 16, s, s);
             }; }(inlineX, inlineY, bs));
             inlineX += 26;
           }

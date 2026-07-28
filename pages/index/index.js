@@ -12,6 +12,8 @@ Page({
     bannerFallback: '',
     announcements: [],
     subscribeConfig: {},
+    subscribedAnnouncement: false,
+    subscribeCount: 0,
     buildTime: '',
     currentPlayUrl: '',
     isPlaying: false,
@@ -25,12 +27,10 @@ Page({
   },
 
   onHide: function() {
-    if (this.timerId) {
-      clearInterval(this.timerId);
-      this.timerId = null;
-    }
+    if (this._countdownTimer) { clearInterval(this._countdownTimer); this._countdownTimer = null }
   },
   onUnload: function() {
+    if (this._countdownTimer) { clearInterval(this._countdownTimer); this._countdownTimer = null }
     if (this.timerId) {
       clearInterval(this.timerId);
       this.timerId = null;
@@ -38,6 +38,8 @@ Page({
   },
   onShow: function() {
     var self = this
+    // 先清除旧定时器，防止多个setInterval叠加卡死主线程
+    if (self._countdownTimer) { clearInterval(self._countdownTimer); self._countdownTimer = null }
     var n = new Date()
     var subscribeConfig = wx.getStorageSync('subscribe_config') || { announcement: true, activity: true, system: true, merchant: true, interaction: true }
     self.setData({
@@ -51,6 +53,8 @@ Page({
     self.loadBanner()
     self.loadIcp()
     self.checkSubscription()
+    // 启动倒计时刷新
+    self._countdownTimer = setInterval(function() { self.updateCountdowns() }, 1000)
   },
   checkAdmin: function() {
     var self = this
@@ -157,7 +161,9 @@ Page({
       .get()
       .then(function(res) {
         var list = res.data || []
-                for (var i = 0; i < list.length; i++) {
+        var now = Date.now()
+        var filtered = []
+        for (var i = 0; i < list.length; i++) {
           list[i].timeStr = self.formatTime(list[i].createTime);
           if (list[i].startDate) {
             var sd = list[i].startDate.replace(/-/g, '/');
@@ -169,10 +175,14 @@ Page({
             if (ed.length <= 10) ed += ' 23:59:59';
             list[i].autoDeleteTime = new Date(ed).getTime();
           }
+          // 管理员看到所有，普通用户看不到未到上线时间的
+          if (self.data.isAdmin || !list[i].autoOnlineTime || list[i].autoOnlineTime <= now) {
+            filtered.push(list[i])
+          }
         }
-        self.setData({ announcements: list });
+        self.setData({ announcements: filtered });
         self.updateCountdowns();
-        cloudUrl.convertList(list, 'image', function(converted) {
+        cloudUrl.convertList(filtered, 'image', function(converted) {
           self.setData({ announcements: converted })
         })
       })
@@ -204,6 +214,7 @@ Page({
       }
     })
   },
+  goAbout: function() { wx.navigateTo({ url: '/pages/about/about' }) },
   goAdmin: function() { wx.navigateTo({ url: '/pages/admin/admin' }) },
   showAnnouncement: function(e) {
     var idx = e.currentTarget.dataset.i
@@ -229,6 +240,10 @@ Page({
   },
   subscribeAnnouncement: function() {
     var self = this
+    if (self.data.subscribedAnnouncement) {
+      wx.showToast({ title: '已订阅公告通知', icon: 'none' })
+      return
+    }
     if (!app.globalData.userInfo) {
       wx.showToast({ title: '请先登录', icon: 'none' })
       return
@@ -251,7 +266,7 @@ Page({
         return
       }
       if (result.announcement === 'accept') {
-        self.saveSubscription('announcement')
+        self.checkSubscription()
       } else if (result.announcement === 'reject') {
         wx.showToast({ title: '已拒绝通知', icon: 'none' })
       } else if (result.announcement === 'ban') {
@@ -260,11 +275,11 @@ Page({
           content: '您已关闭该类通知，请在小程序设置中手动开启',
           confirmText: '去设置',
           success: function(modalRes) {
-            if (modalRes.confirm) {
-              wx.openSetting({})
-            }
+            if (modalRes.confirm) { wx.openSetting({}) }
           }
         })
+      } else {
+        wx.showToast({ title: '操作已取消', icon: 'none' })
       }
     })
   },
@@ -606,10 +621,10 @@ Page({
     wx.navigateTo({ url: '/pages/activity/activity' })
   },
   onShareAppMessage: function() {
-    return { title: '洛手助手洛手助手 - 洛克王国攻略', path: '/pages/index/index', imageUrl: '/images/banner1.png' }
+    return { title: '洛手助手洛手助手 - 洛克王国攻略', path: '/pages/index/index', imageUrl: '/images/banner.webp' }
   },
   onShareTimeline: function() {
-    return { title: '洛手助手洛手助手 - 精灵图鉴·捕捉统计·活动日历', imageUrl: '/images/banner1.png' }
+    return { title: '洛手助手洛手助手 - 精灵图鉴·捕捉统计·活动日历', imageUrl: '/images/banner.webp' }
   },
   _initBgAudio: function() { mediaPlayer.initBgAudio(this) },
 })

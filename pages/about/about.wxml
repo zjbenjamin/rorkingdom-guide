@@ -1,323 +1,226 @@
 <view class="page">
   <view class="container">
-    <view class="about-header">
-      <view class="header-glow"></view>
-      <text class="about-icon">🏰</text>
-      <text class="about-name">{{aboutData.appName || '洛手助手洛手助手'}}</text>
-      <view class="version-row">
-        <text class="about-ver">{{aboutData.version || '加载中...'}}</text>
-        <view class="ver-edit-btn" wx:if="{{updateReady || hasUpdate}}" catchtap="manualCheckUpdate">
-          <text class="ver-edit-icon">{{updateReady ? '🔄' : '⬇️'}}</text>
+    <!-- Profile Header -->
+    <view class="profile-header">
+      <view class="profile-avatar" bindtap="{{isAdmin ? 'onEdit' : ''}}" data-field="devAvatar" data-value="{{aboutData.devAvatar}}">
+        <image lazy-load class="avatar-img" src="{{aboutData.devAvatar || '/images/avatar.jpg'}}" mode="aspectFill"></image>
+      </view>
+      <text class="profile-name" bindtap="{{isAdmin ? 'onEdit' : ''}}" data-field="devName" data-value="{{aboutData.devName || '浙里本杰明'}}">{{aboutData.devName || '浙里本杰明'}}</text>
+      <text class="profile-role">开发者</text>
+      <view class="profile-meta">
+        <view class="meta-badge">
+          <text class="meta-badge-dot online"></text>
+          <text class="meta-badge-text">{{aboutData.version || '加载中...'}}</text>
         </view>
-        <view class="ver-edit-btn" wx:if="{{isAdmin}}" catchtap="onEdit" data-field="version" data-value="{{aboutData.version}}">
-          <text class="ver-edit-icon">✏️</text>
+        <view class="meta-badge" wx:if="{{updateReady || hasUpdate}}" catchtap="manualCheckUpdate">
+          <text class="meta-badge-text">{{updateReady ? '🔄 更新就绪' : '⬇️ 有更新'}}</text>
         </view>
       </view>
-      <view class="header-tags">
-        <view class="header-tag">离线可用</view>
-        <view class="header-tag">数据安全</view>
-        <view class="header-tag">免费使用</view>
-      </view>
-    </view>
-
-
-
-        <view class="card" wx:if="{{isAdmin}}">
-      <view class="admin-tip">
-        <text class="admin-tip-icon">💡</text>
-        <text class="admin-tip-text">管理模式下，部分卡片内容可点击编辑</text>
-      </view>
-      
-      <view style="display:flex; justify-content:space-between; align-items:center; margin-top:20rpx; padding:20rpx; background:rgba(255,255,255,0.05); border-radius:12rpx;">
-        <view style="display:flex; flex-direction:column;">
-          <text style="color:#fff; font-size:28rpx; font-weight:bold;">捕捉统计分享按钮</text>
-          <text style="color:rgba(255,255,255,0.5); font-size:24rpx; margin-top:6rpx;">在捕捉日志页面显示“生成图片”按钮</text>
-        </view>
-        <view class="toggle {{showLogShareBtn ? 'on' : ''}}" catchtap="toggleShowLogShareBtn" style="margin:0;">
-          <view class="toggle-dot"></view>
-        </view>
+      <view class="profile-tags">
+        <view class="tag">离线可用</view>
+        <view class="tag">数据安全</view>
+        <view class="tag">免费使用</view>
       </view>
     </view>
 
-    <view class="card">
-      <view class="card-title">开发者信息</view>
-      <view class="dev-row">
-        <view class="avatar-wrap">
-          <image lazy-load class="dev-avatar" src="{{aboutData.devAvatar || '/images/avatar.jpg'}}" mode="aspectFill"></image>
-          <view class="verified-badge">V</view>
+    <!-- Admin Panel -->
+    <view class="section" wx:if="{{isAdmin}}">
+      <view class="section-title">管理面板</view>
+      <view class="section-body">
+        <view class="admin-tip">
+          <text class="admin-tip-icon">💡</text>
+          <text class="admin-tip-text">管理模式下，部分卡片内容可点击编辑</text>
         </view>
-        <view class="dev-info" bindtap="onEdit" data-field="devName" data-value="{{aboutData.devName || '浙里本杰明'}}">
-          <text class="dev-name">{{aboutData.devName || '浙里本杰明'}}</text>
-          <text class="dev-role">项目开发者</text>
-        </view>
-      </view>
-    </view>
-
-    <view class="card">
-      <view class="card-title">我的洛克王国UID</view>
-      <view class="uid-row" bindtap="onEdit" data-field="uid" data-value="{{aboutData.uid || '476200'}}">
-        <view class="uid-info">
-          <text class="uid-label">玩家UID</text>
-
-          <text class="uid-val">{{aboutData.uid || '476200'}}</text>
-        </view>
-        <view class="uid-copy" catchtap="copyUID">复制</view>
-      </view>
-    </view>
-
-    <view class="card">
-      <view class="card-title">免费福利</view>
-      <view class="gift-list">
-        <view class="gift-item" wx:for="{{aboutData.gifts}}" wx:key="index">
-          <text class="gift-icon">🎁</text>
-          <text class="gift-text">{{item}}</text>
-          <view class="gift-del" catchtap="deleteGift" data-idx="{{index}}" wx:if="{{isAdmin}}">✕</view>
-        </view>
-        <view class="gift-add" catchtap="addGift" wx:if="{{isAdmin}}">
-          <text class="gift-add-icon">+</text>
-          <text class="gift-add-text">添加福利</text>
-        </view>
-      </view>
-    </view>
-
-    <view class="card">
-      <view class="card-title">音乐/应用平台</view>
-      <view class="platform-list">
-        <view class="platform-item" wx:for="{{aboutData.platforms}}" wx:key="index" bindtap="copyPlatformUrl" data-item="{{item}}">
-          <text class="platform-icon">🎵</text>
-          <view class="platform-info">
-            <text class="platform-name">{{item.name}}</text>
-            <text class="platform-url">{{item.url}}</text>
+        <view class="setting-row">
+          <view class="setting-info">
+            <text class="setting-name">捕捉统计分享按钮</text>
+            <text class="setting-desc">在捕捉日志页面显示"生成图片"按钮</text>
           </view>
-          <view class="platform-copy">复制</view>
-          <view class="platform-del" catchtap="deletePlatform" data-idx="{{index}}" wx:if="{{isAdmin}}">✕</view>
-        </view>
-        <view class="platform-add" catchtap="addPlatform" wx:if="{{isAdmin}}">
-          <text class="platform-add-icon">+</text>
-          <text class="platform-add-text">添加平台外链</text>
-        </view>
-      </view>
-    </view>
-
-    <view class="card">
-      <view class="card-title">联系方式</view>
-      <view class="contact-row" bindtap="copyEmail">
-        <text class="contact-icon">📧</text>
-        <view class="contact-info" catchtap="onEdit" data-field="contact" data-value="{{aboutData.contact || 'flyzccboard@yeah.net'}}">
-          <text class="contact-label">邮箱</text>
-          <text class="contact-val">{{aboutData.contact || 'flyzccboard@yeah.net'}}</text>
-        </view>
-        <view class="contact-copy">复制</view>
-      </view>
-    </view>
-
-    <view class="card">
-      <view class="card-title">数据来源</view>
-      <view class="source-list">
-        <view class="source-item">
-          <text class="source-icon">📖</text>
-          <text class="source-text">精灵图鉴：洛克王国手游WIKI（CC BY-NC-SA 4.0）</text>
-        </view>
-        <view class="source-item">
-          <text class="source-icon">🎒</text>
-          <text class="source-text">道具图鉴：洛克王国手游WIKI（CC BY-NC-SA 4.0）</text>
-        </view>
-        <view class="source-item">
-          <text class="source-icon">🥚</text>
-          <text class="source-text">蛋组数据：洛克王国WIKI（CC BY-NC-SA 4.0）</text>
-        </view>
-        <view class="source-item">
-          <text class="source-icon">📅</text>
-          <text class="source-text">活动动态：洛克王国世界微信公众号</text>
-        </view>
-        <view class="source-item">
-          <text class="source-icon">🎯</text>
-          <text class="source-text">捕捉规则：洛克王国世界官方客服</text>
-        </view>
-        <view class="source-item">
-          <text class="source-icon">🎨</text>
-          <text class="source-text">页面图片：设计师手绘与开放社区授权视觉素材</text>
-        </view>
-        <view class="source-item">
-          <text class="source-icon">🔗</text>
-          <text class="source-text">数据来源：https://wiki.biligame.com/rocom</text>
-        </view>
-        <view class="source-item">
-          <text class="source-icon">📋</text>
-          <text class="source-text">授权协议：CC BY-NC-SA 4.0</text>
-        </view>
-      </view>
-    </view>
-
-    <view class="card">
-      <view class="card-title">等级系统</view>
-      <view class="level-rules">
-        <view class="level-rule-item">
-          <text class="level-rule-icon">🐣</text>
-          <view class="level-rule-info">
-            <text class="level-rule-name">Lv.1 小洛克</text>
-            <text class="level-rule-desc">初始等级</text>
+          <view class="toggle {{showLogShareBtn ? 'on' : ''}}" catchtap="toggleShowLogShareBtn">
+            <view class="toggle-dot"></view>
           </view>
         </view>
-        <view class="level-rule-item">
-          <text class="level-rule-icon">🎓</text>
-          <view class="level-rule-info">
-            <text class="level-rule-name">Lv.2 见习魔法生</text>
-            <text class="level-rule-desc">累计登录3天</text>
+      </view>
+    </view>
+
+    <!-- UID -->
+    <view class="section">
+      <view class="section-title">洛克王国UID</view>
+      <view class="section-body">
+        <view class="uid-row" bindtap="onEdit" data-field="uid" data-value="{{aboutData.uid || '476200'}}">
+          <view class="uid-info">
+            <text class="uid-label">玩家UID</text>
+            <text class="uid-val">{{aboutData.uid || '476200'}}</text>
           </view>
-        </view>
-        <view class="level-rule-item">
-          <text class="level-rule-icon">✨</text>
-          <view class="level-rule-info">
-            <text class="level-rule-name">Lv.4 高级魔法生</text>
-            <text class="level-rule-desc">累计登录15天</text>
-          </view>
-        </view>
-        <view class="level-rule-item">
-          <text class="level-rule-icon">📖</text>
-          <view class="level-rule-info">
-            <text class="level-rule-name">Lv.6 精灵研究员</text>
-            <text class="level-rule-desc">累计登录60天</text>
-          </view>
-        </view>
-        <view class="level-rule-item">
-          <text class="level-rule-icon">🔮</text>
-          <view class="level-rule-info">
-            <text class="level-rule-name">Lv.8 魔法大师</text>
-            <text class="level-rule-desc">累计登录120天</text>
-          </view>
-        </view>
-        <view class="level-rule-item">
-          <text class="level-rule-icon">🏰</text>
-          <view class="level-rule-info">
-            <text class="level-rule-name">Lv.10 王国守护者</text>
-            <text class="level-rule-desc">累计登录365天</text>
-          </view>
-        </view>
-        <view class="level-rule-item">
-          <text class="level-rule-icon">👑</text>
-          <view class="level-rule-info">
-            <text class="level-rule-name">Lv.15 至尊洛克</text>
-            <text class="level-rule-desc">累计登录365天+UID+250次捕捉</text>
-          </view>
-        </view>
-        <view class="level-rule-tip">
-          <text class="level-rule-tip-icon">💡</text>
-          <text class="level-rule-tip-text">额外加成：设置洛克王国UID +1级，每50次捕捉 +1级（最高20级）</text>
+          <view class="copy-btn" catchtap="copyUID">复制</view>
         </view>
       </view>
     </view>
 
-    <view class="card">
-      <view class="card-title">特别鸣谢</view>
-      <view class="thanks-list">
-        <view class="thanks-item">
-          <text class="thanks-icon">🏆</text>
-          <text class="thanks-text">洛克王国手游WIKI团队</text>
+    <!-- Gifts -->
+    <view class="section">
+      <view class="section-title">免费福利</view>
+      <view class="section-body">
+        <view wx:for="{{aboutData.gifts}}" wx:key="index" class="list-item">
+          <text class="list-item-icon">🎁</text>
+          <text class="list-item-text">{{item}}</text>
+          <view class="list-item-del" catchtap="deleteGift" data-idx="{{index}}" wx:if="{{isAdmin}}">✕</view>
         </view>
-        <view class="thanks-item">
-          <text class="thanks-icon">💎</text>
-          <text class="thanks-text">洛克王国世界官方客服</text>
-        </view>
-        <view class="thanks-item">
-          <text class="thanks-icon">🌟</text>
-          <text class="thanks-text">洛克王国世界微信公众号</text>
-        </view>
-        <view class="thanks-item">
-          <text class="thanks-icon">🎮</text>
-          <text class="thanks-text">腾讯魔方工作室群</text>
-        </view>
-        <view class="thanks-item">
-          <text class="thanks-icon">❤️</text>
-          <text class="thanks-text">所有支持本小程序的玩家</text>
-        </view>
-        <view class="thanks-item">
-          <text class="thanks-icon">🤖</text>
-          <text class="thanks-text">先进开发工具与开源技术社区参考参与修补维护</text>
-        </view>
-        <view class="thanks-item">
-          <text class="thanks-icon">☁️</text>
-          <text class="thanks-text">第三方合规图床提供静态资源云托管服务</text>
+        <view class="list-add" catchtap="addGift" wx:if="{{isAdmin}}">
+          <text class="list-add-icon">+</text>
+          <text class="list-add-text">添加福利</text>
         </view>
       </view>
     </view>
 
-    <view class="card">
-      <view class="card-title">隐私政策</view>
-      <view class="privacy-list">
-        <view class="privacy-item">
-          <text class="privacy-icon">💾</text>
-          <text class="privacy-text">本地存储：偏好设置、捕捉统计等数据仅保存在设备本地</text>
+    <!-- Platforms -->
+    <view class="section">
+      <view class="section-title">音乐/应用平台</view>
+      <view class="section-body">
+        <view wx:for="{{aboutData.platforms}}" wx:key="index" class="list-item" bindtap="copyPlatformUrl" data-item="{{item}}">
+          <text class="list-item-icon">🎵</text>
+          <view class="list-item-info">
+            <text class="list-item-name">{{item.name}}</text>
+            <text class="list-item-url">{{item.url}}</text>
+          </view>
+          <view class="copy-btn-sm">复制</view>
+          <view class="list-item-del" catchtap="deletePlatform" data-idx="{{index}}" wx:if="{{isAdmin}}">✕</view>
         </view>
-        <view class="privacy-item">
-          <text class="privacy-icon">🔒</text>
-          <text class="privacy-text">无第三方SDK：不存在数据共享和行为追踪</text>
-        </view>
-        <view class="privacy-item">
-          <text class="privacy-icon">📤</text>
-          <text class="privacy-text">分享功能：仅用于转发页面内容</text>
-        </view>
-        <view class="privacy-item">
-          <text class="privacy-icon">🔐</text>
-          <text class="privacy-text">登录数据：登录授权保留365天，到期或主动注销时清除本地授权</text>
+        <view class="list-add" catchtap="addPlatform" wx:if="{{isAdmin}}">
+          <text class="list-add-icon">+</text>
+          <text class="list-add-text">添加平台外链</text>
         </view>
       </view>
     </view>
 
-    <view class="card">
-      <view class="card-title">免责声明</view>
-      <view class="disclaimer-list">
+    <!-- Contact -->
+    <view class="section">
+      <view class="section-title">联系方式</view>
+      <view class="section-body">
+        <view class="list-item" bindtap="copyEmail">
+          <text class="list-item-icon">📧</text>
+          <view class="list-item-info" catchtap="onEdit" data-field="contact" data-value="{{aboutData.contact || 'flyzccboard@yeah.net'}}">
+            <text class="list-item-name">邮箱</text>
+            <text class="list-item-url">{{aboutData.contact || 'flyzccboard@yeah.net'}}</text>
+          </view>
+          <view class="copy-btn-sm">复制</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- Data Sources -->
+    <view class="section">
+      <view class="section-title">数据来源</view>
+      <view class="section-body">
+        <view class="list-item"><text class="list-item-icon">📖</text><text class="list-item-text">精灵图鉴：洛克王国手游WIKI（CC BY-NC-SA 4.0）</text></view>
+        <view class="list-item"><text class="list-item-icon">🎒</text><text class="list-item-text">道具图鉴：洛克王国手游WIKI（CC BY-NC-SA 4.0）</text></view>
+        <view class="list-item"><text class="list-item-icon">🥚</text><text class="list-item-text">蛋组数据：洛克王国WIKI（CC BY-NC-SA 4.0）</text></view>
+        <view class="list-item"><text class="list-item-icon">📅</text><text class="list-item-text">活动动态：洛克王国世界微信公众号</text></view>
+        <view class="list-item"><text class="list-item-icon">🎯</text><text class="list-item-text">捕捉规则：洛克王国世界官方客服</text></view>
+        <view class="list-item"><text class="list-item-icon">🎨</text><text class="list-item-text">页面图片：设计师手绘与开放社区授权视觉素材</text></view>
+        <view class="list-item"><text class="list-item-icon">🔗</text><text class="list-item-text">数据来源：https://wiki.biligame.com/rocom</text></view>
+        <view class="list-item"><text class="list-item-icon">📋</text><text class="list-item-text">授权协议：CC BY-NC-SA 4.0</text></view>
+      </view>
+    </view>
+
+    <!-- Levels -->
+    <view class="section">
+      <view class="section-title">等级系统</view>
+      <view class="section-body">
+        <view class="list-item"><text class="list-item-icon">🐣</text><view class="list-item-info"><text class="list-item-name">Lv.1 小洛克</text><text class="list-item-url">初始等级</text></view></view>
+        <view class="list-item"><text class="list-item-icon">🎓</text><view class="list-item-info"><text class="list-item-name">Lv.2 见习魔法生</text><text class="list-item-url">累计登录3天</text></view></view>
+        <view class="list-item"><text class="list-item-icon">✨</text><view class="list-item-info"><text class="list-item-name">Lv.4 高级魔法生</text><text class="list-item-url">累计登录15天</text></view></view>
+        <view class="list-item"><text class="list-item-icon">📖</text><view class="list-item-info"><text class="list-item-name">Lv.6 精灵研究员</text><text class="list-item-url">累计登录60天</text></view></view>
+        <view class="list-item"><text class="list-item-icon">🔮</text><view class="list-item-info"><text class="list-item-name">Lv.8 魔法大师</text><text class="list-item-url">累计登录120天</text></view></view>
+        <view class="list-item"><text class="list-item-icon">🏰</text><view class="list-item-info"><text class="list-item-name">Lv.10 王国守护者</text><text class="list-item-url">累计登录365天</text></view></view>
+        <view class="list-item"><text class="list-item-icon">👑</text><view class="list-item-info"><text class="list-item-name">Lv.15 至尊洛克</text><text class="list-item-url">累计登录365天+UID+250次捕捉</text></view></view>
+        <view class="tip-box">
+          <text class="tip-icon">💡</text>
+          <text class="tip-text">额外加成：设置洛克王国UID +1级，每50次捕捉 +1级（最高20级）</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Credits -->
+    <view class="section">
+      <view class="section-title">特别鸣谢</view>
+      <view class="section-body">
+        <view class="list-item"><text class="list-item-icon">🏆</text><text class="list-item-text">洛克王国手游WIKI团队</text></view>
+        <view class="list-item"><text class="list-item-icon">💎</text><text class="list-item-text">洛克王国世界官方客服</text></view>
+        <view class="list-item"><text class="list-item-icon">🌟</text><text class="list-item-text">洛克王国世界微信公众号</text></view>
+        <view class="list-item"><text class="list-item-icon">🎮</text><text class="list-item-text">腾讯魔方工作室群</text></view>
+        <view class="list-item"><text class="list-item-icon">❤️</text><text class="list-item-text">所有支持本小程序的玩家</text></view>
+        <view class="list-item"><text class="list-item-icon">🤖</text><text class="list-item-text">先进开发工具与开源技术社区参考参与修补维护</text></view>
+        <view class="list-item"><text class="list-item-icon">☁️</text><text class="list-item-text">第三方合规图床提供静态资源云托管服务</text></view>
+      </view>
+    </view>
+
+    <!-- Privacy -->
+    <view class="section">
+      <view class="section-title">隐私政策</view>
+      <view class="section-body">
+        <view class="list-item"><text class="list-item-icon">💾</text><text class="list-item-text">本地存储：偏好设置、捕捉统计等数据仅保存在设备本地</text></view>
+        <view class="list-item"><text class="list-item-icon">🔒</text><text class="list-item-text">无第三方SDK：不存在数据共享和行为追踪</text></view>
+        <view class="list-item"><text class="list-item-icon">📤</text><text class="list-item-text">分享功能：仅用于转发页面内容</text></view>
+        <view class="list-item"><text class="list-item-icon">🔐</text><text class="list-item-text">登录数据：登录授权保留365天，到期或主动注销时清除本地授权</text></view>
+      </view>
+    </view>
+
+    <!-- Disclaimer -->
+    <view class="section">
+      <view class="section-title">免责声明</view>
+      <view class="section-body">
         <text class="disclaimer">1. 本应用为非官方攻略工具，与腾讯魔方工作室群无关</text>
         <text class="disclaimer">2. 游戏数据仅供参考，以游戏内实际数据为准</text>
         <text class="disclaimer">3. 仅供学习交流使用，请勿用于商业用途</text>
       </view>
     </view>
 
-    <view class="card">
-      <view class="card-title-row">
-        <text class="card-title">更新日志</text>
-        <view style="display: flex; gap: 12rpx;">
-
-          <view class="changelog-add-btn" wx:if="{{isAdmin}}" catchtap="openChangelogModal">
-            <text class="add-icon">+</text>
-            <text class="add-text">新增</text>
-          </view>
+    <!-- Changelog -->
+    <view class="section">
+      <view class="section-title-row">
+        <text class="section-title">更新日志</text>
+        <view class="section-title-action" wx:if="{{isAdmin}}" catchtap="openChangelogModal">
+          <text class="action-plus">+</text>
+          <text class="action-text">新增</text>
         </view>
       </view>
-      <view class="changelog-list" wx:if="{{changelogList.length > 0}}">
-        <view class="changelog-item" wx:for="{{changelogList}}" wx:key="index">
-          <view class="changelog-top">
-            <view class="changelog-ver">v{{item.version}}</view>
-            <view class="changelog-date">{{item.date}}</view>
+      <view class="section-body" wx:if="{{changelogList.length > 0}}">
+        <view wx:for="{{changelogList}}" wx:key="index" class="changelog-item">
+          <view class="changelog-header">
+            <view class="changelog-tag">v{{item.version}}</view>
+            <text class="changelog-date">{{item.date}}</text>
             <view class="changelog-actions" wx:if="{{isAdmin}}">
-              <view class="changelog-edit-btn" catchtap="editChangelog" data-index="{{index}}">编辑</view>
-              <view class="changelog-del-btn" catchtap="deleteChangelog" data-index="{{index}}">删除</view>
+              <view class="action-btn-sm" catchtap="editChangelog" data-index="{{index}}">编辑</view>
+              <view class="action-btn-sm danger" catchtap="deleteChangelog" data-index="{{index}}">删除</view>
             </view>
           </view>
-          <view class="changelog-content">
+          <view class="changelog-body">
             <block wx:for="{{item.lines}}" wx:for-item="line" wx:key="text">
-              <text class="changelog-{{line.type}}">{{line.text}}</text>
+              <text class="cl-{{line.type}}">{{line.text}}</text>
             </block>
           </view>
         </view>
       </view>
-      <view class="changelog-empty" wx:else>
-        <text class="empty-text">暂无更新日志</text>
+      <view class="section-empty" wx:else>
+        <text>暂无更新日志</text>
       </view>
     </view>
 
-    <view class="about-foot">
-      <text class="foot-text">© 2026 洛手助手洛手助手</text>
-      <text class="foot-text" wx:if="{{aboutData.icp}}">{{aboutData.icp}}</text>
-    </view>
-
+    <!-- Feedback -->
     <view class="feedback-btn" bindtap="onFeedback">
       <text class="feedback-icon">💬</text>
       <text class="feedback-text">意见反馈</text>
     </view>
+
+    <!-- Footer -->
+    <view class="about-foot">
+      <text class="foot-text">© 2026 洛手助手</text>
+      <text class="foot-text" wx:if="{{aboutData.icp}}">{{aboutData.icp}}</text>
+    </view>
   </view>
 
-  <!-- 编辑弹窗 -->
+  <!-- Edit Modal -->
   <view class="modal-mask" wx:if="{{showModal}}" bindtap="closeModal">
     <view class="modal-box" catchtap="preventClose">
       <view class="modal-header">
@@ -325,11 +228,11 @@
         <text class="modal-close" bindtap="closeModal">✕</text>
       </view>
       <block wx:if="{{editMode === 'addPlatform'}}">
-        <input class="modal-input" placeholder="请输入平台名称（如：QQ音乐）" value="{{platformName}}" bindinput="onPlatformNameInput" maxlength="50" />
-        <input class="modal-input" placeholder="请输入平台外链 URL" value="{{platformUrl}}" bindinput="onPlatformUrlInput" maxlength="200" />
+        <input class="modal-input" placeholder="平台名称（如：QQ音乐）" placeholder-style="color:#484f58" value="{{platformName}}" bindinput="onPlatformNameInput" maxlength="50" />
+        <input class="modal-input" placeholder="平台外链 URL" placeholder-style="color:#484f58" value="{{platformUrl}}" bindinput="onPlatformUrlInput" maxlength="200" />
       </block>
-      <textarea class="modal-textarea" wx:elif="{{editingField === 'changelogContent'}}" placeholder="请输入多行更新日志..." value="{{editValue}}" bindinput="onEditInput" maxlength="1000" />
-      <input class="modal-input" wx:else placeholder="请输入内容" value="{{editValue}}" bindinput="onEditInput" maxlength="50" />
+      <textarea class="modal-textarea" wx:elif="{{editingField === 'changelogContent'}}" placeholder="每行一条更新日志" placeholder-style="color:#484f58" value="{{editValue}}" bindinput="onEditInput" maxlength="1000" />
+      <input class="modal-input" wx:else placeholder="请输入内容" placeholder-style="color:#484f58" value="{{editValue}}" bindinput="onEditInput" maxlength="50" />
       <view class="modal-footer">
         <button class="modal-cancel" bindtap="closeModal">取消</button>
         <button class="modal-save" bindtap="saveEdit" disabled="{{submitting}}">{{submitting ? '保存中...' : '保存'}}</button>
@@ -337,7 +240,7 @@
     </view>
   </view>
 
-  <!-- 更新日志编辑弹窗 -->
+  <!-- Changelog Modal -->
   <view class="modal-mask" wx:if="{{showChangelogModal}}" bindtap="closeChangelogModal">
     <view class="modal-box changelog-modal" catchtap="preventClose">
       <view class="modal-header">
@@ -349,7 +252,7 @@
           <view class="form-row">
             <view class="form-field">
               <text class="field-label">版本号</text>
-              <input class="field-input" placeholder="如：1.0.3" value="{{changelogVersion}}" bindinput="onChangelogVersionInput" />
+              <input class="field-input" placeholder="如：1.0.3" placeholder-style="color:#484f58" value="{{changelogVersion}}" bindinput="onChangelogVersionInput" />
             </view>
             <view class="form-field">
               <text class="field-label">日期</text>
@@ -364,7 +267,7 @@
           <view class="form-field full">
             <text class="field-label">更新内容</text>
             <text class="field-hint">每行一条，支持前缀：新增：/优化：/修复：/下线：</text>
-            <textarea class="field-textarea" placeholder="新增：xxx功能&#10;优化：xxx体验&#10;修复：xxx问题" value="{{changelogContent}}" bindinput="onChangelogContentInput" maxlength="2000" />
+            <textarea class="field-textarea" placeholder="新增：xxx功能&#10;优化：xxx体验" placeholder-style="color:#484f58" value="{{changelogContent}}" bindinput="onChangelogContentInput" maxlength="2000" />
           </view>
         </view>
       </view>

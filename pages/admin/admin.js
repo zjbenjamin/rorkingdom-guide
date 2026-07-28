@@ -254,6 +254,10 @@ Page({
     formRichContent: [],
     formSource: '',
     submitting: false,
+    swarmLocations: [],
+    showSwarmModal: false,
+    swarmLocationInput: '',
+    siteConfig: { loginLogoUrl: '' },
     bannerUrl: '',
     bannerLoading: false,
     pageConfigs: [],
@@ -869,6 +873,26 @@ openModal: function(e) {
   toggleItalic: function() {
     if (this.editorCtx) {
       this.editorCtx.format('italic')
+    }
+  },
+  toggleUnderline: function() {
+    if (this.editorCtx) {
+      this.editorCtx.format('underline')
+    }
+  },
+  toggleStrike: function() {
+    if (this.editorCtx) {
+      this.editorCtx.format('strike')
+    }
+  },
+  toggleHeader2: function() {
+    if (this.editorCtx) {
+      this.editorCtx.format('header', 'H2')
+    }
+  },
+  toggleHeader3: function() {
+    if (this.editorCtx) {
+      this.editorCtx.format('header', 'H3')
     }
   },
   setFontSize: function(e) {
@@ -2210,6 +2234,26 @@ openModal: function(e) {
       this.activityEditorCtx.format('italic')
     }
   },
+  activityToggleUnderline: function() {
+    if (this.activityEditorCtx) {
+      this.activityEditorCtx.format('underline')
+    }
+  },
+  activityToggleStrike: function() {
+    if (this.activityEditorCtx) {
+      this.activityEditorCtx.format('strike')
+    }
+  },
+  activityToggleHeader2: function() {
+    if (this.activityEditorCtx) {
+      this.activityEditorCtx.format('header', 'H2')
+    }
+  },
+  activityToggleHeader3: function() {
+    if (this.activityEditorCtx) {
+      this.activityEditorCtx.format('header', 'H3')
+    }
+  },
   setActivityFontSize: function(e) {
     var size = e.currentTarget.dataset.size
     this.setData({ showActivitySizePicker: false })
@@ -2894,4 +2938,73 @@ openModal: function(e) {
       }
     });
   },
+
+  // ── Swarm Locations ──
+  closeSwarmModal: function() {
+    this.setData({ showSwarmModal: false })
+  },
+  openSwarmLocationModal: function() {
+    this.setData({ showSwarmModal: true, swarmLocationInput: '' })
+  },
+  deleteSwarmLocation: function(e) {
+    var idx = e.currentTarget.dataset.index
+    var list = this.data.swarmLocations.slice()
+    list.splice(idx, 1)
+    var self = this
+    self.setData({ swarmLocations: list })
+    if (!db) return
+    db.collection('swarm_config').doc('locations').get()
+      .then(function() {
+        return db.collection('swarm_config').doc('locations').update({ data: { locations: list } })
+      })
+      .catch(function() {
+        return db.collection('swarm_config').add({ data: { _id: 'locations', locations: list } })
+      })
+  },
+  onSwarmInput: function(e) {
+    this.setData({ swarmLocationInput: e.detail.value })
+  },
+  saveSwarmLocation: function() {
+    var val = (this.data.swarmLocationInput || '').trim()
+    if (!val) return
+    var list = this.data.swarmLocations.slice()
+    list.push(val)
+    var self = this
+    self.setData({ swarmLocations: list, showSwarmModal: false, swarmLocationInput: '' })
+    if (!db) return
+    db.collection('swarm_config').doc('locations').get()
+      .then(function() {
+        return db.collection('swarm_config').doc('locations').update({ data: { locations: list } })
+      })
+      .catch(function() {
+        return db.collection('swarm_config').add({ data: { _id: 'locations', locations: list } })
+      })
+  },
+
+  // ── Site Config ──
+  onLoginLogoInput: function(e) {
+    this.setData({ 'siteConfig.loginLogoUrl': e.detail.value })
+  },
+  saveSiteConfig: function() {
+    var self = this
+    if (!db) { wx.showToast({ title: '云环境未就绪', icon: 'none' }); return }
+    db.collection('site_config').doc('login').get()
+      .then(function() {
+        return db.collection('site_config').doc('login').update({
+          data: { loginLogoUrl: self.data.siteConfig.loginLogoUrl, updateTime: db.serverDate() }
+        })
+      })
+      .catch(function() {
+        return db.collection('site_config').add({
+          data: { _id: 'login', loginLogoUrl: self.data.siteConfig.loginLogoUrl, updateTime: db.serverDate() }
+        })
+      })
+      .then(function() {
+        wx.showToast({ title: '已保存', icon: 'success' })
+      })
+      .catch(function() {
+        wx.showToast({ title: '保存失败', icon: 'none' })
+      })
+  },
+
 })

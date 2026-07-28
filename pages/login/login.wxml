@@ -10,33 +10,29 @@
 
     <!-- 未登录 -->
     <view class="login-card" wx:if="{{!hasUserInfo}}">
-      <view class="login-tips">
-        <text class="tips-title">欢迎使用</text>
-        <text class="tips-desc">设置头像昵称即可开始使用</text>
-      </view>
-
-      <!-- 头像 + 昵称 一体化卡片 -->
-      <view class="profile-setup-card">
-        <view class="profile-avatar-area">
-          <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
-            <view class="avatar-wrap profile-avatar-wrap">
-              <image lazy-load class="avatar-img" src="{{tempAvatar}}" wx:if="{{tempAvatar}}" mode="aspectFill" />
-              <view class="avatar-empty" wx:else>
-                <text class="avatar-plus">+</text>
-              </view>
+      <!-- 头像 -->
+      <view class="avatar-section">
+        <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+          <view class="avatar-ring {{tempAvatar ? 'has-avatar' : ''}}">
+            <image lazy-load class="avatar-img" src="{{tempAvatar}}" wx:if="{{tempAvatar}}" mode="aspectFill" />
+            <view class="avatar-empty" wx:else>
+              <text class="avatar-plus">+</text>
             </view>
-          </button>
-          <text class="profile-avatar-label">{{tempAvatar ? '✓' : '点选头像'}}</text>
-        </view>
-
-        <view class="profile-nick-area">
-          <text class="profile-nick-label">昵称</text>
-          <input class="profile-nick-input" type="nickname" placeholder="点击输入，键盘上方可快捷填入微信昵称" placeholder-style="color:rgba(255,255,255,0.25);font-size:24rpx" value="{{tempNickName}}" bindinput="onNickNameInput" />
-          <text class="profile-nick-hint">💡 输入框聚焦时，键盘上方会显示「使用微信昵称」选项</text>
-        </view>
+          </view>
+        </button>
+        <text class="avatar-hint">{{tempAvatar ? '点击更换头像' : '点击选择头像'}}</text>
       </view>
 
-      <button class="submit-btn" bindtap="onLogin" loading="{{isLogging}}" disabled="{{isLogging}}">登录</button>
+      <!-- 昵称输入 -->
+      <view class="nick-section">
+        <text class="nick-label">昵称</text>
+        <view class="nick-input-wrap">
+          <input class="nick-input" type="nickname" placeholder="输入昵称，或点击键盘上方快捷填入" placeholder-style="color:#484f58;font-size:24rpx" value="{{tempNickName}}" bindinput="onNickNameInput" />
+        </view>
+        <text class="nick-hint">💡 键盘上方可快速使用微信昵称</text>
+      </view>
+
+      <button class="submit-btn" bindtap="onLogin" loading="{{isLogging}}" disabled="{{isLogging}}">登 录</button>
 
       <view class="agree-section">
         <checkbox-group class="agree-checkbox-group" bindchange="onAgreeChange">
@@ -230,7 +226,7 @@
         <text class="modal-close" bindtap="toggleUidModal">✕</text>
       </view>
       <view class="modal-body">
-        <input class="modal-input" placeholder="输入您的洛克王国UID（纯数字）" placeholder-style="color:rgba(255,255,255,0.3)" value="{{uidInput}}" bindinput="onUidInput" type="number" />
+        <input class="modal-input" placeholder="输入您的洛克王国UID（纯数字）" placeholder-style="color:#484f58" value="{{uidInput}}" bindinput="onUidInput" type="number" />
         <text class="modal-hint">设置后将作为水印显示在分享图片中</text>
       </view>
       <view class="modal-footer">
