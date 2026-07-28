@@ -30,10 +30,6 @@
 
   <!-- Quick Nav -->
   <view class="quick-nav">
-    <view class="nav-item" bindtap="go" data-url="/pages/egg/egg">
-      <text class="nav-emoji">🥚</text>
-      <text class="nav-label">孵蛋查询</text>
-    </view>
     <view class="nav-item" bindtap="go" data-url="/pages/merchant/merchant">
       <text class="nav-emoji">🛒</text>
       <text class="nav-label">远行商人</text>

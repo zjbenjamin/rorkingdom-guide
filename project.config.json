@@ -23,7 +23,7 @@
     "showShadowRootInWxmlPanel": true,
     "packNpmManually": false,
     "packNpmRelationList": [],
-    "minifyWXSS": false,
+    "minifyWXSS": true,
     "showES6CompileOption": false,
     "minifyWXML": true,
     "babelSetting": {
@@ -36,8 +36,8 @@
     "localPlugins": false,
     "disableUseStrict": false,
     "condition": false,
-    "swc": true,
-    "disableSWC": false
+    "swc": false,
+    "disableSWC": true
   },
   "compileType": "miniprogram",
   "libVersion": "3.16.1",

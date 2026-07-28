@@ -27,20 +27,6 @@
       ]
     },
     {
-      "root": "pages/egg",
-      "name": "egg",
-      "pages": [
-        "egg"
-      ]
-    },
-    {
-      "root": "pages/eggCalc",
-      "name": "eggCalc",
-      "pages": [
-        "eggCalc"
-      ]
-    },
-    {
       "root": "pages/merchant",
       "name": "merchant",
       "pages": [

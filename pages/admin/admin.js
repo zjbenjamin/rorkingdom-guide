@@ -462,8 +462,7 @@ Page({
     var self = this
     if (!db) return
     var pageList = [
-      { id: 'merchant', name: '远行商人', icon: '🛒', maintenance: false, useCustom: false },
-      { id: 'egg', name: '孵蛋查询', icon: '🥚', maintenance: false, useCustom: false }
+      { id: 'merchant', name: '远行商人', icon: '🛒', maintenance: false, useCustom: false }
     ]
     var done = 0
     for (var i = 0; i < pageList.length; i++) {
