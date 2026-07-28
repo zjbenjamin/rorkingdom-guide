@@ -2,7 +2,6 @@ var app = getApp()
 var notify = require('../../utils/notify')
 var templateConfig = require('../../config/notifyTemplates')
 var levelUtil = require('../../utils/level')
-var admin = require('../../utils/admin')
 var db = null
 
 Page({
@@ -94,8 +93,8 @@ Page({
             self.setData({ userRole: r.data[0].role })
           }
         })
-        .catch(function(e) { console.error(e) })
-    }).catch(function(e) { console.error(e) })
+        .catch(function() {})
+    }).catch(function() {})
   },
   recordLoginDay: function() {
     var today = new Date()
@@ -151,8 +150,8 @@ Page({
             })
           }
         })
-        .catch(function(e) { console.error(e) })
-    }).catch(function(e) { console.error(e) })
+        .catch(function() {})
+    }).catch(function() {})
   },
   syncLevel: function(level) {
     if (!wx.cloud) return
@@ -167,8 +166,8 @@ Page({
             })
           }
         })
-        .catch(function(e) { console.error(e) })
-    }).catch(function(e) { console.error(e) })
+        .catch(function() {})
+    }).catch(function() {})
   },
   checkLoginStatus: function() {
     var self = this
@@ -177,19 +176,19 @@ Page({
     var gameUid = wx.getStorageSync('game_uid') || ''
     if (saved && loginTime) {
       var now = Date.now()
-      var expire = 365 * 24 * 60 * 60 * 1000
+      var expire = 3 * 24 * 60 * 60 * 1000
       if (now - loginTime > expire) {
         wx.removeStorageSync('user_info')
         wx.removeStorageSync('login_time')
         wx.removeStorageSync('is_admin_user')
         wx.removeStorageSync('admin_logged_in')
         self.setData({ userInfo: null, hasUserInfo: false, gameUid: '' })
-        wx.showToast({ title: '登录已过期，请重新登�?, icon: 'none' })
+        wx.showToast({ title: '登录已过期，请重新登录', icon: 'none' })
       } else {
         var remain = expire - (now - loginTime)
         var days = Math.floor(remain / (24 * 60 * 60 * 1000))
         var hours = Math.floor((remain % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000))
-        self.setData({ userInfo: saved, hasUserInfo: true, loginExpire: days + '�? + hours + '小时', gameUid: gameUid })
+        self.setData({ userInfo: saved, hasUserInfo: true, loginExpire: days + '天' + hours + '小时', gameUid: gameUid })
       }
     }
   },
@@ -209,12 +208,12 @@ Page({
     var self = this
     var uid = self.data.uidInput.trim()
     if (uid && !/^\d+$/.test(uid)) {
-      wx.showToast({ title: 'UID应为纯数�?, icon: 'none' })
+      wx.showToast({ title: 'UID应为纯数字', icon: 'none' })
       return
     }
     wx.setStorageSync('game_uid', uid)
     self.setData({ gameUid: uid, showUidModal: false })
-    wx.showToast({ title: uid ? 'UID已保�? : 'UID已清�?, icon: 'success' })
+    wx.showToast({ title: uid ? 'UID已保存' : 'UID已清除', icon: 'success' })
     if (uid && wx.cloud) {
       var db = wx.cloud.database()
       if (db) {
@@ -226,8 +225,8 @@ Page({
                 db.collection('users').doc(r.data[0]._id).update({ data: { gameUid: uid } })
               }
             })
-            .catch(function(e) { console.error(e) })
-        }).catch(function(e) { console.error(e) })
+            .catch(function() {})
+        }).catch(function() {})
       }
     }
   },
@@ -248,23 +247,23 @@ Page({
       this.resolvePrivacyAuthorization({ event: 'disagree' })
       this.resolvePrivacyAuthorization = null
     }
-    wx.showToast({ title: '拒绝隐私指引将无法进行登录授�?, icon: 'none' })
+    wx.showToast({ title: '拒绝隐私指引将无法进行登录授权', icon: 'none' })
   },
   onLogin: function() {
     var self = this
     if (self.data.isLogging) return
     if (!self.data.isAgreed) {
-      wx.showToast({ title: '请先勾选同意《用户协议》和《隐私政策�?, icon: 'none' })
+      wx.showToast({ title: '请先勾选同意《用户协议》和《隐私政策》', icon: 'none' })
       return
     }
     var avatar = self.data.tempAvatar
     var nickName = self.data.tempNickName.trim()
     if (!avatar) {
-      wx.showToast({ title: '请点击头像获取微信头�?, icon: 'none' })
+      wx.showToast({ title: '请点击头像获取微信头像', icon: 'none' })
       return
     }
     if (!nickName) {
-      wx.showToast({ title: '请输入昵�?, icon: 'none' })
+      wx.showToast({ title: '请输入昵称', icon: 'none' })
       return
     }
     self.setData({ isLogging: true })
@@ -274,12 +273,12 @@ Page({
     wx.setStorageSync('login_time', loginTime)
     var app = getApp()
     app.globalData.userInfo = userInfo
-    var expire = 365 * 24 * 60 * 60 * 1000
-    self.setData({ userInfo: userInfo, hasUserInfo: true, isLogging: false, loginExpire: '3�?小时' })
+    var expire = 3 * 24 * 60 * 60 * 1000
+    self.setData({ userInfo: userInfo, hasUserInfo: true, isLogging: false, loginExpire: '3天0小时' })
     self.syncToCloud(userInfo)
     wx.showModal({
       title: '数据同步说明',
-      content: '为提供更好体验，登录后将同步以下数据到云端：\n\n�?头像和昵�?�?评论身份标识\n�?累计登录天数 �?等级系统计算\n�?用户偏好设置 �?多设备同步\n\n数据仅用于本应用功能，不会向第三方共享�?,
+      content: '为提供更好体验，登录后将同步以下数据到云端：\n\n• 头像和昵称 — 评论身份标识\n• 累计登录天数 — 等级系统计算\n• 用户偏好设置 — 多设备同步\n\n数据仅用于本应用功能，不会向第三方共享。',
       showCancel: false,
       confirmText: '我知道了'
     })
@@ -361,18 +360,18 @@ Page({
             db.collection('users').add({ data: cloudData })
           }
         })
-        .catch(function(e) { console.error(e) })
-    }).catch(function(e) { console.error(e) })
+        .catch(function() {})
+    }).catch(function() {})
   },
   onLogout: function() {
     var self = this
     wx.showModal({
-      title: '退出登�?,
-      content: '确定要退出登录吗�?,
+      title: '退出登录',
+      content: '确定要退出登录吗？',
       success: function(res) {
         if (res.confirm) {
           self.clearLocalUserData()
-          wx.showToast({ title: '已退�?, icon: 'success' })
+          wx.showToast({ title: '已退出', icon: 'success' })
         }
       }
     })
@@ -385,7 +384,7 @@ Page({
       confirmColor: '#ff4757',
       success: function(res) {
         if (res.confirm) {
-          wx.showLoading({ title: '注销�?..' })
+          wx.showLoading({ title: '注销中...' })
           if (!wx.cloud) {
             wx.hideLoading()
             self.clearLocalUserData()
@@ -477,16 +476,16 @@ Page({
       }
       if (result[type] === 'accept') {
         self.setData({ ['notifyStatus.' + type]: true })
-        wx.showToast({ title: '已开�?, icon: 'success' })
+        wx.showToast({ title: '已开启', icon: 'success' })
       } else if (result[type] === 'reject') {
         self.setData({ ['notifyStatus.' + type]: false })
-        wx.showToast({ title: '已拒�?, icon: 'none' })
+        wx.showToast({ title: '已拒绝', icon: 'none' })
       } else if (result[type] === 'ban') {
         self.setData({ ['notifyStatus.' + type]: false })
         wx.showModal({
-          title: '通知已关�?,
-          content: '您已关闭该类通知，请在小程序设置中手动开�?,
-          confirmText: '去设�?,
+          title: '通知已关闭',
+          content: '您已关闭该类通知，请在小程序设置中手动开启',
+          confirmText: '去设置',
           success: function(modalRes) {
             if (modalRes.confirm) {
               wx.openSetting({})
@@ -502,42 +501,38 @@ Page({
   onResetSubscribe: function(e) {
     var self = this
     var type = e.currentTarget.dataset.type
-    if (!wx.cloud) return
-    
-    // 微信硬性规定：订阅接口必须同步调用，绝不能放在Promise或弹窗回调里�?
-    notify.requestSubscribe([type], function(err, result) {
-      if (!err && result && result[type] === 'accept') {
-        wx.cloud.callFunction({ name: 'login' }).then(function(loginRes) {
-          var openid = loginRes.result.openid
-          db.collection('subscribers').where({ openid: openid, type: type }).get()
-            .then(function(subRes) {
-              if (subRes.data.length > 0) {
-                return db.collection('subscribers').doc(subRes.data[0]._id).update({
-                  data: { status: 'active', count: 1, updateTime: db.serverDate() }
+    var names = { announcement: '公告', activity: '活动', merchant: '商人' }
+    wx.showModal({
+      title: '重置订阅',
+      content: '确定重置「' + names[type] + '」订阅？重置后需重新授权',
+      success: function(res) {
+        if (res.confirm) {
+          if (!db) return
+          wx.cloud.callFunction({ name: 'login' }).then(function(loginRes) {
+            var openid = loginRes.result.openid
+            db.collection('subscribers').where({ openid: openid, type: type }).get()
+              .then(function(subRes) {
+                if (subRes.data.length > 0) {
+                  return db.collection('subscribers').doc(subRes.data[0]._id).update({
+                    data: { status: 'expired', count: 0, updateTime: db.serverDate() }
+                  })
+                }
+              })
+              .then(function() {
+                self.setData({ ['notifyCount.' + type]: 0 })
+                self.loadNotifyStatus()
+                wx.showToast({ title: '已重置', icon: 'success' })
+                notify.requestAndSave([type], function(err, result) {
+                  if (!err && result && result[type] === 'accept') {
+                    self.setData({ ['notifyCount.' + type]: 1 })
+                    self.loadNotifyStatus()
+                    wx.showToast({ title: '已重新授权', icon: 'success' })
+                  }
                 })
-              } else {
-                return db.collection('subscribers').add({
-                  data: { openid: openid, type: type, status: 'active', count: 1, createTime: db.serverDate(), updateTime: db.serverDate() }
-                })
-              }
-            })
-            .then(function() {
-              self.setData({ ['notifyCount.' + type]: 1 })
-              self.loadNotifyStatus()
-              wx.showToast({ title: '已重置并授权', icon: 'success' })
-            })
-        })
-      } else {
-        wx.showModal({
-          title: '重新授权失败',
-          content: '未获得订阅权限，可能是您曾经勾选了“总是保持以上选择”并拒绝。请点击“去设置”手动开启�?,
-          confirmText: '去设�?,
-          success: function(modalRes) {
-            if (modalRes.confirm) {
-              wx.openSetting({})
-            }
-          }
-        })
+              })
+              .catch(function() { wx.showToast({ title: '重置失败', icon: 'none' }) })
+          }).catch(function() {})
+        }
       }
     })
   },
@@ -552,7 +547,7 @@ Page({
     }
     var currentCount = self.data.notifyCount[type] || 0
     if (currentCount >= 99) {
-      wx.showToast({ title: '已达上限99�?, icon: 'none' })
+      wx.showToast({ title: '已达上限99条', icon: 'none' })
       return
     }
     self._notifyAddingLock = true
@@ -577,13 +572,13 @@ Page({
             if (err.errMsg && err.errMsg.indexOf('openid') >= 0) {
               wx.showToast({ title: '请先登录后再设置', icon: 'none' })
             } else {
-              wx.showToast({ title: '设置失败�? + (err.errMsg || '请重�?), icon: 'none' })
+              wx.showToast({ title: '设置失败：' + (err.errMsg || '请重试'), icon: 'none' })
             }
           }
           return
         }
         if (!result) {
-          wx.showToast({ title: '订阅请求已发�?, icon: 'none' })
+          wx.showToast({ title: '订阅请求已发送', icon: 'none' })
           return
         }
         if (result[type] === 'accept') {
@@ -596,15 +591,15 @@ Page({
             notifyCount: notifyCount,
             notifyStatus: notifyStatus
           })
-          wx.showToast({ title: '已添�?' + newCount + '/99)', icon: 'success' })
+          wx.showToast({ title: '已添加(' + newCount + '/99)', icon: 'success' })
           self.loadNotifyStatus()
         } else if (result[type] === 'reject') {
-          wx.showToast({ title: '已拒�?, icon: 'none' })
+          wx.showToast({ title: '已拒绝', icon: 'none' })
         } else if (result[type] === 'ban') {
           wx.showModal({
-            title: '通知已关�?,
-            content: '您已关闭该类通知，请在小程序设置中手动开�?,
-            confirmText: '去设�?,
+            title: '通知已关闭',
+            content: '您已关闭该类通知，请在小程序设置中手动开启',
+            confirmText: '去设置',
             success: function(modalRes) {
               if (modalRes.confirm) {
                 wx.openSetting({})
@@ -618,7 +613,7 @@ Page({
       self._notifyAddingLock = false
       self.setData({ notifyAdding: false })
       console.error('[onNotifyAdd] Exception caught:', ex)
-      wx.showToast({ title: '异常�? + (ex.message || '请重�?), icon: 'none' })
+      wx.showToast({ title: '异常：' + (ex.message || '请重试'), icon: 'none' })
     }
   },
   go: function(e) { wx.navigateTo({ url: e.currentTarget.dataset.url }) },
@@ -630,17 +625,33 @@ Page({
   },
   checkAdmin: function() {
     var self = this
-    admin.checkAdmin(self, function(isAdmin) {
-      if (isAdmin) self.setData({ isAdmin: true })
-    })
+    if (!wx.cloud) return
+    var db = wx.cloud.database()
+    var app = getApp()
+    var userInfo = app.globalData.userInfo
+    if (!userInfo) return
+    db.collection('admin_config').doc('admin').get()
+      .then(function(res) {
+        var adminOpenid = res.data.openid
+        db.collection('users').where({ _openid: adminOpenid }).get()
+          .then(function(userRes) {
+            if (userRes.data.length > 0) {
+              self.setData({ isAdmin: true })
+            }
+          })
+          .catch(function() {})
+      })
+      .catch(function(e) {
+        console.log('检查管理员失败:', e)
+      })
   },
   goAdmin: function() {
     wx.navigateTo({ url: '/pages/admin/admin' })
   },
   onShareAppMessage: function() {
-    return { title: '洛手助手洛手助手 - 个人中心', path: '/pages/index/index', imageUrl: '/images/banner.webp' }
+    return { title: '洛手助手BENJAMIN - 个人中心', path: '/pages/index/index', imageUrl: '/images/banner.webp' }
   },
   onShareTimeline: function() {
-    return { title: '洛手助手洛手助手 - 精灵图鉴·捕捉统计·活动日历', imageUrl: '/images/banner.webp' }
+    return { title: '洛手助手BENJAMIN - 精灵图鉴·捕捉统计·活动日历', imageUrl: '/images/banner.webp' }
   }
 })
