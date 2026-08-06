@@ -107,7 +107,16 @@ Page({
           }
         }
         var changelogList = cloudData.changelogList || []
-        if (changelogList.length === 0) changelogList = defaultChangelog
+        // 合并本地默认日志：云端不存在的版本追加到列表头部
+        var cloudVersions = {}
+        for (var i = 0; i < changelogList.length; i++) {
+          cloudVersions[changelogList[i].version] = true
+        }
+        for (var j = defaultChangelog.length - 1; j >= 0; j--) {
+          if (!cloudVersions[defaultChangelog[j].version]) {
+            changelogList.unshift(defaultChangelog[j])
+          }
+        }
         for (var i = 0; i < changelogList.length; i++) {
           changelogList[i].lines = self.parseChangelog(changelogList[i].content || '')
         }
