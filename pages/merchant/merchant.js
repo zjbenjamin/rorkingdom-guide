@@ -99,6 +99,7 @@ function buildNotifyContent(names, maxLen) {
 }
 
 Page({
+  behaviors: [i18nBehavior],
   data: {
     adminCollapse: true,
     items: initialItems,
@@ -449,6 +450,7 @@ Page({
         db.collection('users').where({ _openid: adminOpenid }).get()
           .then(function(userRes) {
             if (userRes.data.length > 0) {
+              wx.setStorageSync('is_admin_user', true)
               self.setData({ isAdmin: true })
             }
           })
