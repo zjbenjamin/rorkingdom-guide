@@ -435,6 +435,9 @@ Page({
 
   checkAdmin: function() {
     var self = this
+    if (wx.getStorageSync('is_admin_user')) {
+      self.setData({ isAdmin: true })
+    }
     admin.checkAdmin(self, function(isAdmin) {
       if (isAdmin) self.setData({ isAdmin: true })
     })
