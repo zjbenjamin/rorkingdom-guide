@@ -1,0 +1,9 @@
+{
+  "name": "translateText",
+  "version": "1.0.0",
+  "description": "Auto translate announcement content",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

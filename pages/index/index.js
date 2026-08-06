@@ -188,6 +188,7 @@ Page({
           }
         }
         cloudUrl.convertList(filtered, 'image', function(converted) {
+          localizeItems(converted)
           self.setData({ announcements: converted, countdowns: {} })
           self.updateCountdowns();
         })
@@ -631,3 +632,13 @@ Page({
   },
   _initBgAudio: function() { mediaPlayer.initBgAudio(this) },
 })
+
+function localizeItems(items) {
+  var lang = i18n.getLanguage()
+  if (lang === 'zh') return
+  for (var i = 0; i < items.length; i++) {
+    var item = items[i]
+    if (item['title_' + lang]) item.title = item['title_' + lang]
+    if (item['content_' + lang]) item.content = item['content_' + lang]
+  }
+}

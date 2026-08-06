@@ -1,5 +1,6 @@
 var app = getApp()
 var i18nBehavior = require('../../utils/i18nBehavior')
+var i18n = require('../../utils/i18n')
 var activitiesData = [
   { id: 1, title: '异色获取方法', type: '官方权威信息', status: '置顶', start: '', end: '', rewards: [], desc: '通过赛季奇遇、大世界遭遇、生蛋孵蛋、赛季商店兑换等方式获取异色精灵。' }
 ]
@@ -43,8 +44,9 @@ Page({
     if (db) {
       db.collection('announcements').where({ type: 'event' }).orderBy('createTime', 'desc').limit(50).get()
         .then(function(res) {
+          var lang = i18n.getLanguage()
           var cloudActivities = (res.data || []).map(function(item) {
-            return { id: item._id, title: item.title, desc: item.content, status: item.pinned ? '置顶' : '进行中', type: item.type || '', rewards: item.rewards || [], start: item.start || '', end: item.end || '', image: item.image || '', isCloud: true }
+            return { id: item._id, title: (lang !== 'zh' && item['title_' + lang]) ? item['title_' + lang] : item.title, desc: (lang !== 'zh' && item['content_' + lang]) ? item['content_' + lang] : item.content, status: item.pinned ? '置顶' : '进行中', type: item.type || '', rewards: item.rewards || [], start: item.start || '', end: item.end || '', image: item.image || '', isCloud: true }
           })
           var all = activitiesData.concat(cloudActivities)
           self.setData({ activities: all })

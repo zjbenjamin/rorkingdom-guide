@@ -1430,11 +1430,14 @@ openModal: function(e) {
       data.author = app.globalData.userInfo ? app.globalData.userInfo.nickName : 'Admin'
       promise = db.collection('announcements').add({ data: data })
     }
-    promise.then(function() {
+    var editItemId = self.data.editingItem ? self.data.editingItem._id : null
+    promise.then(function(res) {
       self.setData({ submitting: false, showModal: false, editingItem: null, formImage: '', formHtml: '' });
       wx.showToast({ title: '操作成功', icon: 'success' });
       self.loadAnnouncements();
       self.pushSubscribe('announcement', notify.smartTruncate(title, 20), notify.smartTruncate(content || title, 20));
+      var docId = editItemId || (res && res._id)
+      if (docId && title) autoTranslate(docId, title, content || title)
     }).catch(function(err) {
       console.error('发布公告失败:', err);
       self.setData({ submitting: false });
@@ -2721,14 +2724,17 @@ openModal: function(e) {
       richContent: richContent,
       updateTime: db.serverDate()
     }
+    var actEditItemId = self.data.activityEditingItem ? self.data.activityEditingItem._id : null
     var promise = self.data.activityEditingItem
       ? db.collection('announcements').doc(self.data.activityEditingItem._id).update({ data: data })
       : (data.createTime = db.serverDate(), data.author = app.globalData.userInfo ? app.globalData.userInfo.nickName : 'Admin', db.collection('announcements').add({ data: data }))
-    promise.then(function() {
+    promise.then(function(res) {
       self.setData({ activitySubmitting: false, showActivityModal: false, activityEditingItem: null, activityFormImage: '', activityFormHtml: '' });
       wx.showToast({ title: '操作成功', icon: 'success' });
       self.loadAdminActivities();
       self.pushSubscribe('activity', notify.smartTruncate(title, 20), notify.smartTruncate(content, 20));
+      var actDocId = actEditItemId || (res && res._id)
+      if (actDocId && title) autoTranslate(actDocId, title, content || title)
     }).catch(function() {
       self.setData({ activitySubmitting: false });
       wx.showToast({ title: '操作失败', icon: 'none' });
@@ -3036,3 +3042,30 @@ openModal: function(e) {
   },
 
 })
+
+function autoTranslate(docId, title, content) {
+  if (!wx.cloud) return
+  wx.cloud.callFunction({
+    name: 'translateText',
+    data: { text: title, from: 'zh', targets: ['en', 'ja', 'ko'] }
+  }).then(function(titleRes) {
+    var data = buildTranslateFields(titleRes.result.translations, 'title')
+    return wx.cloud.callFunction({
+      name: 'translateText',
+      data: { text: content.substring(0, 500), from: 'zh', targets: ['en', 'ja', 'ko'] }
+    }).then(function(contentRes) {
+      Object.assign(data, buildTranslateFields(contentRes.result.translations, 'content'))
+      var _db = wx.cloud.database()
+      _db.collection('announcements').doc(docId).update({ data: data }).catch(function() {})
+    })
+  }).catch(function() {})
+}
+
+function buildTranslateFields(translations, prefix) {
+  var data = {}
+  if (!translations) return data
+  for (var lang in translations) {
+    if (translations[lang]) data[prefix + '_' + lang] = translations[lang]
+  }
+  return data
+}
