@@ -12,13 +12,13 @@
       <view class="repo-tab" bindtap="goAdmin" wx:if="{{isAdmin}}"><text class="repo-tab-icon">⚙</text>{{_l.adminTab}}</view>
       <view class="repo-tab" bindtap="go" data-url="/pages/about/about"><text class="repo-tab-icon">ℹ</text>{{_l.aboutTab}}</view>
       <view class="repo-lang-bar">
-        <view class="lang-btn {{currentLang === 'zh' ? 'active' : ''}}" bindtap="switchLang" data-lang="zh">中</view>
+        <view class="lang-btn {{currentLang === 'zh' ? 'active' : ''}}" bindtap="switchLang" data-lang="zh">🇨🇳</view>
         <view class="lang-sep">|</view>
-        <view class="lang-btn {{currentLang === 'ja' ? 'active' : ''}}" bindtap="switchLang" data-lang="ja">日</view>
+        <view class="lang-btn {{currentLang === 'ja' ? 'active' : ''}}" bindtap="switchLang" data-lang="ja">🇯🇵</view>
         <view class="lang-sep">|</view>
-        <view class="lang-btn {{currentLang === 'ko' ? 'active' : ''}}" bindtap="switchLang" data-lang="ko">한</view>
+        <view class="lang-btn {{currentLang === 'ko' ? 'active' : ''}}" bindtap="switchLang" data-lang="ko">🇰🇷</view>
         <view class="lang-sep">|</view>
-        <view class="lang-btn {{currentLang === 'en' ? 'active' : ''}}" bindtap="switchLang" data-lang="en">EN</view>
+        <view class="lang-btn {{currentLang === 'en' ? 'active' : ''}}" bindtap="switchLang" data-lang="en">🇬🇧</view>
       </view>
     </view>
   </view>
