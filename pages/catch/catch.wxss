@@ -781,10 +781,6 @@ page {
   gap: 3rpx;
   margin-top: 6rpx;
   width: 100%;
-  background: rgba(0, 200, 255, 0.06);
-  padding: 4rpx 14rpx;
-  border-radius: 20rpx;
-  border: 1rpx solid rgba(0, 200, 255, 0.1);
 }
 .ball-count-display .num { 
   font-size: 28rpx; 

@@ -1,7 +1,9 @@
 const app = getApp()
 var db = null
+var i18nBehavior = require('../../utils/i18nBehavior')
 
 Page({
+  behaviors: [i18nBehavior],
   data: {
     isAdmin: false,
     maintenance: false,
@@ -9,6 +11,7 @@ Page({
     codes: []
   },
   onLoad: function() {
+    this._refreshI18n()
     if (wx.cloud) db = wx.cloud.database()
     this.checkAdmin()
     this.fetchCodes()

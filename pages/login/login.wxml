@@ -1,16 +1,12 @@
 <view class="page">
   <view class="container">
     <view class="login-header">
-      <view class="logo-box">
-        <image lazy-load class="logo-image" src="{{loginLogoUrl || '/images/logo.webp'}}" mode="aspectFill"></image>
-      </view>
-      <text class="app-name">洛手助手</text>
-      <text class="app-desc">全面攻略 · 精灵图鉴 · 道具图鉴</text>
+      <text class="app-name">{{loginLabels.appName}}</text>
+      <text class="app-desc">{{loginLabels.appDesc}}</text>
     </view>
 
     <!-- 未登录 -->
     <view class="login-card" wx:if="{{!hasUserInfo}}">
-      <!-- 头像 -->
       <view class="avatar-section">
         <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
           <view class="avatar-ring {{tempAvatar ? 'has-avatar' : ''}}">
@@ -20,30 +16,31 @@
             </view>
           </view>
         </button>
-        <text class="avatar-hint">{{tempAvatar ? '点击更换头像' : '点击选择头像'}}</text>
+        <text class="avatar-hint">{{tempAvatar ? loginLabels.tapChangeAvatar : loginLabels.tapSelectAvatar}}</text>
       </view>
 
-      <!-- 昵称输入 -->
       <view class="nick-section">
-        <text class="nick-label">昵称</text>
-        <view class="nick-input-wrap">
-          <input class="nick-input" type="nickname" placeholder="输入昵称，或点击键盘上方快捷填入" placeholder-style="color:#484f58;font-size:24rpx" value="{{tempNickName}}" bindinput="onNickNameInput" />
-        </view>
-        <text class="nick-hint">💡 键盘上方可快速使用微信昵称</text>
+        <text class="nick-label">{{loginLabels.nickname}}</text>
+        <form bindsubmit="onNickFormSubmit">
+          <view class="nick-input-wrap">
+            <input class="nick-input" type="nickname" name="nickname" placeholder="{{loginLabels.nicknamePlaceholder}}" placeholder-style="color:#484f58;font-size:24rpx" value="{{tempNickName}}" bindinput="onNickNameInput" bindblur="onNickNameBlur" />
+          </view>
+        </form>
+        <text class="nick-hint">{{loginLabels.nicknameHint}}</text>
       </view>
 
-      <button class="submit-btn" bindtap="onLogin" loading="{{isLogging}}" disabled="{{isLogging}}">登 录</button>
+      <button class="submit-btn" bindtap="onLogin" loading="{{isLogging}}" disabled="{{isLogging}}">{{loginLabels.loginBtn}}</button>
 
       <view class="agree-section">
         <checkbox-group class="agree-checkbox-group" bindchange="onAgreeChange">
           <label class="agree-label">
             <checkbox class="agree-checkbox" value="agree" checked="{{isAgreed}}" />
-            <text class="agree-text-span">我已阅读并同意</text>
+            <text class="agree-text-span">{{loginLabels.agreeText}}</text>
           </label>
         </checkbox-group>
-        <text class="link" bindtap="showAgreement">《用户协议》</text>
-        <text class="agree-text-span">和</text>
-        <text class="link" bindtap="showPrivacy">《隐私政策》</text>
+        <text class="link" bindtap="showAgreement">{{loginLabels.agreement}}</text>
+        <text class="agree-text-span">{{loginLabels.agreeAnd}}</text>
+        <text class="link" bindtap="showPrivacy">{{loginLabels.privacy}}</text>
       </view>
     </view>
 
@@ -52,33 +49,32 @@
       <view class="user-header">
         <view class="avatar-wrap user-avatar-wrap">
           <image lazy-load class="user-avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill"></image>
-          <view class="level-tag" style="background: {{levelColor.bg}}; color: {{levelColor.text}}; border-color: {{levelColor.border}};">
-            <text class="level-icon">{{levelIcon}}</text>
-            <text class="level-num">Lv.{{level}}</text>
-          </view>
         </view>
         <view class="user-detail">
           <view class="user-name-row">
             <text class="user-name">{{userInfo.nickName}}</text>
-            <view class="role-tag editor" wx:if="{{userRole === 'editor'}}">小编</view>
-            <view class="role-tag developer" wx:if="{{userRole === 'developer'}}">开发者</view>
+            <view class="level-tag" style="background: {{levelColor.bg}}; color: {{levelColor.text}}; border-color: {{levelColor.border}};">
+              <text class="level-icon">{{levelIcon}}</text>
+              <text class="level-num">Lv.{{level}}</text>
+            </view>
+            <view class="role-tag editor" wx:if="{{userRole === 'editor'}}">{{loginLabels.editor}}</view>
+            <view class="role-tag developer" wx:if="{{userRole === 'developer'}}">{{loginLabels.developer}}</view>
+            <text class="user-title-text" style="color: {{levelColor.border}};">{{levelName}}</text>
           </view>
-          <text class="user-title-text" style="color: {{levelColor.border}};">{{levelName}}</text>
-          <text class="user-exp">累计登录 {{loginDays}} 天{{loginDays < nextLevelDays ? '，还需 ' + (nextLevelDays - loginDays) + ' 天升级' : ''}} · 捕捉还需 {{nextXP}} 次升级</text>
+          <text class="user-exp">{{loginLabels.loginDays}}: {{loginDays}} · {{loginLabels.level}}: Lv.{{level}}{{nextLevelText}}{{nextXPText}}</text>
           <view class="exp-bar">
             <view class="exp-fill" style="width: {{loginDays >= nextLevelDays ? 100 : (loginDays / nextLevelDays * 100)}}%"></view>
           </view>
         </view>
       </view>
 
-      <view class="expire-bar">登录有效期剩余：{{loginExpire}}</view>
+      <view class="expire-bar">{{loginLabels.loginExpire}}{{loginExpire}}</view>
 
-      <!-- 洛克王国UID -->
       <view class="uid-card" bindtap="toggleUidModal">
         <view class="uid-left">
-          <text class="uid-label">洛克王国UID</text>
+          <text class="uid-label">{{loginLabels.rocoUID}}</text>
           <text class="uid-value" wx:if="{{gameUid}}">{{gameUid}}</text>
-          <text class="uid-empty" wx:else>点击设置UID</text>
+          <text class="uid-empty" wx:else>{{loginLabels.tapSetUID}}</text>
         </view>
         <text class="uid-arrow">›</text>
       </view>
@@ -86,103 +82,85 @@
       <view class="stat-grid">
         <view class="stat-box">
           <text class="stat-num">Lv.{{level}}</text>
-          <text class="stat-name">等级</text>
+          <text class="stat-name">{{loginLabels.level}}</text>
         </view>
         <view class="stat-box">
           <text class="stat-num">{{loginDays}}</text>
-          <text class="stat-name">登录天数</text>
+          <text class="stat-name">{{loginLabels.loginDays}}</text>
         </view>
         <view class="stat-box">
           <text class="stat-num">{{todayLogin ? '✓' : '—'}}</text>
-          <text class="stat-name">今日打卡</text>
+          <text class="stat-name">{{loginLabels.checkIn}}</text>
         </view>
       </view>
 
       <view class="notify-section">
         <view class="notify-title">
           <text class="notify-title-icon">🔔</text>
-          <text class="notify-title-text">通知设置</text>
-          <text class="notify-title-hint">点击 + 增加推送次数，最多99条</text>
+          <text class="notify-title-text">{{loginLabels.notifyTitle}}</text>
+          <text class="notify-title-hint">{{loginLabels.notifyTapHint}}</text>
         </view>
         <view class="notify-item" wx:if="{{notifyConfigured.announcement && subscribeConfig.announcement !== false}}">
           <view class="notify-info">
-            <text class="notify-name">公告通知</text>
-            <text class="notify-desc">接收最新公告和公告更新</text>
+            <text class="notify-name">{{loginLabels.notifyAnnounce}}</text>
+            <text class="notify-desc">{{loginLabels.notifyAnnounceDesc}}</text>
           </view>
           <view class="notify-right">
             <view wx:if="{{notifyConfigured.announcement}}" class="notify-counter" data-type="announcement" catchtap="onNotifyAdd">
-              <view class="counter-btn">
-                <text class="counter-plus">+</text>
-              </view>
-              <view class="counter-badge" wx:if="{{notifyCount.announcement > 0}}">
-                <text class="counter-num">{{notifyCount.announcement}}</text>
-              </view>
+              <view class="counter-btn"><text class="counter-plus">+</text></view>
+              <view class="counter-badge" wx:if="{{notifyCount.announcement > 0}}"><text class="counter-num">{{notifyCount.announcement}}</text></view>
             </view>
-            <view wx:else class="notify-na">暂未开放</view>
-            <view class="notify-reset" catchtap="onResetSubscribe" data-type="announcement">重置</view>
+            <view wx:else class="notify-na">{{loginLabels.notifyNa}}</view>
+            <view class="notify-reset" catchtap="onResetSubscribe" data-type="announcement">{{loginLabels.reset}}</view>
           </view>
         </view>
         <view class="notify-item" wx:if="{{notifyConfigured.activity && subscribeConfig.activity !== false}}">
           <view class="notify-info">
-            <text class="notify-name">活动提醒</text>
-            <text class="notify-desc">活动开始前推送提醒</text>
+            <text class="notify-name">{{loginLabels.notifyActivity}}</text>
+            <text class="notify-desc">{{loginLabels.notifyActivityDesc}}</text>
           </view>
           <view class="notify-right">
             <view wx:if="{{notifyConfigured.activity}}" class="notify-counter" data-type="activity" catchtap="onNotifyAdd">
-              <view class="counter-btn">
-                <text class="counter-plus">+</text>
-              </view>
-              <view class="counter-badge" wx:if="{{notifyCount.activity > 0}}">
-                <text class="counter-num">{{notifyCount.activity}}</text>
-              </view>
+              <view class="counter-btn"><text class="counter-plus">+</text></view>
+              <view class="counter-badge" wx:if="{{notifyCount.activity > 0}}"><text class="counter-num">{{notifyCount.activity}}</text></view>
             </view>
-            <view wx:else class="notify-na">暂未开放</view>
-            <view class="notify-reset" catchtap="onResetSubscribe" data-type="activity">重置</view>
+            <view wx:else class="notify-na">{{loginLabels.notifyNa}}</view>
+            <view class="notify-reset" catchtap="onResetSubscribe" data-type="activity">{{loginLabels.reset}}</view>
           </view>
         </view>
         <view class="notify-item" wx:if="{{notifyConfigured.merchant && subscribeConfig.merchant !== false}}">
           <view class="notify-info">
-            <text class="notify-name">商人提醒</text>
-            <text class="notify-desc">远行商人新商品上架推送</text>
+            <text class="notify-name">{{loginLabels.notifyMerchant}}</text>
+            <text class="notify-desc">{{loginLabels.notifyMerchantDesc}}</text>
           </view>
           <view class="notify-right">
             <view wx:if="{{notifyConfigured.merchant}}" class="notify-counter" data-type="merchant" catchtap="onNotifyAdd">
-              <view class="counter-btn">
-                <text class="counter-plus">+</text>
-              </view>
-              <view class="counter-badge" wx:if="{{notifyCount.merchant > 0}}">
-                <text class="counter-num">{{notifyCount.merchant}}</text>
-              </view>
+              <view class="counter-btn"><text class="counter-plus">+</text></view>
+              <view class="counter-badge" wx:if="{{notifyCount.merchant > 0}}"><text class="counter-num">{{notifyCount.merchant}}</text></view>
             </view>
-            <view wx:else class="notify-na">暂未开放</view>
-            <view class="notify-reset" catchtap="onResetSubscribe" data-type="merchant">重置</view>
+            <view wx:else class="notify-na">{{loginLabels.notifyNa}}</view>
+            <view class="notify-reset" catchtap="onResetSubscribe" data-type="merchant">{{loginLabels.reset}}</view>
           </view>
         </view>
         <view class="notify-tip" bindtap="onNotifySetting">
-          <text class="notify-tip-text">如需修改通知权限，请点击前往系统设置</text>
+          <text class="notify-tip-text">{{loginLabels.notifySettingTip}}</text>
         </view>
       </view>
 
       <view class="action-list">
         <view class="action-item admin-item" wx:if="{{isAdmin}}" bindtap="goAdmin">
-          <view class="action-icon-wrap admin-icon-wrap">
-            <text class="action-icon">⚙</text>
-          </view>
-          <text class="action-text">管理后台</text>
+          <view class="action-icon-wrap admin-icon-wrap"><text class="action-icon">⚙</text></view>
+          <text class="action-text">{{loginLabels.adminPanel}}</text>
           <text class="action-arrow">›</text>
         </view>
         <view class="action-item danger-item" bindtap="onDeleteAccount">
-          <view class="action-icon-wrap danger-icon-wrap">
-            <text class="action-icon">🗑️</text>
-          </view>
-          <text class="action-text danger-text">注销账号</text>
+          <view class="action-icon-wrap danger-icon-wrap"><text class="action-icon">🗑️</text></view>
+          <text class="action-text danger-text">{{loginLabels.deleteAccount}}</text>
           <text class="action-arrow">›</text>
         </view>
         <view class="action-item danger-item" bindtap="onLogout">
-          <view class="action-icon-wrap danger-icon-wrap">
-            <text class="action-icon">🚪</text>
-          </view>
-          <text class="action-text danger-text">退出登录</text>
+          <view class="action-icon-wrap danger-icon-wrap"><text class="action-icon">🚪</text></view>
+          <text class="action-text danger-text">{{loginLabels.logout}}</text>
           <text class="action-arrow">›</text>
         </view>
       </view>
@@ -191,47 +169,47 @@
     <view class="feature-grid">
       <view class="feature-box">
         <text class="feature-emoji">📖</text>
-        <text class="feature-title">精灵图鉴</text>
-        <text class="feature-desc">收录全部精灵数据</text>
+        <text class="feature-title">{{loginLabels.feat1Title}}</text>
+        <text class="feature-desc">{{loginLabels.feat1Desc}}</text>
       </view>
       <view class="feature-box">
         <text class="feature-emoji">🎯</text>
-        <text class="feature-title">捕捉统计</text>
-        <text class="feature-desc">记录你的捕捉历程</text>
+        <text class="feature-title">{{loginLabels.feat2Title}}</text>
+        <text class="feature-desc">{{loginLabels.feat2Desc}}</text>
       </view>
       <view class="feature-box">
         <text class="feature-emoji">📅</text>
-        <text class="feature-title">活动日历</text>
-        <text class="feature-desc">不错过每个活动</text>
+        <text class="feature-title">{{loginLabels.feat3Title}}</text>
+        <text class="feature-desc">{{loginLabels.feat3Desc}}</text>
       </view>
     </view>
 
     <view class="notice-box">
-      <text class="notice-title">📋 用户须知</text>
-      <text class="notice-text">• 核心免费：本工具攻略及查询功能均完全免费，无需登录即可畅享。</text>
-      <text class="notice-text">• 专属特权：授权登录后即可解锁欧皇评级、成就同步及战报专属水印。</text>
-      <text class="notice-text">• 隐私保障：核心记录数据均采用本地优先存储及云端双重加密，绝不外泄。</text>
-      <text class="notice-text">• 授权周期：登录有效期最长为365天，您也可以随时手动注销。</text>
-      <text class="notice-text">• 自主控制：您随时可以在个人中心选择注销，彻底清空云端备份记录。</text>
+      <text class="notice-title">{{loginLabels.noticeTitle}}</text>
+      <text class="notice-text">{{loginLabels.notice1}}</text>
+      <text class="notice-text">{{loginLabels.notice2}}</text>
+      <text class="notice-text">{{loginLabels.notice3}}</text>
+      <text class="notice-text">{{loginLabels.notice4}}</text>
+      <text class="notice-text">{{loginLabels.notice5}}</text>
     </view>
 
     <text class="version">浙ICP备2026043884号</text>
   </view>
 
-  <!-- UID编辑弹窗 -->
+  <!-- UID Modal -->
   <view class="modal-mask" wx:if="{{showUidModal}}" bindtap="toggleUidModal">
     <view class="modal-box" catchtap="preventClose">
       <view class="modal-header">
-        <text class="modal-title">设置洛克王国UID</text>
+        <text class="modal-title">{{loginLabels.setUIDTitle}}</text>
         <text class="modal-close" bindtap="toggleUidModal">✕</text>
       </view>
       <view class="modal-body">
-        <input class="modal-input" placeholder="输入您的洛克王国UID（纯数字）" placeholder-style="color:#484f58" value="{{uidInput}}" bindinput="onUidInput" type="number" />
-        <text class="modal-hint">设置后将作为水印显示在分享图片中</text>
+        <input class="modal-input" placeholder="{{loginLabels.uidPlaceholder}}" placeholder-style="color:#484f58" value="{{uidInput}}" bindinput="onUidInput" type="number" />
+        <text class="modal-hint">{{loginLabels.uidHint}}</text>
       </view>
       <view class="modal-footer">
-        <button class="modal-cancel" bindtap="toggleUidModal">取消</button>
-        <button class="modal-save" bindtap="saveUid">保存</button>
+        <button class="modal-cancel" bindtap="toggleUidModal">{{loginLabels.cancel}}</button>
+        <button class="modal-save" bindtap="saveUid">{{loginLabels.save}}</button>
       </view>
     </view>
   </view>
@@ -241,16 +219,16 @@
     <view class="privacy-modal-box">
       <view class="privacy-modal-icon">🔐</view>
       <view class="privacy-modal-header">
-        <text class="privacy-modal-title">用户隐私保护提示</text>
+        <text class="privacy-modal-title">{{loginLabels.privacyModalTitle}}</text>
       </view>
       <view class="privacy-modal-body">
-        <text class="privacy-modal-desc">在使用登录及云端同步服务前，请阅读并同意</text>
-        <text class="privacy-modal-link-inline" bindtap="showPrivacy">《用户隐私保护指引》</text>
-        <text class="privacy-modal-desc">。我们非常重视您的个人隐私与数据安全。</text>
+        <text class="privacy-modal-desc">{{loginLabels.privacyModalDesc1}}</text>
+        <text class="privacy-modal-link-inline" bindtap="showPrivacy">{{loginLabels.privacy}}</text>
+        <text class="privacy-modal-desc">{{loginLabels.privacyModalDesc2}}</text>
       </view>
       <view class="privacy-modal-footer">
-        <button class="privacy-btn-cancel" bindtap="handleDisagreePrivacy">拒绝</button>
-        <button class="privacy-btn-confirm" open-type="agreePrivacyAuthorization" id="agree-btn" bindagreeprivacyauthorization="handleAgreePrivacy">同意并继续</button>
+        <button class="privacy-btn-cancel" bindtap="handleDisagreePrivacy">{{loginLabels.reject}}</button>
+        <button class="privacy-btn-confirm" open-type="agreePrivacyAuthorization" id="agree-btn" bindagreeprivacyauthorization="handleAgreePrivacy">{{loginLabels.agreeContinue}}</button>
       </view>
     </view>
   </view>

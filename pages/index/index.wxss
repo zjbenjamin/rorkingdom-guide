@@ -28,6 +28,7 @@
   display: flex;
   gap: 8rpx;
   overflow-x: auto;
+  align-items: center;
 }
 .repo-tab {
   display: flex; align-items: center; gap: 6rpx;
@@ -42,6 +43,38 @@
 }
 .repo-tab-icon { font-size: 20rpx; }
 
+.repo-lang-bar {
+  display: flex;
+  align-items: center;
+  gap: 2rpx;
+  margin-left: auto;
+}
+.lang-btn {
+  width: 44rpx;
+  height: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18rpx;
+  font-weight: 600;
+  color: #8b949e;
+  border-radius: 6rpx;
+  border: 1rpx solid transparent;
+}
+.lang-btn.active {
+  color: #58a6ff;
+  border-color: #30363d;
+  background: #161b22;
+}
+.lang-btn:active {
+  color: #c9d1d9;
+}
+.lang-sep {
+  font-size: 18rpx;
+  color: #30363d;
+  padding: 0 2rpx;
+}
+
 /* ── Hero Banner ── */
 .hero-section {
   margin: 20rpx 24rpx 0;
@@ -50,8 +83,8 @@
   overflow: hidden;
 }
 .hero-image { width: 100%; display: block; }
-.hero-swiper { width: 100%; height: 360rpx; }
-.hero-swiper .hero-image { width: 100%; height: 100%; display: block; }
+.hero-swiper { width: 100%; height: 500rpx; background: #0d1117; }
+.hero-swiper .hero-image { width: 100%; height: 100%; display: block; background: #0d1117; }
 
 /* ── Quick Nav ── */
 .quick-nav {
@@ -166,8 +199,46 @@
   border: 1rpx solid #21262d;
   border-radius: 8rpx;
   padding: 20rpx;
-  max-height: 480rpx;
-  overflow-y: auto;
+}
+
+/* Rich content: swiper (滚动图) */
+.rich-swiper-block { margin: 16rpx 0; border-radius: 8rpx; overflow: hidden; }
+.rich-swiper { width: 100%; height: 360rpx; }
+.rich-swiper-image { width: 100%; height: 100%; }
+
+/* Rich content: single image (单图) */
+.rich-image-block { margin: 16rpx 0; border-radius: 8rpx; overflow: hidden; }
+.rich-image { width: 100%; display: block; }
+
+/* Rich content: text block */
+.rich-text-block { line-height: 1.8; margin: 8rpx 0; }
+.rich-quote-block {
+  margin: 12rpx 0; padding: 16rpx 20rpx;
+  background: rgba(88,166,255,0.06);
+  border-left: 4rpx solid rgba(88,166,255,0.4);
+  border-radius: 4rpx;
+}
+.rich-music-block, .rich-video-block, .rich-link-block {
+  margin: 12rpx 0; padding: 16rpx 20rpx;
+  background: rgba(255,255,255,0.04);
+  border-radius: 8rpx;
+  display: flex; align-items: center; gap: 12rpx;
+}
+.rich-divider-block { margin: 16rpx 0; }
+.divider-block { margin: 16rpx 0; }
+.divider-line { height: 1rpx; background: rgba(255,255,255,0.15); }
+.rich-table-block { margin: 16rpx 0; overflow-x: auto; }
+
+/* Rich table */
+.rich-table { width: 100%; border-collapse: collapse; font-size: 22rpx; }
+.rich-table-row { display: flex; }
+.rich-table-cell {
+  flex: 1; padding: 10rpx 8rpx; text-align: center;
+  border: 1rpx solid rgba(255,255,255,0.08);
+  color: #c9d1d9; min-width: 0; word-break: break-all;
+}
+.rich-table-header .rich-table-cell {
+  background: rgba(0,200,255,0.08); color: #58a6ff; font-weight: 700;
 }
 
 /* Empty */
@@ -223,11 +294,12 @@
 .modal-save[disabled] { opacity: 0.5; background: #21262d !important; }
 
 /* ── Video Player ── */
-.video-player-box { background: #161b22; }
+.video-player-box { background: #161b22; overflow: hidden; }
 .video-player-header { padding: 32rpx 28rpx 0; margin-bottom: 16rpx; display: flex; justify-content: space-between; align-items: center; }
 .video-player-title { color: #e6edf3; font-size: 30rpx; font-weight: 700; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .video-player-owner { padding: 8rpx 28rpx; margin: 0 28rpx 16rpx; }
 .video-player-owner-text { font-size: 22rpx; color: #8b949e; }
-.video-player-video { width: calc(100% - 56rpx); margin: 0 28rpx; height: 400rpx; display: block; border-radius: 8rpx; background: #000; }
-.video-player-desc { padding: 20rpx 28rpx; max-height: 320rpx; overflow-y: auto; }
-.video-player-desc-text { font-size: 24rpx; color: #8b949e; line-height: 1.8; word-break: break-all; white-space: pre-wrap; }
+.video-player-video { width: calc(100% - 56rpx); margin: 0 28rpx; height: 360rpx; display: block; border-radius: 8rpx; background: #000; }
+.video-player-desc { padding: 20rpx 28rpx; flex: 1; min-height: 0; position: relative; }
+.video-player-desc::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 40rpx; background: linear-gradient(transparent, #161b22); pointer-events: none; }
+.video-player-desc-text { font-size: 24rpx; color: #8b949e; line-height: 1.8; word-break: break-all; white-space: pre-wrap; padding-bottom: 40rpx; }

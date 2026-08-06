@@ -25,10 +25,17 @@ function formatDate(date) {
   return `${y}年${m}月${d}日 ${h}:${min}`
 }
 
+function truncate(text, maxLen, fallback) {
+  var s = (text || fallback || '')
+  if (s.length <= maxLen) return s
+  if (maxLen <= 1) return '…'
+  return s.substring(0, maxLen - 1) + '…'
+}
+
 function getDataPayload(type, title, content) {
   const timeStr = formatDate(new Date())
-  const safeTitle = (title || '提示').substring(0, 20)
-  const safeContent = (content || '请前往小程序查看详情').substring(0, 20)
+  const safeTitle = truncate(title, 20, '')
+  const safeContent = truncate(content, 20, '请前往小程序查看详情')
   
   if (type === 'announcement') {
     return {

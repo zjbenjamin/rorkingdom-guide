@@ -2,8 +2,17 @@ var app = getApp()
 var db = null
 var cloudUrl = require('../../utils/cloudUrl')
 var admin = require('../../utils/admin')
+var i18nBehavior = require('../../utils/i18nBehavior')
+var i18n = require('../../utils/i18n')
+
+var todayStr = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0') + '-' + String(new Date().getDate()).padStart(2, '0')
+
+var defaultChangelog = [
+  { version: '1.5.0', date: todayStr, content: '新增：首页顶部语言切换栏（中|日|韩|英）\n新增：管理后台系统设置增加头图编辑\n新增：推送消息智能截断与多语言适配\n优化：远行商人商品列表空数据自动兜底\n优化：登录页openid缓存减少云函数调用\n修复：底部导航栏图标点击无响应\n修复：远行商人页面商品不显示' }
+]
 
 Page({
+  behaviors: [i18nBehavior],
   data: {
     hasUpdate: false,
     updateReady: false,
@@ -13,8 +22,8 @@ Page({
     isAdmin: false,
     showLogShareBtn: true,
     aboutData: {
-      appName: '洛手助手洛手助手',
-      version: wx.getStorageSync('about_version') || '',
+      appName: '洛手助手',
+      version: i18n.i18n.zh.version || 'v1.5.0',
       devName: '浙里本杰明',
       devAvatar: 'https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEYA3JqaA4lW5JDNpmiDiR7kV6jjeMAAW0AAscgAAKo-ElXhfFJA7eEXyo9BA.jpeg',
       uid: '476200',
@@ -39,7 +48,9 @@ Page({
     changelogSaving: false
   },
   onLoad() {
+    this._refreshI18n()
     if (wx.cloud) db = wx.cloud.database()
+    try { wx.removeStorageSync('about_version') } catch(e) {}
   },
   onShow() {
     var self = this
@@ -91,6 +102,7 @@ Page({
           }
         }
         var changelogList = cloudData.changelogList || []
+        if (changelogList.length === 0) changelogList = defaultChangelog
         for (var i = 0; i < changelogList.length; i++) {
           changelogList[i].lines = self.parseChangelog(changelogList[i].content || '')
         }
@@ -99,7 +111,6 @@ Page({
           changelogList: changelogList,
           changelogLines: self.parseChangelog(merged.changelogContent || self.data.defaultChangelog)
         })
-        if (merged.version) wx.setStorageSync('about_version', merged.version);
         if (cloudUrl.isCloudUrl(merged.devAvatar)) {
           cloudUrl.convertList([merged], 'devAvatar', function(converted) {
             self.setData({ 'aboutData.devAvatar': converted[0].devAvatar })

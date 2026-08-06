@@ -1,6 +1,8 @@
 var app = getApp()
 var skillsData = require('../../data/skills').skillsData
+var i18nBehavior = require('../../utils/i18nBehavior')
 Page({
+  behaviors: [i18nBehavior],
   data: { skills: skillsData, filtered: skillsData, search: '', type: '全部', types: ['全部','普通','火','水','草','冰','电','地','翼','幽','恶','光','武','机械','幻','毒','虫'] },
   onSearch: function(e) { this.setData({ search: e.detail.value }); this.filter() },
   onType: function(e) { this.setData({ type: e.currentTarget.dataset.t }); this.filter() },

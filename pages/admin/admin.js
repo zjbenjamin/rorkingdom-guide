@@ -2,6 +2,7 @@ var app = getApp()
 var db = null
 var notify = require('../../utils/notify')
 var cloudUrl = require('../../utils/cloudUrl')
+var i18nBehavior = require('../../utils/i18nBehavior')
 var activitiesData = [
   { id: 1, title: '异色获取方法', type: '官方权威信息', status: '置顶', start: '', end: '', rewards: [], desc: '通过赛季奇遇、大世界遭遇、生蛋孵蛋、赛季商店兑换等方式获取异色精灵。' }
 ]
@@ -224,6 +225,7 @@ function extractCleanURL(text) {
 }
 
 Page({
+  behaviors: [i18nBehavior],
   data: {
     isAdmin: false,
     loading: true,
@@ -234,7 +236,7 @@ Page({
       editingBall: null,
       ballForm: {
         id: '', name: '', isBuy: false, isCraft: false, price: 0,
-              craftMaterials: '', craftMaterials: '', desc: '', source: '', img: '', color: '', icon: ''
+              craftMaterials: '', desc: '', source: '', img: '', color: '', icon: ''
       },
     announcements: [],
     users: [],
@@ -325,6 +327,7 @@ Page({
     subscribeConfig: { announcement: true, activity: true, merchant: true }
   },
   onLoad: function() {
+    this._refreshI18n()
     this.subscribersWatcher = null;
     if (wx.cloud) db = wx.cloud.database()
     var deletedIds = wx.getStorageSync('deleted_local_activities') || []
@@ -346,8 +349,10 @@ Page({
     if (!userInfo) { self.setData({ isAdmin: false, loading: false }); return }
     db.collection('admin_config').doc('admin').get()
       .then(function(res) {
-        var adminOpenid = res.data.openid
-        wx.cloud.callFunction({ name: 'login' }).then(function(loginRes) { if (loginRes.result.openid === adminOpenid) {
+        var adminOpenid = res.data && res.data.openid
+        var adminOpenids = (res.data && res.data.openids) || []
+        if (!adminOpenid) { self.setData({ isAdmin: false, loading: false }); return }
+        wx.cloud.callFunction({ name: 'login' }).then(function(loginRes) { if (loginRes.result && (loginRes.result.openid === adminOpenid || adminOpenids.indexOf(loginRes.result.openid) !== -1)) {
               self.setData({ isAdmin: true })
               self.loadData()
               return
@@ -462,11 +467,13 @@ Page({
     var self = this
     if (!db) return
     var pageList = [
-      { id: 'merchant', name: '远行商人', icon: '🛒', maintenance: false, useCustom: false }
+      { id: 'merchant', name: '远行商人', icon: '🛒', maintenance: false, useCustom: false },
+      { id: 'captureImage', name: '捕捉统计生成图片', icon: '📷', maintenance: wx.getStorageSync('show_log_share_btn') !== false, useCustom: false }
     ]
     var done = 0
     for (var i = 0; i < pageList.length; i++) {
       (function(idx) {
+        if (pageList[idx].id === 'captureImage') { done++; if (done >= pageList.length) self.setData({ pageConfigs: pageList }); return }
         db.collection('page_config').doc(pageList[idx].id).get()
           .then(function(res) {
             pageList[idx].maintenance = res.data.maintenance || false
@@ -486,8 +493,16 @@ Page({
     togglePageMaintenance: function(e) {
       var self = this;
       var id = e.currentTarget.dataset.id;
+      if (id === 'captureImage') {
+        var currentVal = wx.getStorageSync('show_log_share_btn') !== false;
+        var newVal = !currentVal;
+        wx.setStorageSync('show_log_share_btn', newVal);
+        self.loadPageConfigs();
+        wx.showToast({ title: newVal ? '已开启' : '已关闭', icon: 'success' });
+        return;
+      }
       if (!db) return;
-      
+
       db.collection('page_config').doc(id).get().then(function(res) {
         var newVal = !res.data.maintenance;
         wx.cloud.callFunction({
@@ -831,7 +846,11 @@ openModal: function(e) {
       currentFontWeight: formats.bold ? 'bold' : 'normal',
       currentFontStyle: formats.italic ? 'italic' : 'normal',
       currentFontColor: formats.color || '#ffffff',
-      currentFontFamily: formats.fontFamily || 'sans-serif'
+      currentFontFamily: formats.fontFamily || 'sans-serif',
+      currentUnderline: formats.underline || false,
+      currentStrike: formats.strike || false,
+      currentHeader: formats.header || 0,
+      currentAlign: formats.align || ''
     })
   },
   onImageInput: function(e) { this.setData({ formImage: e.detail.value }) },
@@ -943,22 +962,17 @@ openModal: function(e) {
           type: 'text',
           content: text,
           html: html,
-          style: 'normal',
-          weight: 'normal',
-          size: 28,
-          color: '#ffffff',
-          fontFamily: 'sans-serif'
+          style: self.data.currentFontStyle,
+          weight: self.data.currentFontWeight,
+          size: self.data.currentFontSize,
+          color: self.data.currentFontColor,
+          fontFamily: self.data.currentFontFamily
         }
         var richContent = self.data.formRichContent.concat([block])
         self.setData({
           formRichContent: richContent,
           formContent: '',
-          formHtml: '',
-          currentFontStyle: 'normal',
-          currentFontWeight: 'normal',
-          currentFontSize: 28,
-          currentFontColor: '#ffffff',
-          currentFontFamily: 'sans-serif'
+          formHtml: ''
         })
         self.editorCtx.clear()
       }
@@ -1420,7 +1434,7 @@ openModal: function(e) {
       self.setData({ submitting: false, showModal: false, editingItem: null, formImage: '', formHtml: '' });
       wx.showToast({ title: '操作成功', icon: 'success' });
       self.loadAnnouncements();
-      self.pushSubscribe('announcement', title, (content || title).substring(0, 20));
+      self.pushSubscribe('announcement', notify.smartTruncate(title, 20), notify.smartTruncate(content || title, 20));
     }).catch(function(err) {
       console.error('发布公告失败:', err);
       self.setData({ submitting: false });
@@ -1546,13 +1560,7 @@ openModal: function(e) {
   loadBallsConfig: function() {
     var self = this;
     if (!db) return;
-    db.collection('site_config').doc('ball_images').get().then(res => {
-      if(res.data && res.data.balls) {
-        self.setData({ ballsConfig: res.data.balls });
-      }
-    }).catch(err => {
-      // 默认数据
-      var defaultBalls = [
+    var defaultBalls = [
       {id:1,name:'普通咕噜球',color:'#999',icon:'⚪',count:0,freeCount:0,desc:'基础捕捉率',price:0},
       {id:2,name:'高级咕噜球',color:'#1565c0',icon:'🔵',count:0,freeCount:0,desc:'捕捉率+30%',price:12000},
       {id:3,name:'国王球',color:'#f57f17',icon:'👑',count:0,freeCount:0,desc:'100%捕捉，必定了不起',price:0},
@@ -1569,8 +1577,23 @@ openModal: function(e) {
       {id:14,name:'变幻球',color:'#06b6d4',icon:'🌀',count:0,freeCount:0,desc:'提升对应属性50%捕捉概率',price:3000},
       {id:15,name:'绝缘球',color:'#8b5cf6',icon:'🛡️',count:0,freeCount:0,desc:'绝缘精灵+45%',price:3000},
       {id:16,name:'调温球',color:'#f97316',icon:'🌡️',count:0,freeCount:0,desc:'提升对应属性50%捕捉概率',price:3000},
-      {id:17,name:'淘沙球',color:'#d4a017',icon:'🏖️',count:0,freeCount:0,desc:'提升对应属性50%捕捉概率',price:3000}
+      {id:17,name:'淘沙球',color:'#d4a017',icon:'🏖️',count:0,freeCount:0,desc:'提升对应属性50%捕捉概率',price:3000},
+      {id:18,name:'童话球',color:'#f472b6',icon:'🧚',count:0,freeCount:0,desc:'童话系+70%',price:800,img:'https://img.remit.ee/api/file/CAACAgUAAyEGAASHRsPbAAEYB8ZqaEBixsb7T3jYYu7SRMZ1uJv9MgAC2yUAAqj4SVcLsuCtMJ10xj0E.webp'}
     ];
+    db.collection('site_config').doc('ball_images').get().then(res => {
+      if(res.data && res.data.balls) {
+        var cloudBalls = res.data.balls;
+        var cloudMap = {};
+        for (var i = 0; i < cloudBalls.length; i++) { cloudMap[cloudBalls[i].id] = cloudBalls[i]; }
+        var merged = [];
+        for (var j = 0; j < defaultBalls.length; j++) {
+          merged.push(cloudMap[defaultBalls[j].id] || defaultBalls[j]);
+        }
+        self.setData({ ballsConfig: merged });
+      } else {
+        self.setData({ ballsConfig: defaultBalls });
+      }
+    }).catch(err => {
       self.setData({ ballsConfig: defaultBalls });
     });
   },
@@ -2192,7 +2215,11 @@ openModal: function(e) {
       activityFontWeight: formats.bold ? 'bold' : 'normal',
       activityFontStyle: formats.italic ? 'italic' : 'normal',
       activityFontColor: formats.color || '#ffffff',
-      activityFontFamily: formats.fontFamily || 'sans-serif'
+      activityFontFamily: formats.fontFamily || 'sans-serif',
+      activityUnderline: formats.underline || false,
+      activityStrike: formats.strike || false,
+      activityHeader: formats.header || 0,
+      activityAlign: formats.align || ''
     })
   },
   onActivityTypeInput: function(e) { this.setData({ activityFormType: e.detail.value }) },
@@ -2302,22 +2329,17 @@ openModal: function(e) {
           type: 'text',
           content: text,
           html: html,
-          style: 'normal',
-          weight: 'normal',
-          size: 28,
-          color: '#ffffff',
-          fontFamily: 'sans-serif'
+          style: self.data.activityFontStyle,
+          weight: self.data.activityFontWeight,
+          size: self.data.activityFontSize,
+          color: self.data.activityFontColor,
+          fontFamily: self.data.activityFontFamily
         }
         var richContent = self.data.activityRichContent.concat([block])
         self.setData({
           activityRichContent: richContent,
           activityFormContent: '',
-          activityFormHtml: '',
-          activityFontStyle: 'normal',
-          activityFontWeight: 'normal',
-          activityFontSize: 28,
-          activityFontColor: '#ffffff',
-          activityFontFamily: 'sans-serif'
+          activityFormHtml: ''
         })
         self.activityEditorCtx.clear()
       }
@@ -2620,7 +2642,7 @@ openModal: function(e) {
       richContent = self.data.activityRichContent.concat([{
         type: 'text', content: content, html: self.data.activityFormHtml || '', style: self.data.activityFontStyle,
         weight: self.data.activityFontWeight || 'normal', size: self.data.activityFontSize || 28, color: self.data.activityFontColor || '#ffffff',
-        fontFamily: self.data.activityFormFamily || 'sans-serif'
+        fontFamily: self.data.activityFontFamily || 'sans-serif'
       }])
     } else {
       richContent = self.data.activityRichContent
@@ -2706,7 +2728,7 @@ openModal: function(e) {
       self.setData({ activitySubmitting: false, showActivityModal: false, activityEditingItem: null, activityFormImage: '', activityFormHtml: '' });
       wx.showToast({ title: '操作成功', icon: 'success' });
       self.loadAdminActivities();
-      self.pushSubscribe('activity', title, content.substring(0, 20));
+      self.pushSubscribe('activity', notify.smartTruncate(title, 20), notify.smartTruncate(content, 20));
     }).catch(function() {
       self.setData({ activitySubmitting: false });
       wx.showToast({ title: '操作失败', icon: 'none' });
@@ -2752,9 +2774,10 @@ openModal: function(e) {
   },
       testPush: function(e) {
       var type = e.currentTarget.dataset.type
-      var names = { announcement: '公告', activity: '活动', merchant: '商户' }
       var self = this
-      wx.showModal({ title: '测试推送', content: '将发送一条' + names[type] + '推送，请确认是否继续？',
+      var testTitle = notify.pushI18n('testPush', '测试推送')
+      var testContent = notify.pushI18n('testPushContent', '这是一条测试消息')
+      wx.showModal({ title: testTitle, content: '将发送一条' + testTitle + '，请确认是否继续？',
         success: function(res) {
           if (res.confirm) {
             wx.showLoading({ title: '正在发送...' })
@@ -2763,8 +2786,8 @@ openModal: function(e) {
               method: 'POST',
               data: {
                 type: type,
-                title: '测试推送',
-                content: '这是一条由专属阿里云发出的测试消息'
+                title: testTitle,
+                content: testContent
               },
               success: function(httpRes) {
                 wx.hideLoading()

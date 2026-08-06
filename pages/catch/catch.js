@@ -1,6 +1,10 @@
 var app = getApp()
 var imageConfig = require('../../config/images');
 var levelUtil = require('../../utils/level')
+var i18n = require('../../utils/i18n')
+var i18nBehavior = require('../../utils/i18nBehavior')
+
+// ... (rest of file continues with formatTime, etc.)
 function formatTime(d) {
   if (!d) d = new Date()
   var utc = d.getTime() + d.getTimezoneOffset() * 60000
@@ -20,6 +24,7 @@ function formatTimeShort(d) {
   return String(shanghai.getHours()).padStart(2, '0') + ':' + String(shanghai.getMinutes()).padStart(2, '0') + ':' + String(shanghai.getSeconds()).padStart(2, '0')
 }
 Page({
+  behaviors: [i18nBehavior],
   data: {
     buildTime: '', sysVersion: '初始化中...', showLogShareBtn: true,
     balls: [
@@ -39,7 +44,8 @@ Page({
       {id:14,name:'变幻球',color:'#06b6d4',icon:'🌀',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
       {id:15,name:'绝缘球',color:'#8b5cf6',icon:'🛡️',count:0,freeCount:0,rate:'绝缘精灵+45%',price:3000},
       {id:16,name:'调温球',color:'#f97316',icon:'🌡️',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
-      {id:17,name:'淘沙球',color:'#d4a017',icon:'🏖️',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000}
+      {id:17,name:'淘沙球',color:'#d4a017',icon:'🏖️',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
+      {id:18,name:'童话球',color:'#f472b6',icon:'🧚',count:0,freeCount:0,rate:'童话系+70%',price:800,img:'https://img.remit.ee/api/file/CAACAgUAAyEGAASHRsPbAAEYB8ZqaEBixsb7T3jYYu7SRMZ1uJv9MgAC2yUAAqj4SVcLsuCtMJ10xj0E.webp'}
     ],
     selectedBall: null, selectedBallCount: 0, expandedBallIndex: -1,
     totalCatches: 0, successCatches: 0, successRate: 0, pityCount: 0, pityHint: '基础概率', history: [], result: '',
@@ -49,9 +55,9 @@ Page({
     petNameInput: '', catchCount: 1,
     encounterTab: 'luckybox', carnivalCount: 0, luckyBoxCount: 0,
     specialTab: 'buy', specialBall: '高级咕噜球',
-    specialBalls: ['绝缘球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','奇趣球','补光球','国王球','棱镜球','织梦棱镜球','狂欢棱镜球','淘沙球'],
+    specialBalls: ['绝缘球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','奇趣球','补光球','国王球','棱镜球','织梦棱镜球','狂欢棱镜球','淘沙球','童话球'],
     craftBalls: ['国王球','绝缘球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','棱镜球','淘沙球'],
-    attributeBalls: ['绝缘球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','淘沙球'],
+    attributeBalls: ['绝缘球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','淘沙球','童话球'],
     specialCount: '', specialHistory: [],
     totalBallUsed: 0,
     hasActiveBalls: false,
@@ -111,22 +117,31 @@ Page({
     }
   },
     fetchCloudBalls: function() {
-    this.setData({ sysVersion: '获取云端数据...' });
+    var self = this;
+    self.setData({ sysVersion: '获取云端数据...' });
+    var defaultBalls = self.data.balls;
     if (wx.cloud) {
       wx.cloud.database().collection('site_config').doc('ball_images').get().then(res => {
         if (res.data && res.data.balls && res.data.balls.length > 0) {
-          this.syncBallsConfig(res.data.balls);
+          var cloudBalls = res.data.balls;
+          var cloudMap = {};
+          for (var i = 0; i < cloudBalls.length; i++) { cloudMap[cloudBalls[i].id] = cloudBalls[i]; }
+          var merged = [];
+          for (var j = 0; j < defaultBalls.length; j++) {
+            merged.push(cloudMap[defaultBalls[j].id] || defaultBalls[j]);
+          }
+          self.syncBallsConfig(merged);
         } else {
-          this.syncBallsConfig(this.data.balls); // use default if DB empty
+          self.syncBallsConfig(defaultBalls);
         }
-        this.setData({ sysVersion: '已实时同步 | ' + formatTimeShort() });
+        self.setData({ sysVersion: '已实时同步 | ' + formatTimeShort() });
       }).catch(err => {
-        this.syncBallsConfig(this.data.balls);
-        this.setData({ sysVersion: '离线模式(使用缓存)' });
+        self.syncBallsConfig(defaultBalls);
+        self.setData({ sysVersion: '离线模式(使用缓存)' });
       });
     } else {
-      this.syncBallsConfig(this.data.balls);
-      this.setData({ sysVersion: '离线模式' });
+      self.syncBallsConfig(defaultBalls);
+      self.setData({ sysVersion: '离线模式' });
     }
   },
   syncBallsConfig: function(cloudBalls) {
@@ -179,6 +194,7 @@ Page({
     }
   },
   onShow: function() {
+    this._refreshI18n()
     var n = new Date()
     this.setData({
       buildTime: formatTime(n)
@@ -256,8 +272,8 @@ Page({
 
   onResultMultiBallRemainInput: function(e) {
     var idx = e.currentTarget.dataset.index;
-    var arr = this.data.resultMultiBalls;
-    arr[idx].remain = e.detail.value;
+    var arr = this.data.resultMultiBalls.slice();
+    arr[idx] = Object.assign({}, arr[idx], { remain: e.detail.value });
     this.setData({ resultMultiBalls: arr });
   },
   onBrushModeSwitch: function(e) {
@@ -309,11 +325,11 @@ Page({
   },
   onCheckMultiBallRemainInput: function(e) {
     var idx = e.currentTarget.dataset.index;
-    var arr = this.data.checkMultiBalls;
-    arr[idx].remain = e.detail.value;
+    var arr = this.data.checkMultiBalls.slice();
+    arr[idx] = Object.assign({}, arr[idx], { remain: e.detail.value });
     this.setData({ checkMultiBalls: arr });
   },
-  onLongResult: function(e) { this.onResult(e) },
+  onResult: function(e) {
     var r = e.currentTarget.dataset.r
     var self = this
     if (r === 'success') {
@@ -328,24 +344,10 @@ Page({
     var purchased = {};
     for (var h = 0; h < history.length; h++) { purchased[history[h].ball] = true; }
     var items = [];
-    // 计算各球累计购买/合成总量
-    var totalBought = {};
-    for (var h2 = 0; h2 < history.length; h2++) {
-      var bh = history[h2];
-      totalBought[bh.ball] = (totalBought[bh.ball] || 0) + bh.count;
-    }
-    // 上次盘点剩余
-    var lastCheck = {};
-    var checkRecords = self.data.ballCheckRecords || [];
-    for (var cr = checkRecords.length - 1; cr >= 0; cr--) {
-      var rc = checkRecords[cr];
-      if (lastCheck[rc.ball] === undefined) lastCheck[rc.ball] = rc.remaining;
-    }
     for (var i = 0; i < self.data.balls.length; i++) {
       var b = self.data.balls[i];
       if (purchased[b.name]) {
-        var lastR = lastCheck[b.name];
-        items.push({ name: b.name, remain: lastR !== undefined ? String(lastR) : '', currentCount: totalBought[b.name] || b.count || 0 });
+        items.push({ name: b.name, remain: '', currentCount: b.count || 0 });
       }
     }
     // 自动计时：从首次点击奇遇到现在
@@ -371,6 +373,7 @@ Page({
     })
     this.setData({ lastUsedBallImageUrl: '' })
   },
+  onLongResult: function(e) { this.onResult(e) },
   onResultBallChange: function(e) {
     this.setData({ resultBall: this.data.resultBallList[e.detail.value] })
   },
@@ -380,7 +383,7 @@ Page({
   onResultGainInput: function(e) {
     this.setData({ resultGainInput: e.detail.value })
   },
-    onResultPetNameInput: function(e) {
+  onResultPetNameInput: function(e) {
     this.setData({ resultPetName: e.detail.value })
   },
   onResultPetImageUrlInput: function(e) {
@@ -433,17 +436,10 @@ Page({
     for (var m = 0; m < multi.length; m++) {
       var item = multi[m];
       if (!item.name) continue;
-      // 未输入剩余则取上次盘点值
+      // 未输入剩余则跳过（不消耗）
       var remainVal = item.remain;
       if (remainVal === '' || remainVal === null) {
-        var lastCheck = {};
-        var checkRecords = self.data.ballCheckRecords || [];
-        for (var cr = checkRecords.length - 1; cr >= 0; cr--) {
-          var rc = checkRecords[cr];
-          if (lastCheck[rc.ball] === undefined) lastCheck[rc.ball] = rc.remaining;
-        }
-        remainVal = lastCheck[item.name];
-        if (remainVal === undefined) remainVal = 0;
+        continue;
       }
       var remainingCount = parseInt(remainVal);
       if (isNaN(remainingCount) || remainingCount < 0) remainingCount = 0;
@@ -457,8 +453,8 @@ Page({
           
           balls[i].count = newCount;
           totalUsedCount += usedCount;
-          usedBallNames.push(balls[i].name + 'x' + usedCount);
           if (usedCount > 0) {
+            usedBallNames.push(balls[i].name + 'x' + usedCount);
             if(!self._lastUsedBallImg && balls[i].img) self._lastUsedBallImg = balls[i].img;
             var freeConsume = Math.min(usedCount, balls[i].freeCount);
             balls[i].freeCount = Math.max(0, balls[i].freeCount - freeConsume);
@@ -493,7 +489,7 @@ Page({
       resultElapsedTime = resultElapsedTime.replace(' (自动)', '');
       resultElapsedAuto = false;
     }
-    self.setData({ balls: balls, totalBallUsed: totalBallUsed, usedBallTotal: newUsedBallTotal, hasActiveBalls: hasActive, canStartCapture: self.data.wealthSet && hasActive, lastUsedCount: totalUsedCount, lastUsedBallName: lastUsedStr });
+    self.setData({ balls: balls, totalBallUsed: totalBallUsed, usedBallTotal: newUsedBallTotal, hasActiveBalls: hasActive, canStartCapture: self.data.wealthSet && hasActive, lastUsedCount: totalUsedCount, lastUsedBallName: lastUsedStr, _resultElapsedTime: resultElapsedTime, _resultElapsedAuto: resultElapsedAuto, _resultMixedPetNames: resultMixedPetNames, _resultTargetPet: resultTargetPet });
     if (gainVal !== 0) {
       var newGains = self.data.totalGains + gainVal
       wx.setStorageSync('total_gains', newGains)
@@ -502,162 +498,208 @@ Page({
       self.updateGemCost()
     }
     if (self.data.result === 'success') {
-      self.onRecordClear();
+      self.onRecordClear(r);
     } else {
       wx.showActionSheet({
         itemList: ['继续累计（保留本次数据）', '清除本次捕捉（重新开始）'],
         success: function(res) {
           if (res.tapIndex === 0) {
-            self.onRecordContinue()
+            self.onRecordContinue(r)
           } else {
-            self.onRecordClear()
+            self.onRecordClear(r)
           }
         },
         fail: function() {}
       })
     }
   },
-  onRecordContinue: function() {
-    var self = this
-    var balls = self.data.balls
-    var result = self.data.result
-          var usedStr = self.data.lastUsedBallName && self.data.lastUsedBallName.length > 2 ? self.data.lastUsedBallName : '未使用球';
-      var totalBallCost = 0; // 费用已在购买时扣除，此处不再重复计费
-      var catchCount = 1
-      var newTotalCatches = self.data.totalCatches + catchCount
-      var newSuccessCatches = self.data.successCatches + (result === 'success' ? catchCount : 0)
-      var newCosts = self.data.totalCosts // 保持不变
-      wx.setStorageSync('total_catches', newTotalCatches)
-      wx.setStorageSync('success_catches', newSuccessCatches)
-      var accumulated = self.data.totalGains - newCosts
-      var resultText = result === 'success' ? '异色捕获成功' : '歪了'
-      var remark = self.data.resultRemark || ''
-      var totalEncountersForRecord = self.data.carnivalCount + self.data.luckyBoxCount;
-      var record = { time: formatTimeShort(), balls: usedStr, result: resultText, remark: remark, total: catchCount, cost: 0, pet: self.data.resultPetName || '', petImageUrl: self.data.resultPetImageUrl || '', resultRaw: result, elapsedTimeText: resultElapsedTime ? '耗时: ' + resultElapsedTime : '', ballImageUrl: self._lastUsedBallImg || '', encounters: totalEncountersForRecord, brushMode: self.data.brushMode || 'single', mixedPets: resultMixedPetNames || '', targetPet: resultTargetPet || '', carnivalCount: self.data.carnivalCount || 0, luckyBoxCount: self.data.luckyBoxCount || 0, pityBefore: self.data.pityCount || 0, elapsedAuto: resultElapsedAuto || false }
-      if (resultElapsedTime) self.setData({ resultElapsedTime: resultElapsedTime, resultElapsedAuto: resultElapsedAuto })
-      
-      self.setData({ lastUsedBallName: '', lastUsedCount: 0 }); // reset
-    var h = [record].concat(self.data.history).slice(0, 20)
-    wx.setStorageSync('catch_history', h)
-    var isShiny = (result === 'success' || result === 'miss');
-      if (isShiny && self.data.autoResetPity) {
-        if (result === 'miss' && self.data.continuePity) {
-          var currentPity = wx.getStorageSync('pity_count') || 0;
-          self.updatePity(currentPity + 1);
-        } else {
-          self.updatePity(0);
-        }
-      }
-    var usedCount = self.data.lastUsedCount || 0
-    var newUsedBallTotal = self.data.usedBallTotal + usedCount
-    wx.setStorageSync('used_ball_total', newUsedBallTotal)
-    self.setData({
-      totalCatches: newTotalCatches,
-      successCatches: newSuccessCatches,
-      totalCosts: newCosts,
-      accumulatedWealth: accumulated,
-      totalWealth: self.data.initialWealth + accumulated,
-      history: h,
-      result: '',
-      usedBallTotal: newUsedBallTotal
-    })
-    self.updateSuccessRate()
-    self.updateGemCost()
-    var toastMsg = totalBallCost > 0 ? '✅ 记录成功 消耗💵' + totalBallCost : '✅ 记录成功'
-    if (isShiny) toastMsg = '✨ 捕获成功！消耗💵' + totalBallCost
-    wx.showToast({ title: toastMsg, icon: 'none' })
+  _buildRecord: function(resultType) {
+    var self = this;
+    var result = resultType || self.data.result;
+    var usedStr = self.data.lastUsedBallName && self.data.lastUsedBallName.length > 2 ? self.data.lastUsedBallName : '未使用球';
+    var resultText = result === 'success' ? '异色捕获成功' : '歪了';
+    var record = {
+      time: formatTimeShort(), balls: usedStr, result: resultText,
+      remark: self.data.resultRemark || '', total: 1, cost: 0,
+      pet: self.data.resultPetName || '', petImageUrl: self.data.resultPetImageUrl || '',
+      resultRaw: result, elapsedTimeText: self.data._resultElapsedTime ? '耗时: ' + self.data._resultElapsedTime : '',
+      ballImageUrl: self._lastUsedBallImg || '',
+      encounters: self.data.carnivalCount + self.data.luckyBoxCount,
+      brushMode: self.data.brushMode || 'single',
+      mixedPets: self.data._resultMixedPetNames || '', targetPet: self.data._resultTargetPet || '',
+      carnivalCount: self.data.carnivalCount || 0, luckyBoxCount: self.data.luckyBoxCount || 0,
+      pityBefore: self.data.pityCount || 0, elapsedAuto: self.data._resultElapsedAuto || false
+    };
+    return record;
   },
-  onRecordClear: function() {
-    var self = this
-    var balls = self.data.balls
-    var result = self.data.result
-          var usedStr = self.data.lastUsedBallName && self.data.lastUsedBallName.length > 2 ? self.data.lastUsedBallName : '未使用球';
-      var totalBallCost = 0;
-      var catchCount = 1
-      var newTotalCatches = self.data.totalCatches + catchCount
-      var newSuccessCatches = self.data.successCatches + (result === 'success' ? catchCount : 0)
-      var newCosts = self.data.totalCosts // 保持不变
-      wx.setStorageSync('total_catches', newTotalCatches)
-      wx.setStorageSync('success_catches', newSuccessCatches)
-      var accumulated = self.data.totalGains - newCosts
-      var resultText = result === 'success' ? '异色捕获成功' : '歪了'
-      var remark = self.data.resultRemark || ''
-      var totalEncountersForRecord = self.data.carnivalCount + self.data.luckyBoxCount;
-      var record = { time: formatTimeShort(), balls: usedStr, result: resultText, remark: remark, total: catchCount, cost: 0, pet: self.data.resultPetName || '', petImageUrl: self.data.resultPetImageUrl || '', resultRaw: result, elapsedTimeText: resultElapsedTime ? '耗时: ' + resultElapsedTime : '', ballImageUrl: self._lastUsedBallImg || '', encounters: totalEncountersForRecord, brushMode: self.data.brushMode || 'single', mixedPets: resultMixedPetNames || '', targetPet: resultTargetPet || '', carnivalCount: self.data.carnivalCount || 0, luckyBoxCount: self.data.luckyBoxCount || 0, pityBefore: self.data.pityCount || 0, elapsedAuto: resultElapsedAuto || false }
-      if (resultElapsedTime) self.setData({ resultElapsedTime: resultElapsedTime, resultElapsedAuto: resultElapsedAuto })
-      
-      self.setData({ lastUsedBallName: '', lastUsedCount: 0 }); // reset
-    var h = [record].concat(self.data.history).slice(0, 20)
-    wx.setStorageSync('catch_history', h)
+  _saveRecordCore: function(record, isClear) {
+    var self = this;
+    var result = record.resultRaw;
+    var catchCount = record.total;
+    var newTotalCatches = self.data.totalCatches + catchCount;
+    var newSuccessCatches = self.data.successCatches + (result === 'success' ? catchCount : 0);
+    var newCosts = self.data.totalCosts;
+    var accumulated = self.data.totalGains - newCosts;
+    wx.setStorageSync('total_catches', newTotalCatches);
+    wx.setStorageSync('success_catches', newSuccessCatches);
+    if (self.data._resultElapsedTime) self.setData({ resultElapsedTime: self.data._resultElapsedTime, resultElapsedAuto: self.data._resultElapsedAuto });
+    self.setData({ lastUsedBallName: '', lastUsedCount: 0 });
+    var h = [record].concat(self.data.history).slice(0, 20);
+    wx.setStorageSync('catch_history', h);
     var isShiny = (result === 'success' || result === 'miss');
-      if (isShiny && self.data.autoResetPity) {
-        if (result === 'miss' && self.data.continuePity) {
-          var currentPity = wx.getStorageSync('pity_count') || 0;
-          self.updatePity(currentPity + 1);
-        } else {
-          self.updatePity(0);
-        }
+    if (isShiny && self.data.autoResetPity) {
+      if (result === 'miss' && self.data.continuePity) {
+        self.updatePity((wx.getStorageSync('pity_count') || 0) + 1);
       } else {
-        var currentPity = wx.getStorageSync('pity_count') || 0;
-        self.updatePity(currentPity + 1);
+        self.updatePity(0);
       }
-    
-    // Do NOT clear global inventory (balls array).
-    wx.removeStorageSync('carnival_count');
-    wx.removeStorageSync('lucky_box_count');
-    self.setData({
-      carnivalCount: 0,
-      luckyBoxCount: 0,
-      totalCatches: newTotalCatches,
-      successCatches: newSuccessCatches,
-      totalCosts: newCosts,
-      accumulatedWealth: accumulated,
-      totalWealth: self.data.initialWealth + accumulated,
-      history: h,
-      result: '',
-      selectedBall: null
-    })
-    self.updateSuccessRate()
-    self.updateGemCost()
-    var toastMsg = totalBallCost > 0 ? '✅ 已记录并清除球数据 消耗💵' + totalBallCost : '✅ 已记录并清除球数据'
-    wx.showToast({ title: toastMsg, icon: 'none' })
+    } else if (isShiny && !self.data.autoResetPity) {
+      if (isClear) {
+        self.updatePity(0);
+      } else {
+        self.updatePity((wx.getStorageSync('pity_count') || 0) + 1);
+      }
+    } else {
+      if (isClear) self.updatePity((wx.getStorageSync('pity_count') || 0) + 1);
+    }
+    var usedCount = self.data.lastUsedCount || 0;
+    var newUsedBallTotal = self.data.usedBallTotal + usedCount;
+    wx.setStorageSync('used_ball_total', newUsedBallTotal);
+    var updates = {
+      totalCatches: newTotalCatches, successCatches: newSuccessCatches,
+      totalCosts: newCosts, accumulatedWealth: accumulated,
+      totalWealth: self.data.initialWealth + accumulated, history: h, result: '',
+      usedBallTotal: newUsedBallTotal
+    };
+    if (isClear) {
+      wx.removeStorageSync('carnival_count');
+      wx.removeStorageSync('lucky_box_count');
+      updates.carnivalCount = 0;
+      updates.luckyBoxCount = 0;
+      updates.selectedBall = null;
+    }
+    self.setData(updates);
+    self.updateSuccessRate();
+    self.updateGemCost();
+    wx.showToast({ title: isClear ? '✅ 已记录并清除球数据' : '✅ 记录成功', icon: 'none' });
+  },
+  onRecordContinue: function(resultType) {
+    this._saveRecordCore(this._buildRecord(resultType), false);
+  },
+  onRecordClear: function(resultType) {
+    this._saveRecordCore(this._buildRecord(resultType), true);
   },
   
     onGenerateImage: function() {
     var self = this;
     wx.showLoading({ title: '生成高阶战报中...' });
     
-    const query = wx.createSelectorQuery();
-    query.select('#shareCanvas').fields({ node: true, size: true }).exec((res) => {
+    var query = wx.createSelectorQuery();
+    query.select('#shareCanvas').fields({ node: true, size: true }).exec(function(res) {
       if (!res[0] || !res[0].node) {
         wx.hideLoading();
         if(self.copyToClipboard) self.copyToClipboard();
         wx.showToast({ title: '生成图片失败，已为您复制文本', icon: 'none' });
         return;
       }
-      const canvas = res[0].node;
-      const ctx = canvas.getContext('2d');
-      const dpr = wx.getSystemInfoSync().pixelRatio;
+      var canvas = res[0].node;
+      var ctx = canvas.getContext('2d');
+      var dpr = wx.getSystemInfoSync().pixelRatio;
+      var width = 400;
       
-      const width = 400;
-      let height = 700;
+      // ─── 1. 数据计算 ───
+      var hasHistory = self.data.history && self.data.history.length > 0;
+      var last = null;
+      if (hasHistory) {
+        for (var li = 0; li < self.data.history.length; li++) {
+          if (self.data.history[li].result !== '微调') { last = self.data.history[li]; break; }
+        }
+      }
+      
+      var allBalls = self.data.balls || [];
+      var specialHist = self.data.specialHistory || [];
+      var acquired = {};
+      for (var sh = 0; sh < specialHist.length; sh++) {
+        var shItem = specialHist[sh];
+        acquired[shItem.ball] = (acquired[shItem.ball] || 0) + shItem.count;
+      }
+      var parsedBalls = [];
+      for (var bi = 0; bi < allBalls.length; bi++) {
+        var totalAcquired = acquired[allBalls[bi].name] || 0;
+        var totalUsed = totalAcquired - (allBalls[bi].count || 0);
+        if (totalUsed > 0) {
+          parsedBalls.push({ name: allBalls[bi].name, count: totalUsed, img: allBalls[bi].img || '' });
+        }
+      }
+      
+      var remarkOffset = 0;
+      if (last && last.remark) {
+        remarkOffset = Math.min(2, Math.ceil(last.remark.length / 26)) * 18;
+      } else if (last && (last.result||'').indexOf('(') > -1) {
+        var rIdx = (last.result||'').indexOf('(');
+        var remark = (last.result||'').substring(rIdx + 1).replace(/\)+$/, '').trim();
+        remarkOffset = Math.min(2, Math.ceil(remark.length / 26)) * 18;
+      }
+      var ballRows = parsedBalls.length > 0 ? Math.ceil(parsedBalls.length / 2) : 0;
+      var ballGridHeight = ballRows * 28;
+      var height = Math.max(700, (hasHistory ? 680 : 0) + ballGridHeight + remarkOffset + 60);
+      var imgScale = height > 700 ? Math.max(0.6, 1 - (height - 700) / 800) : 1;
+      
+      // ─── 2. 画布初始化 ───
       canvas.width = width * dpr;
       canvas.height = height * dpr;
-      ctx.scale(dpr, dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       
-      const grd = ctx.createLinearGradient(0, 0, 0, height);
-      grd.addColorStop(0, '#0f172a');
-      grd.addColorStop(1, '#000000');
-      ctx.fillStyle = grd;
-      ctx.fillRect(0, 0, width, height);
-
-      const orb = ctx.createRadialGradient(width, 0, 10, width, 0, 350);
-      orb.addColorStop(0, 'rgba(0, 212, 255, 0.15)');
-      orb.addColorStop(1, 'rgba(0, 212, 255, 0)');
-      ctx.fillStyle = orb;
-      ctx.fillRect(0, 0, width, height);
+      var imgLoadCount = 0;
+      var imgTotalCount = 0;
+      var loadImg = function(url, onLoad) {
+        if (!url) return;
+        imgTotalCount++;
+        var tryDraw = function(path) {
+          var img = canvas.createImage();
+          img.onload = function() { onLoad(img); imgLoadCount++; };
+          img.onerror = function() {
+            // 直接加载失败，尝试 getImageInfo 转格式
+            wx.getImageInfo({ src: path, success: function(info) {
+              var img2 = canvas.createImage(); img2.src = info.path;
+              img2.onload = function() { onLoad(img2); imgLoadCount++; };
+              img2.onerror = function() { imgLoadCount++; };
+            }, fail: function() { imgLoadCount++; }});
+          };
+          img.src = path;
+        };
+        if (url.indexOf('cloud://') === 0) {
+          wx.cloud.getTempFileURL({ fileList: [url], success: function(res) {
+            if (res.fileList && res.fileList[0] && res.fileList[0].tempFileURL) {
+              tryDraw(res.fileList[0].tempFileURL);
+            } else { imgLoadCount++; }
+          }, fail: function() { imgLoadCount++; }});
+        } else if (url.indexOf('http') === 0) {
+          wx.downloadFile({ url: url, success: function(res) {
+            if (res.statusCode === 200) { tryDraw(res.tempFilePath); }
+            else { imgLoadCount++; }
+          }, fail: function() { imgLoadCount++; }});
+        } else {
+          tryDraw(url);
+        }
+      };
       
-      const roundRect = (x, y, w, h, r, fill, stroke) => {
+      var saveCanvasRetries = 0;
+      var saveCanvas = function() {
+        if (imgLoadCount < imgTotalCount && saveCanvasRetries < 25) {
+          saveCanvasRetries++;
+          setTimeout(saveCanvas, 200);
+          return;
+        }
+        wx.canvasToTempFilePath({
+          x: 0, y: 0, width: width, height: height,
+          destWidth: width * dpr, destHeight: height * dpr, canvas: canvas,
+          success: function(res) { wx.hideLoading(); wx.previewImage({ urls: [res.tempFilePath] }); },
+          fail: function() { wx.hideLoading(); wx.showToast({ title: '图片生成失败', icon: 'none' }); }
+        });
+      };
+      
+      var roundRect = function(x, y, w, h, r, fill, stroke) {
         ctx.beginPath();
         ctx.moveTo(x + r, y);
         ctx.arcTo(x + w, y, x + w, y + h, r);
@@ -668,387 +710,250 @@ Page({
         if (fill) { ctx.fillStyle = fill; ctx.fill(); }
         if (stroke) { ctx.strokeStyle = stroke; ctx.stroke(); }
       };
-
-      ctx.fillStyle = '#00d4ff';
-      ctx.font = 'bold 24px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('异色捕捉统计战报', width / 2 + 20, 50);
-      ctx.textAlign = 'left';
-
-      roundRect(20, 80, width - 40, 140, 12, 'rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.1)');
       
-      ctx.font = '14px sans-serif';
-      ctx.fillStyle = '#94a3b8';
-      ctx.fillText('生成时间', 40, 115);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(self.data.buildTime, 40, 135);
-
-      let totalEncounters = self.data.carnivalCount + self.data.luckyBoxCount;
-      if (totalEncounters === 0 && self.data.history && self.data.history.length > 0 && self.data.history[0].encounters !== undefined) { totalEncounters = self.data.history[0].encounters; }
-      ctx.fillStyle = '#94a3b8';
-      ctx.fillText('累计奇遇', width/2 + 20, 115);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(totalEncounters + ' 次', width/2 + 20, 135);
-
-      ctx.fillStyle = '#94a3b8';
-      ctx.fillText('欧皇评级', 40, 175);
-      ctx.fillStyle = '#ffab40';
-      ctx.font = 'bold 15px sans-serif';
-      ctx.fillText((self.data.userTitle || '').replace(/[^\u4e00-\u9fa5]/g, ''), 40, 195);
-
-      ctx.font = '14px sans-serif';
-      ctx.fillStyle = '#94a3b8';
-      ctx.fillText('总盈亏', width/2 + 20, 175);
-      if (self.data.accumulatedWealth === 0 || self.data.accumulatedWealth === '0') {
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillText('不允透露', width/2 + 20, 195);
-      } else {
-        ctx.fillStyle = self.data.accumulatedWealth >= 0 ? '#4ade80' : '#f87171';
-        ctx.fillText((self.data.accumulatedWealth >= 0 ? '+' : '') + self.data.accumulatedWealth, width/2 + 42, 195);
-      }
-
-      // ── 预计算画布高度 ──
-      var hasHistory = self.data.history && self.data.history.length > 0;
-      var last = null;
-      if (hasHistory) {
-        for (var li = 0; li < self.data.history.length; li++) {
-          if (self.data.history[li].result !== '微调') { last = self.data.history[li]; break; }
-        }
-      }
-      var parsedBalls = [];
-      var remarkOffset = 0;
-      var ballGridHeight = 0;
-      
-      if (last) {
-        var ballsRaw = (last.balls || '').replace(/^\[盘点\]\s*/, '').replace(/^📋\s*/, '').replace(/[✨🌟💰💫📋]/g, '').trim();
-        if (ballsRaw && ballsRaw !== '未使用球') {
-          var parts = ballsRaw.split(',');
-          for (var bi = 0; bi < parts.length; bi++) {
-            var part = parts[bi].trim();
-            if (!part) continue;
-            var count = 0;
-            var name = part;
-            var remainMatch = part.match(/^(.+?)剩余(\d+)/);
-            if (remainMatch) { name = remainMatch[1].trim(); count = parseInt(remainMatch[2]) || 0; }
-            else {
-              var xMatch = part.match(/^(.+?)\s*x(\d+)(?:\s*个)?$/);
-              if (xMatch) { name = xMatch[1].trim(); count = parseInt(xMatch[2]) || 0; }
-            }
-            var ballImg = '';
-            var allBalls = self.data.balls || [];
-            for (var bj = 0; bj < allBalls.length; bj++) {
-              if (allBalls[bj].name === name) { ballImg = allBalls[bj].img || ''; break; }
-            }
-            parsedBalls.push({ name: name, count: count, img: ballImg });
-          }
-        }
-        var remark = last.remark;
-        if (!remark && (last.result||'').indexOf('(') > -1) {
-          var rIdx = (last.result||'').indexOf('(');
-          remark = (last.result||'').substring(rIdx + 1).replace(/\)+$/, '').trim();
-        }
-        if (remark) remarkOffset = Math.min(2, Math.ceil(remark.length / 26)) * 18;
-        var ballRows = parsedBalls.length > 0 ? Math.ceil(parsedBalls.length / 2) : 0;
-        ballGridHeight = ballRows * 28;
-      }
-      
-      height = Math.max(700, (hasHistory ? 680 : 0) + ballGridHeight + remarkOffset + 60);
-      
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      
-      // 内容缩放系数：超长内容时所有图标等比缩小
-      var imgScale = height > 700 ? Math.max(0.6, 1 - (height - 700) / 800) : 1;
-      
-      var loadImg = function(url, onLoad) {
-        if (!url) return;
-        wx.getImageInfo({ src: url,
-          success: function(info) {
-            var img = canvas.createImage(); img.src = info.path;
-            img.onload = function() { onLoad(img); };
-            img.onerror = function() {};
-          },
-          fail: function() {}
-        });
-      };
-      
-      // 背景
+      // ─── 3. 背景 ───
       var bgGrd = ctx.createLinearGradient(0, 0, 0, height);
       bgGrd.addColorStop(0, '#0d1117'); bgGrd.addColorStop(1, '#010409');
       ctx.fillStyle = bgGrd; ctx.fillRect(0, 0, width, height);
       
-      // ═══ 头部 ═══
-      ctx.fillStyle = '#e6edf3';
+      var orb = ctx.createRadialGradient(width, 0, 10, width, 0, 350);
+      orb.addColorStop(0, 'rgba(0, 212, 255, 0.12)');
+      orb.addColorStop(1, 'rgba(0, 212, 255, 0)');
+      ctx.fillStyle = orb;
+      ctx.fillRect(0, 0, width, height);
+      
+      // ─── 4. 标题 ───
+      ctx.fillStyle = '#00d4ff';
       ctx.font = 'bold 24px sans-serif';
-      ctx.textAlign = 'center'; ctx.fillText('异色捕捉统计战报', width / 2 + 20, 50); ctx.textAlign = 'left';
+      ctx.textAlign = 'center'; ctx.fillText(i18n.t('imgTitle'), width / 2 + 20, 50); ctx.textAlign = 'left';
       loadImg('https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png', function(img) {
         var s = Math.round(28 * imgScale);
         ctx.drawImage(img, width / 2 - 110, 26 + (28-s)/2, s, s);
       });
+      
+      // ─── 5. 统计面板 ───
       roundRect(20, 80, width - 40, 140, 14, 'rgba(255,255,255,0.03)', 'rgba(255,255,255,0.06)');
       ctx.font = 'bold 13px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)';
-      ctx.fillText('生成时间', 36, 115); ctx.fillStyle = '#e6edf3'; ctx.font = '13px sans-serif'; ctx.fillText(self.data.buildTime, 36, 135);
+      ctx.fillText(i18n.t('imgGenTime'), 36, 115);
+      ctx.fillStyle = '#e6edf3'; ctx.font = '13px sans-serif'; ctx.fillText(self.data.buildTime, 36, 135);
+      
       var totalE = self.data.carnivalCount + self.data.luckyBoxCount;
       if (totalE === 0 && last && last.encounters !== undefined) totalE = last.encounters;
-      ctx.font = 'bold 13px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillText('累计奇遇', width/2 + 16, 115);
-      ctx.fillStyle = '#e6edf3'; ctx.font = '13px sans-serif'; ctx.fillText(totalE + ' 次', width/2 + 16, 135);
-      ctx.font = 'bold 13px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillText('欧皇评级', 36, 175);
+      ctx.font = 'bold 13px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillText(i18n.t('imgEncounters'), width/2 + 16, 115);
+      ctx.fillStyle = '#e6edf3'; ctx.font = '13px sans-serif'; ctx.fillText(totalE + ' ' + i18n.t('imgBallsUnit').trim(), width/2 + 16, 135);
+      
+      ctx.font = 'bold 13px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillText(i18n.t('imgLuckRating'), 36, 175);
       ctx.fillStyle = '#ffab40'; ctx.font = 'bold 14px sans-serif';
       ctx.fillText((self.data.userTitle||'').replace(/[^\u4e00-\u9fa5]/g, ''), 36, 195);
-      ctx.font = 'bold 13px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)';
-      ctx.fillText('总盈亏', width/2 + 16, 175);
+      
+      ctx.font = 'bold 13px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillText(i18n.t('imgProfitLoss'), width/2 + 16, 175);
       if (self.data.accumulatedWealth === 0 || self.data.accumulatedWealth === '0') {
-        ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillText('不允透露', width/2 + 16, 195);
+        ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillText(i18n.t('imgBreakEven'), width/2 + 16, 195);
       } else {
         var isGain = self.data.accumulatedWealth >= 0;
         ctx.fillStyle = isGain ? '#3fb950' : '#f85149';
-        ctx.fillText((isGain ? '盈利' : '亏损') + Math.abs(self.data.accumulatedWealth), width/2 + 16, 195);
+        ctx.fillText((isGain ? i18n.t('imgProfit') : i18n.t('imgLoss')) + Math.abs(self.data.accumulatedWealth), width/2 + 16, 195);
       }
       
-      // ═══ 历史记录 ═══
-      if (last) {
-        var boxH = 370 + ballGridHeight + remarkOffset;
-        roundRect(20, 240, width - 40, boxH, 12, 'rgba(255,255,255,0.05)', 'rgba(255,255,255,0.1)');
-        
-        // 🚀 最新记录 + 标签
-        ctx.fillStyle = '#e6edf3';
-        ctx.font = 'bold 16px sans-serif';
-        ctx.fillText('最新记录', 36, 280);
-        
-        var brushMode = last.brushMode || 'single';
-        ctx.font = '11px sans-serif';
-        var tagW = ctx.measureText(brushMode === 'mixed' ? '混刷' : '单刷').width + 14;
-        var tagX = width - 40 - tagW;
-        if (brushMode === 'mixed') {
-          roundRect(tagX, 264, tagW, 20, 4, 'rgba(224,64,251,0.08)', 'rgba(224,64,251,0.2)');
-          ctx.fillStyle = '#d2a8ff';
-        } else {
-          roundRect(tagX, 264, tagW, 20, 4, 'rgba(125,200,255,0.08)', 'rgba(125,200,255,0.2)');
-          ctx.fillStyle = '#79c0ff';
-        }
-        ctx.fillText(brushMode === 'mixed' ? '混刷' : '单刷', tagX + 7, 279);
-        ctx.font = '13px sans-serif';
-        
-        // 状态 + 混刷列表同行
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillText('状态', 36, 320);
-        var resText = last.result || '未知';
-        ctx.fillStyle = last.resultRaw === 'success' ? '#4ade80' : (last.resultRaw === 'miss' ? '#f87171' : '#ffffff');
-        ctx.fillText(resText.indexOf('(')>-1 ? resText.substring(0, resText.indexOf('(')).trim() : resText, 80, 320);
-        
-        // 混刷列表在状态行右侧
-        if (brushMode === 'mixed' && last.mixedPets) {
-          ctx.font = '11px sans-serif';
-          ctx.fillStyle = 'rgba(255,255,255,0.4)';
-          ctx.textAlign = 'right';
-          var maxW = width - 40 - 80 - 12;
-          var mixedText = last.mixedPets;
-          while (ctx.measureText(mixedText).width > maxW && mixedText.length > 3) {
-            mixedText = mixedText.substring(0, mixedText.length - 1);
-          }
-          if (mixedText !== last.mixedPets) mixedText += '…';
-          ctx.fillText(mixedText, width - 40, 320);
-          ctx.textAlign = 'left';
-          ctx.font = '14px sans-serif';
-        }
-        
-        // 备注
-        var remarkRender = last.remark || '';
-        if (!remarkRender && (last.result||'').indexOf('(')>-1) {
-          remarkRender = (last.result||'').substring((last.result||'').indexOf('(')+1).replace(/\)+$/, '').trim();
-        }
-        if (remarkRender) {
-          var rlines = [];
-          var rt = remarkRender;
-          var maxR = 2;
-          while (rt.length > 0 && rlines.length < maxR) {
-            if (rt.length <= 26) { rlines.push(rt); break; }
-            rlines.push(rt.substring(0, 26)); rt = rt.substring(26);
-          }
-          rlines.forEach(function(line, i) {
-            ctx.font = '12px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.42)';
-            ctx.fillText('· ' + line, 55, 342 + i * 18);
-            ctx.font = '14px sans-serif';
-          });
-        }
-
-        // 精灵名称（显示捕获/歪了的那只）
-        var petNameY = 372 + remarkOffset;
-        ctx.fillStyle = '#94a3b8'; ctx.font = '14px sans-serif';
-        ctx.fillText('精灵名称', 36, petNameY);
-        
-        var resultPet = last.targetPet || last.pet || '';
-        if (resultPet) {
-          ctx.fillStyle = (last.resultRaw === 'success' ? '#4ade80' : (last.resultRaw === 'miss' ? '#f87171' : '#ffffff'));
-          ctx.fillText(resultPet, 106, petNameY);
-        } else {
-          ctx.fillStyle = '#ffffff';
-          ctx.fillText('未填写', 106, petNameY);
-        }
-
-        if (last.elapsedTimeText) {
-          ctx.fillStyle = '#94a3b8';
-          ctx.fillText('捕捉耗时', width/2 - 4, petNameY);
-          ctx.fillStyle = '#ffffff';
-          var et = last.elapsedTimeText.replace('耗时: ', '').trim() || '未知';
-          if (last.elapsedAuto) et += ' (仅供参考)';
-          ctx.font = '12px sans-serif';
-          var maxEtW = width - 40 - (width/2 + 70) - 4;
-          if (ctx.measureText(et).width > maxEtW) {
-            while (et.length > 2 && ctx.measureText(et + '…').width > maxEtW) et = et.slice(0, -1);
-            et += '…';
-          }
-          ctx.fillText(et, width/2 + 70, petNameY);
-          ctx.font = '14px sans-serif';
-        }
-
-        // ── 消耗球类 ──
-        var ballSectionY = 412 + remarkOffset;
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillText('消耗球类', 36, ballSectionY);
-        
-        if (parsedBalls.length === 1) {
-          // 单球：内联显示「消耗球类: [icon] 球名 x N 个」
-          var ball = parsedBalls[0];
-          var inlineY = ballSectionY + 14;
-          var inlineX = 106;
-          if (ball.img) {
-            var bs = Math.round(20 * imgScale);
-            loadImg(ball.img, function(ix, iy, s) { return function(img) {
-              ctx.drawImage(img, ix, iy - 16, s, s);
-            }; }(inlineX, inlineY, bs));
-            inlineX += 26;
-          }
-          ctx.font = '14px sans-serif';
-          ctx.fillStyle = '#ffffff';
-          ctx.fillText(ball.name, inlineX, inlineY);
-          var nw = ctx.measureText(ball.name).width;
-          ctx.font = 'bold 14px sans-serif';
-          ctx.fillStyle = ball.count > 0 ? '#00d4ff' : 'rgba(255,255,255,0.35)';
-          ctx.fillText('  x ' + ball.count + ' 个', inlineX + nw, inlineY);
-        } else if (parsedBalls.length > 1) {
-          var colW = (width - 90) / 2;
-          for (var bj = 0; bj < parsedBalls.length; bj++) {
-            var ball = parsedBalls[bj];
-            var col = bj % 2;
-            var row = Math.floor(bj / 2);
-            var bx = 48 + col * colW;
-            var by = ballSectionY + 16 + row * 28;
-            
-            if (ball.img) {
-              var bs = Math.round(20 * imgScale);
-              loadImg(ball.img, function(bx, by, bs) { return function(img) {
-                ctx.drawImage(img, bx, by - 2, bs, bs);
-              }; }(bx, by, bs));
-            }
-            var textX = bx + (ball.img ? 26 : 0);
-            
-            ctx.font = '12px sans-serif';
-            ctx.fillStyle = '#e2e8f0';
-            ctx.fillText(ball.name, textX - 4, by + 14);
-            
-            ctx.font = 'bold 12px sans-serif';
-            ctx.fillStyle = ball.count > 0 ? '#00d4ff' : 'rgba(255,255,255,0.35)';
-            var countStr = 'x ' + ball.count + ' 个';
-            var nameW = ctx.measureText(ball.name).width;
-            ctx.fillText(countStr, textX + nameW, by + 14);
-          }
-        } else {
-          ctx.fillStyle = '#ffffff';
-          ctx.fillText('未使用球', 106, ballSectionY + 16);
-        }
-
-        var petImgY = ballSectionY + ballGridHeight + 40;
-        if (parsedBalls.length === 0) petImgY = ballSectionY + 35;
-        
-        var petSize = Math.round(110 * imgScale);
-        var badgeSize = Math.round(28 * imgScale);
-        
-        // 只有填写了精灵图片链接时才显示图片和角标
-        if (last.petImageUrl && last.petImageUrl.length > 5) {
-          loadImg(last.petImageUrl, function(img) {
-            ctx.drawImage(img, 50, petImgY, petSize, petSize);
-          });
-          if (last.resultRaw === 'miss' || last.resultRaw === 'success') {
-            var badgeUrl = last.resultRaw === 'miss'
-              ? 'https://patchwiki.biligame.com/images/rocom/4/4f/20dseynhfc393c6jys1rnwhwwf94xvv.png'
-              : 'https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png';
-            loadImg(badgeUrl, function(img) {
-              ctx.drawImage(img, 50 + petSize - badgeSize + 8, petImgY - 8, badgeSize, badgeSize);
-            });
-          }
-        }
-        
+      // ─── 6. 历史记录详情 ───
+      if (!last) { setTimeout(saveCanvas, 500); return; }
+      
+      var boxH = 370 + ballGridHeight + remarkOffset;
+      roundRect(20, 240, width - 40, boxH, 12, 'rgba(255,255,255,0.05)', 'rgba(255,255,255,0.1)');
+      
+      ctx.fillStyle = '#e6edf3';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.fillText(i18n.t('imgLatestRecord'), 36, 280);
+      
+      var brushMode = last.brushMode || 'single';
+      var brushLabel = brushMode === 'mixed' ? i18n.t('imgMixed') : i18n.t('imgSingle');
+      ctx.font = '11px sans-serif';
+      var tagW = ctx.measureText(brushLabel).width + 14;
+      var tagX = width - 40 - tagW;
+      if (brushMode === 'mixed') {
+        roundRect(tagX, 264, tagW, 20, 4, 'rgba(224,64,251,0.08)', 'rgba(224,64,251,0.2)');
+        ctx.fillStyle = '#d2a8ff';
+      } else {
+        roundRect(tagX, 264, tagW, 20, 4, 'rgba(125,200,255,0.08)', 'rgba(125,200,255,0.2)');
+        ctx.fillStyle = '#79c0ff';
       }
-
-      // ───────────────── 底部签名栏 ─────────────────
+      ctx.fillText(brushLabel, tagX + 7, 279);
+      ctx.font = '13px sans-serif';
+      
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText(i18n.t('imgStatus'), 36, 320);
+      var resText = last.result || i18n.t('imgUnknown');
+      ctx.fillStyle = last.resultRaw === 'success' ? '#4ade80' : (last.resultRaw === 'miss' ? '#f87171' : '#ffffff');
+      ctx.fillText(resText.indexOf('(')>-1 ? resText.substring(0, resText.indexOf('(')).trim() : resText, 80, 320);
+      
+      if (brushMode === 'mixed' && last.mixedPets) {
+        ctx.font = '11px sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.textAlign = 'right';
+        var maxW = width - 40 - 80 - 12;
+        var mixedText = last.mixedPets;
+        while (ctx.measureText(mixedText).width > maxW && mixedText.length > 3) {
+          mixedText = mixedText.substring(0, mixedText.length - 1);
+        }
+        if (mixedText !== last.mixedPets) mixedText += '…';
+        ctx.fillText(mixedText, width - 40, 320);
+        ctx.textAlign = 'left';
+        ctx.font = '14px sans-serif';
+      }
+      
+      var remarkRender = last.remark || '';
+      if (!remarkRender && (last.result||'').indexOf('(')>-1) {
+        remarkRender = (last.result||'').substring((last.result||'').indexOf('(')+1).replace(/\)+$/, '').trim();
+      }
+      if (remarkRender) {
+        var rlines = [];
+        var rt = remarkRender;
+        var maxR = 2;
+        while (rt.length > 0 && rlines.length < maxR) {
+          if (rt.length <= 26) { rlines.push(rt); break; }
+          rlines.push(rt.substring(0, 26)); rt = rt.substring(26);
+        }
+        rlines.forEach(function(line, i) {
+          ctx.font = '12px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.42)';
+          ctx.fillText('· ' + line, 55, 342 + i * 18);
+          ctx.font = '14px sans-serif';
+        });
+      }
+      
+      var petNameY = 372 + remarkOffset;
+      ctx.fillStyle = '#94a3b8'; ctx.font = '14px sans-serif';
+      ctx.fillText(i18n.t('imgPetName'), 36, petNameY);
+      var resultPet = last.targetPet || last.pet || '';
+      if (resultPet) {
+        ctx.fillStyle = (last.resultRaw === 'success' ? '#4ade80' : (last.resultRaw === 'miss' ? '#f87171' : '#ffffff'));
+        ctx.fillText(resultPet, 106, petNameY);
+      } else {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(i18n.t('imgNotFilled'), 106, petNameY);
+      }
+      
+      if (last.elapsedTimeText) {
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText(i18n.t('imgCatchDuration'), width/2 - 4, petNameY);
+        ctx.fillStyle = '#ffffff';
+        var et = last.elapsedTimeText.replace('耗时: ', '').trim() || i18n.t('imgUnknown');
+        if (last.elapsedAuto) et += ' (仅供参考)';
+        ctx.font = '12px sans-serif';
+        var maxEtW = width - 40 - (width/2 + 70) - 4;
+        if (ctx.measureText(et).width > maxEtW) {
+          while (et.length > 2 && ctx.measureText(et + '…').width > maxEtW) et = et.slice(0, -1);
+          et += '…';
+        }
+        ctx.fillText(et, width/2 + 70, petNameY);
+        ctx.font = '14px sans-serif';
+      }
+      
+      // ─── 7. 消耗球类 ───
+      var ballSectionY = 412 + remarkOffset;
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText(i18n.t('imgBallsConsumed'), 36, ballSectionY);
+      
+      if (parsedBalls.length === 1) {
+        var ball = parsedBalls[0];
+        var inlineY = ballSectionY + 14;
+        var inlineX = 106;
+        if (ball.img) {
+          var bs = Math.round(20 * imgScale);
+          loadImg(ball.img, function(ix, iy, s) { return function(img) {
+            ctx.drawImage(img, ix, iy - s + 3, s, s);
+          }; }(inlineX, inlineY, bs));
+          inlineX += bs + 6;
+        }
+        ctx.font = '14px sans-serif'; ctx.fillStyle = '#ffffff';
+        ctx.fillText(ball.name, inlineX, inlineY);
+        var nw = ctx.measureText(ball.name).width;
+        ctx.font = 'bold 14px sans-serif'; ctx.fillStyle = ball.count > 0 ? '#00d4ff' : 'rgba(255,255,255,0.35)';
+        ctx.fillText('  x ' + ball.count + i18n.t('imgBallsUnit'), inlineX + nw, inlineY);
+      } else if (parsedBalls.length > 1) {
+        var colW = (width - 90) / 2;
+        for (var bj = 0; bj < parsedBalls.length; bj++) {
+          var ball = parsedBalls[bj];
+          var col = bj % 2;
+          var row = Math.floor(bj / 2);
+          var bx = 48 + col * colW;
+          var by = ballSectionY + 16 + row * 28;
+          var textY = by + 14;
+          if (ball.img) {
+            var bs = Math.round(18 * imgScale);
+            loadImg(ball.img, function(bx, textY, bs) { return function(img) {
+              ctx.drawImage(img, bx, textY - bs + 2, bs, bs);
+            }; }(bx, textY, bs));
+          }
+          var textX = bx + (ball.img ? bs + 4 : 0);
+          ctx.font = '12px sans-serif'; ctx.fillStyle = '#e2e8f0';
+          ctx.fillText(ball.name, textX, textY);
+          ctx.font = 'bold 12px sans-serif';
+          ctx.fillStyle = ball.count > 0 ? '#00d4ff' : 'rgba(255,255,255,0.35)';
+          var countStr = ' x ' + ball.count + i18n.t('imgBallsUnit');
+          var nameW = ctx.measureText(ball.name).width;
+          ctx.fillText(countStr, textX + nameW, textY);
+        }
+      } else {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(i18n.t('imgNoBallsUsed'), 106, ballSectionY + 16);
+      }
+      
+      var petImgY = ballSectionY + ballGridHeight + 40;
+      if (parsedBalls.length === 0) petImgY = ballSectionY + 35;
+      var petSize = Math.round(110 * imgScale);
+      var badgeSize = Math.round(28 * imgScale);
+      if (last.petImageUrl && last.petImageUrl.length > 5) {
+        loadImg(last.petImageUrl, function(img) {
+          ctx.drawImage(img, 50, petImgY, petSize, petSize);
+        });
+        if (last.resultRaw === 'miss' || last.resultRaw === 'success') {
+          var badgeUrl = last.resultRaw === 'miss'
+            ? 'https://patchwiki.biligame.com/images/rocom/4/4f/20dseynhfc393c6jys1rnwhwwf94xvv.png'
+            : 'https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png';
+          loadImg(badgeUrl, function(img) {
+            ctx.drawImage(img, 50 + petSize - badgeSize + 8, petImgY - 8, badgeSize, badgeSize);
+          });
+        }
+      }
+      
+      // ─── 8. 底部签名 ───
       var dividerY = height - 70;
-      ctx.beginPath();
-      ctx.moveTo(20, dividerY);
-      ctx.lineTo(width - 20, dividerY);
-      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
+      ctx.beginPath(); ctx.moveTo(20, dividerY); ctx.lineTo(width - 20, dividerY);
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1; ctx.stroke();
+      
       var footerY = dividerY + 18;
       ctx.textAlign = 'left';
-      ctx.fillStyle = 'rgba(255,255,255,0.3)';
-      ctx.font = '10px sans-serif';
-      ctx.fillText('由 洛手助手 提供技术支持', 24, footerY);
-      ctx.fillText('开发者：R O C K', 24, footerY + 14);
-      ctx.fillStyle = 'rgba(255,255,255,0.18)';
-      ctx.font = '9px sans-serif';
-      ctx.fillText('数据仅供参考', 24, footerY + 26);
-
-      // 右侧：用户水印
+      ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = '10px sans-serif';
+      ctx.fillText(i18n.t('imgFooterTech'), 24, footerY);
+      ctx.fillText(i18n.t('imgFooterDev'), 24, footerY + 14);
+      ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.font = '9px sans-serif';
+      ctx.fillText(i18n.t('imgFooterDisc'), 24, footerY + 26);
+      
       var userInfo = wx.getStorageSync('user_info');
       if (userInfo && userInfo.avatarUrl && userInfo.nickName) {
-          var uid = wx.getStorageSync('game_uid');
-          ctx.textAlign = 'right';
-          ctx.fillStyle = 'rgba(255,255,255,0.3)';
-          ctx.font = '10px sans-serif';
-          var nickText = '@' + userInfo.nickName;
-          var nickW = ctx.measureText(nickText).width;
-          ctx.fillText(nickText, width - 24, footerY);
-          if (uid) {
-              ctx.fillStyle = 'rgba(255,255,255,0.18)';
-              ctx.font = '9px sans-serif';
-              ctx.fillText('UID: ' + uid, width - 24, footerY + 14);
-          }
-          ctx.textAlign = 'left';
-          // 头像水印（自适应昵称宽度）
-          loadImg(userInfo.avatarUrl, function(img) {
-            ctx.save();
-            ctx.beginPath();
-            var avX = width - 24 - nickW - 20;
-            ctx.arc(avX + 8, footerY - 6, 8, 0, Math.PI * 2);
-            ctx.clip();
-            ctx.drawImage(img, avX, footerY - 14, 16, 16);
-            ctx.restore();
-          });
-      }
-
-      
-      setTimeout(function() {
-        wx.canvasToTempFilePath({
-          x: 0,
-          y: 0,
-          width: width,
-          height: height,
-          destWidth: width * dpr,
-          destHeight: height * dpr,
-          canvas: canvas,
-          success(res) {
-            wx.hideLoading();
-            wx.previewImage({ urls: [res.tempFilePath] });
-          },
-          fail() {
-            wx.hideLoading();
-            wx.showToast({ title: '图片生成失败', icon: 'none' });
-          }
+        var uid = wx.getStorageSync('game_uid');
+        ctx.textAlign = 'right';
+        ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = '10px sans-serif';
+        var nickText = '@' + userInfo.nickName;
+        var nickW = ctx.measureText(nickText).width;
+        ctx.fillText(nickText, width - 24, footerY);
+        if (uid) {
+          ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.font = '9px sans-serif';
+          ctx.fillText(i18n.t('imgUID') + uid, width - 24, footerY + 14);
+        }
+        ctx.textAlign = 'left';
+        loadImg(userInfo.avatarUrl, function(img) {
+          ctx.save();
+          ctx.beginPath();
+          var avX = width - 24 - nickW - 20;
+          ctx.arc(avX + 8, footerY - 6, 8, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.drawImage(img, avX, footerY - 14, 16, 16);
+          ctx.restore();
         });
-      }, 3000);
+      }
+      
+      setTimeout(saveCanvas, 500);
     });
   },
   copyToClipboard: function() {
@@ -1060,23 +965,23 @@ Page({
       totalEncounters = history[0].encounters;
     }
     
-    var brushLabel = (last.brushMode === 'mixed') ? '【模式】混刷\n' : '【模式】单刷\n';
+    var brushLabel = last.brushMode === 'mixed' ? '【' + i18n.t('clipMode') + '】' + i18n.t('imgMixed') + '\n' : '【' + i18n.t('clipMode') + '】' + i18n.t('imgSingle') + '\n';
     var petDisplay = last.brushMode === 'mixed' && last.mixedPets
-      ? '【精灵】' + last.mixedPets + '\n'
-      : '【精灵】' + (last.pet || '未填写') + '\n';
+      ? '【' + i18n.t('clipPet') + '】' + last.mixedPets + '\n'
+      : '【' + i18n.t('clipPet') + '】' + (last.pet || i18n.t('imgNotFilled')) + '\n';
     
-    var text = '🎯 洛手助手捕捉战报\n' +
-               '【时间】' + (last.date || '') + '\n' +
-               '【状态】' + (last.result || '未知') + '\n' +
+    var text = i18n.t('clipTitle') + '\n' +
+               '【' + i18n.t('clipTime') + '】' + (last.date || '') + '\n' +
+               '【' + i18n.t('clipStatus') + '】' + (last.result || i18n.t('imgUnknown')) + '\n' +
                brushLabel +
                petDisplay +
-               '【消耗】' + (last.balls || '未使用球') + '\n' +
-               '【耗时】' + (last.elapsedTimeText ? last.elapsedTimeText.replace('耗时: ', '') : '未知') + '\n\n' +
-               '📊 累计统计\n' +
-               '【同频】' + this.data.buildTime + '\n' +
-               '【奇遇】' + (this.data.carnivalCount + this.data.luckyBoxCount) + ' 次\n' +
-               '【欧气】' + (this.data.userTitle || '').replace(/[^\u4e00-\u9fa5]/g, '') + '\n' +
-               '【盈亏】' + ((this.data.accumulatedWealth === 0 || this.data.accumulatedWealth === '0') ? '不允透露' : ((this.data.accumulatedWealth >= 0 ? '+' : '') + this.data.accumulatedWealth + ' 洛克贝'));
+               '【' + i18n.t('clipCost') + '】' + (last.balls || i18n.t('imgNoBallsUsed')) + '\n' +
+               '【' + i18n.t('clipDuration') + '】' + (last.elapsedTimeText ? last.elapsedTimeText.replace('耗时: ', '') : i18n.t('imgUnknown')) + '\n\n' +
+               i18n.t('clipStats') + '\n' +
+               '【' + i18n.t('clipTime') + '】' + this.data.buildTime + '\n' +
+               '【' + i18n.t('clipEncounters') + '】' + (this.data.carnivalCount + this.data.luckyBoxCount) + ' ' + i18n.t('imgBallsUnit').trim() + '\n' +
+               '【' + i18n.t('clipLuck') + '】' + (this.data.userTitle || '').replace(/[^\u4e00-\u9fa5]/g, '') + '\n' +
+               '【' + i18n.t('clipProfit') + '】' + ((this.data.accumulatedWealth === 0 || this.data.accumulatedWealth === '0') ? i18n.t('imgBreakEven') : ((this.data.accumulatedWealth >= 0 ? '+' : '') + this.data.accumulatedWealth + ' ' + i18n.t('currency')));
                
     wx.setClipboardData({
       data: text,
@@ -1105,14 +1010,14 @@ Page({
     this.setData({ successRate: rate, userTitle: title.name, titleColor: title.color, profitRate: profitRate });
   },
   calcTitle: function(rate, encounters, totalCatches) {
-    if (totalCatches >= 500 && rate >= 60) return { name: '🎯 传奇捕宠达人', color: '#00d4ff' }
-    if (encounters >= 10 && rate >= 50) return { name: '🌟 幻兽缔结者', color: '#e040fb' }
-    if (rate >= 80) return { name: '👑 圣龙骑士', color: '#ffab40' }
-    if (rate >= 60) return { name: '✨ 皇家魔法师', color: '#9945ff' }
-    if (rate >= 45) return { name: '🍀 幸运小洛克', color: '#34c759' }
-    if (rate >= 30) return { name: '😐 魔法学徒', color: 'rgba(255,255,255,0.5)' }
-    if (rate >= 20) return { name: '🌫️ 误入暗黑基地', color: '#ff9800' }
-    return { name: '💀 黑衣人附体', color: '#ff4757' }
+    if (totalCatches >= 500 && rate >= 60) return { name: i18n.t('title1'), color: '#00d4ff' }
+    if (encounters >= 10 && rate >= 50) return { name: i18n.t('title2'), color: '#e040fb' }
+    if (rate >= 80) return { name: i18n.t('title3'), color: '#ffab40' }
+    if (rate >= 60) return { name: i18n.t('title4'), color: '#9945ff' }
+    if (rate >= 45) return { name: i18n.t('title5'), color: '#34c759' }
+    if (rate >= 30) return { name: i18n.t('title6'), color: 'rgba(255,255,255,0.5)' }
+    if (rate >= 20) return { name: i18n.t('title7'), color: '#ff9800' }
+    return { name: i18n.t('title8'), color: '#ff4757' }
   },
   calcTotalBallUsed: function() {
     var total = 0
@@ -1334,6 +1239,7 @@ Page({
               wx.setStorageSync('success_catches', sc)
               var balls = self.data.balls.slice()
               balls[res.tapIndex].count += count
+              self.saveBallsToStorage(balls)
               self.setData({ carnivalCount: c, totalCatches: tc, successCatches: sc, balls: balls, captureAnim: true })
               setTimeout(function() { self.setData({ captureAnim: false }) }, 600)
               self.addEncounterRecord('🌟 精灵童话绘本(' + ball.name + ')', '🌟', c)
@@ -1389,6 +1295,7 @@ Page({
               wx.setStorageSync('success_catches', sc)
               var balls = self.data.balls.slice()
               balls[res.tapIndex].count += count
+              self.saveBallsToStorage(balls)
               self.setData({ luckyBoxCount: c, totalCatches: tc, successCatches: sc, balls: balls })
               self.addEncounterRecord('🎁 精灵童话书(' + ball.name + ')', '🎁', c)
               self.calcTotalBallUsed()
@@ -1572,6 +1479,7 @@ Page({
           })
           wx.removeStorageSync('special_history')
           wx.removeStorageSync('used_ball_total')
+          self.saveBallsToStorage(balls)
           self.setData({
             balls: balls,
             hasActiveBalls: false,

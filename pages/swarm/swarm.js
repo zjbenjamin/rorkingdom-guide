@@ -1,8 +1,10 @@
 const app = getApp()
 var db = null
 var notify = require('../../utils/notify')
+var i18nBehavior = require('../../utils/i18nBehavior')
 
 Page({
+  behaviors: [i18nBehavior],
   data: {
     isAdmin: false,
     subscribed: false,
@@ -28,6 +30,7 @@ Page({
     }
   },
   onLoad: function() {
+    this._refreshI18n()
     if (wx.cloud) db = wx.cloud.database()
     this.checkAdmin()
     this.loadLocationOptions()
@@ -49,7 +52,7 @@ Page({
       self.setData({ isAdmin: true })
     }
     wx.cloud.callFunction({ name: 'login' }).then(function(res) {
-      var currentOpenid = res.result.openid || res.result.userInfo.openId
+      var currentOpenid = res.result.openid || (res.result.userInfo && res.result.userInfo.openId)
       db.collection('admin_config').doc('admin').get()
         .then(function(adminRes) {
           if (adminRes.data.openid === currentOpenid) {

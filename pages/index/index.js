@@ -5,9 +5,13 @@ var cloudUrl = require('../../utils/cloudUrl')
 var imageConfig = require('../../config/images')
 var mediaPlayer = require('../../utils/mediaPlayer')
 var admin = require('../../utils/admin')
+var i18nBehavior = require('../../utils/i18nBehavior')
+var i18n = require('../../utils/i18n')
 
 Page({
+  behaviors: [i18nBehavior],
   data: {
+    currentLang: 'zh',
     bannerUrl: '',
     bannerFallback: '',
     announcements: [],
@@ -23,7 +27,8 @@ Page({
     videoPlayerName: '',
     videoPlayerCover: '',
     videoPlayerOwner: '',
-    videoPlayerDesc: ''
+    videoPlayerDesc: '',
+    countdowns: {}
   },
 
   onHide: function() {
@@ -38,6 +43,8 @@ Page({
   },
   onShow: function() {
     var self = this
+    self._refreshI18n()
+    self.setData({ currentLang: i18n.getLanguage() })
     // 先清除旧定时器，防止多个setInterval叠加卡死主线程
     if (self._countdownTimer) { clearInterval(self._countdownTimer); self._countdownTimer = null }
     var n = new Date()
@@ -55,6 +62,13 @@ Page({
     self.checkSubscription()
     // 启动倒计时刷新
     self._countdownTimer = setInterval(function() { self.updateCountdowns() }, 1000)
+  },
+  switchLang: function(e) {
+    var lang = e.currentTarget.dataset.lang
+    var app = getApp()
+    app.setLang(lang)
+    this._refreshI18n()
+    this.setData({ currentLang: lang })
   },
   checkAdmin: function() {
     var self = this
@@ -99,53 +113,44 @@ Page({
   updateCountdowns: function() {
     var list = this.data.announcements;
     if (!list || list.length === 0) return;
-    var changed = false;
     var now = Date.now();
+    var countdowns = this.data.countdowns || {};
+    var changed = false;
     for (var i = 0; i < list.length; i++) {
-      if (list[i].autoOnlineTime && list[i].autoOnlineTime > now) {
-        var diff = list[i].autoOnlineTime - now;
+      var item = list[i];
+      var display = '';
+      if (item.autoOnlineTime && item.autoOnlineTime > now) {
+        var diff = item.autoOnlineTime - now;
         var d = Math.floor(diff / 86400000);
         var h = Math.floor((diff % 86400000) / 3600000);
         var m = Math.floor((diff % 3600000) / 60000);
         var s = Math.floor((diff % 60000) / 1000);
-        var display = '⏳ 距上线 ';
+        display = '⏳ 距上线 ';
         if (d > 0) display += d + '天';
         if (h > 0 || d > 0) display += String(h).padStart(2, '0') + '小时';
         display += String(m).padStart(2, '0') + '分' + String(s).padStart(2, '0') + '秒';
-        if (list[i].autoDeleteDisplay !== display) {
-          list[i].autoDeleteDisplay = display;
-          changed = true;
-        }
-      } else if (list[i].autoDeleteTime) {
-        var diff = list[i].autoDeleteTime - now;
+      } else if (item.autoDeleteTime) {
+        var diff = item.autoDeleteTime - now;
         if (diff > 0) {
           var d = Math.floor(diff / 86400000);
           var h = Math.floor((diff % 86400000) / 3600000);
           var m = Math.floor((diff % 3600000) / 60000);
           var s = Math.floor((diff % 60000) / 1000);
-          var display = '⏳ 距下线 ';
+          display = '⏳ 距下线 ';
           if (d > 0) display += d + '天';
           if (h > 0 || d > 0) display += String(h).padStart(2, '0') + '小时';
           display += String(m).padStart(2, '0') + '分' + String(s).padStart(2, '0') + '秒';
-          if (list[i].autoDeleteDisplay !== display) {
-            list[i].autoDeleteDisplay = display;
-            changed = true;
-          }
         } else {
-          if (list[i].autoDeleteDisplay !== '✅ 已结束') {
-            list[i].autoDeleteDisplay = '✅ 已结束';
-            changed = true;
-          }
+          display = '✅ 已结束';
         }
-      } else {
-        if (list[i].autoDeleteDisplay) {
-          list[i].autoDeleteDisplay = '';
-          changed = true;
-        }
+      }
+      if (countdowns[i] !== display) {
+        countdowns[i] = display;
+        changed = true;
       }
     }
     if (changed) {
-      this.setData({ announcements: list });
+      this.setData({ countdowns: countdowns });
     }
   },
   loadAnnouncements: function() {
@@ -175,18 +180,22 @@ Page({
             if (ed.length <= 10) ed += ' 23:59:59';
             list[i].autoDeleteTime = new Date(ed).getTime();
           }
-          // 管理员看到所有，普通用户看不到未到上线时间的
-          if (self.data.isAdmin || !list[i].autoOnlineTime || list[i].autoOnlineTime <= now) {
+          // 管理员看到所有，普通用户看不到未到上线时间或已过期的
+          var onlineOk = self.data.isAdmin || !list[i].autoOnlineTime || list[i].autoOnlineTime <= now
+          var deleteOk = self.data.isAdmin || !list[i].autoDeleteTime || list[i].autoDeleteTime > now
+          if (onlineOk && deleteOk) {
             filtered.push(list[i])
           }
         }
-        self.setData({ announcements: filtered });
-        self.updateCountdowns();
         cloudUrl.convertList(filtered, 'image', function(converted) {
-          self.setData({ announcements: converted })
+          self.setData({ announcements: converted, countdowns: {} })
+          self.updateCountdowns();
         })
       })
       .catch(function(e) { console.error(e) })
+  },
+  refreshAnnouncements: function() {
+    this.loadAnnouncements()
   },
   formatTime: function(date) {
     if (!date) return ''
@@ -486,7 +495,7 @@ Page({
             videoPlayerName: videoTitle,
             videoPlayerCover: data.pic || '',
             videoPlayerOwner: data.ownerName || '',
-            videoPlayerDesc: (data.desc || '').substring(0, 60),
+            videoPlayerDesc: data.desc || '',
             showVideoPlayer: true
           })
         } else {
@@ -615,10 +624,10 @@ Page({
     wx.navigateTo({ url: '/pages/activity/activity' })
   },
   onShareAppMessage: function() {
-    return { title: '洛手助手洛手助手 - 洛克王国攻略', path: '/pages/index/index', imageUrl: '/images/banner.webp' }
+    return { title: '洛手助手 - 洛克王国攻略', path: '/pages/index/index', imageUrl: '/images/banner.webp' }
   },
   onShareTimeline: function() {
-    return { title: '洛手助手洛手助手 - 精灵图鉴·捕捉统计·活动日历', imageUrl: '/images/banner.webp' }
+    return { title: '洛手助手 - 精灵图鉴·捕捉统计·活动日历', imageUrl: '/images/banner.webp' }
   },
   _initBgAudio: function() { mediaPlayer.initBgAudio(this) },
 })

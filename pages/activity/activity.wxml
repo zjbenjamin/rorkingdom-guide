@@ -3,11 +3,11 @@
     
     <view class="subscribe-bar" wx:if="{{subscribeConfig.activity}}">
       <view class="sub-info">
-        <text class="sub-title">活动更新通知</text>
-        <text class="sub-desc">订阅获取最新活动信息提醒</text>
+        <text class="sub-title">{{_l.activityNotifyTitle}}</text>
+        <text class="sub-desc">{{_l.activityNotifyDesc}}</text>
       </view>
       <view class="sub-btn {{subscribedActivity ? 'active' : ''}}" bindtap="subscribeActivity">
-        {{subscribedActivity ? '已订阅(' + subscribeCount + ')' : '+ 订阅通知'}}
+        {{subscribedActivity ? _l.activitySubscribed + '(' + subscribeCount + ')' : _l.activitySubscribeBtn}}
       </view>
     </view>
     <view class="tabs">
@@ -36,7 +36,7 @@
                     <text class="music-name">{{block.name || '推荐单曲'}}</text>
                     <text class="music-url">{{block.url}}</text>
                   </view>
-                  <text class="music-play-btn">{{currentPlayUrl === block.url && isPlaying ? '暂停' : '点我听歌'}}</text>
+                  <text class="music-play-btn">{{currentPlayUrl === block.url && isPlaying ? '⏸' : '▶'}}</text>
                 </view>
                 <view wx:elif="{{block.type === 'iframe'}}" class="rich-iframe-block">
                   <text class="iframe-icon">🌐</text>
@@ -74,7 +74,7 @@
                     <text class="video-name">{{block.name || block.platformName + '视频'}}</text>
                     <text class="video-platform">{{block.platformName || '在线视频'}}</text>
                   </view>
-                  <text class="video-play-btn">▶ 观看</text>
+                  <text class="video-play-btn">▶ {{_l.watch}}</text>
                 </view>
                 <view wx:elif="{{block.type === 'table'}}" class="rich-table-block">
                   <view class="rich-table">
@@ -95,17 +95,17 @@
                 <view wx:elif="{{block.type === 'link' && block.isVideo}}" class="rich-link-block video-link" catchtap="openVideo" data-url="{{block.url}}" data-name="{{block.text}}">
                   <text class="link-icon">📺</text>
                   <text class="link-text">{{block.text}}</text>
-                  <text class="link-badge">点击观看</text>
+                  <text class="link-badge">{{_l.watch}}</text>
                 </view>
                 <view wx:elif="{{block.type === 'link'}}" class="rich-link-block" catchtap="openLink" data-url="{{block.url}}" data-text="{{block.text}}">
                   <text class="link-icon">🔗</text>
                   <text class="link-text">{{block.text}}</text>
-                  <text class="link-badge">点击复制</text>
+                  <text class="link-badge">{{_l.copy}}</text>
                 </view>
                 <view wx:elif="{{block.type === 'attachment'}}" class="rich-link-block attachment-link" catchtap="downloadAttachment" data-url="{{block.url}}" data-name="{{block.name}}" data-size="{{block.sizeText}}">
                   <text class="link-icon">📎</text>
                   <text class="link-text">{{block.name}} ({{block.sizeText}})</text>
-                  <text class="link-badge">下载预览</text>
+                  <text class="link-badge">{{_l.download}}</text>
                 </view>
                 <view wx:else class="rich-text-block" style="font-size:{{block.size}}rpx;color:{{block.color}};font-weight:{{block.weight || 'normal'}};font-style:{{block.style || 'normal'}};{{block.fontFamily && block.fontFamily !== 'sans-serif' ? 'font-family:' + block.fontFamily + ';' : ''}}">
                   <rich-text nodes="{{block.html || block.content}}" />
@@ -115,7 +115,7 @@
           </block>
           <view class="act-summary" wx:else><rich-text nodes="{{item.desc}}" /></view>
         </view>
-        <view class="act-source" wx:if="{{item.source}}">来源：{{item.source}}</view>
+        <view class="act-source" wx:if="{{item.source}}">{{_l.sourceLabel}}{{item.source}}</view>
         <view class="act-footer" wx:if="{{item.rewards.length > 0 || item.start}}">
           <view class="act-rewards" wx:if="{{item.rewards.length > 0}}">
             <text class="act-reward" wx:for="{{item.rewards}}" wx:for-item="r" wx:key="*this">{{r}}</text>
@@ -128,7 +128,7 @@
     </view>
     <view class="section-title" wx:if="{{status==='全部'}}">
       <text class="section-line"></text>
-      <text class="section-text">其他活动</text>
+      <text class="section-text">{{_l.otherActivities}}</text>
       <text class="section-line"></text>
     </view>
     <view class="act-list">
@@ -241,7 +241,7 @@
           </view>
         </block>
         <view class="act-desc" wx:else><rich-text nodes="{{item.desc}}" /></view>
-        <view class="act-source" wx:if="{{item.source}}">来源：{{item.source}}</view>
+        <view class="act-source" wx:if="{{item.source}}">{{_l.sourceLabel}}{{item.source}}</view>
         <view class="act-footer" wx:if="{{item.rewards.length > 0 || item.start}}">
           <view class="act-rewards" wx:if="{{item.rewards.length > 0}}">
             <text class="act-reward" wx:for="{{item.rewards}}" wx:for-item="r" wx:key="*this">{{r}}</text>
@@ -252,7 +252,7 @@
           
       </view>
     </view>
-    <view class="empty" wx:if="{{filtered.length===0}}">暂无活动</view>
+    <view class="empty" wx:if="{{filtered.length===0}}">{{_l.noActivity}}</view>
   </view>
 
   <!-- 视频播放器 -->
@@ -264,7 +264,7 @@
       </view>
       <view class="video-player-owner" wx:if="{{videoPlayerOwner}}">
         <view class="video-player-owner-bar"></view>
-        <text class="video-player-owner-text">UP主: {{videoPlayerOwner}}</text>
+        <text class="video-player-owner-text">{{_l.upOwner}}{{videoPlayerOwner}}</text>
       </view>
       <video
         class="video-player-video"
@@ -282,5 +282,5 @@
     </view>
   </view>
 
-  <dock current="" />
+  <dock current="activity" />
 </view>

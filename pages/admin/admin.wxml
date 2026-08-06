@@ -2,13 +2,13 @@
   <view class="container">
     <view class="no-access" wx:if="{{!loading && !isAdmin}}">
       <text class="no-icon">🔒</text>
-      <text class="no-title">无访问权限</text>
-      <text class="no-desc">此页面仅限管理者访问</text>
+      <text class="no-title">{{_l.noAccess}}</text>
+      <text class="no-desc">{{_l.noAccessDesc}}</text>
     </view>
 
     <view class="loading" wx:if="{{loading && isAdmin}}">
       <view class="loading-spinner"></view>
-      <text class="loading-text">加载中...</text>
+      <text class="loading-text">{{_l.loadingText}}</text>
     </view>
 
     <view wx:if="{{isAdmin}}">
@@ -21,18 +21,18 @@
               <text class="admin-avatar-icon">👑</text>
             </view>
             <view class="admin-hero-info">
-              <text class="admin-hero-title">管理后台</text>
+              <text class="admin-hero-title">{{_l.adminTitle}}</text>
               <text class="admin-hero-sub">Control Panel</text>
             </view>
           </view>
           <view class="admin-hero-right">
             <view class="admin-stat-pill">
               <text class="stat-pill-num">{{announcements.length || 0}}</text>
-              <text class="stat-pill-label">公告</text>
+              <text class="stat-pill-label">{{_l.announcements}}</text>
             </view>
             <view class="admin-stat-pill">
               <text class="stat-pill-num">{{adminActivities.length || 0}}</text>
-              <text class="stat-pill-label">活动</text>
+              <text class="stat-pill-label">{{_l.activityCalendar}}</text>
             </view>
             <view class="refresh-btn" bindtap="refreshData">
               <text class="refresh-icon">🔄</text>
@@ -44,71 +44,71 @@
       <!-- Tab 栏 -->
       <scroll-view scroll-x class="admin-tabs-scroll">
         <view class="admin-tabs">
-          <view class="admin-tab {{activeTab === 'announce' ? 'on' : ''}}" bindtap="switchTab" data-tab="announce">公告</view>
-          <view class="admin-tab {{activeTab === 'balls' ? 'on' : ''}}" bindtap="switchTab" data-tab="balls">道具球</view>
-          <view class="admin-tab {{activeTab === 'subscribe' ? 'on' : ''}}" bindtap="switchTab" data-tab="subscribe">订阅</view>
-          <view class="admin-tab {{activeTab === 'users' ? 'on' : ''}}" bindtap="switchTab" data-tab="users">用户</view>
-          <view class="admin-tab {{activeTab === 'pages' ? 'on' : ''}}" bindtap="switchTab" data-tab="pages">页面</view>
-          <view class="admin-tab {{activeTab === 'stats' ? 'on' : ''}}" bindtap="switchTab" data-tab="stats">统计</view>
-          <view class="admin-tab {{activeTab === 'swarm' ? 'on' : ''}}" bindtap="switchTab" data-tab="swarm">预设</view>
-          <view class="admin-tab {{activeTab === 'site' ? 'on' : ''}}" bindtap="switchTab" data-tab="site">设置</view>
+          <view class="admin-tab {{activeTab === 'announce' ? 'on' : ''}}" bindtap="switchTab" data-tab="announce">{{_l.announceTab}}</view>
+          <view class="admin-tab {{activeTab === 'balls' ? 'on' : ''}}" bindtap="switchTab" data-tab="balls">{{_l.items}}</view>
+          <view class="admin-tab {{activeTab === 'subscribe' ? 'on' : ''}}" bindtap="switchTab" data-tab="subscribe">{{_l.subscribeAdd}}</view>
+          <view class="admin-tab {{activeTab === 'users' ? 'on' : ''}}" bindtap="switchTab" data-tab="users">{{_l.playerUID}}</view>
+          <view class="admin-tab {{activeTab === 'pages' ? 'on' : ''}}" bindtap="switchTab" data-tab="pages">{{_l.pageConfig}}</view>
+          <view class="admin-tab {{activeTab === 'stats' ? 'on' : ''}}" bindtap="switchTab" data-tab="stats">{{_l.dataStats}}</view>
+          <view class="admin-tab {{activeTab === 'swarm' ? 'on' : ''}}" bindtap="switchTab" data-tab="swarm">{{_l.preserve}}</view>
+          <view class="admin-tab {{activeTab === 'site' ? 'on' : ''}}" bindtap="switchTab" data-tab="site">{{_l.settings}}</view>
         </view>
       </scroll-view>
 
       <!-- 公告管理 -->
       <view wx:if="{{activeTab === 'announce'}}">
         <view class="section-header">
-          <text class="section-title">公告列表</text>
-          <view class="add-btn" bindtap="openModal"><text>+ 发布</text></view>
+          <text class="section-title">{{_l.announceList}}</text>
+          <view class="add-btn" bindtap="openModal"><text>{{_l.addBtnPublish}}</text></view>
         </view>
         <view class="card-item" wx:for="{{announcements}}" wx:key="_id">
           <view class="card-top">
-            <view class="tag tag-{{item.type}}">{{item.type === 'notice' ? '公告' : item.type === 'update' ? '更新' : item.type === 'event' ? '活动' : '提示'}}</view>
-            <view class="pin-tag {{item.pinned ? 'on' : ''}}" bindtap="togglePinnedStatus" data-item="{{item}}">{{item.pinned ? '已置顶' : '置顶'}}</view>
+            <view class="tag tag-{{item.type}}">{{item.type === 'notice' ? _l.announceTab : item.type === 'update' ? _l.update : item.type === 'event' ? _l.activityCalendar : _l.tip}}</view>
+            <view class="pin-tag {{item.pinned ? 'on' : ''}}" bindtap="togglePinnedStatus" data-item="{{item}}">{{item.pinned ? _l.pinnedDone : _l.pinned}}</view>
           </view>
           <text class="card-title">{{item.title}}</text>
           <text class="card-desc">{{item.previewText || item.content}}</text>
           <view class="card-bottom">
             <text class="card-time">{{item.timeStr}}</text>
             <view class="card-actions">
-              <view class="btn-edit" bindtap="openModal" data-item="{{item}}">编辑</view>
-              <view class="btn-delete" bindtap="deleteAnnouncement" data-item="{{item}}">删除</view>
+              <view class="btn-edit" bindtap="openModal" data-item="{{item}}">{{_l.edit}}</view>
+              <view class="btn-delete" bindtap="deleteAnnouncement" data-item="{{item}}">{{_l.delete}}</view>
             </view>
           </view>
         </view>
-        <view class="empty" wx:if="{{announcements.length === 0}}"><text class="empty-text">暂无公告</text></view>
+        <view class="empty" wx:if="{{announcements.length === 0}}"><text class="empty-text">{{_l.noAnnounce}}</text></view>
       </view>
 
 
       <!-- 活动管理 -->
       <view wx:if="{{activeTab === 'activity'}}">
         <view class="section-header">
-          <text class="section-title">活动列表</text>
-          <view class="add-btn" bindtap="openActivityModal"><text>+ 新增</text></view>
+          <text class="section-title">{{_l.activityList}}</text>
+          <view class="add-btn" bindtap="openActivityModal"><text>{{_l.addBtnNew}}</text></view>
         </view>
         <view class="card-item" wx:for="{{adminActivities}}" wx:key="_id">
           <view class="card-top">
-            <view class="tag tag-event">{{item.type || '活动'}}</view>
-            <view class="pin-tag {{item.pinned ? 'on' : ''}}" bindtap="toggleActivityPinned" data-item="{{item}}">{{item.pinned ? '已置顶' : '置顶'}}</view>
+            <view class="tag tag-event">{{item.type || _l.activityCalendar}}</view>
+            <view class="pin-tag {{item.pinned ? 'on' : ''}}" bindtap="toggleActivityPinned" data-item="{{item}}">{{item.pinned ? _l.pinnedDone : _l.pinned}}</view>
           </view>
           <text class="card-title">{{item.title}}</text>
           <text class="card-desc">{{item.previewText || item.content}}</text>
           <view class="card-bottom">
             <text class="card-time">{{item.timeStr}}</text>
             <view class="card-actions">
-              <view class="btn-edit" wx:if="{{item.isCloud}}" bindtap="openActivityModal" data-item="{{item}}">编辑</view>
-              <view class="btn-delete" bindtap="deleteActivity" data-item="{{item}}">删除</view>
+              <view class="btn-edit" wx:if="{{item.isCloud}}" bindtap="openActivityModal" data-item="{{item}}">{{_l.edit}}</view>
+              <view class="btn-delete" bindtap="deleteActivity" data-item="{{item}}">{{_l.delete}}</view>
             </view>
           </view>
         </view>
-        <view class="empty" wx:if="{{adminActivities.length === 0}}"><text class="empty-text">暂无活动</text></view>
+        <view class="empty" wx:if="{{adminActivities.length === 0}}"><text class="empty-text">{{_l.noActivityAdmin}}</text></view>
       </view>
 
       <!-- 咕噜球管理 -->
       <view wx:if="{{activeTab === 'balls'}}">
         <view class="section-header">
-          <text class="section-title">咕噜球仓库配置</text>
-          <view class="add-btn" bindtap="openBallModal"><text>+ 新增</text></view>
+          <text class="section-title">{{_l.ballsConfigTitle}}</text>
+          <view class="add-btn" bindtap="openBallModal"><text>{{_l.addBtnNew}}</text></view>
         </view>
         <view class="card-item" wx:for="{{ballsConfig}}" wx:key="id">
           <view class="card-top" style="justify-content: space-between;">
@@ -118,22 +118,22 @@
               <text style="font-weight:bold; color:{{item.color || '#fff'}}">{{item.name}}</text>
             </view>
             <view style="display:flex; gap:10rpx;">
-              <view class="tag tag-notice" wx:if="{{item.isBuy}}">购买球</view>
-              <view class="tag tag-update" wx:if="{{item.isCraft}}">合成球</view>
+              <view class="tag tag-notice" wx:if="{{item.isBuy}}">{{_l.ballBuy}}</view>
+              <view class="tag tag-update" wx:if="{{item.isCraft}}">{{_l.ballCraft}}</view>
             </view>
           </view>
           <view style="padding: 24rpx; background: rgba(0,0,0,0.2); border-radius: 12rpx; margin-bottom: 24rpx;">
-            <view style="font-size:24rpx; color:#aaa; margin-bottom: 8rpx;">价格: {{item.price}} 洛克贝</view>
-            <view style="font-size:24rpx; color:#aaa; margin-bottom: 8rpx;">描述: {{item.desc}}</view>
-            <view style="font-size:24rpx; color:#aaa;">获取: {{item.source || '未知'}}</view>
+            <view style="font-size:24rpx; color:#aaa; margin-bottom: 8rpx;">{{_l.ballPrice}}: {{item.price}} {{_l.currency}}</view>
+            <view style="font-size:24rpx; color:#aaa; margin-bottom: 8rpx;">{{_l.ballDesc}}: {{item.desc}}</view>
+            <view style="font-size:24rpx; color:#aaa;">{{_l.ballSource}}: {{item.source || _l.unknown}}</view>
           </view>
           <view class="card-actions">
-            <view class="btn-edit" bindtap="openBallModal" data-item="{{item}}">编辑</view>
-            <view class="btn-delete" bindtap="deleteBall" data-id="{{item.id}}">删除</view>
+            <view class="btn-edit" bindtap="openBallModal" data-item="{{item}}">{{_l.edit}}</view>
+            <view class="btn-delete" bindtap="deleteBall" data-id="{{item.id}}">{{_l.delete}}</view>
           </view>
         </view>
         <view class="modal-submit" bindtap="saveBallsConfig" style="margin: 40rpx 0; width: 100%; box-sizing: border-box; justify-content:center; {{ballsSubmitting ? 'opacity: 0.5; filter: grayscale(1);' : ''}}">
-          <text>{{ballsSubmitting ? '保存中...' : '保存修改到云端'}}</text>
+          <text>{{ballsSubmitting ? _l.submitting : _l.saveToCloud}}</text>
         </view>
       </view>
 
@@ -142,9 +142,9 @@
         <view class="sub-section">
           <view class="sub-section-title">
             <text class="sub-section-icon">🔔</text>
-            <text>订阅开关</text>
+            <text>{{_l.subscribeSwitch}}</text>
           </view>
-          <text class="sub-section-hint">关闭后用户端不显示该订阅按钮</text>
+          <text class="sub-section-hint">{{_l.subscribeHint}}</text>
           <view class="sub-grid">
             <view class="sub-toggle-card {{subscribeConfig['announcement'] ? 'active' : ''}}" catchtap="toggleSubscribeType" data-type="announcement">
               <text class="sub-toggle-icon">📢</text>
@@ -167,20 +167,20 @@
         <view class="sub-section">
           <view class="sub-section-title">
             <text class="sub-section-icon">🧪</text>
-            <text>测试推送</text>
+            <text>{{_l.testPush}}</text>
           </view>
           <view class="sub-test-grid">
             <view class="sub-test-btn" catchtap="testPush" data-type="announcement">
               <text class="sub-test-icon">📢</text>
-              <text class="sub-test-text">测试公告</text>
+              <text class="sub-test-text">{{_l.testAnnounce}}</text>
             </view>
             <view class="sub-test-btn" catchtap="testPush" data-type="activity">
               <text class="sub-test-icon">📅</text>
-              <text class="sub-test-text">测试活动</text>
+              <text class="sub-test-text">{{_l.testActivity}}</text>
             </view>
             <view class="sub-test-btn" catchtap="testPush" data-type="merchant">
               <text class="sub-test-icon">🛒</text>
-              <text class="sub-test-text">测试商人</text>
+              <text class="sub-test-text">{{_l.testMerchant}}</text>
             </view>
           </view>
         </view>
@@ -188,8 +188,8 @@
         <view class="sub-section">
           <view class="sub-section-title">
             <text class="sub-section-icon">👥</text>
-            <text>订阅用户</text>
-            <view class="sub-refresh-btn" catchtap="loadSubscribers"><text>刷新</text></view>
+            <text>{{_l.subscribeUsers}}</text>
+            <view class="sub-refresh-btn" catchtap="loadSubscribers"><text>{{_l.refresh}}</text></view>
           </view>
           <view class="sub-user-list" wx:if="{{subscribers.length > 0}}">
             <view class="sub-user-item" wx:for="{{subscribers}}" wx:key="_id">
@@ -216,7 +216,7 @@
 
       <!-- 用户管理 -->
       <view wx:if="{{activeTab === 'users'}}">
-        <view class="section-header"><text class="section-title">用户列表</text></view>
+        <view class="section-header"><text class="section-title">{{_l.userList}}</text></view>
         <view class="card-item" wx:for="{{users}}" wx:key="_id">
           <view class="card-top">
             <image class="card-avatar" src="{{item.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill" />
@@ -224,15 +224,15 @@
               <text class="card-author">{{item.nickName}}</text>
               <text class="card-meta">Lv.{{item.level}} · 登录{{item.loginDays ? item.loginDays.length : 0}}天 · {{item.timeStr}}</text>
             </view>
-            <view class="ban-tag {{item.banned ? 'banned' : ''}}">{{item.banned ? '已封禁' : '正常'}}</view>
+            <view class="ban-tag {{item.banned ? 'banned' : ''}}">{{item.banned ? _l.banned : _l.normal}}</view>
           </view>
           <view class="card-bottom">
             <view class="card-actions">
-              <view class="btn-edit" wx:if="{{!item.banned}}" bindtap="banUser" data-item="{{item}}">封禁</view>
-              <view class="btn-edit" wx:if="{{item.banned}}" bindtap="unbanUser" data-item="{{item}}">解封</view>
-              <view class="btn-edit" wx:if="{{item.role !== 'editor'}}" bindtap="setEditor" data-item="{{item}}">设为小编</view>
-              <view class="btn-edit" wx:if="{{item.role === 'editor'}}" bindtap="removeEditor" data-item="{{item}}">取消小编</view>
-              <view class="btn-delete" bindtap="deleteUser" data-item="{{item}}">删除</view>
+              <view class="btn-edit" wx:if="{{!item.banned}}" bindtap="banUser" data-item="{{item}}">{{_l.ban}}</view>
+              <view class="btn-edit" wx:if="{{item.banned}}" bindtap="unbanUser" data-item="{{item}}">{{_l.unban}}</view>
+              <view class="btn-edit" wx:if="{{item.role !== 'editor'}}" bindtap="setEditor" data-item="{{item}}">{{_l.setEditor}}</view>
+              <view class="btn-edit" wx:if="{{item.role === 'editor'}}" bindtap="removeEditor" data-item="{{item}}">{{_l.removeEditor}}</view>
+              <view class="btn-delete" bindtap="deleteUser" data-item="{{item}}">{{_l.delete}}</view>
             </view>
           </view>
         </view>
@@ -241,48 +241,37 @@
 
       <!-- 页面管理 -->
       <view wx:if="{{activeTab === 'pages'}}">
-        <view class="section-header"><text class="section-title">页面状态管理</text></view>
+        <view class="section-header"><text class="section-title">{{_l.pageConfig}}</text></view>
         <view class="card-item" wx:for="{{pageConfigs}}" wx:key="id">
           <view class="card-top">
             <view class="page-icon">{{item.icon}}</view>
             <view class="card-user-info">
               <text class="card-author">{{item.name}}</text>
               <text class="card-meta" wx:if="{{item.isNav}}">状态：{{item.maintenance ? '已隐藏' : '显示中'}}</text>
+              <text class="card-meta" wx:elif="{{item.id === 'captureImage'}}">状态：{{item.maintenance ? '已开启' : '已关闭'}}</text>
               <text class="card-meta" wx:else>状态：{{item.maintenance ? '维护中（已下线）' : '运行中'}}</text>
             </view>
             <view class="toggle {{item.maintenance ? 'on' : ''}}" catchtap="togglePageMaintenance" data-id="{{item.id}}">
               <view class="toggle-dot"></view>
             </view>
           </view>
-          <view class="page-actions" wx:if="{{!item.isNav}}">
+          <view class="page-actions" wx:if="{{!item.isNav && item.id !== 'captureImage'}}">
             <view class="btn-edit" catchtap="togglePageCustom" data-id="{{item.id}}">自定义：{{item.useCustom ? '开' : '关'}}</view>
-          </view>
-        </view>
-      </view>
-      <view class="card-item">
-        <view class="card-top">
-          <view class="page-icon">📷</view>
-          <view class="card-user-info">
-            <text class="card-author">捕捉统计生成图片</text>
-            <text class="card-meta">状态：{{showLogShareBtn ? '已开启' : '已关闭'}}</text>
-          </view>
-          <view class="toggle {{showLogShareBtn ? 'on' : ''}}" catchtap="toggleShowLogShareBtn">
-            <view class="toggle-dot"></view>
           </view>
         </view>
       </view>
 
       <!-- 统计面板 -->
       <view wx:if="{{activeTab === 'stats'}}">
-        <view class="section-header"><text class="section-title">数据统计</text></view>
+        <view class="section-header"><text class="section-title">{{_l.dataStats}}</text></view>
         <view class="stats-grid">
           <view class="stat-card">
             <text class="stat-num">{{stats.totalUsers}}</text>
-            <text class="stat-label">总用户数</text>
+            <text class="stat-label">{{_l.totalUsers}}</text>
           </view>
           <view class="stat-card">
             <text class="stat-num">{{announcements.length}}</text>
-            <text class="stat-label">公告数量</text>
+            <text class="stat-label">{{_l.announceCount}}</text>
           </view>
         </view>
       </view>
@@ -290,7 +279,7 @@
       <!-- 出没预设管理 -->
       <view class="tab-content-pane" wx:if="{{activeTab === 'swarm'}}">
         <view class="section-header">
-          <text class="section-title">大量出没地点预设</text>
+          <text class="section-title">{{_l.swarmPreset}}</text>
           <view class="add-btn" bindtap="openSwarmLocationModal"><text>+ 添加</text></view>
         </view>
         <view class="card-item" wx:for="{{swarmLocations}}" wx:key="*this" style="display:flex; justify-content:space-between; align-items:center;">
@@ -303,7 +292,7 @@
       <!-- 系统设置面板 -->
       <view class="tab-content-pane" wx:if="{{activeTab === 'site'}}">
         <view class="section-header">
-          <text class="section-title">系统设置</text>
+          <text class="section-title">{{_l.siteSettings}}</text>
         </view>
         <view class="form-card" style="padding: 32rpx; background: rgba(255,255,255,0.04); border-radius: 24rpx; border: 1rpx solid rgba(255,255,255,0.08); margin-bottom: 24rpx;">
           <view class="form-group">
@@ -315,11 +304,23 @@
             <button class="btn-primary" style="width: 100%; height: 80rpx; background: rgba(0,200,255,0.12); color: #00d4ff; border: 1rpx solid rgba(0,200,255,0.2); border-radius: 40rpx; display: flex; align-items: center; justify-content: center; font-size: 28rpx;" bindtap="saveSiteConfig">保存设置</button>
           </view>
         </view>
+        <view class="form-card" style="padding: 32rpx; background: rgba(255,255,255,0.04); border-radius: 24rpx; border: 1rpx solid rgba(255,255,255,0.08); margin-bottom: 24rpx;">
+          <view class="form-group">
+            <text class="form-label" style="display: block; margin-bottom: 16rpx; color: rgba(255,255,255,0.7); font-size: 28rpx;">{{_l.editBanner || '编辑头图'}}</text>
+            <view class="banner-preview" wx:if="{{bannerUrl}}" style="width: 100%; height: 200rpx; border-radius: 8rpx; overflow: hidden; margin-bottom: 16rpx; border: 1rpx solid #30363d; background: #0d1117;">
+              <image lazy-load src="{{bannerUrl}}" mode="aspectFill" style="width: 100%; height: 100%;" />
+            </view>
+            <view wx:else style="width: 100%; height: 120rpx; border-radius: 8rpx; margin-bottom: 16rpx; border: 1rpx dashed #30363d; background: #0d1117; display: flex; align-items: center; justify-content: center;">
+              <text style="font-size: 24rpx; color: #484f58;">{{_l.noPreview || '暂无头图'}}</text>
+            </view>
+            <input class="form-input" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.2); border: 1rpx solid rgba(255,255,255,0.1); border-radius: 12rpx; padding: 20rpx; color: #fff;" placeholder="{{_l.bannerPlaceholder || '输入图片URL'}}" value="{{bannerUrl}}" bindinput="onBannerInput" />
+            <text class="form-hint" style="display: block; margin-top: 12rpx; font-size: 22rpx; color: rgba(255,255,255,0.4);">输入 {{_l.bannerInputLabel || '图片链接'}}，支持完整网络URL或cloud://云存储路径。输入none可隐藏头图</text>
+          </view>
+          <view class="form-actions" style="margin-top: 40rpx;">
+            <button class="btn-primary" style="width: 100%; height: 80rpx; background: rgba(0,200,255,0.12); color: #00d4ff; border: 1rpx solid rgba(0,200,255,0.2); border-radius: 40rpx; display: flex; align-items: center; justify-content: center; font-size: 28rpx;" bindtap="saveBanner" disabled="{{bannerLoading}}">{{bannerLoading ? _l.submitting : _l.confirmUpdate}}</button>
+          </view>
+        </view>
       </view>
-    </view>
-
-    <!-- 发布/编辑弹窗 -->
-    <view class="modal-mask" wx:if="{{showModal}}" bindtap="closeModal">
         <view class="modal-box" catchtap="preventClose">
         <view class="modal-header">
           <text class="modal-title">{{editingItem ? '编辑公告' : '发布公告'}}</text>
@@ -440,255 +441,6 @@
                   <text class="tool-text">新起一段</text>
                 </view>
               </view>
-              <!-- 字号选择器 -->
-              <view class="size-picker" wx:if="{{showSizePicker}}">
-                <view class="size-option {{currentFontSize === item ? 'active' : ''}}" wx:for="{{fontSizeOptions}}" wx:key="*this" catchtap="setFontSize" data-size="{{item}}">
-                  <text style="font-size:{{item}}rpx;">{{item}}</text>
-                </view>
-              </view>
-              
-              <!-- 颜色选择器 -->
-              <view class="color-picker" wx:if="{{showColorPicker}}">
-                <view class="color-option {{currentFontColor === item.value ? 'active' : ''}}" wx:for="{{fontColorOptions}}" wx:key="value" catchtap="setFontColor" data-color="{{item.value}}">
-                  <view class="color-dot" style="background:{{item.value}};"></view>
-                  <text class="color-name">{{item.name}}</text>
-                </view>
-              </view>
-
-              <!-- 字体选择器 -->
-              <view class="font-picker" wx:if="{{showFontFamilyPicker}}">
-                <view class="font-option {{currentFontFamily === item.value ? 'active' : ''}}" wx:for="{{fontFamilyOptions}}" wx:key="value" catchtap="setFontFamily" data-family="{{item.value}}">
-                  <text class="font-preview" style="font-family:{{item.value}};">{{item.name}}</text>
-                </view>
-              </view>
-            </view>
-            
-            <!-- 已添加的富文本块 -->
-            <view class="rich-blocks" wx:if="{{formRichContent.length > 0}}">
-              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}} {{item.type === 'music' ? 'music-block-item' : ''}} {{item.type === 'video' ? 'video-block-item' : ''}} {{item.type === 'table' ? 'table-block-item' : ''}} {{item.type === 'divider' ? 'divider-block-item' : ''}} {{item.type === 'link' ? 'link-block-item' : ''}}" wx:for="{{formRichContent}}" wx:key="index">
-                <view class="block-content">
-                  <text wx:if="{{item.type === 'quote'}}" class="block-quote-icon">❝</text>
-                  <block wx:elif="{{item.type === 'music'}}">
-                    <image wx:if="{{item.cover}}" class="block-cover-preview" src="{{item.cover}}" mode="aspectFill" style="width: 40rpx; height: 40rpx; border-radius: 50%; margin-right: 12rpx; border: 2rpx solid #3d2b1f;" />
-                    <text wx:else class="block-music-icon">🎵</text>
-                    <text class="block-text music-text-info">{{item.name || '推荐单曲'}}</text>
-                  </block>
-                  <block wx:elif="{{item.type === 'video'}}">
-                    <image wx:if="{{item.cover}}" class="block-cover-preview" src="{{item.cover}}" mode="aspectFill" style="width: 50rpx; height: 36rpx; border-radius: 6rpx; margin-right: 12rpx; border: 2rpx solid #3d2b1f;" />
-                    <text wx:else class="block-video-icon">{{item.platform === 'bilibili' ? '📺' : '🎬'}}</text>
-                    <text class="block-text video-text-info">{{item.platformName || '在线'}}视频{{item.name ? ': ' + item.name : ''}}</text>
-                  </block>
-                  <block wx:elif="{{item.type === 'swiper'}}">
-                    <text class="block-video-icon">🔄</text>
-                    <text class="block-text video-text-info">滚动图片 (共{{item.urls.length}}张)</text>
-                  </block>
-                  <block wx:elif="{{item.type === 'table'}}">
-                    <view class="table-block-preview">
-                      <text class="table-block-icon">📊</text>
-                      <view class="table-mini">
-                        <view class="table-mini-row" wx:for="{{item.headers}}" wx:for-item="h" wx:for-index="hi" wx:key="hi">
-                          <view class="table-mini-header-cell">{{h}}</view>
-                        </view>
-                      </view>
-                      <text class="table-block-info">{{item.colCount}}列 × {{item.rowCount}}行</text>
-                    </view>
-                  </block>
-                  <block wx:elif="{{item.type === 'image'}}">
-                    <text class="block-image-icon">🖼️</text>
-                    <view class="image-block-preview">
-                      <image src="{{item.url}}" mode="aspectFill" />
-                    </view>
-                  </block>
-                  <block wx:elif="{{item.type === 'divider'}}">
-                    <view class="divider-block" style="width: 100%;">
-                      <view class="divider-line {{item.style}}"></view>
-                    </view>
-                  </block>
-                  <block wx:elif="{{item.type === 'link'}}">
-                    <view class="link-block-preview {{item.isVideo ? 'video-style' : ''}}" style="width: 100%;">
-                      <text class="link-preview-icon">{{item.isVideo ? '📺' : '🔗'}}</text>
-                      <text class="link-preview-text">{{item.text}}</text>
-                    </view>
-                  </block>
-                  <block wx:elif="{{item.type === 'attachment'}}">
-                    <view class="attachment-block-preview" style="width: 100%;">
-                      <text style="font-size: 28rpx; color: #ffab40; margin-right: 12rpx;">📎</text>
-                      <view style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
-                        <text style="font-size: 26rpx; color: #ffab40; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">{{item.name}}</text>
-                        <text style="font-size: 20rpx; color: rgba(255,255,255,0.4);" wx:if="{{item.sizeText}}">{{item.sizeText}}</text>
-                      </view>
-                    </view>
-                  </block>
-                  <text wx:else class="block-text" style="font-size:{{item.size}}rpx;color:{{item.color}};font-weight:{{item.weight}};font-style:{{item.style}};{{item.fontFamily && item.fontFamily !== 'sans-serif' ? 'font-family:' + item.fontFamily + ';' : ''}}">{{item.content}}</text>
-                </view>
-                <view class="block-actions">
-                  <block wx:if="{{item.type === 'music' || item.type === 'video'}}">
-                    <view class="block-btn" catchtap="editMediaCover" data-idx="{{index}}" data-target="form">换封面</view>
-                    <view class="block-btn" catchtap="showMoveTopActionSheet" data-idx="{{index}}" data-target="form">置顶</view>
-                    <view class="block-btn" catchtap="showMoveBottomActionSheet" data-idx="{{index}}" data-target="form">置底</view>
-                  </block>
-                  <view class="block-btn" wx:if="{{item.type !== 'music' && item.type !== 'video' && item.type !== 'table' && item.type !== 'image' && item.type !== 'divider' && item.type !== 'link' && item.type !== 'attachment'}}" catchtap="editRichBlock" data-idx="{{index}}">编辑</view>
-                  <view class="block-btn delete" catchtap="removeRichBlock" data-idx="{{index}}">删除</view>
-                </view>
-              </view>
-            </view>
-            
-            <editor id="editor" class="form-editor" placeholder="输入公告内容" bindstatuschange="onStatusChange" bindready="onEditorReady" bindinput="onEditorInput" show-img-size show-img-toolbar show-img-resize></editor>
-          </view>
-          <view class="form-group">
-            <text class="form-label">引用来源（可选）</text>
-            <input class="form-input" placeholder-class="form-input-placeholder" placeholder="输入引用来源或出处" value="{{formSource}}" bindinput="onSourceInput" maxlength="100" />
-          </view>
-          <view class="form-group row">
-            <text class="form-label">置顶</text>
-            <view class="toggle {{formPinned ? 'on' : ''}}" catchtap="togglePinned"><view class="toggle-dot"></view></view>
-          </view>
-
-          <view class="form-row" style="display:flex; flex-direction:column; gap:20rpx;">
-            <view class="form-group" style="width:100%;">
-              <text class="form-label">开始时间</text>
-              <view style="display:flex; gap:20rpx;">
-                <picker class="form-picker" mode="date" value="{{formStartDate}}" bindchange="onStartDateChange" style="flex:1;">
-                  <text class="picker-text">{{formStartDate || '选择日期'}} ▾</text>
-                </picker>
-                <picker class="form-picker" mode="time" value="{{formStartTime}}" bindchange="onStartTimeChange" style="flex:1;">
-                  <text class="picker-text">{{formStartTime || '选择时间'}} ▾</text>
-                </picker>
-              </view>
-            </view>
-            <view class="form-group" style="width:100%;">
-              <text class="form-label">结束时间/倒计时</text>
-              <view style="display:flex; gap:20rpx;">
-                <picker class="form-picker" mode="date" value="{{formEndDate}}" bindchange="onEndDateChange" style="flex:1;">
-                  <text class="picker-text">{{formEndDate || '选择日期'}} ▾</text>
-                </picker>
-                <picker class="form-picker" mode="time" value="{{formEndTime}}" bindchange="onEndTimeChange" style="flex:1;">
-                  <text class="picker-text">{{formEndTime || '选择时间'}} ▾</text>
-                </picker>
-              </view>
-            </view>
-          </view>
-        </view>
-        <view class="modal-footer">
-          <text class="char-count">{{formContent.length}}/5000</text>
-          <button class="modal-submit" catchtap="submitAnnouncement" disabled="{{submitting}}">{{submitting ? '提交中...' : (editingItem ? '更新' : '发布')}}</button>
-        </view>
-      </view>
-    </view>
-
-
-    <!-- 活动编辑弹窗 -->
-    <view class="modal-mask" wx:if="{{showActivityModal}}" bindtap="closeActivityModal">
-      <view class="modal-box" catchtap="preventClose">
-        <view class="modal-header">
-          <text class="modal-title">{{activityEditingItem ? '编辑活动' : '新增活动'}}</text>
-          <text class="modal-close" catchtap="closeActivityModal">✕</text>
-        </view>
-        <view class="modal-body">
-          <view class="form-group">
-            <text class="form-label">标题</text>
-            <input class="form-input" placeholder-class="form-input-placeholder" placeholder="活动标题" value="{{activityFormTitle}}" bindinput="onActivityTitleInput" maxlength="50" />
-          </view>
-          <view class="form-group">
-            <text class="form-label">类型</text>
-            <input class="form-input" placeholder-class="form-input-placeholder" placeholder="如：限时活动、日常活动" value="{{activityFormType}}" bindinput="onActivityTypeInput" />
-          </view>
-          <view class="form-group">
-            <text class="form-label">状态</text>
-            <picker class="form-picker" range="{{['进行中','即将开始','置顶']}}" bindchange="onActivityStatusChange">
-              <text class="picker-text">{{activityFormStatus}} ▾</text>
-            </picker>
-          </view>
-          <view class="form-group">
-            <view class="form-label-row">
-              <text class="form-label">描述</text>
-            </view>
-            <!-- 富文本编辑工具栏 -->
-            <view class="rich-toolbar">
-              <view class="toolbar-row">
-                                  <view class="tool-btn" catchtap="activityUndo">
-                    <text class="tool-icon">↩️</text>
-                  </view>
-                  <view class="tool-btn {{activityAlign === 'left' ? 'active' : ''}}" catchtap="activityAlignLeft">
-                    <text class="tool-icon" style="font-size:24rpx;">居左</text>
-                  </view>
-                  <view class="tool-btn {{activityAlign === 'center' ? 'active' : ''}}" catchtap="activityAlignCenter">
-                    <text class="tool-icon" style="font-size:24rpx;">居中</text>
-                  </view>
-                  <view class="tool-btn {{activityAlign === 'right' ? 'active' : ''}}" catchtap="activityAlignRight">
-                    <text class="tool-icon" style="font-size:24rpx;">居右</text>
-                  </view>
-
-                  <view class="tool-btn {{activityFontWeight === 'bold' ? 'active' : ''}}" catchtap="toggleActivityBold">
-                  <text class="tool-icon" style="font-weight:bold;">B</text>
-                </view>
-                                  <view class="tool-btn {{activityUnderline ? 'active' : ''}}" catchtap="activityToggleUnderline">
-                    <text class="tool-icon" style="text-decoration:underline;">U</text>
-                  </view>
-                  <view class="tool-btn {{activityStrike ? 'active' : ''}}" catchtap="activityToggleStrike">
-                    <text class="tool-icon" style="text-decoration:line-through;">S</text>
-                  </view>
-                  <view class="tool-btn {{activityHeader === 2 ? 'active' : ''}}" catchtap="activityToggleHeader2">
-                    <text class="tool-icon" style="font-weight:bold;">H2</text>
-                  </view>
-                  <view class="tool-btn {{activityHeader === 3 ? 'active' : ''}}" catchtap="activityToggleHeader3">
-                    <text class="tool-icon" style="font-weight:bold;">H3</text>
-                  </view>
-                  <view class="tool-btn {{activityFontStyle === 'italic' ? 'active' : ''}}" catchtap="toggleActivityItalic">
-                  <text class="tool-icon" style="font-style:italic;">I</text>
-                </view>
-                <view class="tool-btn" catchtap="showActivityFontSizePicker">
-                  <text class="tool-icon">Aa</text>
-                </view>
-                <view class="tool-btn" catchtap="showActivityFontColorPicker">
-                  <view class="color-preview" style="background:{{activityFontColor}};"></view>
-                </view>
-                <view class="tool-btn" catchtap="showActivityFontFamilyPicker">
-                  <text class="tool-icon">𝐓</text>
-                  <text class="tool-text">字体</text>
-                </view>
-                <view class="tool-btn" catchtap="addActivityRichQuoteBlock">
-                  <text class="tool-icon">❝</text>
-                  <text class="tool-text">引用</text>
-                </view>
-                <view class="tool-btn" catchtap="showActivityMusicDialog">
-                  <text class="tool-icon">🎵</text>
-                  <text class="tool-text">音乐</text>
-                </view>
-                <view class="tool-btn" catchtap="showActivityVideoDialog">
-                  <text class="tool-icon">🎬</text>
-                  <text class="tool-text">视频</text>
-                </view>
-                <view class="tool-btn" catchtap="importActivityFileToTable">
-                  <text class="tool-icon">📊</text>
-                  <text class="tool-text">表格</text>
-                </view>
-                <view class="tool-btn" catchtap="showActivityAttachmentDialog">
-                  <text class="tool-icon">📎</text>
-                  <text class="tool-text">附件</text>
-                </view>
-                <view class="tool-btn" catchtap="showActivityImageBlockDialog">
-                  <text class="tool-icon">🖼️</text>
-                  <text class="tool-text">正文插图</text>
-                </view>
-                <view class="tool-btn" catchtap="showActivitySwiperDialog">
-                  <text class="tool-icon">🔄</text>
-                  <text class="tool-text">滚动图</text>
-                </view>
-                <view class="tool-btn" catchtap="showActivityDividerDialog">
-                  <text class="tool-icon">➖</text>
-                  <text class="tool-text">分割线</text>
-                </view>
-                <view class="tool-btn" catchtap="showActivityLinkDialog">
-                  <text class="tool-icon">🔗</text>
-                  <text class="tool-text">超链接</text>
-                </view>
-                <view class="tool-btn" catchtap="addActivityRichTextBlock">
-                  <text class="tool-icon">＋</text>
-                  <text class="tool-text">新起一段</text>
-                </view>
-              </view>
-              
               <!-- 字号选择器 -->
               <view class="size-picker" wx:if="{{showSizePicker}}">
                 <view class="size-option {{currentFontSize === item ? 'active' : ''}}" wx:for="{{fontSizeOptions}}" wx:key="*this" catchtap="setFontSize" data-size="{{item}}">

@@ -1,8 +1,11 @@
+var i18nBehavior = require('../../utils/i18nBehavior')
 Page({
+  behaviors: [i18nBehavior],
   data: {
     loading: true
   },
   onLoad: function() {
+    this._refreshI18n()
     this.setData({ loading: false })
   },
 

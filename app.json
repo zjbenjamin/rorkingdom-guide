@@ -91,10 +91,10 @@
     }
   ],
   "window": {
-    "navigationBarBackgroundColor": "#0a0e27",
-    "navigationBarTitleText": "洛手助手",
+    "navigationBarBackgroundColor": "#0d1117",
+    "navigationBarTitleText": "Roco Helper",
     "navigationBarTextStyle": "white",
-    "backgroundColor": "#010314"
+    "backgroundColor": "#0d1117"
   },
   "requiredBackgroundModes": [
     "audio"

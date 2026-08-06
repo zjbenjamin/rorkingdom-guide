@@ -32,7 +32,7 @@ Page({
     var self = this
     if (!wx.cloud) return
     wx.cloud.callFunction({ name: 'login' }).then(function(res) {
-      var currentOpenid = res.result.openid || res.result.userInfo.openId
+      var currentOpenid = res.result.openid || (res.result.userInfo && res.result.userInfo.openId)
       var db = wx.cloud.database()
       db.collection('admin_config').doc('admin').get()
         .then(function(adminRes) {

@@ -1,90 +1,81 @@
 <view class="page">
   <view class="container">
-    <!-- 维护模式提示 -->
     <view class="maintain-card" wx:if="{{maintenance && !isAdmin}}">
       <text class="maintain-icon">🚧</text>
-      <text class="maintain-title">页面维护中</text>
-      <text class="maintain-desc">该功能正在开发或维护中，请稍后再来</text>
+      <text class="maintain-title">{{_l.maintenanceTitle}}</text>
+      <text class="maintain-desc">{{_l.maintenanceDesc}}</text>
     </view>
 
-    <!-- 正常内容 -->
     <view wx:if="{{!maintenance || isAdmin}}">
-      <!-- 管理员管理面板 -->
       <view class="card admin-bar" wx:if="{{isAdmin}}">
         <view class="admin-bar-row" style="justify-content: space-between;">
           <view style="display:flex;align-items:center;">
-            <text class="admin-bar-label">管理员管理栏：</text>
-            <text class="admin-bar-text">兑换码管理</text>
+            <text class="admin-bar-label">{{_l.adminControlBar}}</text>
+            <text class="admin-bar-text">{{_l.redeemTitle}}</text>
           </view>
-          <view class="admin-action-btn" bindtap="addCode" style="background:#667eea;margin:0;">添加兑换码</view>
+          <view class="admin-action-btn" bindtap="addCode" style="background:#667eea;margin:0;">{{_l.redeemAddBtn}}</view>
         </view>
       </view>
 
-      <!-- 页面标题 -->
       <view class="card">
-        <view class="card-title">🎫 兑换码查询</view>
-        <view class="card-desc">最新游戏兑换码，点击即可复制</view>
+        <view class="card-title">🎫 {{_l.redeemTitle}}</view>
+        <view class="card-desc">{{_l.redeemDesc}}</view>
       </view>
 
-      <!-- 加载中 -->
       <view class="loading-card" wx:if="{{loading}}">
-        <text class="loading-text">加载中...</text>
+        <text class="loading-text">{{_l.loadingText}}</text>
       </view>
 
-      <!-- 兑换码列表 -->
       <view wx:elif="{{codes.length > 0}}">
         <view class="code-card {{item.isExpired ? 'is-expired-card' : ''}}" wx:for="{{codes}}" wx:key="_id">
-          <!-- 已过期印章 -->
-          <view class="expired-watermark" wx:if="{{item.isExpired}}">已过期</view>
+          <view class="expired-watermark" wx:if="{{item.isExpired}}">{{_l.redeemExpired}}</view>
           <view class="code-header">
-            <text class="code-title">{{item.title || '兑换码'}}</text>
+            <text class="code-title">{{item.title || _l.redeemTitle}}</text>
             <text class="code-time">{{item.createTimeStr || ''}}</text>
           </view>
           <view class="code-body">
             <view class="code-content">
-              <text class="code-label">兑换码：</text>
+              <text class="code-label">{{_l.redeemCodeLabel}}</text>
               <text class="code-value" user-select="true">{{item.code}}</text>
             </view>
             <view class="code-rewards" wx:if="{{item.rewards}}">
-              <text class="code-label">奖励内容：</text>
+              <text class="code-label">{{_l.redeemRewardLabel}}</text>
               <text class="code-desc">{{item.rewards}}</text>
             </view>
             <view class="code-expire" wx:if="{{item.expireTime || item.isExpired}}">
-              <text class="code-label">有效期至：</text>
-              <text class="code-desc {{item.isExpired ? 'expired' : ''}}">{{item.isExpired && !item.expireTime ? '已过期' : (item.expireTimeStr || item.expireTime)}}</text>
+              <text class="code-label">{{_l.redeemExpireLabel}}</text>
+              <text class="code-desc {{item.isExpired ? 'expired' : ''}}">{{item.isExpired && !item.expireTime ? _l.redeemExpired : (item.expireTimeStr || item.expireTime)}}</text>
             </view>
           </view>
           <view class="code-footer" wx:if="{{!item.isExpired}}">
-            <button class="copy-btn" data-code="{{item.code}}" bindtap="copyCode">复制兑换码</button>
+            <button class="copy-btn" data-code="{{item.code}}" bindtap="copyCode">{{_l.redeemCopyBtn}}</button>
           </view>
           <view class="admin-actions" wx:if="{{isAdmin}}">
-            <view class="admin-action-btn" data-item="{{item}}" bindtap="editCode">编辑</view>
-            <view class="admin-action-btn" data-id="{{item._id}}" data-expired="{{item.isExpired}}" bindtap="toggleExpire">{{item.isExpired ? '设为有效' : '设为过期'}}</view>
-            <view class="admin-action-btn delete" data-id="{{item._id}}" bindtap="deleteCode">删除</view>
+            <view class="admin-action-btn" data-item="{{item}}" bindtap="editCode">{{_l.edit}}</view>
+            <view class="admin-action-btn" data-id="{{item._id}}" data-expired="{{item.isExpired}}" bindtap="toggleExpire">{{item.isExpired ? _l.redeemValid : _l.redeemInvalid}}</view>
+            <view class="admin-action-btn delete" data-id="{{item._id}}" bindtap="deleteCode">{{_l.delete}}</view>
           </view>
         </view>
       </view>
 
-      <!-- 空状态 -->
       <view class="empty-card" wx:elif="{{!loading}}">
         <text class="empty-icon">📭</text>
-        <text class="empty-text">暂无兑换码</text>
-        <text class="empty-desc">兑换码会不定期更新，请关注官方公告</text>
+        <text class="empty-text">{{_l.redeemEmpty}}</text>
+        <text class="empty-desc">{{_l.redeemEmptyHint}}</text>
       </view>
     </view>
   </view>
-  
-  <!-- 添加兑换码弹窗 -->
+
   <view class="modal-mask" wx:if="{{showAddModal}}">
     <view class="modal-box">
-      <view class="modal-title">{{editingId ? '编辑兑换码' : '添加兑换码'}}</view>
-      <input class="modal-input" placeholder="输入标题 (如：2023周年庆)" value="{{formTitle}}" bindinput="onInputTitle" />
-      <textarea class="modal-textarea" placeholder="输入兑换码 (支持回车或逗号分隔多个)" value="{{formCode}}" bindinput="onInputCode"></textarea>
-      <input class="modal-input" placeholder="奖励内容 (如：洛克钻x100)" value="{{formRewards}}" bindinput="onInputRewards" />
-      <input class="modal-input" placeholder="有效期至 (如：2023-12-31)" value="{{formExpireTime}}" bindinput="onInputExpireTime" />
+      <view class="modal-title">{{editingId ? _l.redeemEditTitle : _l.redeemAddTitle}}</view>
+      <input class="modal-input" placeholder="输入标题" value="{{formTitle}}" bindinput="onInputTitle" />
+      <textarea class="modal-textarea" placeholder="输入兑换码" value="{{formCode}}" bindinput="onInputCode"></textarea>
+      <input class="modal-input" placeholder="奖励内容" value="{{formRewards}}" bindinput="onInputRewards" />
+      <input class="modal-input" placeholder="有效期至" value="{{formExpireTime}}" bindinput="onInputExpireTime" />
       <view class="modal-btns">
-        <view class="modal-btn cancel" bindtap="closeAddModal">取消</view>
-        <view class="modal-btn confirm" bindtap="submitAddCode">{{editingId ? '保存修改' : '确认添加'}}</view>
+        <view class="modal-btn cancel" bindtap="closeAddModal">{{_l.cancel}}</view>
+        <view class="modal-btn confirm" bindtap="submitAddCode">{{editingId ? _l.redeemSaveEdit : _l.redeemConfirmAdd}}</view>
       </view>
     </view>
   </view>

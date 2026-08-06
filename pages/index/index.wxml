@@ -2,15 +2,24 @@
   <!-- Repo Header -->
   <view class="repo-header">
     <view class="repo-header-top">
-      <text class="repo-owner" bindtap="goAbout">洛手助手</text>
+      <text class="repo-owner" bindtap="goAbout">{{_l.appName}}</text>
       <text class="repo-sep">/</text>
       <text class="repo-name">rorkingdom-guide</text>
       <view class="repo-visibility">Public</view>
     </view>
     <view class="repo-tabs">
-      <view class="repo-tab active"><text class="repo-tab-icon">📋</text>公告</view>
-      <view class="repo-tab" bindtap="goAdmin" wx:if="{{isAdmin}}"><text class="repo-tab-icon">⚙</text>管理</view>
-      <view class="repo-tab" bindtap="go" data-url="/pages/about/about"><text class="repo-tab-icon">ℹ</text>关于</view>
+      <view class="repo-tab active"><text class="repo-tab-icon">📋</text>{{_l.announceTab}}</view>
+      <view class="repo-tab" bindtap="goAdmin" wx:if="{{isAdmin}}"><text class="repo-tab-icon">⚙</text>{{_l.adminTab}}</view>
+      <view class="repo-tab" bindtap="go" data-url="/pages/about/about"><text class="repo-tab-icon">ℹ</text>{{_l.aboutTab}}</view>
+      <view class="repo-lang-bar">
+        <view class="lang-btn {{currentLang === 'zh' ? 'active' : ''}}" bindtap="switchLang" data-lang="zh">中</view>
+        <view class="lang-sep">|</view>
+        <view class="lang-btn {{currentLang === 'ja' ? 'active' : ''}}" bindtap="switchLang" data-lang="ja">日</view>
+        <view class="lang-sep">|</view>
+        <view class="lang-btn {{currentLang === 'ko' ? 'active' : ''}}" bindtap="switchLang" data-lang="ko">한</view>
+        <view class="lang-sep">|</view>
+        <view class="lang-btn {{currentLang === 'en' ? 'active' : ''}}" bindtap="switchLang" data-lang="en">EN</view>
+      </view>
     </view>
   </view>
 
@@ -32,37 +41,37 @@
   <view class="quick-nav">
     <view class="nav-item" bindtap="go" data-url="/pages/merchant/merchant">
       <text class="nav-emoji">🛒</text>
-      <text class="nav-label">远行商人</text>
+      <text class="nav-label">{{_l.merchant}}</text>
     </view>
     <view class="nav-item" bindtap="go" data-url="/pages/activity/activity">
       <text class="nav-emoji">📅</text>
-      <text class="nav-label">活动日历</text>
+      <text class="nav-label">{{_l.activityCalendar}}</text>
     </view>
     <view class="nav-item" bindtap="go" data-url="/pages/catch/catch">
       <text class="nav-emoji">🎯</text>
-      <text class="nav-label">捕捉统计</text>
+      <text class="nav-label">{{_l.catchStats}}</text>
     </view>
     <view class="nav-item" bindtap="go" data-url="/pages/redeem/redeem">
       <text class="nav-emoji">🎫</text>
-      <text class="nav-label">兑换码</text>
+      <text class="nav-label">{{_l.redeem}}</text>
     </view>
     <view class="nav-item" bindtap="go" data-url="/pages/map/map">
       <text class="nav-emoji">🗺️</text>
-      <text class="nav-label">洛手地图</text>
+      <text class="nav-label">{{_l.map}}</text>
     </view>
     <view class="nav-item" bindtap="go" data-url="/pages/swarm/swarm">
       <text class="nav-emoji">💥</text>
-      <text class="nav-label">大量出没</text>
+      <text class="nav-label">{{_l.swarm}}</text>
     </view>
   </view>
 
   <!-- Announcements Feed -->
   <view class="feed-section">
     <view class="feed-header">
-      <text class="feed-title">公告</text>
+      <text class="feed-title">{{_l.announcements}}</text>
       <view class="feed-header-right">
-        <text class="feed-count" wx:if="{{announcements.length > 0}}">{{announcements.length}}条</text>
-        <text class="feed-sub {{subscribedAnnouncement ? 'active' : ''}}" catchtap="subscribeAnnouncement">{{subscribedAnnouncement ? '已订阅(' + subscribeCount + '/99)' : '+ 订阅'}}</text>
+        <text class="feed-count" wx:if="{{announcements.length > 0}}">{{announcements.length}}{{_l.unitItems}}</text>
+        <text class="feed-sub {{subscribedAnnouncement ? 'active' : ''}}" catchtap="subscribeAnnouncement">{{subscribedAnnouncement ? _l.subscribed + '(' + subscribeCount + '/99)' : _l.subscribeAdd}}</text>
       </view>
     </view>
 
@@ -71,7 +80,7 @@
       <view class="feed-item {{expandedIndex === index ? 'expanded' : ''}}" wx:for="{{announcements}}" wx:key="_id">
         <view class="feed-item-header" bindtap="showAnnouncement" data-i="{{index}}">
           <view class="feed-item-left">
-            <view class="feed-badge {{item.pinned ? 'pinned' : item.type}}">{{item.pinned ? '置顶' : (item.typeLabel || (item.type === 'notice' ? '公告' : item.type === 'update' ? '更新' : item.type === 'event' ? '活动' : '提示'))}}</view>
+            <view class="feed-badge {{item.pinned ? 'pinned' : item.type}}">{{item.pinned ? _l.pinned : (item.typeLabel || (item.type === 'notice' ? _l.announceTab : item.type === 'update' ? _l.update : item.type === 'event' ? _l.activityCalendar : _l.tip))}}</view>
             <text class="feed-item-title">{{item.title}}</text>
           </view>
           <view class="feed-item-right">
@@ -81,18 +90,18 @@
         </view>
         <!-- Expanded content -->
         <view class="feed-item-body" wx:if="{{expandedIndex === index}}">
-          <text class="feed-auto-delete" wx:if="{{item.autoDeleteDisplay}}">{{item.autoDeleteDisplay}}</text>
+          <text class="feed-auto-delete" wx:if="{{countdowns[index]}}">{{countdowns[index]}}</text>
           <view class="feed-content">
             <view wx:if="{{item.content && (!item.richContent || item.richContent.length === 0)}}" class="news-detail-rich">
               <rich-text nodes="{{item.content}}" />
             </view>
             <block wx:if="{{item.richContent && item.richContent.length > 0}}">
               <block wx:for="{{item.richContent}}" wx:for-item="block" wx:key="index">
-                <view wx:if="{{block.type === 'music'}}" class="rich-music-block {{currentPlayUrl === block.url && isPlaying ? 'playing' : ''}}" catchtap="playSong" data-url="{{block.url}}" data-name="{{block.name || '推荐单曲'}}" data-cover="{{block.cover || ''}}">
+                <view wx:if="{{block.type === 'music'}}" class="rich-music-block {{currentPlayUrl === block.url && isPlaying ? 'playing' : ''}}" catchtap="playSong" data-url="{{block.url}}" data-name="{{block.name || _l.music}}" data-cover="{{block.cover || ''}}">
                   <image lazy-load wx:if="{{block.cover}}" class="music-cover" src="{{block.cover}}" mode="aspectFill" />
                   <text class="music-icon {{currentPlayUrl === block.url && isPlaying ? 'rotating' : ''}}">🎵</text>
                   <view class="music-info">
-                    <text class="music-name">{{block.name || '推荐单曲'}}</text>
+                    <text class="music-name">{{block.name || _l.music}}</text>
                     <text class="music-url">{{block.url}}</text>
                   </view>
                   <text class="music-play-btn">{{currentPlayUrl === block.url && isPlaying ? '⏸' : '▶'}}</text>
@@ -100,12 +109,12 @@
                 <view wx:elif="{{block.type === 'video' && block.isDirectMp4}}" class="rich-video-inline">
                   <video class="video-player-video" src="{{block.url}}" controls show-center-play-btn object-fit="contain" style="width:100%; border-radius:6rpx; margin-top:10rpx;" />
                 </view>
-                <view wx:elif="{{block.type === 'video'}}" class="rich-video-block" catchtap="openVideo" data-url="{{block.url}}" data-name="{{block.name || '视频'}}">
+                <view wx:elif="{{block.type === 'video'}}" class="rich-video-block" catchtap="openVideo" data-url="{{block.url}}" data-name="{{block.name || _l.video}}">
                   <image lazy-load wx:if="{{block.cover}}" src="{{block.cover}}" mode="aspectFill" style="width:96rpx; height:72rpx; border-radius:6rpx; margin-right:20rpx; flex-shrink:0; background:rgba(255,255,255,0.05);" />
                   <text wx:else class="video-icon">🎥</text>
                   <view class="video-info">
-                    <text class="video-name">{{block.name || '视频'}}</text>
-                    <text class="video-platform">{{block.platformName || '在线视频'}}</text>
+                    <text class="video-name">{{block.name || _l.video}}</text>
+                    <text class="video-platform">{{block.platformName || _l.onlineVideo}}</text>
                   </view>
                   <text class="video-play-btn">▶</text>
                 </view>
@@ -135,17 +144,17 @@
                 <view wx:elif="{{block.type === 'link' && block.isVideo}}" class="rich-link-block video-link" catchtap="openVideo" data-url="{{block.url}}" data-name="{{block.text}}">
                   <text class="link-icon">📺</text>
                   <text class="link-text">{{block.text}}</text>
-                  <text class="link-badge">观看</text>
+                  <text class="link-badge">{{_l.watch}}</text>
                 </view>
                 <view wx:elif="{{block.type === 'link'}}" class="rich-link-block" catchtap="openLink" data-url="{{block.url}}" data-text="{{block.text}}">
                   <text class="link-icon">🔗</text>
                   <text class="link-text">{{block.text}}</text>
-                  <text class="link-badge">复制</text>
+                  <text class="link-badge">{{_l.copy}}</text>
                 </view>
                 <view wx:elif="{{block.type === 'attachment'}}" class="rich-link-block attachment-link" catchtap="downloadAttachment" data-url="{{block.url}}" data-name="{{block.name}}" data-size="{{block.sizeText}}">
                   <text class="link-icon">📎</text>
                   <text class="link-text">{{block.name}} ({{block.sizeText}})</text>
-                  <text class="link-badge">下载</text>
+                  <text class="link-badge">{{_l.download}}</text>
                 </view>
                 <view wx:elif="{{block.type === 'quote'}}" class="rich-quote-block">
                   <text class="quote-text">{{block.content}}</text>
@@ -157,7 +166,7 @@
             </block>
           </view>
           <view class="feed-source" wx:if="{{item.source}}">
-            <text>来源：{{item.source}}</text>
+            <text>{{_l.sourceLabel}}{{item.source}}</text>
           </view>
         </view>
       </view>
@@ -166,9 +175,9 @@
     <!-- Empty state -->
     <view class="feed-empty" wx:if="{{announcements.length === 0 && isAdmin}}">
       <text class="feed-empty-icon">📭</text>
-      <text class="feed-empty-text">暂无公告</text>
+      <text class="feed-empty-text">{{_l.noAnnounce}}</text>
       <view class="feed-empty-btn" bindtap="goAdmin">
-        <text class="btn-text">发布第一条</text>
+        <text class="btn-text">{{_l.publish}}</text>
       </view>
     </view>
   </view>
@@ -182,7 +191,7 @@
   <view class="modal-mask" wx:if="{{showBannerModal}}" bindtap="toggleBannerModal">
     <view class="modal-box banner-modal" catchtap="preventClose">
       <view class="modal-header">
-        <text class="modal-title">编辑头图</text>
+        <text class="modal-title">{{_l.editBanner}}</text>
         <text class="modal-close" catchtap="toggleBannerModal">✕</text>
       </view>
       <view class="modal-body">
@@ -190,16 +199,16 @@
           <image lazy-load class="preview-img" src="{{bannerInput}}" mode="aspectFill" />
         </view>
         <view class="banner-preview empty" wx:else>
-          <text>暂无预览图片</text>
+          <text>{{_l.noPreview}}</text>
         </view>
         <view class="banner-form">
-          <text class="form-label">图片链接（多图每行一个）</text>
-          <textarea class="banner-input" style="height:160rpx;padding:20rpx;line-height:1.5;" placeholder="输入图片URL，多图每行一个" placeholder-style="color:rgba(255,255,255,0.25)" value="{{bannerInput}}" bindinput="onBannerInput" maxlength="-1"></textarea>
+          <text class="form-label">{{_l.bannerInputLabel}}</text>
+          <textarea class="banner-input" style="height:160rpx;padding:20rpx;line-height:1.5;" placeholder="{{_l.bannerPlaceholder}}" placeholder-style="color:rgba(255,255,255,0.25)" value="{{bannerInput}}" bindinput="onBannerInput" maxlength="-1"></textarea>
         </view>
       </view>
       <view class="modal-footer">
-        <button class="modal-cancel" catchtap="toggleBannerModal">取消</button>
-        <button class="modal-save" catchtap="saveBanner" disabled="{{bannerSaving}}">{{bannerSaving ? '提交中...' : '确认更新'}}</button>
+        <button class="modal-cancel" catchtap="toggleBannerModal">{{_l.cancel || '取消'}}</button>
+        <button class="modal-save" catchtap="saveBanner" disabled="{{bannerSaving}}">{{bannerSaving ? _l.submitting : _l.confirmUpdate}}</button>
       </view>
     </view>
   </view>
@@ -212,7 +221,7 @@
         <text class="modal-close" catchtap="closeVideoPlayer">✕</text>
       </view>
       <view class="video-player-owner" wx:if="{{videoPlayerOwner}}">
-        <text class="video-player-owner-text">UP主: {{videoPlayerOwner}}</text>
+        <text class="video-player-owner-text">{{_l.upOwner}}{{videoPlayerOwner}}</text>
       </view>
       <video class="video-player-video" src="{{videoPlayerUrl}}" controls autoplay show-center-play-btn object-fit="contain" />
       <scroll-view scroll-y class="video-player-desc" wx:if="{{videoPlayerDesc}}">

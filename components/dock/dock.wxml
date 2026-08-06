@@ -1,13 +1,13 @@
 <view class="dock">
   <view class="dock-inner">
-    <navigator class="dock-item {{current==='index'?'active':''}}" url="/pages/index/index" open-type="navigateTo" catchtap="">
+    <navigator class="dock-item {{current==='index'?'active':''}}" url="/pages/index/index" open-type="navigateTo">
       <text class="dock-icon">🏠</text>
     </navigator>
 
-    <navigator class="dock-item {{current==='catch'?'active':''}}" url="/pages/catch/catch" open-type="navigateTo" catchtap="">
+    <navigator class="dock-item {{current==='catch'?'active':''}}" url="/pages/catch/catch" open-type="navigateTo">
       <text class="dock-icon">📊</text>
     </navigator>
-    <navigator class="dock-item {{current==='login'?'active':''}}" url="/pages/login/login" open-type="navigateTo" catchtap="">
+    <navigator class="dock-item {{current==='login'?'active':''}}" url="/pages/login/login" open-type="navigateTo">
       <text class="dock-icon">👤</text>
     </navigator>
     <navigator class="dock-item {{current==='admin'?'active':''}}" url="/pages/admin/admin" open-type="navigateTo" wx:if="{{isAdmin}}">

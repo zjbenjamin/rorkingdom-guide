@@ -5,6 +5,7 @@ App({
   globalData: {
     theme: 'light',
     lang: 'zh',
+    langVersion: 0,
     cloudReady: false,
     userInfo: null,
     loginDays: 0,
@@ -13,7 +14,23 @@ App({
     statusBarHeight: 0
   },
   onShow: function() {
-    this.checkUpdate()
+    var lang = i18n.getLanguage()
+    if (lang !== this.globalData.lang) {
+      var titles = { zh: '洛手助手', en: 'Roco Helper', ja: 'ロコヘルパー', ko: '로코 도우미' }
+      this.globalData.lang = lang
+      this.globalData.langVersion++
+      wx.setNavigationBarTitle({ title: titles[lang] || 'Roco Helper' })
+    }
+  },
+  setLang: function(lang) {
+    i18n.setLang(lang)
+    this.globalData.lang = lang
+    this.globalData.langVersion++
+    var titles = { zh: '洛手助手', en: 'Roco Helper', ja: 'ロコヘルパー', ko: '로코 도우미' }
+    wx.setNavigationBarTitle({ title: titles[lang] || 'Roco Helper' })
+  },
+  getLang: function() {
+    return this.globalData.lang
   },
   onLaunch: function() {
     this.checkUpdate()
@@ -41,7 +58,6 @@ App({
     self.globalData.loginDays = loginDays.length
     self.globalData.level = self.calcLevel(loginDays.length)
     self.checkNotifyPermission()
-    self.checkUpdate()
   },
   _initCloud: function(retryCount) {
     var self = this

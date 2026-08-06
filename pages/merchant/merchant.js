@@ -1,5 +1,6 @@
 var app = getApp()
 var i18n = require('../../utils/i18n')
+var i18nBehavior = require('../../utils/i18nBehavior')
 
 var initialItems = [
   { id: 1, name: '棱镜球', price: 3200000, effect: '100%捕捉成功，必定随机炫彩外观，完美无瑕，顶级稀有精灵捕捉道具', rarity: '传说', source: '炼金台合成/活动奖励/商城购买/远行商人', image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/9b/kkwd244su5nzzg5pj99volbt84ohied.png/100px-100795.png', limitCount: '' },
@@ -77,10 +78,29 @@ function serializeItems(items) {
   return items.map(serializeItem).join('\n')
 }
 
+function buildNotifyContent(names, maxLen) {
+  var result = ''
+  for (var i = 0; i < names.length; i++) {
+    var sep = result ? '、' : ''
+    if ((result + sep + names[i]).length <= maxLen) {
+      result += sep + names[i]
+    } else {
+      var budget = maxLen - result.length - sep.length - 1
+      if (budget >= 3) {
+        result += sep + names[i].substring(0, budget) + '…'
+      } else if (maxLen - result.length >= 1) {
+        result += '…'
+      }
+      break
+    }
+  }
+  return result
+}
+
 Page({
   data: {
     adminCollapse: true,
-    items: [],
+    items: initialItems,
     t: {},
     isAdmin: false,
     maintenance: false,
@@ -283,6 +303,7 @@ Page({
   },
   onShow: function() {
     var self = this
+    this._refreshI18n()
     this.setData({ t: i18n.i18n[i18n.getLanguage()] || i18n.i18n['zh'] })
     if (wx.cloud) db = wx.cloud.database()
     var subscribeConfig = wx.getStorageSync('subscribe_config') || { announcement: true, activity: true, merchant: true }
@@ -469,7 +490,8 @@ Page({
           if (tsi === -1) tsi = 3
         }
 
-        var items = (d.useCustom && d.customItems) ? self.parseItems(d.customItems) : initialItems
+        var customParsed = (d.useCustom && d.customItems) ? self.parseItems(d.customItems) : null
+        var items = (customParsed && customParsed.length > 0) ? customParsed : initialItems
 
         cloudUrl.convertList(items, 'image', function(convertedItems) {
           cloudUrl.convertList(currentSelling, 'image', function(convertedSelling) {
@@ -948,8 +970,13 @@ Page({
       if (typeof self.startCountdownTimer === 'function') self.startCountdownTimer()
       wx.showToast({ title: '上架成功', icon: 'success' })
       var itemNames = parsed.map(function(i) { return i.name + (i.limitCount ? '*' + i.limitCount : '') })
-      var notifyContent = (parsed.length > 0 ? itemNames.join('、').substring(0, 20) : '在售信息已更新')
-      notify.pushToSubscribers('merchant', '商人商品更新', notifyContent, '/pages/merchant/merchant', null, itemNames)
+      var notifyTitle = itemNames.length > 0
+        ? (self.data.t.merchantPushTitle || '新上架{n}件商品').replace('{n}', parsed.length)
+        : (self.data.t.merchantPushEmptyTitle || '商人商品更新')
+      var notifyContent = itemNames.length > 0
+        ? buildNotifyContent(itemNames, 20)
+        : (self.data.t.merchantPushEmptyContent || '在售信息已更新')
+      notify.pushToSubscribers('merchant', notifyTitle, notifyContent, '/pages/merchant/merchant', null, itemNames)
     }).catch(function() {
       self.setData({ sellingSubmitting: false })
       wx.showToast({ title: '保存失败', icon: 'none' })

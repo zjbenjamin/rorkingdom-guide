@@ -1,4 +1,17 @@
 var templateConfig = require('../config/notifyTemplates')
+var i18n = require('./i18n')
+
+function smartTruncate(text, maxLen) {
+  if (!text) return ''
+  if (text.length <= maxLen) return text
+  if (maxLen <= 1) return '…'
+  return text.substring(0, maxLen - 1) + '…'
+}
+
+function pushI18n(key, fallback) {
+  var t = i18n.i18n[i18n.getLanguage()] || i18n.i18n.zh
+  return t[key] || fallback
+}
 
 var TEMPLATES = {
   announcement: templateConfig.announcement || 'TEMPLATE_ID_ANNOUNCEMENT',
@@ -380,5 +393,7 @@ module.exports = {
   getOpenidByNickname: getOpenidByNickname,
   pushToSubscribers: pushToSubscribers,
   resolveOpenid: resolveOpenid,
-  upsertSubscriber: upsertSubscriber
+  upsertSubscriber: upsertSubscriber,
+  smartTruncate: smartTruncate,
+  pushI18n: pushI18n
 }

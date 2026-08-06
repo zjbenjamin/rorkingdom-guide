@@ -1,92 +1,21 @@
 <view class="page">
   <view class="privacy-container">
-    <!-- 隐私政策 -->
-    <block wx:if="{{type === 'privacy'}}">
-      <view class="p-header">
-        <text class="p-main-title">《洛手助手》隐私保护指引</text>
-        <text class="p-subtitle">更新日期：2026年7月22日</text>
-        <text class="p-subtitle">生效日期：2026年7月22日</text>
-      </view>
+    <view class="p-header">
+      <text class="p-main-title">{{headerTitle}}</text>
+      <text class="p-subtitle">{{updateDate}}</text>
+      <text class="p-subtitle" wx:if="{{effectiveDate}}">{{effectiveDate}}</text>
+    </view>
 
-      <view class="p-section">
-        <text class="p-title">一、 我们收集的信息</text>
-        <text class="p-text">1. <text class="p-highlight">账户信息</text>：经您主动授权后，获取微信昵称、头像，用于战报水印及社区身份展示。未授权不影响工具核心功能。</text>
-        <text class="p-text">2. <text class="p-highlight">游戏辅助数据</text>：捕宠记录（精灵名称、使用的咕噜球种类及数量、成功/失败状态）、洛克贝资产变动、咕噜球库存、保底进度等，均属于您主动输入的非个人敏感操作数据。</text>
-        <text class="p-text">3. <text class="p-highlight">设备存储</text>：上述数据优先存储于您设备的本地缓存中，确保离线可用与极速响应。仅在您使用云端同步功能时，数据经加密后上传至微信云开发（CloudBase）。</text>
-      </view>
+    <view class="p-section" wx:for="{{sections}}" wx:key="title">
+      <text class="p-title">{{item.title}}</text>
+      <block wx:for="{{item.items}}" wx:for-item="line" wx:key="index">
+        <!-- highlight model: prefix + highlight + suffix -->
+        <text class="p-text" wx:if="{{line.highlight !== undefined}}">{{line.prefix || ''}}<text class="p-highlight">{{line.highlight}}</text>{{line.suffix || ''}}</text>
+        <!-- simple model: plain text -->
+        <text class="p-text" wx:else>{{line.text}}</text>
+      </block>
+    </view>
 
-      <view class="p-section">
-        <text class="p-title">二、 信息的存储与保护</text>
-        <text class="p-text">1. <text class="p-highlight">本地优先</text>：偏好设置、捕宠日志、库存记录等核心数据默认仅保留在您的设备上。您随时可通过"清除数据"彻底销毁本地信息。</text>
-        <text class="p-text">2. <text class="p-highlight">云端加密</text>：当您启用跨设备同步时，数据经由微信官方云开发安全链路加密传输并存储，与您微信账户绑定，他人无法访问。</text>
-        <text class="p-text">3. <text class="p-highlight">安全机制</text>：依托微信平台的高级别安全防护体系，所有云端数据传输均经过加密处理，防止未授权访问、篡改或泄露。</text>
-      </view>
-
-      <view class="p-section">
-        <text class="p-title">三、 信息共享与披露</text>
-        <text class="p-text">1. 本程序<text class="p-highlight">绝不向任何第三方（包括广告平台、数据分析公司等）共享、出售或转让您的个人信息与游戏数据</text>。</text>
-        <text class="p-text">2. 本小程序不集成任何第三方商业SDK、行为追踪脚本或广告投放插件。</text>
-        <text class="p-text">3. 仅在如下法定情形下，我们可能依法提供相关信息：司法机关依法查询；您自行公开分享；法律法规规定的其他情形。</text>
-      </view>
-
-      <view class="p-section">
-        <text class="p-title">四、 您的权利与控制</text>
-        <text class="p-text">1. <text class="p-highlight">随时注销</text>：在"我的"页面点击"注销账号"，系统将立即且不可逆地清除您的所有云端档案与授权绑定。</text>
-        <text class="p-text">2. <text class="p-highlight">撤回授权</text>：通过微信客户端「我 → 设置 → 个人信息与权限 → 授权管理」中随时关闭对本程序的任何授权。</text>
-        <text class="p-text">3. <text class="p-highlight">数据删除</text>：使用捕宠页面中的"重置数据"、"清空记录"功能，可立即删除对应模块的本地及云端记录。</text>
-      </view>
-
-      <view class="p-section">
-        <text class="p-title">五、 未成年人保护</text>
-        <text class="p-text">1. 本工具不包含任何付费项目或诱导消费内容，适合全年龄段玩家使用。</text>
-        <text class="p-text">2. 如您是未成年人，请在监护人指导下使用本工具。若监护人发现我们无意间收集了未成年人的个人信息，请联系开发者进行删除处理。</text>
-      </view>
-
-      <view class="p-section">
-        <text class="p-title">六、 隐私政策更新</text>
-        <text class="p-text">我们可能适时修订本隐私政策。当政策内容发生重大变更时，我们将在小程序启动时通过弹窗提示您。若您在更新后继续使用本服务，即视为您同意更新后的政策。</text>
-      </view>
-
-      <view class="p-section">
-        <text class="p-title">七、 联系我们</text>
-        <text class="p-text">如您对本隐私政策有任何疑问、意见或建议，可通过以下方式联系开发者：</text>
-        <text class="p-text">• 在小程序"关于"页面提交反馈</text>
-        <text class="p-text">• 邮箱：rookiehelper@outlook.com</text>
-      </view>
-    </block>
-
-    <!-- 用户协议 -->
-    <block wx:else>
-      <view class="p-header">
-        <text class="p-main-title">《洛手助手》用户服务协议</text>
-        <text class="p-subtitle">更新日期：2026年7月22日</text>
-      </view>
-
-      <view class="p-section">
-        <text class="p-title">一、 服务条款与性质</text>
-        <text class="p-text">1. 本小程序是一款完全免费、由玩家为玩家开发的<text class="p-highlight">非官方辅助工具</text>。与《洛克王国》官方运营方无任何商业关联。</text>
-        <text class="p-text">2. 我们为您提供游戏资料查询、图鉴阅览、捕宠记录、资产统计等辅助功能，致力于提升您的游戏体验。</text>
-      </view>
-
-      <view class="p-section">
-        <text class="p-title">二、 用户行为规范</text>
-        <text class="p-text">1. 您应当保证在使用本服务时遵守国家法律法规及微信平台规范，不得利用本工具的自定义功能（如备注、命名）传播违规内容。</text>
-        <text class="p-text">2. 您不得利用任何技术手段（如抓包、反编译）对小程序的云端接口进行恶意攻击或高频刷量，违者将永久封禁服务。</text>
-      </view>
-
-      <view class="p-section">
-        <text class="p-title">三、 免责声明（重要）</text>
-        <text class="p-text">1. <text class="p-highlight">数据仅供参考</text>：工具内所有的精灵属性、技能数据、评级算法均源于社区整理，并非官方绝对标准。如遇版本更新存在滞后，敬请谅解。</text>
-        <text class="p-text">2. <text class="p-highlight">玄学与概率</text>：本工具提供的"欧皇评级"、"保底进度"仅作为游戏过程中的娱乐与统计参考，无法直接影响或干预游戏内的真实捕宠概率，对此我们不承担任何"未捕捉成功"的责任。</text>
-      </view>
-
-      <view class="p-section">
-        <text class="p-title">四、 知识产权声明</text>
-        <text class="p-text">1. 小程序内所使用的《洛克王国》相关素材（精灵图、道具图等）的著作权及知识产权，均归腾讯公司及原版权方所有。</text>
-        <text class="p-text">2. 小程序特有的界面UI设计、交互排版、代码架构以及原创评级文案等，均属于开发者原创知识产权，未经授权严禁像素级抄袭及商用。</text>
-      </view>
-    </block>
-
-    <view class="foot">浙ICP备2026043884号</view>
+    <view class="foot">{{icp}}</view>
   </view>
 </view>

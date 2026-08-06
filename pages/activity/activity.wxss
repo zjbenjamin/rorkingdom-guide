@@ -132,3 +132,43 @@
 .counter-plus { font-size: 36rpx; color: #00d4ff; font-weight: 300; line-height: 1; }
 .counter-badge { min-width: 40rpx; height: 40rpx; background: rgba(0,180,255,0.15); border-radius: 20rpx; display: flex; align-items: center; justify-content: center; padding: 0 10rpx; border: 1rpx solid rgba(0,200,255,0.2); }
 .counter-num { font-size: 22rpx; color: #00d4ff; font-weight: 700; }
+
+/* Rich content: swiper (滚动图) */
+.rich-swiper-block { margin: 16rpx 0; border-radius: 8rpx; overflow: hidden; }
+.rich-swiper { width: 100%; height: 360rpx; }
+.rich-swiper-image { width: 100%; height: 100%; }
+
+/* Rich content: single image (单图) */
+.rich-image-block { margin: 16rpx 0; border-radius: 8rpx; overflow: hidden; }
+.rich-image { width: 100%; display: block; }
+
+/* Rich content: text & multimedia blocks */
+.rich-text-block { line-height: 1.8; margin: 8rpx 0; }
+.rich-quote-block {
+  margin: 12rpx 0; padding: 16rpx 20rpx;
+  background: rgba(88,166,255,0.06);
+  border-left: 4rpx solid rgba(88,166,255,0.4);
+  border-radius: 4rpx;
+}
+.rich-music-block, .rich-video-block, .rich-link-block {
+  margin: 12rpx 0; padding: 16rpx 20rpx;
+  background: rgba(255,255,255,0.04);
+  border-radius: 8rpx;
+  display: flex; align-items: center; gap: 12rpx;
+}
+.rich-divider-block { margin: 16rpx 0; }
+.divider-block { margin: 16rpx 0; }
+.divider-line { height: 1rpx; background: rgba(255,255,255,0.15); }
+.rich-table-block { margin: 16rpx 0; overflow-x: auto; }
+
+/* Rich table */
+.rich-table { width: 100%; border-collapse: collapse; font-size: 22rpx; }
+.rich-table-row { display: flex; }
+.rich-table-cell {
+  flex: 1; padding: 10rpx 8rpx; text-align: center;
+  border: 1rpx solid rgba(255,255,255,0.08);
+  color: #c9d1d9; min-width: 0; word-break: break-all;
+}
+.rich-table-header .rich-table-cell {
+  background: rgba(0,200,255,0.08); color: #58a6ff; font-weight: 700;
+}

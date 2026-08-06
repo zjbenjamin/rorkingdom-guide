@@ -1,4 +1,5 @@
 var app = getApp()
+var i18nBehavior = require('../../utils/i18nBehavior')
 var activitiesData = [
   { id: 1, title: '异色获取方法', type: '官方权威信息', status: '置顶', start: '', end: '', rewards: [], desc: '通过赛季奇遇、大世界遭遇、生蛋孵蛋、赛季商店兑换等方式获取异色精灵。' }
 ]
@@ -6,8 +7,10 @@ var cloudUrl = require('../../utils/cloudUrl')
 var notify = require('../../utils/notify')
 var db = null
 Page({
+  behaviors: [i18nBehavior],
   data: { theme: 'light', activities: [], filtered: [], status: '全部', statuses: ['全部','进行中','置顶'], expandedId: -1, isAdmin: false, showEditModal: false, editingItem: null, editTitle: '', editDesc: '', editStatus: '进行中', editType: '', editRewards: '', editStart: '', editEnd: '', editImage: '', subscribedActivity: false, subscribeCount: 0, currentPlayUrl: '', isPlaying: false, showVideoPlayer: false, videoPlayerUrl: '', videoPlayerName: '', videoPlayerCover: '', videoPlayerOwner: '', videoPlayerDesc: '' },
   onShow: function() {
+    this._refreshI18n()
     this.setData({ theme: app.globalData.theme })
     if (wx.cloud) db = wx.cloud.database()
     var subscribeConfig = wx.getStorageSync('subscribe_config') || { announcement: true, activity: true, system: true, merchant: true, interaction: true }
@@ -37,7 +40,7 @@ Page({
   },
   sortActivities: function() {
     var self = this
-    if (db && self.data.isAdmin) {
+    if (db) {
       db.collection('announcements').where({ type: 'event' }).orderBy('createTime', 'desc').limit(50).get()
         .then(function(res) {
           var cloudActivities = (res.data || []).map(function(item) {
@@ -150,11 +153,6 @@ Page({
   removeEditImage: function() {
     this.setData({ editImage: '' })
   },
-  previewEditImage: function() {
-    if (this.data.editImage) {
-      wx.previewImage({ urls: [this.data.editImage] })
-    }
-  },
   importActivityFile: function() {
     var self = this
     wx.chooseMessageFile({
@@ -227,202 +225,7 @@ Page({
       self.setData({ submitting: false, showEditModal: false, editingItem: null })
       wx.showToast({ title: '操作成功', icon: 'success' })
       self.sortActivities()
-      notify.pushToSubscribers('activity', title, desc, '/pages/activity/activity')
-    }).catch(function() { self.setData({ submitting: false }); wx.showToast({ title: '操作失败', icon: 'none' }) })
-  },
-  onDeleteActivity: function(e) {
-    var self = this
-    var item = e.currentTarget.dataset.item
-    if (!item.isCloud || !db) { wx.showToast({ title: '本地活动无法删除', icon: 'none' }); return }
-    wx.showModal({
-      title: '删除活动', content: '确定删除该活动？',
-      success: function(res) {
-        if (res.confirm) {
-          db.collection('announcements').doc(item.id).remove()
-            .then(function() { wx.showToast({ title: '已删除', icon: 'success' }); self.sortActivities() })
-            .catch(function() { wx.showToast({ title: '删除失败', icon: 'none' }) })
-        }
-      }
-    })
-  },
-  go: function(e) { wx.navigateTo({ url: e.currentTarget.dataset.url }) },
-  subscribeActivity: function() {
-    var self = this
-    if (!app.globalData.userInfo) { wx.showToast({ title: '请先登录', icon: 'none' }); return }
-    var currentCount = self.data.subscribeCount || 0
-    if (currentCount >= 99) { wx.showToast({ title: '已达上限99条', icon: 'none' }); return }
-    notify.requestAndSave(['activity'], function(err, result) {
-      if (err) {
-        if (!err.noConfig) wx.showToast({ title: '设置失败，请重试', icon: 'none' })
-        return
-      }
-      if (result.activity === 'accept') {
-        self.saveSubscription('activity')
-      } else if (result.activity === 'reject') {
-        wx.showToast({ title: '已拒绝通知', icon: 'none' })
-      } else if (result.activity === 'ban') {
-        wx.showModal({
-          title: '通知已关闭',
-          content: '您已关闭该类通知，请在小程序设置中手动开启',
-          confirmText: '去设置',
-          success: function(modalRes) {
-            if (modalRes.confirm) {
-              wx.openSetting({})
-            }
-          }
-        })
-      }
-    })
-  },
-  checkSubscription: function() {
-    var self = this
-    if (!db) return
-    wx.cloud.callFunction({ name: 'login' }).then(function(res) {
-      var openid = res.result.openid
-      if (!openid) return
-      wx.setStorageSync('openid', openid)
-      db.collection('subscribers').where({ openid: openid, type: 'activity' }).get()
-        .then(function(res) {
-          if (res.data.length > 0) {
-            self.setData({ subscribedActivity: res.data[0].status === 'active', subscribeCount: res.data[0].count || 0 })
-          }
-        })
-        .catch(function() {})
-    }).catch(function() {})
-  },
-  saveSubscription: function(type) {
-    var self = this
-    if (!db) return
-    var openid = ''
-    try {
-      var res = wx.getStorageSync('openid')
-      if (res) openid = res
-    } catch (e) {}
-    if (!openid) {
-      wx.cloud.callFunction({
-        name: 'login',
-        timeout: 3000,
-        success: function(loginRes) {
-          if (loginRes.result && loginRes.result.openid) {
-            openid = loginRes.result.openid
-            wx.setStorageSync('openid', openid)
-            self.doSaveSubscription(type, openid)
-          }
-        },
-        fail: function() {}
-      }).catch(function(err) { console.error("Cloud call failed", err); })
-    } else {
-      self.doSaveSubscription(type, openid)
-    }
-  },
-  doSaveSubscription: function(type, openid) {
-    var self = this
-    db.collection('subscribers').where({ openid: openid, type: type }).get()
-      .then(function(res) {
-        if (res.data.length > 0) {
-          var sub = res.data[0]
-          var newCount = (sub.count || 0) + 1
-          if (newCount > 99) newCount = 99
-          return db.collection('subscribers').doc(sub._id).update({
-            data: { count: newCount, status: 'active', updateTime: db.serverDate() }
-          }).then(function() {
-            wx.showToast({ title: '已添加(' + newCount + '/99)', icon: 'success' })
-            self.checkSubscription()
-          })
-        } else {
-          return db.collection('subscribers').add({
-            data: {
-              openid: openid,
-              type: type,
-              count: 1,
-              status: 'active',
-              createTime: db.serverDate()
-            }
-          }).then(function() {
-            wx.showToast({ title: '已添加(1/99)', icon: 'success' })
-            self.checkSubscription()
-          })
-        }
-      })
-  },
-  previewEditImage: function() {
-    if (this.data.editImage) {
-      wx.previewImage({ urls: [this.data.editImage] })
-    }
-  },
-  importActivityFile: function() {
-    var self = this
-    wx.chooseMessageFile({
-      count: 1,
-      type: 'file',
-      extension: ['xml', 'docx'],
-      success: function(res) {
-        var file = res.tempFiles[0]
-        var ext = file.name.split('.').pop().toLowerCase()
-        wx.showLoading({ title: '解析中...' })
-        if (ext === 'xml') {
-          wx.getFileSystemManager().readFile({
-            filePath: file.path,
-            encoding: 'utf8',
-            success: function(readRes) {
-              wx.hideLoading()
-              var content = readRes.data
-              var lines = content.split('\n')
-              var text = ''
-              for (var i = 0; i < lines.length; i++) {
-                var line = lines[i].replace(/<[^>]+>/g, '').trim()
-                if (line) text += line + '\n'
-              }
-              self.setData({ editDesc: (self.data.editDesc ? self.data.editDesc + '\n' : '') + text.trim() })
-              wx.showToast({ title: '导入成功', icon: 'success' })
-            },
-            fail: function() {
-              wx.hideLoading()
-              wx.showToast({ title: '读取失败', icon: 'none' })
-            }
-          })
-        } else {
-          wx.cloud.uploadFile({
-            cloudPath: 'temp/' + Date.now() + '.' + ext,
-            filePath: file.path
-          }).then(function(uploadRes) {
-            return wx.cloud.callFunction({
-              name: 'parseFile',
-              data: { fileID: uploadRes.fileID, fileType: ext }
-            }).catch(function(err) { console.error("Cloud call failed", err); })
-          }).then(function(parseRes) {
-            wx.hideLoading()
-            if (parseRes.result && parseRes.result.success) {
-              self.setData({ editDesc: (self.data.editDesc ? self.data.editDesc + '\n' : '') + parseRes.result.content })
-              wx.showToast({ title: '导入成功', icon: 'success' })
-            } else {
-              wx.showToast({ title: parseRes.result ? parseRes.result.error : '解析失败', icon: 'none' })
-            }
-          }).catch(function() {
-            wx.hideLoading()
-            wx.showToast({ title: '导入失败', icon: 'none' })
-          })
-        }
-      }
-    })
-  },
-  onSubmitActivity: function() {
-    var self = this
-    if (self.data.submitting) return
-    var title = self.data.editTitle.trim()
-    var desc = self.data.editDesc.trim()
-    if (!title) { wx.showToast({ title: '请输入标题', icon: 'none' }); return }
-    self.setData({ submitting: true })
-    var rewards = self.data.editRewards ? self.data.editRewards.split('\n').filter(function(r) { return r.trim() }) : []
-    var data = { title: title, content: desc, type: 'event', pinned: self.data.editStatus === '置顶', rewards: rewards, start: self.data.editStart, end: self.data.editEnd, image: self.data.editImage, updateTime: db.serverDate() }
-    var promise = self.data.editingItem && self.data.editingItem.isCloud
-      ? db.collection('announcements').doc(self.data.editingItem.id).update({ data: data })
-      : (data.createTime = db.serverDate(), data.author = app.globalData.userInfo ? app.globalData.userInfo.nickName : 'Admin', db.collection('announcements').add({ data: data }))
-    promise.then(function() {
-      self.setData({ submitting: false, showEditModal: false, editingItem: null })
-      wx.showToast({ title: '操作成功', icon: 'success' })
-      self.sortActivities()
-      notify.pushToSubscribers('activity', title, desc, '/pages/activity/activity')
+      notify.pushToSubscribers('activity', notify.smartTruncate(title, 20), notify.smartTruncate(desc, 20), '/pages/activity/activity')
     }).catch(function() { self.setData({ submitting: false }); wx.showToast({ title: '操作失败', icon: 'none' }) })
   },
   onDeleteActivity: function(e) {

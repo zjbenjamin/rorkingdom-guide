@@ -14,10 +14,10 @@ Component({
     checkAdminStatus: function() {
       var self = this
       var cachedAdmin = wx.getStorageSync('is_admin_user')
-      if (cachedAdmin !== '') {
-        self.setData({ isAdmin: !!cachedAdmin })
+      if (cachedAdmin) {
+        self.setData({ isAdmin: true })
       }
-      
+
       if (!wx.cloud) return
       var db = wx.cloud.database()
       var app = getApp()
@@ -26,23 +26,34 @@ Component({
       if (!userInfo && saved) userInfo = saved
       if (!userInfo) {
         self.setData({ isAdmin: false })
-        wx.setStorageSync('is_admin_user', false)
+        wx.removeStorageSync('is_admin_user')
         return
       }
-      
+
       db.collection('admin_config').doc('admin').get()
         .then(function(res) {
-          var adminOpenid = res.data.openid
+          var adminOpenid = res.data && res.data.openid
+          var adminOpenids = (res.data && res.data.openids) || []
+          if (!adminOpenid) { self.setData({ isAdmin: false }); return }
           wx.cloud.callFunction({ name: 'login' }).then(function(loginRes) {
-              var openid = loginRes.result.openid;
-              var isUserAdmin = (openid === adminOpenid)
+              var openid = loginRes.result && loginRes.result.openid;
+              var isUserAdmin = (openid === adminOpenid || adminOpenids.indexOf(openid) !== -1)
               self.setData({ isAdmin: isUserAdmin })
-              wx.setStorageSync('is_admin_user', isUserAdmin)
-              wx.setStorageSync('admin_logged_in', isUserAdmin)
+              if (isUserAdmin) {
+                wx.setStorageSync('is_admin_user', true)
+              } else {
+                wx.removeStorageSync('is_admin_user')
+              }
             })
-            .catch(function() {})
+            .catch(function() {
+              self.setData({ isAdmin: false })
+              wx.removeStorageSync('is_admin_user')
+            })
         })
-        .catch(function() {})
+        .catch(function() {
+          self.setData({ isAdmin: false })
+          wx.removeStorageSync('is_admin_user')
+        })
     }
   }
 })

@@ -1,0 +1,20 @@
+        ctx.fillText('【最新记录】', 20, y);
+      '🌟 【精灵童话绘本】：' + this.data.carnivalCount + '次\n' +
+      '🎁 【精灵童话书】：' + this.data.luckyBoxCount + '次\n' +
+    self.addEncounterRecord('🌟 【精灵童话绘本】', '🌟', c)
+    wx.showToast({ title: '🌟 【精灵童话绘本】', icon: 'none' })
+          title: '【精灵童话绘本】',
+          content: '使用 ' + ball.name + ' 触发【精灵童话绘本】',
+              self.addEncounterRecord('🌟 【精灵童话绘本】(' + ball.name + ')', '🌟', c)
+              wx.showToast({ title: '🌟 【精灵童话绘本】 使用' + ball.name + ' x' + count, icon: 'none' })
+    self.addEncounterRecord('🎁 【精灵童话书】', '🎁', c)
+    wx.showToast({ title: '🎁 【精灵童话书】', icon: 'none' })
+          title: '【精灵童话书】',
+              self.addEncounterRecord('🎁 【精灵童话书】(' + ball.name + ')', '🎁', c)
+              wx.showToast({ title: '🎁 【精灵童话书】 使用' + ball.name + ' x' + count, icon: 'none' })
+      itemList: ['清除【精灵童话绘本】', '清除【精灵童话书】', '清除所有异色统计'],
+            title: '清除【精灵童话绘本】',
+            content: '确定清除【精灵童话绘本】统计？',
+            title: '清除【精灵童话书】',
+            content: '确定清除【精灵童话书】统计？',
+            content: '确定清除所有异色统计？包括【精灵童话绘本】和【精灵童话书】',
