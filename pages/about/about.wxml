@@ -171,7 +171,7 @@
     <!-- Changelog -->
     <view class="section">
       <view class="section-title-row">
-        <text class="section-title">{{_l.announcements}}</text>
+        <text class="section-title">{{_l.changelog || '更新日志'}}</text>
         <view class="section-title-action" wx:if="{{isAdmin}}" catchtap="openChangelogModal">
           <text class="action-plus">+</text>
           <text class="action-text">{{_l.addBtnNew}}</text>
