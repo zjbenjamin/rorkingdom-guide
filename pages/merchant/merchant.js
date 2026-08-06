@@ -68,6 +68,7 @@ var initialItems = [
 
 var cloudUrl = require('../../utils/cloudUrl')
 var notify = require('../../utils/notify')
+var admin = require('../../utils/admin')
 var db = null
 
 function serializeItem(item) {
@@ -434,18 +435,9 @@ Page({
 
   checkAdmin: function() {
     var self = this
-    if (!db) return
-    db.collection('admin_config').doc('admin').get()
-      .then(function(res) {
-        var adminOpenid = res.data.openid
-        db.collection('users').where({ _openid: adminOpenid }).get()
-          .then(function(userRes) {
-            if (userRes.data.length > 0) {
-              self.setData({ isAdmin: true })
-            }
-          })
-      })
-      .catch(function(e) { console.error(e) })
+    admin.checkAdmin(self, function(isAdmin) {
+      if (isAdmin) self.setData({ isAdmin: true })
+    })
   },
   loadConfig: function() {
     var self = this
