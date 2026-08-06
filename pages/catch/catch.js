@@ -724,8 +724,12 @@ Page({
       
       // ─── 4. 标题 ───
       ctx.fillStyle = '#00d4ff';
+      var titleText = i18n.t('imgTitle');
       ctx.font = 'bold 24px sans-serif';
-      ctx.textAlign = 'center'; ctx.fillText(i18n.t('imgTitle'), width / 2 + 20, 50); ctx.textAlign = 'left';
+      var titleW = ctx.measureText(titleText).width;
+      var titleFontSize = titleW > width * 0.85 ? Math.floor(24 * width * 0.85 / titleW) : 24;
+      ctx.font = 'bold ' + titleFontSize + 'px sans-serif';
+      ctx.textAlign = 'center'; ctx.fillText(titleText, width / 2, 50); ctx.textAlign = 'left';
       loadImg('https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png', function(img) {
         var s = Math.round(28 * imgScale);
         ctx.drawImage(img, width / 2 - 110, 26 + (28-s)/2, s, s);
@@ -781,10 +785,14 @@ Page({
       ctx.font = '13px sans-serif';
       
       ctx.fillStyle = '#94a3b8';
-      ctx.fillText(i18n.t('imgStatus'), 36, 320);
+      var statusLabel = i18n.t('imgStatus');
+      var statusLabelW = ctx.measureText(statusLabel).width;
+      ctx.fillText(statusLabel, 36, 320);
       var resText = last.result || i18n.t('imgUnknown');
       ctx.fillStyle = last.resultRaw === 'success' ? '#4ade80' : (last.resultRaw === 'miss' ? '#f87171' : '#ffffff');
-      ctx.fillText(resText.indexOf('(')>-1 ? resText.substring(0, resText.indexOf('(')).trim() : resText, 80, 320);
+      var cleanRes = resText.indexOf('(')>-1 ? resText.substring(0, resText.indexOf('(')).trim() : resText;
+      var statusValueX = 36 + statusLabelW + 10;
+      ctx.fillText(cleanRes, statusValueX, 320);
       
       if (brushMode === 'mixed' && last.mixedPets) {
         ctx.font = '11px sans-serif';
@@ -935,8 +943,15 @@ Page({
         ctx.textAlign = 'right';
         ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = '10px sans-serif';
         var nickText = '@' + userInfo.nickName;
+        // 测量左侧文字宽度，避免重叠
+        var leftTextW = ctx.measureText(i18n.t('imgFooterTech')).width;
         var nickW = ctx.measureText(nickText).width;
-        ctx.fillText(nickText, width - 24, footerY);
+        if (leftTextW + nickW + 24 > width) {
+          // 重叠则换行显示昵称
+          ctx.fillText(nickText, width - 24, footerY + 14);
+        } else {
+          ctx.fillText(nickText, width - 24, footerY);
+        }
         if (uid) {
           ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.font = '9px sans-serif';
           ctx.fillText(i18n.t('imgUID') + uid, width - 24, footerY + 14);
