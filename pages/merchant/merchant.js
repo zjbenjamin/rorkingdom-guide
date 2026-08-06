@@ -441,6 +441,19 @@ Page({
     admin.checkAdmin(self, function(isAdmin) {
       if (isAdmin) self.setData({ isAdmin: true })
     })
+    // 兜底：云函数不可用时直接用 DB 查询
+    if (!db) return
+    db.collection('admin_config').doc('admin').get()
+      .then(function(res) {
+        var adminOpenid = res.data.openid
+        db.collection('users').where({ _openid: adminOpenid }).get()
+          .then(function(userRes) {
+            if (userRes.data.length > 0) {
+              self.setData({ isAdmin: true })
+            }
+          })
+      })
+      .catch(function(e) { console.error(e) })
   },
   loadConfig: function() {
     var self = this
