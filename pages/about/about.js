@@ -24,6 +24,7 @@ Page({
     aboutData: {
       appName: '洛手助手',
       version: i18n.i18n.zh.version || 'v1.5.0',
+      versionNote: i18n.i18n.zh.versionNote || '',
       devName: '浙里本杰明',
       devAvatar: 'https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEYA3JqaA4lW5JDNpmiDiR7kV6jjeMAAW0AAscgAAKo-ElXhfFJA7eEXyo9BA.jpeg',
       uid: '476200',
@@ -97,6 +98,8 @@ Page({
         for (var key in defaults) {
           if (key === 'version') {
             merged[key] = i18n.i18n.zh.version || defaults[key]
+          } else if (key === 'versionNote') {
+            merged[key] = i18n.i18n.zh.versionNote || defaults[key]
           } else if (key === 'gifts' || key === 'platforms') {
             merged[key] = cloudData[key] || defaults[key]
           } else {

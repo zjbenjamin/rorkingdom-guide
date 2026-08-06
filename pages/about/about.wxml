@@ -16,6 +16,7 @@
           <text class="meta-badge-text">{{updateReady ? _l.updateReady : _l.updateAvailable}}</text>
         </view>
       </view>
+      <text class="version-note" wx:if="{{aboutData.versionNote}}">{{aboutData.versionNote}}</text>
       
       <view class="profile-tags">
         <view class="tag">离线可用</view>
