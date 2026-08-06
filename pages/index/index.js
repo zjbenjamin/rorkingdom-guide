@@ -69,6 +69,8 @@ Page({
     app.setLang(lang)
     this._refreshI18n()
     this.setData({ currentLang: lang })
+    var tip = i18n.i18n[lang].langSwitched || '已切换'
+    wx.showToast({ title: tip, icon: 'none', duration: 1500 })
   },
   checkAdmin: function() {
     var self = this
