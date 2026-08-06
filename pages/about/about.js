@@ -95,7 +95,9 @@ Page({
         var cloudData = res.data || {}
         var merged = {}
         for (var key in defaults) {
-          if (key === 'gifts' || key === 'platforms') {
+          if (key === 'version') {
+            merged[key] = i18n.i18n.zh.version || defaults[key]
+          } else if (key === 'gifts' || key === 'platforms') {
             merged[key] = cloudData[key] || defaults[key]
           } else {
             merged[key] = cloudData[key] !== undefined ? cloudData[key] : defaults[key]
