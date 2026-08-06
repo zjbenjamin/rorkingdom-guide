@@ -73,7 +73,7 @@
 .action-icon { font-size: 22rpx; }
 .action-text { font-size: 22rpx; }
 .action-count { font-size: 16rpx; background: rgba(0,200,255,0.2); color: #00d4ff; padding: 0 8rpx; border-radius: 8rpx; font-weight: 700; }
-.sub-btn { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); }
+.sub-btn { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); min-width: 140rpx; }
 .sub-btn.on { background: rgba(0,200,255,0.1); border-color: rgba(0,200,255,0.25); color: #00d4ff; box-shadow: 0 0 12rpx rgba(0,200,255,0.08); }
 .add-btn { background: rgba(52,199,89,0.08); border-color: rgba(52,199,89,0.2); color: #34c759; box-shadow: 0 0 0 1rpx rgba(52,199,89,0.04) inset; }
 .add-btn:active { background: rgba(52,199,89,0.15); }

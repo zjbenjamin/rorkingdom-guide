@@ -94,7 +94,7 @@
             <view class="action-btn sub-btn {{subscribedMerchant ? 'on' : ''}}" catchtap="subscribeMerchant">
               <text class="action-icon">{{subscribedMerchant ? '🔔' : '🔕'}}</text>
               <text class="action-text">{{subscribedMerchant ? '已订阅' : '订阅'}}</text>
-              <text class="action-count" wx:if="{{subscribedMerchant && subscribeCount > 0}}">{{subscribeCount}}</text>
+              <text class="action-count" style="visibility: {{subscribedMerchant && subscribeCount > 0 ? 'visible' : 'hidden'}}">{{subscribeCount}}</text>
             </view>
             <view class="action-btn push-btn" wx:if="{{isAdmin}}" catchtap="openSellingModal">
               <text class="action-icon">📤</text>
