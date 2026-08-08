@@ -2783,30 +2783,15 @@ openModal: function(e) {
       var self = this
       var testTitle = notify.pushI18n('testPush', '测试推送')
       var testContent = notify.pushI18n('testPushContent', '这是一条测试消息')
-      wx.showModal({ title: testTitle, content: '将发送一条' + testTitle + '，请确认是否继续？',
+      var confirmText = notify.pushI18n('testPushConfirm', '将发送一条测试推送，是否继续？')
+      wx.showModal({ title: testTitle, content: confirmText,
         success: function(res) {
           if (res.confirm) {
-            wx.showLoading({ title: '正在发送...' })
-            wx.request({
-              url: 'https://rockzj.top/api/push/send',
-              method: 'POST',
-              data: {
-                type: type,
-                title: testTitle,
-                content: testContent
-              },
-              success: function(httpRes) {
-                wx.hideLoading()
-                var result = httpRes.data
-                var msg = result && result.sent > 0 ? '推送成功(' + result.sent + '人)' : (result && result.total === 0 ? '无人订阅' : '失败: ' + (result.error || '未知错误'))
-                wx.showToast({ title: msg, icon: 'none', duration: 4000 })
-                if (self.loadSubscribers) self.loadSubscribers();
-              },
-              fail: function(err) {
-                wx.hideLoading()
-                wx.showToast({ title: '网络请求失败，请检查域名或服务器', icon: 'none', duration: 3000 })
-              }
-            })
+            wx.showLoading({ title: notify.pushI18n('submitting', '发送中...') })
+            notify.pushToSubscribers(type, notify.smartTruncate(testTitle, 20), notify.smartTruncate(testContent, 20))
+            wx.hideLoading()
+            wx.showToast({ title: '已提交推送', icon: 'success' })
+            if (self.loadSubscribers) self.loadSubscribers();
           }
         }
       })
