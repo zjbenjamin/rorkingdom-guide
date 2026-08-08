@@ -729,10 +729,13 @@ Page({
       var titleW = ctx.measureText(titleText).width;
       var titleFontSize = titleW > width * 0.85 ? Math.floor(24 * width * 0.85 / titleW) : 24;
       ctx.font = 'bold ' + titleFontSize + 'px sans-serif';
+      titleW = ctx.measureText(titleText).width;
       ctx.textAlign = 'center'; ctx.fillText(titleText, width / 2, 50); ctx.textAlign = 'left';
+      // 图标放在标题文字左侧，不遮挡标题
+      var iconSize = Math.round(28 * imgScale);
+      var iconX = width / 2 - titleW / 2 - iconSize - 6;
       loadImg('https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png', function(img) {
-        var s = Math.round(28 * imgScale);
-        ctx.drawImage(img, width / 2 - 110, 26 + (28-s)/2, s, s);
+        ctx.drawImage(img, iconX, 50 - iconSize / 2, iconSize, iconSize);
       });
       
       // ─── 5. 统计面板 ───
