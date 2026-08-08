@@ -280,9 +280,6 @@ function pushToSubscribers(type, title, content, page, itemName, itemNames) {
       itemName: itemName,
       itemNames: itemNames
     },
-      itemName: itemName,
-      itemNames: itemNames
-    },
     success: function(res) {
       console.log('已成功通过云函数中转给阿里云服务器', res.result)
     },
