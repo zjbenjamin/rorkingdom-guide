@@ -270,16 +270,16 @@ function pushToSubscribers(type, title, content, page, itemName, itemNames) {
     return;
   }
   
-  // 因为服务器尚未配置 HTTPS，手机端直接请求会被拦截或报 ERR_CONNECTION_CLOSED
-  // 这里使用云函数作为“中转跳板”，在云端用纯 HTTP 转发给您的阿里云服务器，完美绕过微信限制
   wx.cloud.callFunction({
     name: 'sendSubscribe',
     data: {
-      proxyToAliyun: true,
       type: type,
       title: title,
       content: content,
       page: page || '/pages/index/index',
+      itemName: itemName,
+      itemNames: itemNames
+    },
       itemName: itemName,
       itemNames: itemNames
     },
