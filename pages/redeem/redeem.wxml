@@ -48,7 +48,7 @@
             </view>
           </view>
           <view class="code-footer" wx:if="{{!item.isExpired}}">
-            <button class="copy-btn" data-code="{{item.code}}" bindtap="copyCode">{{_l.redeemCopyBtn}}</button>
+            <view class="copy-btn" catchtap="copyCode" data-code="{{item.code}}">{{_l.redeemCopyBtn}}</view>
           </view>
           <view class="admin-actions" wx:if="{{isAdmin}}">
             <view class="admin-action-btn" data-item="{{item}}" bindtap="editCode">{{_l.edit}}</view>
@@ -66,13 +66,19 @@
     </view>
   </view>
 
-  <view class="modal-mask" wx:if="{{showAddModal}}">
-    <view class="modal-box">
+  <view class="modal-mask" wx:if="{{showAddModal}}" bindtap="closeAddModal">
+    <view class="modal-box" catchtap="">
       <view class="modal-title">{{editingId ? _l.redeemEditTitle : _l.redeemAddTitle}}</view>
-      <input class="modal-input" placeholder="输入标题" value="{{formTitle}}" bindinput="onInputTitle" />
-      <textarea class="modal-textarea" placeholder="输入兑换码" value="{{formCode}}" bindinput="onInputCode"></textarea>
-      <input class="modal-input" placeholder="奖励内容" value="{{formRewards}}" bindinput="onInputRewards" />
-      <input class="modal-input" placeholder="有效期至" value="{{formExpireTime}}" bindinput="onInputExpireTime" />
+      <input class="modal-input" placeholder="输入兑换码" value="{{formCode}}" bindinput="onInputCode" />
+      <input class="modal-input" placeholder="{{_l.redeemRewardLabel || '奖励内容'}}" value="{{formRewards}}" bindinput="onInputRewards" />
+      <view class="form-row">
+        <picker mode="date" value="{{formExpireDate}}" bindchange="onExpireDateChange">
+          <view class="picker-value">{{formExpireDate || '选择日期'}}</view>
+        </picker>
+        <picker mode="time" value="{{formExpireTime}}" bindchange="onExpireTimeChange">
+          <view class="picker-value">{{formExpireTime || '选择时间'}}</view>
+        </picker>
+      </view>
       <view class="modal-btns">
         <view class="modal-btn cancel" bindtap="closeAddModal">{{_l.cancel}}</view>
         <view class="modal-btn confirm" bindtap="submitAddCode">{{editingId ? _l.redeemSaveEdit : _l.redeemConfirmAdd}}</view>

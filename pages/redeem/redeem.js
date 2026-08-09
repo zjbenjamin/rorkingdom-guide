@@ -8,7 +8,9 @@ Page({
     isAdmin: false,
     maintenance: false,
     loading: false,
-    codes: []
+    codes: [],
+    formExpireDate: '',
+    formExpireTime: ''
   },
   onLoad: function() {
     this._refreshI18n()
@@ -53,6 +55,11 @@ Page({
             var d = new Date(c.createTime);
             c.createTimeStr = d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate();
           }
+          if (c.expireTime && c.expireTime.length >= 10) {
+            var ed = c.expireTime.substring(0, 10);
+            var et = c.expireTime.length > 11 ? ' ' + c.expireTime.substring(11, 16) : '';
+            c.expireTimeStr = ed + et;
+          }
         });
         self.setData({ codes: codes, loading: false });
       })
@@ -76,22 +83,29 @@ Page({
     this.setData({
       showAddModal: true,
       editingId: '',
-      formTitle: '',
       formCode: '',
       formRewards: '',
+      formExpireDate: '',
       formExpireTime: ''
     });
   },
   
   editCode: function(e) {
     var item = e.currentTarget.dataset.item;
+    var exp = (item.expireTime || '').trim();
+    var expDate = '';
+    var expTime = '';
+    if (exp && exp.length >= 10) {
+      expDate = exp.substring(0, 10);
+      expTime = exp.length > 11 ? exp.substring(11, 16) : '';
+    }
     this.setData({
       showAddModal: true,
       editingId: item._id,
-      formTitle: item.title || '',
       formCode: item.code || '',
       formRewards: item.rewards || '',
-      formExpireTime: item.expireTime || ''
+      formExpireDate: expDate,
+      formExpireTime: expTime
     });
   },
   
@@ -102,7 +116,8 @@ Page({
   onInputTitle: function(e) { this.setData({ formTitle: e.detail.value }); },
   onInputCode: function(e) { this.setData({ formCode: e.detail.value }); },
   onInputRewards: function(e) { this.setData({ formRewards: e.detail.value }); },
-  onInputExpireTime: function(e) { this.setData({ formExpireTime: e.detail.value }); },
+  onExpireDateChange: function(e) { this.setData({ formExpireDate: e.detail.value }); },
+  onExpireTimeChange: function(e) { this.setData({ formExpireTime: e.detail.value }); },
   
   submitAddCode: function() {
     var self = this;
@@ -110,7 +125,9 @@ Page({
     var title = self.data.formTitle.trim();
     var code = self.data.formCode.trim();
     var rewards = self.data.formRewards.trim();
-    var expireTime = self.data.formExpireTime.trim();
+    var expDate = self.data.formExpireDate;
+    var expTime = self.data.formExpireTime;
+    var expireTime = expDate ? (expDate + (expTime ? ' ' + expTime : '')) : '';
     
     if (!code) {
       wx.showToast({ title: '请填写兑换码', icon: 'none' });
