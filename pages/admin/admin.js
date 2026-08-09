@@ -3,6 +3,7 @@ var db = null
 var notify = require('../../utils/notify')
 var cloudUrl = require('../../utils/cloudUrl')
 var i18nBehavior = require('../../utils/i18nBehavior')
+var i18n = require('../../utils/i18n')
 var activitiesData = [
   { id: 1, title: '异色获取方法', type: '官方权威信息', status: '置顶', start: '', end: '', rewards: [], desc: '通过赛季奇遇、大世界遭遇、生蛋孵蛋、赛季商店兑换等方式获取异色精灵。' }
 ]
@@ -1735,10 +1736,9 @@ openModal: function(e) {
   },
   formatTime: function(date) {
     if (!date) return ''
-    var d = new Date(date), now = new Date(), diff = now - d
-    if (diff < 60000) return '刚刚'
-    if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前'
-    if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前'
+    var d = new Date(date)
+    var rel = i18n.formatRelativeTime(d.getTime())
+    if (rel) return rel
     return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate()
   },
   loadAdminActivities: function() {

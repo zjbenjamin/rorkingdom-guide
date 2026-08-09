@@ -122,28 +122,13 @@ Page({
       var item = list[i];
       var display = '';
       if (item.autoOnlineTime && item.autoOnlineTime > now) {
-        var diff = item.autoOnlineTime - now;
-        var d = Math.floor(diff / 86400000);
-        var h = Math.floor((diff % 86400000) / 3600000);
-        var m = Math.floor((diff % 3600000) / 60000);
-        var s = Math.floor((diff % 60000) / 1000);
-        display = '⏳ 距上线 ';
-        if (d > 0) display += d + '天';
-        if (h > 0 || d > 0) display += String(h).padStart(2, '0') + '小时';
-        display += String(m).padStart(2, '0') + '分' + String(s).padStart(2, '0') + '秒';
+        display = i18n.formatCountdown(item.autoOnlineTime - now, 'countdownOnline', 'countdownEnded')
       } else if (item.autoDeleteTime) {
         var diff = item.autoDeleteTime - now;
         if (diff > 0) {
-          var d = Math.floor(diff / 86400000);
-          var h = Math.floor((diff % 86400000) / 3600000);
-          var m = Math.floor((diff % 3600000) / 60000);
-          var s = Math.floor((diff % 60000) / 1000);
-          display = '⏳ 距下线 ';
-          if (d > 0) display += d + '天';
-          if (h > 0 || d > 0) display += String(h).padStart(2, '0') + '小时';
-          display += String(m).padStart(2, '0') + '分' + String(s).padStart(2, '0') + '秒';
+          display = i18n.formatCountdown(diff, 'countdownOffline', 'countdownEnded')
         } else {
-          display = '✅ 已结束';
+          display = i18n.i18n[i18n.getLanguage()].countdownEnded || '已结束'
         }
       }
       if (countdowns[i] !== display) {
@@ -203,11 +188,8 @@ Page({
   formatTime: function(date) {
     if (!date) return ''
     var d = new Date(date)
-    var now = new Date()
-    var diff = now - d
-    if (diff < 86400000) return '今天'
-    if (diff < 172800000) return '昨天'
-    if (diff < 604800000) return Math.floor(diff / 86400000) + '天前'
+    var rel = i18n.formatRelativeTime(d.getTime())
+    if (rel) return rel
     return (d.getMonth() + 1) + '/' + d.getDate()
   },
   go: function(e) {

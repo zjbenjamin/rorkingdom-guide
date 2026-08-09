@@ -2,6 +2,7 @@ const app = getApp()
 var db = null
 var notify = require('../../utils/notify')
 var i18nBehavior = require('../../utils/i18nBehavior')
+var i18n = require('../../utils/i18n')
 
 Page({
   behaviors: [i18nBehavior],
@@ -97,7 +98,7 @@ Page({
           item.statusInfo = { statusClass: 'status-upcoming', statusText: '未开始' }
           upcoming.push(item)
         } else {
-          item.statusInfo = { statusClass: 'status-ended', statusText: '已结束' }
+          item.statusInfo = { statusClass: 'status-ended', statusText: i18n.i18n[i18n.getLanguage()].countdownEnded || '已结束' }
           // We can push to upcoming for admin to see, or a separate ended list.
           if (self.data.isAdmin) {
              upcoming.push(item)

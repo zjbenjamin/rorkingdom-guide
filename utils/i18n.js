@@ -270,6 +270,22 @@ var i18n = {
     redeemSetFail: '设置失败',
     savingMsg: '保存中',
     deletingMsg: '删除中',
+    countdownDay: '天',
+    countdownHour: '小时',
+    countdownMin: '分',
+    countdownSec: '秒',
+    countdownOnline: '距上线',
+    countdownOffline: '距下线',
+    countdownEnded: '已结束',
+    countdownDelisted: '已下架',
+    countdownToday: '今天',
+    countdownYesterday: '昨天',
+    countdownDaysAgo: '天前',
+    countdownMinsAgo: '分钟前',
+    countdownHoursAgo: '小时前',
+    countdownAllDay: '全天',
+    countdownAuto: '(自动)',
+    merchantClosed: '未开市',
     activityNotifyTitle: '活动更新通知',
     activityNotifyDesc: '订阅获取最新活动信息提醒',
     activitySubscribed: '已订阅',
@@ -714,6 +730,22 @@ var i18n = {
     redeemSetFail: 'Set failed',
     savingMsg: 'Saving...',
     deletingMsg: 'Deleting...',
+    countdownDay: 'd',
+    countdownHour: 'h',
+    countdownMin: 'm',
+    countdownSec: 's',
+    countdownOnline: 'Online in',
+    countdownOffline: 'Offline in',
+    countdownEnded: 'Ended',
+    countdownDelisted: 'Delisted',
+    countdownToday: 'Today',
+    countdownYesterday: 'Yesterday',
+    countdownDaysAgo: 'd ago',
+    countdownMinsAgo: 'm ago',
+    countdownHoursAgo: 'h ago',
+    countdownAllDay: 'All day',
+    countdownAuto: '(Auto)',
+    merchantClosed: 'Closed',
     activityNotifyTitle: 'Event Notifications',
     activityNotifyDesc: 'Subscribe for the latest event alerts',
     activitySubscribed: 'Subscribed',
@@ -1158,6 +1190,22 @@ var i18n = {
     redeemSetFail: '設定失敗',
     savingMsg: '保存中...',
     deletingMsg: '削除中...',
+    countdownDay: '日',
+    countdownHour: '時間',
+    countdownMin: '分',
+    countdownSec: '秒',
+    countdownOnline: '開始まで',
+    countdownOffline: '終了まで',
+    countdownEnded: '終了',
+    countdownDelisted: '販売終了',
+    countdownToday: '今日',
+    countdownYesterday: '昨日',
+    countdownDaysAgo: '日前',
+    countdownMinsAgo: '分前',
+    countdownHoursAgo: '時間前',
+    countdownAllDay: '終日',
+    countdownAuto: '(自動)',
+    merchantClosed: '閉店中',
     activityNotifyTitle: 'イベント通知',
     activityNotifyDesc: '最新のイベント情報を受け取る',
     activitySubscribed: '購読中',
@@ -1602,6 +1650,22 @@ var i18n = {
     redeemSetFail: '설정 실패',
     savingMsg: '저장 중...',
     deletingMsg: '삭제 중...',
+    countdownDay: '일',
+    countdownHour: '시간',
+    countdownMin: '분',
+    countdownSec: '초',
+    countdownOnline: '시작까지',
+    countdownOffline: '종료까지',
+    countdownEnded: '종료됨',
+    countdownDelisted: '판매 종료',
+    countdownToday: '오늘',
+    countdownYesterday: '어제',
+    countdownDaysAgo: '일 전',
+    countdownMinsAgo: '분 전',
+    countdownHoursAgo: '시간 전',
+    countdownAllDay: '하루 종일',
+    countdownAuto: '(자동)',
+    merchantClosed: '폐점 중',
     activityNotifyTitle: '이벤트 알림',
     activityNotifyDesc: '최신 이벤트 정보 알림 구독',
     activitySubscribed: '구독 중',
@@ -1806,10 +1870,54 @@ function getLanguage() {
   return currentLang
 }
 
+function formatCountdown(diffMs, prefixKey, endedKey) {
+  var dict = i18n[currentLang] || i18n.zh
+  if (diffMs <= 0) return dict[endedKey || 'countdownEnded'] || '已结束'
+  var totalSec = Math.floor(diffMs / 1000)
+  var d = Math.floor(totalSec / 86400)
+  var h = Math.floor((totalSec % 86400) / 3600)
+  var m = Math.floor((totalSec % 3600) / 60)
+  var s = totalSec % 60
+  var pre = dict[prefixKey || 'countdownOnline'] || ''
+  var result = '\u23F3 ' + pre + ' '
+  if (d > 0) result += d + (dict.countdownDay || '天')
+  if (h > 0 || d > 0) result += String(h).padStart(2, '0') + (dict.countdownHour || '小时')
+  result += String(m).padStart(2, '0') + (dict.countdownMin || '分') + String(s).padStart(2, '0') + (dict.countdownSec || '秒')
+  return result
+}
+
+function formatRelativeTime(timestamp) {
+  var dict = i18n[currentLang] || i18n.zh
+  var diff = Date.now() - timestamp
+  if (diff < 60000) return ''
+  if (diff < 3600000) return Math.floor(diff / 60000) + (dict.countdownMinsAgo || '分钟前')
+  if (diff < 86400000) return Math.floor(diff / 3600000) + (dict.countdownHoursAgo || '小时前')
+  var days = Math.floor(diff / 86400000)
+  if (days === 1) return dict.countdownYesterday || '昨天'
+  if (days === 0) return dict.countdownToday || '今天'
+  if (days <= 7) return days + (dict.countdownDaysAgo || '天前')
+  return ''
+}
+
+function formatDuration(totalSec) {
+  var dict = i18n[currentLang] || i18n.zh
+  if (totalSec <= 0) return '0' + (dict.countdownSec || '秒')
+  var h = Math.floor(totalSec / 3600)
+  var m = Math.floor((totalSec % 3600) / 60)
+  var s = totalSec % 60
+  var result = ''
+  if (h > 0) result += h + (dict.countdownHour || '小时')
+  result += (m < 10 && h > 0 ? '0' : '') + m + (dict.countdownMin || '分') + (s < 10 ? '0' : '') + s + (dict.countdownSec || '秒')
+  return result
+}
+
 module.exports = {
   t: t,
   initLang: initLang,
   setLang: setLang,
   getLanguage: getLanguage,
-  i18n: i18n
+  i18n: i18n,
+  formatCountdown: formatCountdown,
+  formatRelativeTime: formatRelativeTime,
+  formatDuration: formatDuration
 }

@@ -354,10 +354,7 @@ Page({
     var autoElapsed = '';
     if (self.data.captureStartTime) {
       var el = Math.floor((Date.now() - self.data.captureStartTime) / 1000);
-      var eh = Math.floor(el / 3600);
-      var em = Math.floor((el % 3600) / 60);
-      var es = el % 60;
-      autoElapsed = (eh > 0 ? eh + '小时' : '') + (em > 0 ? em + '分' : '') + es + '秒 (自动)';
+      autoElapsed = i18n.formatDuration(el) + ' ' + i18n.i18n[i18n.getLanguage()].countdownAuto
     }
     self.setData({
       showResultBallModal: true,
@@ -479,14 +476,12 @@ Page({
     if (!resultElapsedTime || resultElapsedTime.indexOf('(自动)') >= 0) {
       if (self.data.captureStartTime) {
         var elapsed = Math.floor((Date.now() - self.data.captureStartTime) / 1000);
-        var h = Math.floor(elapsed / 3600);
-        var m = Math.floor((elapsed % 3600) / 60);
-        var s = elapsed % 60;
-        resultElapsedTime = (h > 0 ? h + '小时' : '') + (m > 0 ? m + '分' : '') + s + '秒';
+        resultElapsedTime = i18n.formatDuration(elapsed);
         resultElapsedAuto = true;
       }
     } else if (resultElapsedTime) {
-      resultElapsedTime = resultElapsedTime.replace(' (自动)', '');
+      var autoTag = ' ' + i18n.i18n[i18n.getLanguage()].countdownAuto;
+      resultElapsedTime = resultElapsedTime.replace(autoTag, '')
       resultElapsedAuto = false;
     }
     self.setData({ balls: balls, totalBallUsed: totalBallUsed, usedBallTotal: newUsedBallTotal, hasActiveBalls: hasActive, canStartCapture: self.data.wealthSet && hasActive, lastUsedCount: totalUsedCount, lastUsedBallName: lastUsedStr, _resultElapsedTime: resultElapsedTime, _resultElapsedAuto: resultElapsedAuto, _resultMixedPetNames: resultMixedPetNames, _resultTargetPet: resultTargetPet });

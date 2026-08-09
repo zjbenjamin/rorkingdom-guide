@@ -232,7 +232,7 @@ Page({
     })
   },
   formatTimeLabel: function(start, end) {
-    if (!start || !end) return '全天'
+    if (!start || !end) return i18n.i18n[i18n.getLanguage()].countdownAllDay || '全天'
     var s = new Date(start)
     var e = new Date(end)
     var pad = function(n) { return n < 10 ? '0' + n : n }
@@ -249,7 +249,7 @@ Page({
     var marketEnd = 24 * 3600
     
     if (secondsOfDay < marketStart || secondsOfDay >= marketEnd) {
-      return { is_open: false, countdown: '未开市' }
+      return { is_open: false, countdown: i18n.i18n[i18n.getLanguage()].merchantClosed || '未开市' }
     }
     
     var roundWindow = 4 * 3600
@@ -258,9 +258,7 @@ Page({
     var roundEndSeconds = marketStart + roundIndex * roundWindow
     
     var diff = roundEndSeconds - secondsOfDay
-    var h = Math.floor(diff / 3600)
-    var m = Math.floor((diff % 3600) / 60)
-    var countdown = (h > 0 ? h + '小时' : '') + m + '分钟'
+    var countdown = i18n.formatDuration(diff)
     
     return {
       is_open: true,
@@ -375,15 +373,8 @@ Page({
 
       // Format function helper
       var formatDiff = function(diff) {
-        if (diff <= 0) return '已下架';
-        var totalSeconds = Math.floor(diff / 1000)
-        var hours = Math.floor(totalSeconds / 3600)
-        var minutes = Math.floor((totalSeconds % 3600) / 60)
-        var seconds = totalSeconds % 60
-        var str = ''
-        if (hours > 0) str += hours + '小时'
-        str += (minutes < 10 ? '0' + minutes : minutes) + '分' + (seconds < 10 ? '0' + seconds : seconds) + '秒'
-        return str
+        if (diff <= 0) return i18n.i18n[i18n.getLanguage()].countdownDelisted || '已下架'
+        return i18n.formatDuration(Math.floor(diff / 1000))
       }
 
       // Calculate individual item countdowns
@@ -425,7 +416,7 @@ Page({
           return now < new Date(itemTime).getTime();
         });
         var newText = kept.length > 0 && self.serializeItems ? self.serializeItems(kept) : '';
-        self.setData({ remainingTimeStr: '已下架', currentSellingText: newText }); self.syncSellingArrays(kept)
+        self.setData({ remainingTimeStr: i18n.i18n[i18n.getLanguage()].countdownDelisted || '已下架', currentSellingText: newText }); self.syncSellingArrays(kept)
         if (typeof self.updateSellingSilent === 'function') self.updateSellingSilent();
         // We do not stop the timer here so it keeps polling in case items are added
         return
