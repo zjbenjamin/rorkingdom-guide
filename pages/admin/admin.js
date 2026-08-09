@@ -244,6 +244,11 @@ Page({
     stats: { totalUsers: 0 },
     showModal: false,
     showBannerModal: false,
+    translating: false,
+    translateCount: 0,
+    translateTotal: 0,
+    translateProgress: '',
+    _translateStop: false,
     editingItem: null,
     formTitle: '',
     formContent: '',
@@ -463,6 +468,75 @@ Page({
         self.setData({ bannerLoading: false })
         wx.showToast({ title: '保存失败', icon: 'none' })
       })
+  },
+  startBatchTranslate: function() {
+    var self = this
+    if (!wx.cloud || !db) { wx.showToast({ title: '云环境未就绪', icon: 'none' }); return }
+    self.setData({ translating: true, translateCount: 0, translateTotal: 0, translateProgress: '正在查询未翻译公告...', _translateStop: false })
+    db.collection('announcements').where({ title: db.command.neq('') }).limit(200).get()
+      .then(function(res) {
+        var items = res.data || []
+        var needTranslate = []
+        for (var i = 0; i < items.length; i++) {
+          if (!items[i].title_en || !items[i].title_ja || !items[i].title_ko) {
+            needTranslate.push(items[i])
+          }
+        }
+        if (needTranslate.length === 0) {
+          self.setData({ translating: false, translateProgress: '全部已翻译，无需处理' })
+          return
+        }
+        self.setData({ translateTotal: needTranslate.length })
+        self._doBatchTranslate(needTranslate, 0)
+      })
+      .catch(function() {
+        self.setData({ translating: false, translateProgress: '查询失败' })
+      })
+  },
+  stopBatchTranslate: function() {
+    this.setData({ _translateStop: true, translateProgress: '正在停止...' })
+  },
+  _doBatchTranslate: function(items, index) {
+    var self = this
+    if (self.data._translateStop) {
+      self.setData({ translating: false, translateProgress: '已停止，完成' + self.data.translateCount + '条' })
+      return
+    }
+    if (index >= items.length) {
+      self.setData({ translating: false, translateProgress: '全部完成，共翻译' + self.data.translateCount + '条' })
+      return
+    }
+    var item = items[index]
+    var title = item.title || ''
+    var content = (item.content || item.title || '').substring(0, 500)
+    
+    wx.cloud.callFunction({
+      name: 'translateText',
+      data: { text: title, from: 'zh', targets: ['en', 'ja', 'ko'] }
+    }).then(function(titleRes) {
+      var data = {}
+      var t = titleRes.result.translations || {}
+      for (var lang in t) { if (t[lang]) data['title_' + lang] = t[lang] }
+      return wx.cloud.callFunction({
+        name: 'translateText',
+        data: { text: content, from: 'zh', targets: ['en', 'ja', 'ko'] }
+      }).then(function(contentRes) {
+        var tc = contentRes.result.translations || {}
+        for (var l in tc) { if (tc[l]) data['content_' + l] = tc[l] }
+        return db.collection('announcements').doc(item._id).update({ data: data })
+      })
+    }).then(function() {
+      var next = index + 1
+      self.setData({
+        translateCount: next,
+        translateProgress: '已翻译' + next + '/' + items.length + ': ' + title
+      })
+      setTimeout(function() { self._doBatchTranslate(items, next) }, 500)
+    }).catch(function() {
+      var next = index + 1
+      self.setData({ translateCount: next, translateProgress: '跳过失败: ' + title })
+      setTimeout(function() { self._doBatchTranslate(items, next) }, 200)
+    })
   },
   loadPageConfigs: function() {
     var self = this
