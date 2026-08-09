@@ -69,14 +69,14 @@
   <view class="modal-mask" wx:if="{{showAddModal}}" bindtap="closeAddModal">
     <view class="modal-box" catchtap="">
       <view class="modal-title">{{editingId ? _l.redeemEditTitle : _l.redeemAddTitle}}</view>
-      <input class="modal-input" placeholder="输入兑换码" value="{{formCode}}" bindinput="onInputCode" />
+      <input class="modal-input" placeholder="{{_l.redeemCodePlaceholder || '输入兑换码'}}" value="{{formCode}}" bindinput="onInputCode" />
       <input class="modal-input" placeholder="{{_l.redeemRewardLabel || '奖励内容'}}" value="{{formRewards}}" bindinput="onInputRewards" />
       <view class="form-row">
         <picker mode="date" value="{{formExpireDate}}" bindchange="onExpireDateChange">
-          <view class="picker-value">{{formExpireDate || '选择日期'}}</view>
+          <view class="picker-value">{{formExpireDate || _l.redeemPickDate || '选择日期'}}</view>
         </picker>
         <picker mode="time" value="{{formExpireTime}}" bindchange="onExpireTimeChange">
-          <view class="picker-value">{{formExpireTime || '选择时间'}}</view>
+          <view class="picker-value">{{formExpireTime || _l.redeemPickTime || '选择时间'}}</view>
         </picker>
       </view>
       <view class="modal-btns">

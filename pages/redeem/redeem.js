@@ -1,6 +1,13 @@
 const app = getApp()
 var db = null
 var i18nBehavior = require('../../utils/i18nBehavior')
+var i18n = require('../../utils/i18n')
+
+function t(key, fallback) {
+  var lang = i18n.getLanguage()
+  var dict = i18n.i18n[lang] || i18n.i18n.zh
+  return dict[key] || fallback || ''
+}
 
 Page({
   behaviors: [i18nBehavior],
@@ -74,7 +81,7 @@ Page({
     wx.setClipboardData({
       data: code,
       success: function() {
-        wx.showToast({ title: '已复制兑换码', icon: 'success' });
+        wx.showToast({ title: t('redeemCopyDone', '已复制'), icon: 'success' });
       }
     });
   },
@@ -113,7 +120,6 @@ Page({
     this.setData({ showAddModal: false });
   },
   
-  onInputTitle: function(e) { this.setData({ formTitle: e.detail.value }); },
   onInputCode: function(e) { this.setData({ formCode: e.detail.value }); },
   onInputRewards: function(e) { this.setData({ formRewards: e.detail.value }); },
   onExpireDateChange: function(e) { this.setData({ formExpireDate: e.detail.value }); },
@@ -122,7 +128,6 @@ Page({
   submitAddCode: function() {
     var self = this;
     if (!db) return;
-    var title = self.data.formTitle.trim();
     var code = self.data.formCode.trim();
     var rewards = self.data.formRewards.trim();
     var expDate = self.data.formExpireDate;
@@ -130,45 +135,32 @@ Page({
     var expireTime = expDate ? (expDate + (expTime ? ' ' + expTime : '')) : '';
     
     if (!code) {
-      wx.showToast({ title: '请填写兑换码', icon: 'none' });
+      wx.showToast({ title: t('redeemCodeRequired', '请填写兑换码'), icon: 'none' });
       return;
     }
     
-    wx.showLoading({ title: '保存中' });
+    wx.showLoading({ title: t('savingMsg', '保存中') });
     var dataObj = {
-      title: title,
       code: code,
       rewards: rewards,
       expireTime: expireTime,
       isExpired: false
     };
     
-    if (self.data.editingId) {
-      db.collection('redeem_codes').doc(self.data.editingId).update({
-        data: dataObj
-      }).then(function() {
-        wx.hideLoading();
-        wx.showToast({ title: '修改成功', icon: 'success' });
-        self.closeAddModal();
-        self.fetchCodes();
-      }).catch(function() {
-        wx.hideLoading();
-        wx.showToast({ title: '修改失败', icon: 'none' });
-      });
-    } else {
-      dataObj.createTime = db.serverDate();
-      db.collection('redeem_codes').add({
-        data: dataObj
-      }).then(function() {
-        wx.hideLoading();
-        wx.showToast({ title: '添加成功', icon: 'success' });
-        self.closeAddModal();
-        self.fetchCodes();
-      }).catch(function() {
-        wx.hideLoading();
-        wx.showToast({ title: '添加失败', icon: 'none' });
-      });
-    }
+    var isEdit = !!self.data.editingId;
+    var promise = isEdit
+      ? db.collection('redeem_codes').doc(self.data.editingId).update({ data: dataObj })
+      : (dataObj.createTime = db.serverDate(), db.collection('redeem_codes').add({ data: dataObj }));
+    
+    promise.then(function() {
+      wx.hideLoading();
+      wx.showToast({ title: t(isEdit ? 'redeemEditSuccess' : 'redeemAddSuccess', isEdit ? '修改成功' : '添加成功'), icon: 'success' });
+      self.closeAddModal();
+      self.fetchCodes();
+    }).catch(function() {
+      wx.hideLoading();
+      wx.showToast({ title: t(isEdit ? 'redeemEditFail' : 'redeemAddFail', isEdit ? '修改失败' : '添加失败'), icon: 'none' });
+    });
   },
   
   deleteCode: function(e) {
@@ -176,20 +168,20 @@ Page({
     if (!db) return;
     var id = e.currentTarget.dataset.id;
     wx.showModal({
-      title: '删除兑换码',
-      content: '确定要删除这个兑换码吗？',
+      title: t('redeemDeleteTitle', '删除兑换码'),
+      content: t('redeemDeleteConfirm', '确定要删除？'),
       success: function(res) {
         if (res.confirm) {
-          wx.showLoading({ title: '删除中' });
+          wx.showLoading({ title: t('deletingMsg', '删除中') });
           db.collection('redeem_codes').doc(id).remove()
             .then(function() {
               wx.hideLoading();
-              wx.showToast({ title: '已删除', icon: 'success' });
+              wx.showToast({ title: t('redeemDeleteSuccess', '已删除'), icon: 'success' });
               self.fetchCodes();
             })
             .catch(function() {
               wx.hideLoading();
-              wx.showToast({ title: '删除失败', icon: 'none' });
+              wx.showToast({ title: t('redeemDeleteFail', '删除失败'), icon: 'none' });
             });
         }
       }
@@ -201,7 +193,7 @@ Page({
     if (!db) return;
     var id = e.currentTarget.dataset.id;
     var expired = e.currentTarget.dataset.expired;
-    wx.showLoading({ title: '设置中' });
+    wx.showLoading({ title: t('redeemSetExpire', '设置中') });
     db.collection('redeem_codes').doc(id).update({
       data: { isExpired: !expired }
     }).then(function() {
@@ -209,19 +201,19 @@ Page({
       self.fetchCodes();
     }).catch(function() {
       wx.hideLoading();
-      wx.showToast({ title: '设置失败', icon: 'none' });
+      wx.showToast({ title: t('redeemSetFail', '设置失败'), icon: 'none' });
     });
   },
 
   onShareAppMessage: function () {
     return {
-      title: 'CDK 兑换中心 - 洛克王国向导',
+      title: '洛手助手 - 兑换码查询',
       path: '/pages/redeem/redeem'
     }
   },
   onShareTimeline: function () {
     return {
-      title: 'CDK 兑换中心 - 洛克王国向导'
+      title: '洛手助手 - 兑换码查询'
     }
   }
 
