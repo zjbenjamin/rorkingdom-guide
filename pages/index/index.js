@@ -204,6 +204,38 @@ Page({
   },
   goAbout: function() { wx.navigateTo({ url: '/pages/about/about' }) },
   goAdmin: function() { wx.navigateTo({ url: '/pages/admin/admin' }) },
+  translateOne: function(e) {
+    var self = this
+    var id = e.currentTarget.dataset.id
+    var title = e.currentTarget.dataset.title
+    var content = e.currentTarget.dataset.content
+    if (!id || !title || !wx.cloud) return
+    wx.showLoading({ title: '翻译中...' })
+    var data = {}
+    wx.cloud.callFunction({
+      name: 'translateText',
+      data: { text: title, from: 'zh', targets: ['en', 'ja', 'ko'] }
+    }).then(function(res) {
+      var t = res.result.translations || {}
+      for (var lang in t) { if (t[lang]) data['title_' + lang] = t[lang] }
+      return wx.cloud.callFunction({
+        name: 'translateText',
+        data: { text: (content || title).substring(0, 500), from: 'zh', targets: ['en', 'ja', 'ko'] }
+      })
+    }).then(function(res) {
+      var t = res.result.translations || {}
+      for (var lang in t) { if (t[lang]) data['content_' + lang] = t[lang] }
+      var _db = wx.cloud.database()
+      return _db.collection('announcements').doc(id).update({ data: data })
+    }).then(function() {
+      wx.hideLoading()
+      wx.showToast({ title: '翻译完成', icon: 'success' })
+      self.loadAnnouncements()
+    }).catch(function() {
+      wx.hideLoading()
+      wx.showToast({ title: '翻译失败', icon: 'none' })
+    })
+  },
   showAnnouncement: function(e) {
     var idx = e.currentTarget.dataset.i
     if (this.data.expandedIndex === idx) {

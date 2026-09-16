@@ -180,6 +180,8 @@
   width: 24rpx; text-align: center;
 }
 .feed-arrow.up { transform: rotate(90deg); }
+.feed-translate-btn { font-size: 18rpx; color: rgba(0,212,255,0.5); margin-right: 4rpx; }
+.feed-translate-btn:active { color: #00d4ff; }
 
 /* Expanded */
 .feed-item-body {

@@ -1512,7 +1512,7 @@ openModal: function(e) {
       self.loadAnnouncements();
       self.pushSubscribe('announcement', notify.smartTruncate(title, 20), notify.smartTruncate(content || title, 20));
       var docId = editItemId || (res && res._id)
-      if (docId && title) autoTranslate(docId, title, content || title)
+      if (docId) self.setData({ _lastDocId: docId, _lastDocTitle: title, _lastDocContent: content || title })
     }).catch(function(err) {
       console.error('发布公告失败:', err);
       self.setData({ submitting: false });
@@ -2808,7 +2808,7 @@ openModal: function(e) {
       self.loadAdminActivities();
       self.pushSubscribe('activity', notify.smartTruncate(title, 20), notify.smartTruncate(content, 20));
       var actDocId = actEditItemId || (res && res._id)
-      if (actDocId && title) autoTranslate(actDocId, title, content || title)
+      if (actDocId) self.setData({ _lastDocId: actDocId, _lastDocTitle: title, _lastDocContent: content || title })
     }).catch(function() {
       self.setData({ activitySubmitting: false });
       wx.showToast({ title: '操作失败', icon: 'none' });

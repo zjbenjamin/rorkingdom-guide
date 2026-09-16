@@ -85,6 +85,7 @@
           </view>
           <view class="feed-item-right">
             <text class="feed-time">{{item.timeStr}}</text>
+            <text class="feed-translate-btn" wx:if="{{isAdmin}}" catchtap="translateOne" data-id="{{item._id}}" data-title="{{item.title}}" data-content="{{item.content}}">🌐</text>
             <text class="feed-arrow {{expandedIndex === index ? 'up' : ''}}">▸</text>
           </view>
         </view>

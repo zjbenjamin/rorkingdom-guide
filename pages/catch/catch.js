@@ -1221,9 +1221,9 @@ Page({
     wx.setStorageSync('success_catches', sc)
     self.setData({ carnivalCount: c, totalCatches: tc, successCatches: sc, captureAnim: true })
     setTimeout(function() { self.setData({ captureAnim: false }) }, 600)
-    self.addEncounterRecord('🌟 精灵童话绘本', '🌟', c)
+    self.addEncounterRecord('🌟 月陨流星雨', '🌟', c)
     self.triggerFairytaleParticles()
-    wx.showToast({ title: '🌟 精灵童话绘本', icon: 'none' })
+    wx.showToast({ title: '🌟 月陨流星雨', icon: 'none' })
   },
   onCarnivalLongPress: function() {
     var self = this
@@ -1236,8 +1236,8 @@ Page({
       success: function(res) {
         var ball = self.data.balls[res.tapIndex]
         wx.showModal({
-          title: '精灵童话绘本',
-          content: '使用 ' + ball.name + ' 触发精灵童话绘本',
+          title: '月陨流星雨',
+          content: '使用 ' + ball.name + ' 触发月陨流星雨',
           editable: true,
           placeholderText: '输入捕捉数量(默认1)',
           success: function(modalRes) {
@@ -1255,9 +1255,9 @@ Page({
               self.saveBallsToStorage(balls)
               self.setData({ carnivalCount: c, totalCatches: tc, successCatches: sc, balls: balls, captureAnim: true })
               setTimeout(function() { self.setData({ captureAnim: false }) }, 600)
-              self.addEncounterRecord('🌟 精灵童话绘本(' + ball.name + ')', '🌟', c)
+              self.addEncounterRecord('🌟 月陨流星雨(' + ball.name + ')', '🌟', c)
               self.calcTotalBallUsed()
-              wx.showToast({ title: '🌟 精灵童话绘本 使用' + ball.name + ' x' + count, icon: 'none' })
+              wx.showToast({ title: '🌟 月陨流星雨 使用' + ball.name + ' x' + count, icon: 'none' })
             }
           }
         })
@@ -1278,8 +1278,8 @@ Page({
     wx.setStorageSync('total_catches', tc)
     wx.setStorageSync('success_catches', sc)
     self.setData({ luckyBoxCount: c, totalCatches: tc, successCatches: sc })
-    self.addEncounterRecord('🎁 精灵童话书', '🎁', c)
-    wx.showToast({ title: '🎁 精灵童话书', icon: 'none' })
+    self.addEncounterRecord('🎁 月陨星', '🎁', c)
+    wx.showToast({ title: '🎁 月陨星', icon: 'none' })
   },
   onLuckyBoxLongPress: function() {
     var self = this
@@ -1292,7 +1292,7 @@ Page({
       success: function(res) {
         var ball = self.data.balls[res.tapIndex]
         wx.showModal({
-          title: '精灵童话书',
+          title: '月陨星',
           content: '使用 ' + ball.name + ' 触发幸运盒',
           editable: true,
           placeholderText: '输入捕捉数量(默认1)',
@@ -1310,9 +1310,9 @@ Page({
               balls[res.tapIndex].count += count
               self.saveBallsToStorage(balls)
               self.setData({ luckyBoxCount: c, totalCatches: tc, successCatches: sc, balls: balls })
-              self.addEncounterRecord('🎁 精灵童话书(' + ball.name + ')', '🎁', c)
+              self.addEncounterRecord('🎁 月陨星(' + ball.name + ')', '🎁', c)
               self.calcTotalBallUsed()
-              wx.showToast({ title: '🎁 精灵童话书 使用' + ball.name + ' x' + count, icon: 'none' })
+              wx.showToast({ title: '🎁 月陨星 使用' + ball.name + ' x' + count, icon: 'none' })
             }
           }
         })
@@ -1322,12 +1322,12 @@ Page({
   onClearEncounter: function() {
     var self = this
     wx.showActionSheet({
-      itemList: ['清除精灵童话绘本', '清除精灵童话书', '清除所有异色统计'],
+      itemList: ['清除月陨流星雨', '清除月陨星', '清除所有异色统计'],
       success: function(res) {
         if (res.tapIndex === 0) {
           wx.showModal({
-            title: '清除精灵童话绘本',
-            content: '确定清除精灵童话绘本统计？',
+            title: '清除月陨流星雨',
+            content: '确定清除月陨流星雨统计？',
             success: function(r) {
               if (r.confirm) {
                 wx.removeStorageSync('carnival_count')
@@ -1339,8 +1339,8 @@ Page({
           })
         } else if (res.tapIndex === 1) {
           wx.showModal({
-            title: '清除精灵童话书',
-            content: '确定清除精灵童话书统计？',
+            title: '清除月陨星',
+            content: '确定清除月陨星统计？',
             success: function(r) {
               if (r.confirm) {
                 wx.removeStorageSync('lucky_box_count')
@@ -1353,7 +1353,7 @@ Page({
         } else if (res.tapIndex === 2) {
           wx.showModal({
             title: '清除所有异色统计',
-            content: '确定清除所有异色统计？包括精灵童话绘本和精灵童话书',
+            content: '确定清除所有异色统计？包括月陨流星雨和月陨星',
             success: function(r) {
               if (r.confirm) {
                 wx.removeStorageSync('carnival_count')
