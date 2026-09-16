@@ -3,6 +3,7 @@ var notify = require('../../utils/notify')
 var templateConfig = require('../../config/notifyTemplates')
 var levelUtil = require('../../utils/level')
 var i18n = require('../../utils/i18n')
+var adminUtil = require('../../utils/admin')
 var db = null
 var _cachedOpenId = wx.getStorageSync('openid') || null
 var _openIdCallbacks = []
@@ -745,7 +746,7 @@ Page({
       this.resolvePrivacyAuthorization({ event: 'disagree' })
       this.resolvePrivacyAuthorization = null
     }
-    wx.showToast({ title: self.data.loginLabels.toastPrivacyReject, icon: 'none' })
+    wx.showToast({ title: this.data.loginLabels.toastPrivacyReject, icon: 'none' })
   },
   onLogin: function() {
     var self = this
@@ -772,9 +773,9 @@ Page({
     var app = getApp()
     app.globalData.userInfo = userInfo
     var expire = 365 * 24 * 60 * 60 * 1000
+    var L = self.data.loginLabels
     self.setData({ userInfo: userInfo, hasUserInfo: true, isLogging: false, loginExpire: '365' + L.daysUnit + '0' + L.expireHoursUnit })
     self.syncToCloud(userInfo)
-    var L = self.data.loginLabels
     wx.showModal({
       title: L.dlgSyncTitle,
       content: L.dlgSyncBody,
@@ -1107,20 +1108,12 @@ Page({
   },
   checkAdmin: function() {
     var self = this
-    if (!wx.cloud) return
-    var db = wx.cloud.database()
-    var userInfo = getApp().globalData.userInfo
-    if (!userInfo) return
-    db.collection('admin_config').doc('admin').get()
-      .then(function(res) {
-        var adminOpenid = res.data.openid
-        db.collection('users').where({ _openid: adminOpenid }).get()
-          .then(function(userRes) {
-            if (userRes.data.length > 0) self.setData({ isAdmin: true })
-          })
-          .catch(function() {})
-      })
-      .catch(function(e) { console.log('检查管理员失败:', e) })
+    if (wx.getStorageSync('is_admin_user')) {
+      self.setData({ isAdmin: true })
+    }
+    adminUtil.checkAdmin(self, function(isAdmin) {
+      self.setData({ isAdmin: !!isAdmin })
+    })
   },
   goAdmin: function() { wx.navigateTo({ url: '/pages/admin/admin' }) },
   onShareAppMessage: function() {
