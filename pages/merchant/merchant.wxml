@@ -183,7 +183,6 @@
           </view>
         </view>
         </view>
-      </view>
 
       <view class="card">
         <view class="card-title">{{t.merchantPrices || '商人物品价格'}}</view>
@@ -651,3 +650,4 @@
       </view>
     </view>
   </view>
+</view>
