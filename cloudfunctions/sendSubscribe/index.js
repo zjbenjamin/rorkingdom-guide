@@ -17,11 +17,14 @@ const TEMPLATE_IDS_MAP = {
 }
 
 function formatDate(date) {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  const h = String(date.getHours()).padStart(2, '0')
-  const min = String(date.getMinutes()).padStart(2, '0')
+  // 强制转为北京时间 (UTC+8)，不受服务器时区影响
+  const utc = date.getTime() + (date.getTimezoneOffset() * 60000)
+  const cn = new Date(utc + 8 * 3600000)
+  const y = cn.getFullYear()
+  const m = String(cn.getMonth() + 1).padStart(2, '0')
+  const d = String(cn.getDate()).padStart(2, '0')
+  const h = String(cn.getHours()).padStart(2, '0')
+  const min = String(cn.getMinutes()).padStart(2, '0')
   return `${y}年${m}月${d}日 ${h}:${min}`
 }
 
@@ -160,7 +163,14 @@ exports.main = async (event, context) => {
       for (let i = 0; i < swarms.length; i++) {
         const item = swarms[i]
         const startStr = item.startDate ? item.startDate.replace(/-/g, '/') + ' ' + (item.startTime || '00:00:00') : null
-        const start = startStr ? new Date(startStr).getTime() : 0
+        // 管理员填的是北京时间，手动转为 UTC 时间戳
+        let start = 0
+        if (startStr) {
+          const parts = startStr.match(/(\d{4})\/(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/)
+          if (parts) {
+            start = Date.UTC(+parts[1], +parts[2]-1, +parts[3], +parts[4]-8, +parts[5], +(parts[6]||0))
+          }
+        }
         
         if (start && now >= start) {
           updated = true
