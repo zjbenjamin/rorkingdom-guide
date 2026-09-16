@@ -69,7 +69,7 @@ Page({
   loadLocationOptions: function() {
     var self = this
     if (!db) return
-    db.collection('page_config').doc('swarm').get().then(function(res) {
+    db.collection('swarm_config').doc('locations').get().then(function(res) {
       if (res.data && res.data.locations) {
         self.setData({ locationOptions: res.data.locations })
       }
@@ -92,10 +92,10 @@ Page({
         var end = endStr ? new Date(endStr) : new Date(8640000000000000)
         
         if (now >= start && now <= end) {
-          item.statusInfo = { statusClass: 'status-active', statusText: '出没中' }
+          item.statusInfo = { statusClass: 'status-active', statusText: i18n.i18n[i18n.getLanguage()].swarmActive || '出没中' }
           active.push(item)
         } else if (now < start) {
-          item.statusInfo = { statusClass: 'status-upcoming', statusText: '未开始' }
+          item.statusInfo = { statusClass: 'status-upcoming', statusText: i18n.i18n[i18n.getLanguage()].swarmUpcoming || '未开始' }
           upcoming.push(item)
         } else {
           item.statusInfo = { statusClass: 'status-ended', statusText: i18n.i18n[i18n.getLanguage()].countdownEnded || '已结束' }

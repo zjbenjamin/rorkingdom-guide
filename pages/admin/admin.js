@@ -372,6 +372,18 @@ Page({
     this.loadAnnouncements()
     this.loadStats()
     this.loadBanner()
+    this.loadSwarmLocations()
+  },
+  loadSwarmLocations: function() {
+    var self = this
+    if (!db) return
+    db.collection('swarm_config').doc('locations').get()
+      .then(function(res) {
+        if (res.data && res.data.locations) {
+          self.setData({ swarmLocations: res.data.locations })
+        }
+      })
+      .catch(function() {})
   },
   loadBanner: function() {
     var self = this
@@ -507,22 +519,31 @@ Page({
       return
     }
     var item = items[index]
-    var title = item.title || ''
+    var title = (item.title || '').trim()
     var content = (item.content || item.title || '').substring(0, 500)
+    
+    // 跳过空标题的条目，避免无限重试
+    if (!title) {
+      var nextSkip = index + 1
+      self.setData({ translateCount: nextSkip, translateProgress: '跳过无标题: ' + (item._id || '') })
+      setTimeout(function() { self._doBatchTranslate(items, nextSkip) }, 100)
+      return
+    }
     
     wx.cloud.callFunction({
       name: 'translateText',
       data: { text: title, from: 'zh', targets: ['en', 'ja', 'ko'] }
     }).then(function(titleRes) {
       var data = {}
-      var t = titleRes.result.translations || {}
+      var t = (titleRes.result && titleRes.result.translations) || {}
       for (var lang in t) { if (t[lang]) data['title_' + lang] = t[lang] }
       return wx.cloud.callFunction({
         name: 'translateText',
         data: { text: content, from: 'zh', targets: ['en', 'ja', 'ko'] }
       }).then(function(contentRes) {
-        var tc = contentRes.result.translations || {}
+        var tc = (contentRes.result && contentRes.result.translations) || {}
         for (var l in tc) { if (tc[l]) data['content_' + l] = tc[l] }
+        if (Object.keys(data).length === 0) return null
         return db.collection('announcements').doc(item._id).update({ data: data })
       })
     }).then(function() {

@@ -432,21 +432,8 @@ Page({
     }
     admin.checkAdmin(self, function(isAdmin) {
       if (isAdmin) self.setData({ isAdmin: true })
+      else { wx.removeStorageSync('is_admin_user'); self.setData({ isAdmin: false }) }
     })
-    // 兜底：云函数不可用时直接用 DB 查询
-    if (!db) return
-    db.collection('admin_config').doc('admin').get()
-      .then(function(res) {
-        var adminOpenid = res.data.openid
-        db.collection('users').where({ _openid: adminOpenid }).get()
-          .then(function(userRes) {
-            if (userRes.data.length > 0) {
-              wx.setStorageSync('is_admin_user', true)
-              self.setData({ isAdmin: true })
-            }
-          })
-      })
-      .catch(function(e) { console.error(e) })
   },
   loadConfig: function() {
     var self = this
@@ -588,7 +575,7 @@ Page({
     db.collection('page_config').doc('merchant').update({
       data: { maintenance: newVal, updateTime: db.serverDate() }
     }).catch(function(err) {
-      if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
+      if (err.errCode === -1 || (err.message && err.message.indexOf('not exist') !== -1)) {
         return db.collection('page_config').add({
           data: { _id: 'merchant', maintenance: newVal, useCustom: false, customTitle: '', customDesc: '', customItems: '', updateTime: db.serverDate() }
         })
@@ -608,7 +595,7 @@ Page({
     db.collection('page_config').doc('merchant').update({
       data: { merchantAway: newVal, updateTime: db.serverDate() }
     }).catch(function(err) {
-      if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
+      if (err.errCode === -1 || (err.message && err.message.indexOf('not exist') !== -1)) {
         return db.collection('page_config').add({
           data: { _id: 'merchant', merchantAway: newVal, useCustom: false, customTitle: '', customDesc: '', customItems: '', updateTime: db.serverDate() }
         })
@@ -775,7 +762,7 @@ Page({
       wx.showLoading({ title: '上架中...' });
       var updatePromise = db.collection('page_config').doc('merchant').update({ data: updateData });
       updatePromise.catch(function(err) {
-        if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
+        if (err.errCode === -1 || (err.message && err.message.indexOf('not exist') !== -1)) {
           updateData._id = 'merchant';
           return db.collection('page_config').add({ data: updateData });
         }
@@ -845,7 +832,7 @@ Page({
       wx.showLoading({ title: '上架中...' });
       var updatePromise = db.collection('page_config').doc('merchant').update({ data: updateData });
       updatePromise.catch(function(err) {
-        if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
+        if (err.errCode === -1 || (err.message && err.message.indexOf('not exist') !== -1)) {
           updateData._id = 'merchant';
           return db.collection('page_config').add({ data: updateData });
         }
@@ -938,7 +925,7 @@ Page({
       return db.collection('page_config').doc('merchant').update({ data: data })
     }
     updateOrAdd().catch(function(err) {
-      if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
+      if (err.errCode === -1 || (err.message && err.message.indexOf('not exist') !== -1)) {
         data._id = 'merchant'
         data.useCustom = itemsChanged ? true : self.data.useCustom
         data.customTitle = self.data.customTitle || ''
@@ -1038,7 +1025,7 @@ Page({
       return db.collection('page_config').doc('merchant').update({ data: data })
     }
     updateOrAdd().catch(function(err) {
-      if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
+      if (err.errCode === -1 || (err.message && err.message.indexOf('not exist') !== -1)) {
         data._id = 'merchant'
         data.useCustom = itemsChanged ? true : self.data.useCustom
         data.customTitle = self.data.customTitle || ''
@@ -1453,6 +1440,23 @@ Page({
       }
     })
   },
+  backupItems: function() {
+    var self = this
+    if (!self.data.isAdmin || !db) return
+    var items = self.data.items || []
+    if (items.length === 0) { wx.showToast({ title: '当前无商品可备份', icon: 'none' }); return }
+    wx.showLoading({ title: '备份中...' })
+    var text = serializeItems(items)
+    db.collection('page_config').doc('merchant_backup').set({
+      data: { items: text, count: items.length, updateTime: db.serverDate() }
+    }).then(function() {
+      wx.hideLoading()
+      wx.showToast({ title: '备份成功(' + items.length + '件)', icon: 'success' })
+    }).catch(function() {
+      wx.hideLoading()
+      wx.showToast({ title: '备份失败', icon: 'none' })
+    })
+  },
   replaceAllItems: function() {
     var self = this
     if (!self.data.isAdmin || !db) return
@@ -1731,7 +1735,7 @@ Page({
           
           var updatePromise = db.collection('page_config').doc('merchant').update({ data: updateData });
     updatePromise.catch(function(err) {
-      if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
+      if (err.errCode === -1 || (err.message && err.message.indexOf('not exist') !== -1)) {
         updateData._id = 'merchant';
         return db.collection('page_config').add({ data: updateData });
       }
@@ -1805,7 +1809,7 @@ Page({
     
     var updatePromise = db.collection('page_config').doc('merchant').update({ data: updateData });
     updatePromise.catch(function(err) {
-      if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
+      if (err.errCode === -1 || (err.message && err.message.indexOf('not exist') !== -1)) {
         updateData._id = 'merchant';
         return db.collection('page_config').add({ data: updateData });
       }
@@ -2001,7 +2005,7 @@ Page({
           
           var updatePromise = db.collection('page_config').doc('merchant').update({ data: updateData });
     updatePromise.catch(function(err) {
-      if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
+      if (err.errCode === -1 || (err.message && err.message.indexOf('not exist') !== -1)) {
         updateData._id = 'merchant';
         return db.collection('page_config').add({ data: updateData });
       }
@@ -2052,7 +2056,7 @@ Page({
           
           var updatePromise = db.collection('page_config').doc('merchant').update({ data: updateData });
     updatePromise.catch(function(err) {
-      if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
+      if (err.errCode === -1 || (err.message && err.message.indexOf('not exist') !== -1)) {
         updateData._id = 'merchant';
         return db.collection('page_config').add({ data: updateData });
       }
@@ -2262,7 +2266,7 @@ Page({
           if (sellingChanged) updateData.currentSelling = sellingText
           var updatePromise = db.collection('page_config').doc('merchant').update({ data: updateData });
     updatePromise.catch(function(err) {
-      if (err.errCode === -1 || err.message.indexOf('not exist') !== -1) {
+      if (err.errCode === -1 || (err.message && err.message.indexOf('not exist') !== -1)) {
         updateData._id = 'merchant';
         return db.collection('page_config').add({ data: updateData });
       }
