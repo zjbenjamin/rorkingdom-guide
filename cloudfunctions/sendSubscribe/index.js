@@ -261,7 +261,9 @@ exports.main = async (event, context) => {
     let lastError = null
 
     for (const s of uniqueSubs) {
-      const resObj = await doPush(s.openid, targetTemplateId, cleanPage, payload, type)
+      // 用订阅者自身的类型来扣减次数，merchant_item 订阅者也能正确扣减
+      const subType = s.type || type
+      const resObj = await doPush(s.openid, targetTemplateId, cleanPage, payload, subType)
       if (resObj.success) {
         sentCount++
       } else {
