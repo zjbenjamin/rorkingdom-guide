@@ -1689,6 +1689,14 @@ openModal: function(e) {
         for (var j = 0; j < defaultBalls.length; j++) {
           merged.push(cloudMap[defaultBalls[j].id] || defaultBalls[j]);
         }
+        // 追加不在默认列表中的云端自定义球
+        var defaultIds = {};
+        for (var k = 0; k < defaultBalls.length; k++) { defaultIds[defaultBalls[k].id] = true; }
+        for (var m = 0; m < cloudBalls.length; m++) {
+          if (!defaultIds[cloudBalls[m].id]) {
+            merged.push(cloudBalls[m]);
+          }
+        }
         self.setData({ ballsConfig: merged });
       } else {
         self.setData({ ballsConfig: defaultBalls });
