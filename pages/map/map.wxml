@@ -43,6 +43,9 @@
     <!-- 地图画布 -->
     <view class="map-canvas-wrap">
       <canvas type="2d" id="mapCanvas" class="map-canvas" bindtouchstart="onTouchStart" bindtouchmove="onTouchMove" bindtouchend="onTouchEnd"></canvas>
+      <view class="map-loading" wx:if="{{tileProgress < 100}}">
+        <text class="map-loading-text">地图加载中 {{tileProgress}}%</text>
+      </view>
       <!-- 标记详情弹窗 -->
       <view class="marker-popup" wx:if="{{selectedMarker}}" catchtap="closeMarkerPopup">
         <view class="marker-popup-content" catchtap="">
