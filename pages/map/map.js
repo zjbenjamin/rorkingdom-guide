@@ -255,11 +255,11 @@ Page({
   },
   onIconError: function() {},
 
-  // ── 游戏坐标 → 画布像素（与 wiki 投影一致）──
+  // ── 游戏坐标 → 画布像素（与 wiki projectWorld 完全一致，不翻转Y）──
   _markerToCanvas: function(gx, gy) {
     var nx = (gx - BOUNDS[0]) / SIDE_LENGTH  // 0~1
     var ny = (gy - BOUNDS[1]) / SIDE_LENGTH  // 0~1
-    return { x: nx * MAP_PX, y: (1 - ny) * MAP_PX }  // Y 翻转（游戏Y向上，屏幕Y向下）
+    return { x: nx * MAP_PX, y: ny * MAP_PX }
   },
 
   // ── 画布像素 → 屏幕坐标 ──
@@ -416,9 +416,9 @@ Page({
       // 屏幕 → 画布像素
       var cx = (relX - self._mapOffsetX) / self._mapScale
       var cy = (relY - self._mapOffsetY) / self._mapScale
-      // 画布像素 → 游戏坐标
+      // 画布像素 → 游戏坐标（与 wiki unprojectMap 一致，不翻转Y）
       var nx = cx / MAP_PX
-      var ny = 1 - cy / MAP_PX  // Y 翻转
+      var ny = cy / MAP_PX
       var gx = Math.round(BOUNDS[0] + nx * SIDE_LENGTH)
       var gy = Math.round(BOUNDS[1] + ny * SIDE_LENGTH)
       self.setData({ cursorX: gx, cursorY: gy })
