@@ -564,7 +564,8 @@ Page({
     if (!db) return
     var pageList = [
       { id: 'merchant', name: '远行商人', icon: '🛒', maintenance: false, useCustom: false },
-      { id: 'captureImage', name: '捕捉统计生成图片', icon: '📷', maintenance: wx.getStorageSync('show_log_share_btn') !== false, useCustom: false }
+      { id: 'captureImage', name: '捕捉统计生成图片', icon: '📷', maintenance: wx.getStorageSync('show_log_share_btn') !== false, useCustom: false },
+      { id: 'map', name: '地图', icon: '🗺️', maintenance: false, useCustom: false }
     ]
     var done = 0
     for (var i = 0; i < pageList.length; i++) {

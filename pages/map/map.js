@@ -5,7 +5,7 @@ const mapPoints = require('./mapPoints.js')
 Page({
   data: {
     isAdmin: false,
-    maintenance: true,
+    maintenance: false,
     markers: [],
     isNavigating: false,
     navTarget: null,
@@ -23,10 +23,21 @@ Page({
   onLoad: function() {
     if (wx.cloud) db = wx.cloud.database()
     this.checkAdmin()
+    this.loadConfig()
   },
   onShow: function() {
     if (wx.cloud) db = wx.cloud.database()
     this.checkAdmin()
+    this.loadConfig()
+  },
+  loadConfig: function() {
+    var self = this
+    if (!db) return
+    db.collection('page_config').doc('map').get()
+      .then(function(res) {
+        self.setData({ maintenance: res.data.maintenance || false })
+      })
+      .catch(function() {})
   },
   checkAdmin: function() {
     var self = this
