@@ -151,9 +151,14 @@ Page({
       groups[gn].count++
     })
     var catGroups = Object.values(groups)
+    // 默认只显示庇护所和眠枭之星等核心资源
+    var DEFAULT_ON = ['大型眠枭庇护所', '小型眠枭庇护所', '蓝色眠枭之星', '金色眠枭之星', '紫色眠枭之星', '初级宝箱', '高级宝箱', '精灵问答宝箱', '系别宝箱']
     var activeCats = {}
-    markers.forEach(function(m) { activeCats[m.tid] = true })
-    self.setData({ markers: markers, filteredMarkers: markers, catGroups: catGroups, activeCats: activeCats })
+    markers.forEach(function(m) {
+      activeCats[m.tid] = DEFAULT_ON.indexOf(m.typeName) !== -1
+    })
+    var filtered = markers.filter(function(m) { return activeCats[m.tid] })
+    self.setData({ markers: markers, filteredMarkers: filtered, catGroups: catGroups, activeCats: activeCats })
   },
 
   // ── Canvas 初始化 ──
