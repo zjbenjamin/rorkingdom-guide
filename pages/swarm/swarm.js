@@ -26,8 +26,10 @@ Page({
       endDate: '',
       endTime: '',
       image: '',
+      imagesText: '',
+      formsText: '',
       desc: '',
-      status: 0 // 0: unstarted/draft, 1: published/upcoming, 2: active
+      status: 0
     }
   },
   onLoad: function() {
@@ -85,6 +87,13 @@ Page({
       var now = new Date()
       
       list.forEach(function(item) {
+        // 确保 images 和 forms 字段存在
+        if (!item.images || !Array.isArray(item.images)) {
+          item.images = item.image ? [item.image] : []
+        }
+        if (!item.forms || !Array.isArray(item.forms)) {
+          item.forms = []
+        }
         // compute status
         var startStr = item.startDate ? item.startDate.replace(/-/g, '/') + ' ' + (item.startTime || '00:00:00') : null
         var endStr = item.endDate ? item.endDate.replace(/-/g, '/') + ' ' + (item.endTime || '23:59:59') : null
@@ -117,7 +126,7 @@ Page({
       editingId: null,
       editingIndex: null,
       editingSource: '',
-      form: { name: '', location: '', startDate: '', startTime: '', endDate: '', endTime: '', image: '', desc: '', status: 0 },
+      form: { name: '', location: '', startDate: '', startTime: '', endDate: '', endTime: '', image: '', imagesText: '', formsText: '', desc: '', status: 0 },
       canPublish: false
     })
   },
@@ -144,6 +153,8 @@ Page({
         endDate: item.endDate || '',
         endTime: item.endTime || '',
         image: item.image || '',
+        imagesText: (item.images && item.images.length > 0) ? item.images.join('\n') : (item.image || ''),
+        formsText: (item.forms && item.forms.length > 0) ? item.forms.map(function(f){return f.label}).join(', ') : '',
         desc: item.desc || '',
         status: item.status || 0
       }
@@ -159,6 +170,16 @@ Page({
     form[field] = val
     this.setData({ form: form })
     this.checkCanPublish()
+  },
+  onImagesTextInput: function(e) {
+    var form = this.data.form
+    form.imagesText = e.detail.value
+    this.setData({ form: form })
+  },
+  onFormsTextInput: function(e) {
+    var form = this.data.form
+    form.formsText = e.detail.value
+    this.setData({ form: form })
   },
   onLocationChange: function(e) {
     var idx = e.detail.value
@@ -201,8 +222,9 @@ Page({
   
   previewImage: function(e) {
     var src = e.currentTarget.dataset.src
+    var urls = e.currentTarget.dataset.urls
     if (src) {
-      wx.previewImage({ urls: [src] })
+      wx.previewImage({ current: src, urls: urls && urls.length > 0 ? urls : [src] })
     }
   },
   
@@ -224,6 +246,11 @@ Page({
     
     self.setData({ saving: true })
     
+    var imagesText = (f.imagesText || '').trim()
+    var images = imagesText ? imagesText.split('\n').map(function(s){return s.trim()}).filter(function(s){return s}) : (f.image ? [f.image.trim()] : [])
+    var formsText = (f.formsText || '').trim()
+    var forms = formsText ? formsText.split(/[,，、]/).map(function(s){return s.trim()}).filter(function(s){return s}).map(function(label){return {label: label}}) : []
+    
     var dataToSave = {
       name: (f.name || '').trim(),
       location: (f.location || '').trim(),
@@ -231,7 +258,9 @@ Page({
       startTime: f.startTime || '',
       endDate: f.endDate || '',
       endTime: f.endTime || '',
-      image: (f.image || '').trim(),
+      image: images[0] || '',
+      images: images,
+      forms: forms,
       desc: (f.desc || '').trim(),
       status: publish ? 1 : 0,
       updateTime: db.serverDate()

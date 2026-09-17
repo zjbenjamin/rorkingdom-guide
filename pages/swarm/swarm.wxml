@@ -63,8 +63,23 @@
           <!-- 内容主体 -->
           <view class="item-main">
             <view class="swarm-image-wrap">
-              <image lazy-load class="swarm-image" src="{{item.image || '/images/pet_placeholder.png'}}" mode="aspectFill" catchtap="previewImage" data-src="{{item.image}}" />
+              <!-- 多图轮播 -->
+              <swiper class="swarm-swiper" wx:if="{{item.images && item.images.length > 1}}" indicator-dots="{{item.images.length > 1}}" indicator-active-color="#00d4ff" circular>
+                <swiper-item wx:for="{{item.images}}" wx:for-item="img" wx:key="index">
+                  <image lazy-load class="swarm-image" src="{{img}}" mode="aspectFill" catchtap="previewImage" data-src="{{img}}" data-urls="{{item.images}}" />
+                </swiper-item>
+              </swiper>
+              <!-- 单图 -->
+              <block wx:else>
+                <image lazy-load class="swarm-image" src="{{item.image || '/images/pet_placeholder.png'}}" mode="aspectFill" catchtap="previewImage" data-src="{{item.image}}" />
+              </block>
               <image class="shiny-badge" src="https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png" mode="aspectFit" />
+              <!-- 形态标签 -->
+              <view class="form-tags" wx:if="{{item.forms && item.forms.length > 0}}">
+                <view class="form-tag" wx:for="{{item.forms}}" wx:for-item="form" wx:key="label">
+                  <text>{{form.label}}</text>
+                </view>
+              </view>
             </view>
             <view class="item-details">
               <text class="swarm-name">{{item.name}}</text>
@@ -112,8 +127,23 @@
           <!-- 内容主体 -->
           <view class="item-main">
             <view class="swarm-image-wrap">
-              <image lazy-load class="swarm-image" src="{{item.image || '/images/pet_placeholder.png'}}" mode="aspectFill" catchtap="previewImage" data-src="{{item.image}}" />
+              <!-- 多图轮播 -->
+              <swiper class="swarm-swiper" wx:if="{{item.images && item.images.length > 1}}" indicator-dots="{{item.images.length > 1}}" indicator-active-color="#00d4ff" circular>
+                <swiper-item wx:for="{{item.images}}" wx:for-item="img" wx:key="index">
+                  <image lazy-load class="swarm-image" src="{{img}}" mode="aspectFill" catchtap="previewImage" data-src="{{img}}" data-urls="{{item.images}}" />
+                </swiper-item>
+              </swiper>
+              <!-- 单图 -->
+              <block wx:else>
+                <image lazy-load class="swarm-image" src="{{item.image || '/images/pet_placeholder.png'}}" mode="aspectFill" catchtap="previewImage" data-src="{{item.image}}" />
+              </block>
               <image class="shiny-badge" src="https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png" mode="aspectFit" />
+              <!-- 形态标签 -->
+              <view class="form-tags" wx:if="{{item.forms && item.forms.length > 0}}">
+                <view class="form-tag" wx:for="{{item.forms}}" wx:for-item="form" wx:key="label">
+                  <text>{{form.label}}</text>
+                </view>
+              </view>
             </view>
             <view class="item-details">
               <text class="swarm-name">{{item.name}}</text>
@@ -228,13 +258,22 @@
             </view>
           </view>
 
-          <!-- 图片链接 -->
+          <!-- 图片链接（支持多张，每行一个） -->
           <view class="form-group">
             <view class="form-label">
-              <text class="form-label-icon">🔗</text>
-              <text class="form-label-text">图片链接 (可选)</text>
+              <text class="form-label-icon">🖼️</text>
+              <text class="form-label-text">图片链接（多张每行一个）</text>
             </view>
-            <input class="modal-input" maxlength="-1" placeholder="例如：https://...png" placeholder-class="input-placeholder" value="{{form.image}}" bindinput="onFormInput" data-field="image" />
+            <textarea class="modal-textarea" maxlength="-1" placeholder="每行一个图片URL，第一张为主图&#10;例如：&#10;https://...png&#10;https://...jpg" placeholder-class="input-placeholder" value="{{form.imagesText}}" bindinput="onImagesTextInput" style="height: 160rpx;" />
+          </view>
+
+          <!-- 形态标签 -->
+          <view class="form-group">
+            <view class="form-label">
+              <text class="form-label-icon">🏷️</text>
+              <text class="form-label-text">形态标签（可选）</text>
+            </view>
+            <input class="modal-input" maxlength="-1" placeholder="用逗号分隔，如：普通,异色,闪光" placeholder-class="input-placeholder" value="{{form.formsText}}" bindinput="onFormsTextInput" />
           </view>
 
           <!-- 备注说明 -->
