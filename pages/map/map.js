@@ -166,34 +166,42 @@ Page({
   // ── 加载 4×4 瓦片 ──
   _loadTiles: function() {
     var self = this
-    var canvas = this._canvas
     this._tiles = []
     this._tilesLoaded = 0
     var total = TILE_COLS * TILE_ROWS
     this.setData({ tileProgress: 0 })
 
     for (var i = 0; i < total; i++) {
-      var row = Math.floor(i / TILE_COLS)
-      var col = i % TILE_COLS
-      var img = canvas.createImage()
-      img.onload = (function(idx) {
-        return function() {
-          self._tiles[idx] = true
-          self._tilesLoaded++
-          self.setData({ tileProgress: Math.round(self._tilesLoaded / total * 100) })
-          self._drawMap()
-        }
-      })(i)
-      img.onerror = (function(idx) {
-        return function() {
-          self._tiles[idx] = false
-          self._tilesLoaded++
-          self.setData({ tileProgress: Math.round(self._tilesLoaded / total * 100) })
-          self._drawMap()
-        }
-      })(i)
-      img.src = TILE_BASE + '/' + i + '.png'
-      this._tiles[i] = img
+      this._tiles[i] = null
+      var url = TILE_BASE + '/' + i + '.png'
+      wx.getImageInfo({
+        src: url,
+        success: (function(idx) {
+          return function(info) {
+            var img = self._canvas.createImage()
+            img.onload = function() {
+              self._tiles[idx] = img
+              self._tilesLoaded++
+              self.setData({ tileProgress: Math.round(self._tilesLoaded / total * 100) })
+              self._drawMap()
+            }
+            img.onerror = function() {
+              self._tilesLoaded++
+              self.setData({ tileProgress: Math.round(self._tilesLoaded / total * 100) })
+              self._drawMap()
+            }
+            img.src = info.path
+          }
+        })(i),
+        fail: (function(idx) {
+          return function(err) {
+            console.warn('Tile ' + idx + ' load failed:', err && err.errMsg)
+            self._tilesLoaded++
+            self.setData({ tileProgress: Math.round(self._tilesLoaded / total * 100) })
+            self._drawMap()
+          }
+        })(i)
+      })
     }
   },
 
@@ -227,7 +235,7 @@ Page({
     // 绘制 4×4 瓦片
     for (var i = 0; i < TILE_COLS * TILE_ROWS; i++) {
       var tile = this._tiles[i]
-      if (!tile || !tile.width) continue
+      if (!tile) continue
       var row = Math.floor(i / TILE_COLS)
       var col = i % TILE_COLS
       var tx = ox + col * TILE_SIZE * scale
