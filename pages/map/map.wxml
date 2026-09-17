@@ -57,8 +57,10 @@
           <view class="marker-popup-dot" style="background:{{selectedMarker.color}};"></view>
           <view class="marker-popup-info">
             <text class="marker-popup-name">{{selectedMarker.name}}</text>
-            <text class="marker-popup-type">{{selectedMarker.typeName}}</text>
-            <text class="marker-popup-region" wx:if="{{selectedMarker.region}}">{{selectedMarker.region}}</text>
+            <text class="marker-popup-type">{{selectedMarker.className || selectedMarker.typeName}}</text>
+            <text class="marker-popup-region" wx:if="{{selectedMarker.largeRegion && selectedMarker.region}}">{{selectedMarker.largeRegion}} · {{selectedMarker.region}}</text>
+            <text class="marker-popup-region" wx:elif="{{selectedMarker.region}}">{{selectedMarker.region}}</text>
+            <text class="marker-popup-coord">坐标 ({{selectedMarker.x}}, {{selectedMarker.y}})</text>
           </view>
           <view class="marker-popup-close" catchtap="closeMarkerPopup">✕</view>
         </view>

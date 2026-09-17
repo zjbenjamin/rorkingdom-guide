@@ -44,6 +44,7 @@
 .marker-popup-name { display: block; font-size: 28rpx; font-weight: 700; color: #fff; }
 .marker-popup-type { display: block; font-size: 20rpx; color: rgba(255,255,255,0.5); margin-top: 4rpx; }
 .marker-popup-region { display: block; font-size: 20rpx; color: rgba(0,200,255,0.6); margin-top: 2rpx; }
+.marker-popup-coord { display: block; font-size: 18rpx; color: rgba(255,255,255,0.25); margin-top: 4rpx; font-family: monospace; }
 .marker-popup-close { width: 48rpx; height: 48rpx; display: flex; align-items: center; justify-content: center; font-size: 24rpx; color: rgba(255,255,255,0.4); }
 
 /* 坐标指示 */

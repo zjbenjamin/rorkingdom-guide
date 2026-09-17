@@ -144,7 +144,11 @@ Page({
     var types = mapMarkers.markerTypes || {}
     var raw = mapMarkers.compactMarkers || []
     var markers = raw.map(function(m) {
-      return { tid: m[0], name: m[1], x: m[2], y: m[3], region: m[4] || '', typeName: types[m[0]] || '' }
+      return {
+        tid: m[0], name: m[1], x: m[2], y: m[3],
+        region: m[4] || '', className: m[5] || '', largeRegion: m[6] || '',
+        iconPath: m[7] || '', typeName: types[m[0]] || ''
+      }
     })
     // 分组统计
     var typeStats = {}
@@ -162,8 +166,8 @@ Page({
       groups[gn].count++
     })
     var catGroups = Object.values(groups)
-    // 默认只显示庇护所和眠枭之星等核心资源
-    var DEFAULT_ON = ['大型眠枭庇护所', '小型眠枭庇护所', '蓝色眠枭之星', '金色眠枭之星', '紫色眠枭之星', '初级宝箱', '高级宝箱', '精灵问答宝箱', '系别宝箱']
+    // 默认只显示核心传送与功能点
+    var DEFAULT_ON = ['大型眠枭庇护所', '小型眠枭庇护所', '炼金釜', '秘境入口', '魔力之源']
     var activeCats = {}
     markers.forEach(function(m) {
       activeCats[m.tid] = DEFAULT_ON.indexOf(m.typeName) !== -1
@@ -454,7 +458,9 @@ Page({
           selectedMarker: {
             name: hit.marker.name,
             typeName: hit.marker.typeName,
+            className: hit.marker.className,
             region: hit.marker.region,
+            largeRegion: hit.marker.largeRegion,
             x: hit.marker.x,
             y: hit.marker.y,
             color: (TYPE_GROUPS[group] || {}).color || '#888'
