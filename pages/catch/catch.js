@@ -728,9 +728,11 @@ Page({
       ctx.font = 'bold ' + titleFontSize + 'px sans-serif';
       titleW = ctx.measureText(titleText).width;
       ctx.textAlign = 'center'; ctx.fillText(titleText, width / 2, 50); ctx.textAlign = 'left';
-      // 图标放在标题文字左侧，不遮挡标题
+      // 图标放在标题文字左侧，留足间距防止遮挡
       var iconSize = Math.round(28 * imgScale);
-      var iconX = width / 2 - titleW / 2 - iconSize - 6;
+      var titleLeft = width / 2 - titleW / 2;
+      var iconX = titleLeft - iconSize - 12;
+      if (iconX < 8) iconX = 8;
       loadImg('https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png', function(img) {
         ctx.drawImage(img, iconX, 50 - iconSize / 2, iconSize, iconSize);
       });
