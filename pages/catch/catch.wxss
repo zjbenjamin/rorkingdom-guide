@@ -1938,6 +1938,12 @@ page {
 .log-content view{min-width:0}
 .log-ball{max-width:100%}
 
+/* Pad 竖屏适配 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .page > .container { max-width: 720px; margin: 0 auto; }
+  .modal-box { max-width: 640px; margin-left: auto; margin-right: auto; }
+}
+
 /* Pad 横屏适配 */
 @media (min-width: 1024px) {
   .page > .container { max-width: 960px; margin: 0 auto; }

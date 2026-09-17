@@ -510,6 +510,25 @@ input::placeholder { color: rgba(255,255,255,0.35); }
   .modal-box { max-width: 700px; margin: 0 auto; }
 }
 
+/* ===== Pad 竖屏适配 (768px - 1023px) ===== */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* 内容区限宽居中 */
+  .container, .page > .container { max-width: 720px; margin: 0 auto; }
+  
+  /* 卡片间距适中 */
+  .card { padding: 28rpx; margin-bottom: 20rpx; }
+  
+  /* 弹窗限宽 */
+  .modal-box { max-width: 640px; margin: 0 auto; }
+  
+  /* 快捷入口保持 3 列 */
+  .quick-nav { display: grid; grid-template-columns: repeat(3, 1fr); }
+  
+  /* 商品网格保持 2 列 */
+  .item-list { grid-template-columns: repeat(2, 1fr); }
+  .selling-items { grid-template-columns: repeat(2, 1fr); }
+}
+
 /* ===== Pad 横屏专调 (1024px+) ===== */
 @media (min-width: 1024px) {
   /* 内容区限宽居中，避免文字拉太长 */

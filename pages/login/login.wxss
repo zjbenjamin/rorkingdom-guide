@@ -176,6 +176,12 @@ page { background: #0d1117; }
 .privacy-btn-confirm::after { border: none; }
 .privacy-btn-confirm:active { background: #2ea043 !important; }
 
+/* Pad 竖屏适配 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .container { max-width: 640px; margin: 0 auto; }
+  .modal-box, .privacy-modal-box { max-width: 560px; margin-left: auto; margin-right: auto; }
+}
+
 /* Pad 横屏适配 */
 @media (min-width: 1024px) {
   .container { max-width: 720px; margin: 0 auto; }

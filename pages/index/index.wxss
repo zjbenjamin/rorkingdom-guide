@@ -305,6 +305,15 @@
 .video-player-desc::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 40rpx; background: linear-gradient(transparent, #161b22); pointer-events: none; }
 .video-player-desc-text { font-size: 24rpx; color: #8b949e; line-height: 1.8; word-break: break-all; white-space: pre-wrap; padding-bottom: 40rpx; }
 
+/* Pad 竖屏适配 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .page { max-width: 720px; margin: 0 auto; }
+  .repo-header { max-width: 720px; margin: 0 auto; }
+  .quick-nav { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .feed-section { max-width: 720px; margin: 0 auto 24rpx; }
+  .modal-box { max-width: 640px; margin-left: auto; margin-right: auto; }
+}
+
 /* Pad 横屏适配 */
 @media (min-width: 1024px) {
   .page { max-width: 960px; margin: 0 auto; }
