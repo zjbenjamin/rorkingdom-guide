@@ -312,9 +312,15 @@ Page({
       var iconImg = self._icons && self._icons[m.typeName]
 
       if (iconImg) {
-        // 有图标 → 绘制图标
-        var isz = Math.max(16, Math.min(40, 28 * scale))
-        ctx.drawImage(iconImg, sp.x - isz / 2, sp.y - isz / 2, isz, isz)
+        // 有图标 → 保持宽高比绘制
+        var baseSize = Math.max(16, Math.min(40, 28 * scale))
+        var iw = iconImg.width || 28
+        var ih = iconImg.height || 28
+        var ratio = iw / ih
+        var iszW, iszH
+        if (ratio >= 1) { iszW = baseSize; iszH = baseSize / ratio }
+        else { iszW = baseSize * ratio; iszH = baseSize }
+        ctx.drawImage(iconImg, sp.x - iszW / 2, sp.y - iszH / 2, iszW, iszH)
       } else {
         // 无图标 → 绘制彩色圆点
         if (scale > 0.4) {
