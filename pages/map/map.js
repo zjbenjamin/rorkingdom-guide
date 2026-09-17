@@ -54,7 +54,8 @@ Page({
     selectedMarker: null,
     cursorX: 0,
     cursorY: 0,
-    tileProgress: 0
+    tileProgress: 0,
+    tileUrls: []
   },
 
   _mapScale: 0.2,
@@ -163,46 +164,46 @@ Page({
     })
   },
 
-  // ── 加载 4×4 瓦片 ──
+  // ── 加载 4×4 瓦片（通过隐藏 <image> 标签预加载）──
   _loadTiles: function() {
-    var self = this
+    var total = TILE_COLS * TILE_ROWS
     this._tiles = []
     this._tilesLoaded = 0
-    var total = TILE_COLS * TILE_ROWS
-    this.setData({ tileProgress: 0 })
-
+    var urls = []
     for (var i = 0; i < total; i++) {
       this._tiles[i] = null
-      var url = TILE_BASE + '/' + i + '.png'
-      wx.getImageInfo({
-        src: url,
-        success: (function(idx) {
-          return function(info) {
-            var img = self._canvas.createImage()
-            img.onload = function() {
-              self._tiles[idx] = img
-              self._tilesLoaded++
-              self.setData({ tileProgress: Math.round(self._tilesLoaded / total * 100) })
-              self._drawMap()
-            }
-            img.onerror = function() {
-              self._tilesLoaded++
-              self.setData({ tileProgress: Math.round(self._tilesLoaded / total * 100) })
-              self._drawMap()
-            }
-            img.src = info.path
-          }
-        })(i),
-        fail: (function(idx) {
-          return function(err) {
-            console.warn('Tile ' + idx + ' load failed:', err && err.errMsg)
-            self._tilesLoaded++
-            self.setData({ tileProgress: Math.round(self._tilesLoaded / total * 100) })
-            self._drawMap()
-          }
-        })(i)
-      })
+      urls.push(TILE_BASE + '/' + i + '.png')
     }
+    this.setData({ tileUrls: urls, tileProgress: 0 })
+  },
+
+  onTileLoaded: function(e) {
+    var idx = e.currentTarget.dataset.idx
+    var self = this
+    var total = TILE_COLS * TILE_ROWS
+    // 用 canvas.createImage 从 <image> 已加载的 src 再取一份给 canvas 用
+    var img = this._canvas.createImage()
+    img.onload = function() {
+      self._tiles[idx] = img
+      self._tilesLoaded++
+      self.setData({ tileProgress: Math.round(self._tilesLoaded / total * 100) })
+      self._drawMap()
+    }
+    img.onerror = function() {
+      self._tilesLoaded++
+      self.setData({ tileProgress: Math.round(self._tilesLoaded / total * 100) })
+      self._drawMap()
+    }
+    img.src = TILE_BASE + '/' + idx + '.png'
+  },
+
+  onTileError: function(e) {
+    var idx = e.currentTarget.dataset.idx
+    var total = TILE_COLS * TILE_ROWS
+    console.warn('Tile ' + idx + ' load error')
+    this._tilesLoaded++
+    this.setData({ tileProgress: Math.round(this._tilesLoaded / total * 100) })
+    this._drawMap()
   },
 
   // ── 标记坐标 → 画布像素 ──

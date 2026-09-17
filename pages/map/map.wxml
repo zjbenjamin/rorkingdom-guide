@@ -43,6 +43,10 @@
     <!-- 地图画布 -->
     <view class="map-canvas-wrap">
       <canvas type="2d" id="mapCanvas" class="map-canvas" bindtouchstart="onTouchStart" bindtouchmove="onTouchMove" bindtouchend="onTouchEnd"></canvas>
+      <!-- 隐藏的瓦片预加载 -->
+      <view style="position:absolute;width:0;height:0;overflow:hidden;opacity:0;">
+        <image wx:for="{{tileUrls}}" wx:key="index" src="{{item}}" mode="aspectFill" lazy-load="{{false}}" bindload="onTileLoaded" binderror="onTileError" data-idx="{{index}}" />
+      </view>
       <view class="map-loading" wx:if="{{tileProgress < 100}}">
         <text class="map-loading-text">地图加载中 {{tileProgress}}%</text>
       </view>
