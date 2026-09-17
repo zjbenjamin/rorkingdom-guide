@@ -1483,6 +1483,34 @@ page {
   background: rgba(0, 212, 255, 0.25);
 }
 
+/* 按钮尺寸 */
+.capsule-btn.sm { padding: 4rpx 14rpx; font-size: 18rpx; border-radius: 20rpx; }
+.capsule-btn.md { padding: 10rpx 24rpx; font-size: 24rpx; border-radius: 30rpx; }
+.capsule-btn.lg { padding: 14rpx 32rpx; font-size: 26rpx; border-radius: 32rpx; font-weight: 600; }
+
+/* 幽灵按钮——最低权重，几乎不可见 */
+.capsule-btn.ghost {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+.capsule-btn.ghost:active {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* 主按钮——行动日志专用，最高权重 */
+.capsule-btn.primary {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(153, 69, 255, 0.2) 100%);
+  color: #00d4ff;
+  border-color: rgba(0, 212, 255, 0.4);
+  box-shadow: 0 4rpx 16rpx rgba(0, 212, 255, 0.15);
+}
+.capsule-btn.primary:active {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.35) 0%, rgba(153, 69, 255, 0.35) 100%);
+}
+
 .visual-action-btn .btn-icon-img {
   width: 36rpx;
   height: 36rpx;

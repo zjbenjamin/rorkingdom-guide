@@ -41,7 +41,7 @@
               <text>{{sysVersion}}</text>
             </view>
           </view>
-          <view class="capsule-btn warning" bindtap="onClearEncounter">{{_l.catchResetData}}</view>
+          <view class="capsule-btn ghost sm" bindtap="onClearEncounter">{{_l.catchResetData}}</view>
         </view>
 
       <view wx:if="{{!canStartCapture}}" class="init-loading">
@@ -157,7 +157,7 @@
       </view>
 
       <view class="action-footer" wx:if="{{wealthSet}}">
-        <view class="capsule-btn danger" bindtap="onResetWealth">{{_l.catchResetAsset}}</view>
+        <view class="capsule-btn ghost sm" bindtap="onResetWealth">{{_l.catchResetAsset}}</view>
         <view class="capsule-btn" bindtap="openWealthAdjustModal">
           <text>{{_l.catchAssetAdjust}}</text>
         </view>
@@ -171,7 +171,7 @@
           <text class="title-main">{{_l.catchBallWarehouse}}</text>
           <text class="title-sub">{{_l.catchStockDetail}}</text>
         </view>
-        <view class="capsule-btn danger" bindtap="onResetBalls">{{_l.catchResetBalls}}</view>
+        <view class="capsule-btn ghost sm" bindtap="onResetBalls">{{_l.catchResetBalls}}</view>
       </view>
 
       <view class="sub-tabs-premium">
@@ -270,10 +270,10 @@
           <text class="title-main">{{_l.catchLogTitle}}</text>
           <text class="title-sub">{{_l.catchLogSubtitle}}</text>
         </view>
-        <view class="history-ops" style="display:flex; gap:12rpx;">
-          <view class="capsule-btn info" bindtap="onGenerateImage" wx:if="{{history.length > 0 && showLogShareBtn}}">{{_l.catchGenImage}}</view>
-            <view class="capsule-btn warning" bindtap="onUndo" wx:if="{{history.length > 0}}">{{_l.catchUndo}}</view>
-          <view class="capsule-btn danger" bindtap="onClearHistory">{{_l.catchClear}}</view>
+        <view class="history-ops" style="display:flex; gap:12rpx; align-items:center;">
+          <view class="capsule-btn primary lg" bindtap="onGenerateImage" wx:if="{{history.length > 0 && showLogShareBtn}}">{{_l.catchGenImage}}</view>
+          <view class="capsule-btn warning md" bindtap="onUndo" wx:if="{{history.length > 0}}">{{_l.catchUndo}}</view>
+          <view class="capsule-btn danger sm" bindtap="onClearHistory">{{_l.catchClear}}</view>
         </view>
       </view>
 
