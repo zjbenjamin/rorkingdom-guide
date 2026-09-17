@@ -411,3 +411,9 @@
   opacity: 0.8;
   transform: scale(0.98);
 }
+
+/* Pad 横屏适配 */
+@media (min-width: 1024px) {
+  .container { max-width: 960px; margin: 0 auto; }
+  .modal-box { max-width: 640px; margin-left: auto; margin-right: auto; }
+}

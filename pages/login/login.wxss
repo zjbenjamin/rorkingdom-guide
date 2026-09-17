@@ -175,3 +175,10 @@ page { background: #0d1117; }
 .privacy-btn-confirm { flex: 1.5; background: #238636 !important; color: #fff !important; border-radius: 8rpx !important; height: 76rpx !important; font-size: 24rpx !important; font-weight: 700 !important; border: none !important; display: flex !important; align-items: center !important; justify-content: center !important; }
 .privacy-btn-confirm::after { border: none; }
 .privacy-btn-confirm:active { background: #2ea043 !important; }
+
+/* Pad 横屏适配 */
+@media (min-width: 1024px) {
+  .container { max-width: 720px; margin: 0 auto; }
+  .login-card, .user-card, .notify-section, .notice-box { max-width: 100%; }
+  .modal-box, .privacy-modal-box { max-width: 600px; margin-left: auto; margin-right: auto; }
+}
