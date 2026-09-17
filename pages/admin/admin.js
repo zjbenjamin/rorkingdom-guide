@@ -412,7 +412,7 @@ Page({
   loadAnnouncements: function() {
     var self = this
     if (!db) return
-    db.collection('announcements').orderBy('createTime', 'desc').limit(50).get()
+    db.collection('announcements').orderBy('createTime', 'asc').limit(50).get()
       .then(function(res) {
         var list = res.data || []
         for (var i = 0; i < list.length; i++) list[i].timeStr = self.formatTime(list[i].createTime)
