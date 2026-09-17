@@ -38,10 +38,9 @@ var MARKER_ICONS = {
   '秘境入口': 'https://patchwiki.biligame.com/images/nrc/7/7a/hmtus0il23qrlr6h90eh37la7dg127t.png'
 }
 
-// 标记坐标范围（已转换到 -3000~3000）
-var M_MIN = -3000
-var M_MAX = 3000
-var M_RANGE = M_MAX - M_MIN
+// 标记坐标使用 wiki 原始游戏坐标，bounds 来自 mapMarkers.js
+var BOUNDS = mapMarkers.bounds || [306000, 408000, 714000, 816000]
+var SIDE_LENGTH = mapMarkers.sideLength || 408000
 
 var TYPE_GROUPS = {
   '奖励资源': { icon: '🎁', color: '#ffab40' },
@@ -256,12 +255,11 @@ Page({
   },
   onIconError: function() {},
 
-  // ── 标记坐标 → 画布像素 ──
-  _markerToCanvas: function(mx, my) {
-    // 标记坐标 -3000~3000 → 画布 0~4096
-    var nx = (mx - M_MIN) / M_RANGE  // 0~1
-    var ny = (my - M_MIN) / M_RANGE  // 0~1
-    return { x: nx * MAP_PX, y: (1 - ny) * MAP_PX }  // Y 翻转
+  // ── 游戏坐标 → 画布像素（与 wiki 投影一致）──
+  _markerToCanvas: function(gx, gy) {
+    var nx = (gx - BOUNDS[0]) / SIDE_LENGTH  // 0~1
+    var ny = (gy - BOUNDS[1]) / SIDE_LENGTH  // 0~1
+    return { x: nx * MAP_PX, y: (1 - ny) * MAP_PX }  // Y 翻转（游戏Y向上，屏幕Y向下）
   },
 
   // ── 画布像素 → 屏幕坐标 ──
@@ -418,12 +416,12 @@ Page({
       // 屏幕 → 画布像素
       var cx = (relX - self._mapOffsetX) / self._mapScale
       var cy = (relY - self._mapOffsetY) / self._mapScale
-      // 画布像素 → 标记坐标
+      // 画布像素 → 游戏坐标
       var nx = cx / MAP_PX
       var ny = 1 - cy / MAP_PX  // Y 翻转
-      var mx = Math.round(M_MIN + nx * M_RANGE)
-      var my = Math.round(M_MIN + ny * M_RANGE)
-      self.setData({ cursorX: mx, cursorY: my })
+      var gx = Math.round(BOUNDS[0] + nx * SIDE_LENGTH)
+      var gy = Math.round(BOUNDS[1] + ny * SIDE_LENGTH)
+      self.setData({ cursorX: gx, cursorY: gy })
     }).exec()
   },
 
