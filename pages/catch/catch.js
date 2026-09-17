@@ -264,6 +264,7 @@ Page({
       ballCheckRecords: wx.getStorageSync('ball_check_records') || [],
       usedBallTotal: wx.getStorageSync('used_ball_total') || 0,
       autoResetPity: wx.getStorageSync('auto_reset_pity') || false,
+      continuePity: wx.getStorageSync('continue_pity') || false,
       quickRecordMode: wx.getStorageSync('quick_record_mode') || false,
       specialHistory: wx.getStorageSync('special_history') || []
     })
@@ -471,9 +472,10 @@ Page({
     
     var lastUsedStr = usedBallNames.join(', ');
     // 自动计时：如果用户没有手动修改，则保持自动计算结果
-    var resultElapsedAuto = (self.data.resultElapsedTime || '').indexOf('(自动)') >= 0;
+    var autoTag = ' ' + i18n.i18n[i18n.getLanguage()].countdownAuto;
+    var resultElapsedAuto = (self.data.resultElapsedTime || '').indexOf(autoTag) >= 0;
     var resultElapsedTime = self.data.resultElapsedTime || '';
-    if (!resultElapsedTime || resultElapsedTime.indexOf('(自动)') >= 0) {
+    if (!resultElapsedTime || resultElapsedTime.indexOf(autoTag) >= 0) {
       if (self.data.captureStartTime) {
         var elapsed = Math.floor((Date.now() - self.data.captureStartTime) / 1000);
         resultElapsedTime = i18n.formatDuration(elapsed);
@@ -984,7 +986,7 @@ Page({
       : '【' + i18n.t('clipPet') + '】' + (last.pet || i18n.t('imgNotFilled')) + '\n';
     
     var text = i18n.t('clipTitle') + '\n' +
-               '【' + i18n.t('clipTime') + '】' + (last.date || '') + '\n' +
+               '【' + i18n.t('clipTime') + '】' + (last.time || last.date || '') + '\n' +
                '【' + i18n.t('clipStatus') + '】' + (last.result || i18n.t('imgUnknown')) + '\n' +
                brushLabel +
                petDisplay +
@@ -1079,7 +1081,7 @@ Page({
           
           var catchCount = last.total || 0;
           var newTotalCatches = Math.max(0, self.data.totalCatches - catchCount);
-          var isSuccess = last.result && (last.result.indexOf('成功') >= 0 || last.result === '奇遇');
+          var isSuccess = last.resultRaw === 'success' || (last.result && (last.result.indexOf('成功') >= 0 || last.result === '奇遇'));
           var newSuccessCatches = Math.max(0, self.data.successCatches - (isSuccess ? catchCount : 0));
           
           var cost = last.cost || 0;
@@ -1189,22 +1191,34 @@ Page({
     }
   },
   onClearPity: function() {
-    if (this.data.autoResetPity) {
-      wx.showToast({ title: '自动重置开启中，不可手动清空', icon: 'none' });
+    var self = this;
+    var currentPity = this.data.pityCount;
+    if (currentPity === 0) {
+      wx.showToast({ title: '保底已是初始状态', icon: 'none' });
       return;
     }
-    var currentPity = this.data.pityCount;
-    var luckText = '';
-    if (currentPity >= 71) luckText = '非酋大保底';
-    else if (currentPity >= 66) luckText = '基本必出';
-    else if (currentPity >= 60) luckText = '大概率';
-    else if (currentPity >= 58) luckText = '较高概率';
-    else if (currentPity >= 41) luckText = '非酋';
-    else if (currentPity >= 31) luckText = '大欧皇';
-    else luckText = '超级欧皇';
-    
-    this.updatePity(0)
-    wx.showToast({ title: '保底已重置 (' + luckText + ')', icon: 'none' })
+    var doReset = function() {
+      var luckText = '';
+      if (currentPity >= 71) luckText = '非酋大保底';
+      else if (currentPity >= 66) luckText = '基本必出';
+      else if (currentPity >= 60) luckText = '大概率';
+      else if (currentPity >= 58) luckText = '较高概率';
+      else if (currentPity >= 41) luckText = '非酋';
+      else if (currentPity >= 31) luckText = '大欧皇';
+      else luckText = '超级欧皇';
+      self.updatePity(0);
+      wx.showToast({ title: '保底已重置 (' + luckText + ')', icon: 'none' });
+    };
+    if (this.data.autoResetPity) {
+      wx.showModal({
+        title: '手动重置保底',
+        content: '自动重置已开启，确定要手动清空当前保底进度吗？',
+        confirmText: '确定重置',
+        success: function(res) { if (res.confirm) doReset(); }
+      });
+    } else {
+      doReset();
+    }
   },
   onAddCarnival: function() {
     var self = this
@@ -1515,6 +1529,12 @@ Page({
     this.setData({ autoResetPity: val })
     wx.setStorageSync('auto_reset_pity', val)
     wx.showToast({ title: val ? '已开启自动重置' : '已切换手动重置', icon: 'none' })
+  },
+  toggleContinuePity: function() {
+    var val = !this.data.continuePity
+    this.setData({ continuePity: val })
+    wx.setStorageSync('continue_pity', val)
+    wx.showToast({ title: val ? '歪了继续累计保底' : '歪了重置保底', icon: 'none' })
   },
   toggleQuickRecord: function() {
     var val = !this.data.quickRecordMode

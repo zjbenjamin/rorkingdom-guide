@@ -77,6 +77,10 @@
                 <view class="tag-dot"></view>
                 <text>{{autoResetPity?_l.catchAutoReset:_l.catchManualReset}}</text>
               </view>
+              <view class="mode-tag {{continuePity?'active':''}}" bindtap="toggleContinuePity" wx:if="{{autoResetPity}}" style="margin-left:8rpx;">
+                <view class="tag-dot"></view>
+                <text>{{continuePity ? _l.catchContinueEnable : _l.catchContinueDisable}}</text>
+              </view>
             </view>
             <text class="meta-val">{{pityCount}} / 80</text>
           </view>
@@ -88,7 +92,7 @@
           <view class="pity-status" bindtap="onClearPity">
             <text class="status-emoji">{{pityEmoji}}</text>
             <text class="status-text">{{pityHint}}</text>
-            <text class="manual-reset-hint" wx:if="{{!autoResetPity}}" style="font-size:18rpx; color:rgba(255,255,255,0.3); margin-left:10rpx;">({{_l.catchManualReset}})</text>
+            <text class="manual-reset-hint" style="font-size:18rpx; color:rgba(255,255,255,0.3); margin-left:10rpx;">({{_l.catchManualReset}})</text>
           </view>
         </view>
 
@@ -397,16 +401,6 @@
         </view>
 
         <!-- 捕捉状态 -->
-        <view class="result-section" wx:if="{{resultType === 'miss'}}">
-          <view class="section-head">
-            <text class="section-icon">🔄</text>
-            <text class="section-title">{{_l.catchContinueSettings}}</text>
-          </view>
-          <view class="switch-row">
-            <switch checked="{{continuePity}}" bindchange="onContinuePityChange" color="#00d4ff" />
-            <text class="switch-label">{{continuePity ? _l.catchContinueEnable : _l.catchContinueDisable}}</text>
-          </view>
-        </view>
 
         <!-- 洛克贝收益 -->
         <view class="result-section">
