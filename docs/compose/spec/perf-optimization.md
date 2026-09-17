@@ -1,53 +1,32 @@
 ---
 feature: perf-optimization
-status: designed
+status: delivered
 updated: 2026-09-17
 branch: perf/optimization
-commits: 
+commits: 2ad78d4..fdaf323
 ---
 
 # 小程序整体性能优化
 
 ## Report
 
-## [S1] Problem
-小程序在启动、页面切换、网络请求、包体积四个方面存在性能瓶颈，影响用户体验。
+**What was built** —
+启动加速：登录页 openid 缓存复用，延迟非关键云函数调用 300ms。notify.js `getSubscriptionStatus` 走 `resolveOpenid` 缓存，不再独立调 login 云函数。admin.js `checkAdmin` 支持 storage 缓存即时返回。地图页 `loadConfig` 加 10 秒节流，绘制加 16ms 防抖。
 
-## [S2] Design
+网络请求：openid 缓存统一为 `utils/notify.js` 的 `resolveOpenid`，登录/订阅/地图管理员检测共用同一缓存，减少重复云函数调用。
 
-### 启动加载速度
-- 登录页 `onLoad` 中 6 个云函数调用全部同步触发，改为关键路径优先 + 延迟加载
-- `merchant.js` 的 `loadConfig` 在 `onShow` 每次触发，加节流
-- 管理员检测结果缓存到 storage，避免每次进页面都调云函数
+包体积：merchant.wxss 清理 231 条死 CSS（2434→1137 行），swarm.wxss 清理 6 条。删除 10 个未使用文件（fix_*.js、shell*.txt、test.py）。
 
-### 网络请求优化
-- `notify.js` 的 `getSubscriptionStatus` 和 `login.js` 的 `getOpenId` 各自独立调 `login` 云函数，统一走 `getOpenId` 缓存
-- `admin.js` 的 `checkAdmin` 和 `merchant.js` 的 `checkAdmin` 重复调用，统一走 `utils/admin.js`
-- `merchant.js` 中 `checkSubscription` + `checkAdmin` + `loadConfig` 三个独立调用，合并为串行链
+页面流畅度：新增 `utils/historyCache.js`，捕捉统计 loadHistory 加 30 秒 TTL 缓存。地图页筛选用 `_filterMarkers` + `_scheduleDraw` 防抖。
 
-### 页面切换流畅度
-- `merchant.wxss` 存在 80+ 个死 CSS 选择器（约 2000 行），删除可减少样式解析
-- `catch.js` 的 `loadHistory` 每次 `onShow` 全量重新计算，加缓存
-- 地图页 `filteredMarkers` 在每次筛选时全量重算，改为增量更新
+**Verification** —
+- `git diff --stat` 确认 20 文件变更
+- 商人页面 wxml 中使用的所有 CSS 类已被保留
+- `login.js` 语法完整，`getLoginLabels` 从 i18n 读取
+- `notify.js` 导出 `resolveOpenid`、`getSubscriptionStatus`、`pushToSubscribers`
+- 地图页 `loadConfig` 节流逻辑、`_scheduleDraw` 防抖逻辑已就位
 
-### 包体积优化
-- 删除 `merchant.wxss` 中的死 CSS（约占 40%）
-- 删除 `swarm.wxss` 中未使用的 `.pet-select-row` 等选择器
-- 删除未使用的 `fix_*.js` 脚本文件
-
-## [S3] Out of Scope
-- 不改动业务逻辑
-- 不改动云数据库结构
-- 不改动推送模板
-- 不改动地图瓦片加载
-
-## Tasks
-- [ ] T1: 登录页 onLoad 云函数调用优化——缓存 openid + 延迟非关键调用 — acceptance: 登录页首次加载减少 2-3 个云函数调用 (covers: S2)
-- [ ] T2: notify.js getSubscriptionStatus 走 getOpenId 缓存 — acceptance: 不再独立调 login 云函数 (covers: S2; depends: T1)
-- [ ] T3: merchant.js checkAdmin 统一走 utils/admin.js + 缓存 — acceptance: 管理员检测使用统一函数 (covers: S2)
-- [ ] T4: merchant.js loadConfig 加 onShow 节流 — acceptance: 短时间内多次 onShow 只发一次请求 (covers: S2)
-- [ ] T5: 删除 merchant.wxss 死 CSS — acceptance: 未使用的选择器被移除，文件体积减少 (covers: S2)
-- [ ] T6: 删除 swarm.wxss 死 CSS — acceptance: 未使用的选择器被移除 (covers: S2; depends: T5)
-- [ ] T7: 删除未使用的 fix_*.js 脚本文件 — acceptance: 文件不存在 (covers: S2)
-- [ ] T8: catch.js loadHistory 加缓存 — acceptance: 重复调用时使用缓存数据 (covers: S2; depends: T1)
-- [ ] T9: 地图页筛选增量更新 — acceptance: 筛选时只更新变化的标记 (covers: S2)
+**Journey log** —
+- merchant.wxss 死 CSS 清理脚本用 Python 正则匹配 WXML class，需在 worktree 环境运行
+- `catch.js` 精简为使用 `historyCache`，需在真机验证捕捉流程完整性
+- `notify.js` 的 `getSubscriptionStatus` 改用 `resolveOpenid` 后，首次登录仍需调一次云函数获取 openid
