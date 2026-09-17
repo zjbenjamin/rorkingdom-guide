@@ -1,7 +1,6 @@
 {
   "usingComponents": {
-    "dock": "/components/dock/dock",
-    "game-map": "/components/game-map/game-map"
+    "dock": "/components/dock/dock"
   },
   "navigationBarTitleText": "洛手地图",
   "disableScroll": true
