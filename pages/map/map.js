@@ -29,6 +29,15 @@ var TILE_URLS = [
   'https://patchwiki.biligame.com/images/nrc/8/8c/7hpcy4yjdjy3bpz2405v91svt491ytj.png'
 ]
 
+// 标记类型图标（用于替代彩色圆点）
+var MARKER_ICONS = {
+  '魔力之源': 'https://patchwiki.biligame.com/images/nrc/7/76/sdibelxkj6dtossi299yqrrcphjdd7i.png',
+  '大型眠枭庇护所': 'https://patchwiki.biligame.com/images/nrc/d/d2/o5evcztzo2vp80qd8qt70m2csme2ami.png',
+  '小型眠枭庇护所': 'https://patchwiki.biligame.com/images/nrc/1/17/fy2t2skpj760pxc13za2crcz2y7t5jd.png',
+  '炼金釜': 'https://patchwiki.biligame.com/images/nrc/1/11/a6yi0fqfk2877zzcj0bixe0mvequ94p.png',
+  '秘境入口': 'https://patchwiki.biligame.com/images/nrc/7/7a/hmtus0il23qrlr6h90eh37la7dg127t.png'
+}
+
 // 标记坐标范围（已转换到 -3000~3000）
 var M_MIN = -3000
 var M_MAX = 3000
@@ -72,7 +81,9 @@ Page({
     cursorX: 0,
     cursorY: 0,
     tileProgress: 0,
-    tileUrls: []
+    tileUrls: [],
+    iconUrls: [],
+    markerIconUrls: []
   },
 
   _mapScale: 0.2,
@@ -192,7 +203,13 @@ Page({
     this._tiles = []
     this._tilesLoaded = 0
     for (var i = 0; i < total; i++) this._tiles[i] = null
-    this.setData({ tileUrls: TILE_URLS.slice(), tileProgress: 0 })
+    this._icons = {}
+    var iconUrls = []
+    var iconKeys = Object.keys(MARKER_ICONS)
+    for (var j = 0; j < iconKeys.length; j++) {
+      iconUrls.push({ name: iconKeys[j], url: MARKER_ICONS[iconKeys[j]] })
+    }
+    this.setData({ tileUrls: TILE_URLS.slice(), iconUrls: iconUrls, tileProgress: 0 })
   },
 
   onTileLoaded: function(e) {
@@ -222,6 +239,18 @@ Page({
     this.setData({ tileProgress: Math.round(this._tilesLoaded / total * 100) })
     this._drawMap()
   },
+
+  onIconLoaded: function(e) {
+    var name = e.currentTarget.dataset.name
+    var self = this
+    var img = this._canvas.createImage()
+    img.onload = function() {
+      self._icons[name] = img
+      self._drawMap()
+    }
+    img.src = MARKER_ICONS[name]
+  },
+  onIconError: function() {},
 
   // ── 标记坐标 → 画布像素 ──
   _markerToCanvas: function(mx, my) {
@@ -278,23 +307,29 @@ Page({
 
       var group = guessGroup(m.typeName)
       var color = (TYPE_GROUPS[group] || {}).color || '#888'
+      var iconImg = self._icons && self._icons[m.typeName]
 
-      // 光晕
-      if (scale > 0.4) {
+      if (iconImg) {
+        // 有图标 → 绘制图标
+        var isz = Math.max(16, Math.min(40, 28 * scale))
+        ctx.drawImage(iconImg, sp.x - isz / 2, sp.y - isz / 2, isz, isz)
+      } else {
+        // 无图标 → 绘制彩色圆点
+        if (scale > 0.4) {
+          ctx.beginPath()
+          ctx.arc(sp.x, sp.y, r + 2, 0, Math.PI * 2)
+          ctx.fillStyle = color + '22'
+          ctx.fill()
+        }
         ctx.beginPath()
-        ctx.arc(sp.x, sp.y, r + 2, 0, Math.PI * 2)
-        ctx.fillStyle = color + '22'
+        ctx.arc(sp.x, sp.y, r, 0, Math.PI * 2)
+        ctx.fillStyle = color
         ctx.fill()
-      }
-      // 圆点
-      ctx.beginPath()
-      ctx.arc(sp.x, sp.y, r, 0, Math.PI * 2)
-      ctx.fillStyle = color
-      ctx.fill()
-      if (r > 2) {
-        ctx.strokeStyle = 'rgba(0,0,0,0.5)'
-        ctx.lineWidth = 0.5
-        ctx.stroke()
+        if (r > 2) {
+          ctx.strokeStyle = 'rgba(0,0,0,0.5)'
+          ctx.lineWidth = 0.5
+          ctx.stroke()
+        }
       }
 
       drawn++
