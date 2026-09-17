@@ -10,7 +10,24 @@ var TILE_COLS = 4
 var TILE_ROWS = 4
 var TILE_SIZE = 1024
 var MAP_PX = TILE_COLS * TILE_SIZE  // 4096
-var TILE_BASE = 'https://patchwiki.biligame.com/images/nrc/map-media/tiles-08e9506c2555bae050be'
+var TILE_URLS = [
+  'https://patchwiki.biligame.com/images/nrc/5/57/61yxsiquytdzotpcpvomienw35et5v0.png',
+  'https://patchwiki.biligame.com/images/nrc/a/a7/1vev9yix9e9yse8qmixkr93dmyrsq0o.png',
+  'https://patchwiki.biligame.com/images/nrc/2/25/15y3m34ss6ivfw8e48106jo3fmtsrpo.png',
+  'https://patchwiki.biligame.com/images/nrc/f/f6/9tg2qs60tmc89iz3fdlbxv2bativt4a.png',
+  'https://patchwiki.biligame.com/images/nrc/6/63/gkohj0u7xuprv42yp5qjkz9rmg529ky.png',
+  'https://patchwiki.biligame.com/images/nrc/0/03/lamrw5xs7dkzb8jacy8zi57ibwtjf7c.png',
+  'https://patchwiki.biligame.com/images/nrc/e/ef/no6xv1s2q62fwetkj6agrgy6c542lru.png',
+  'https://patchwiki.biligame.com/images/nrc/b/b4/100rcbyq4b63jk8j85jaia2lwel1ozw.png',
+  'https://patchwiki.biligame.com/images/nrc/e/ec/d4z3hglg4hv2n98lg80pm5w48rqtdi6.png',
+  'https://patchwiki.biligame.com/images/nrc/c/ca/7rse2p4e1eao6upq9pfb3slym0i16or.png',
+  'https://patchwiki.biligame.com/images/nrc/5/51/j098b9uxm09v8vsu9f8sraxzp9b2g24.png',
+  'https://patchwiki.biligame.com/images/nrc/e/ea/e67p8ecrb5attopoernkus1tj6wme8o.png',
+  'https://patchwiki.biligame.com/images/nrc/0/0a/9wzyhvfgowx1r4benxwyjdikkl5ux84.png',
+  'https://patchwiki.biligame.com/images/nrc/6/67/jedkxo4eyqx4q9f655j7rylnmnuvyr7.png',
+  'https://patchwiki.biligame.com/images/nrc/d/dc/3c279nvqfotlb6q6x281b4q5p410y3n.png',
+  'https://patchwiki.biligame.com/images/nrc/8/8c/7hpcy4yjdjy3bpz2405v91svt491ytj.png'
+]
 
 // 标记坐标范围（已转换到 -3000~3000）
 var M_MIN = -3000
@@ -169,19 +186,14 @@ Page({
     var total = TILE_COLS * TILE_ROWS
     this._tiles = []
     this._tilesLoaded = 0
-    var urls = []
-    for (var i = 0; i < total; i++) {
-      this._tiles[i] = null
-      urls.push(TILE_BASE + '/' + i + '.png')
-    }
-    this.setData({ tileUrls: urls, tileProgress: 0 })
+    for (var i = 0; i < total; i++) this._tiles[i] = null
+    this.setData({ tileUrls: TILE_URLS.slice(), tileProgress: 0 })
   },
 
   onTileLoaded: function(e) {
     var idx = e.currentTarget.dataset.idx
     var self = this
     var total = TILE_COLS * TILE_ROWS
-    // 用 canvas.createImage 从 <image> 已加载的 src 再取一份给 canvas 用
     var img = this._canvas.createImage()
     img.onload = function() {
       self._tiles[idx] = img
@@ -194,7 +206,7 @@ Page({
       self.setData({ tileProgress: Math.round(self._tilesLoaded / total * 100) })
       self._drawMap()
     }
-    img.src = TILE_BASE + '/' + idx + '.png'
+    img.src = TILE_URLS[idx]
   },
 
   onTileError: function(e) {
