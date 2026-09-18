@@ -17,3 +17,18 @@ node_modules/
 .agents/
 scratch/
 aliyun-push-server/
+
+# WeChat mini program: never pack non-runtime artifacts
+cert/
+wiki_*.html
+wiki_*.json
+all_images.json
+fix*.js
+shell*.txt
+*.bak
+*.pem
+*.csr
+*.cert
+*.ps1
+find_dupes.ps1
+test.py

@@ -1,7 +1,28 @@
 {
   "description": "洛手助手洛手助手版本",
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      { "type": "folder", "value": "docs" },
+      { "type": "folder", "value": "cert" },
+      { "type": "folder", "value": "cloudfunctions" },
+      { "type": "folder", "value": "cloudfunctionTemplate" },
+      { "type": "folder", "value": "scratch" },
+      { "type": "suffix", "value": ".md" },
+      { "type": "suffix", "value": ".bak" },
+      { "type": "suffix", "value": ".ps1" },
+      { "type": "suffix", "value": ".pem" },
+      { "type": "suffix", "value": ".csr" },
+      { "type": "suffix", "value": ".cert" },
+      { "type": "suffix", "value": ".txt" },
+      { "type": "suffix", "value": ".py" },
+      { "type": "suffix", "value": ".html" },
+      { "type": "prefix", "value": "wiki_" },
+      { "type": "prefix", "value": "fix" },
+      { "type": "prefix", "value": "shell" },
+      { "type": "prefix", "value": "test" },
+      { "type": "file", "value": "all_images.json" },
+      { "type": "file", "value": "find_dupes.ps1" }
+    ],
     "include": []
   },
   "setting": {
