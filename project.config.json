@@ -2,11 +2,16 @@
   "description": "洛手助手洛手助手版本",
   "packOptions": {
     "ignore": [
+      { "type": "folder", "value": ".worktrees" },
+      { "type": "folder", "value": ".agents" },
+      { "type": "folder", "value": "aliyun-push-server" },
+      { "type": "folder", "value": "node_modules" },
       { "type": "folder", "value": "docs" },
       { "type": "folder", "value": "cert" },
       { "type": "folder", "value": "cloudfunctions" },
       { "type": "folder", "value": "cloudfunctionTemplate" },
       { "type": "folder", "value": "scratch" },
+      { "type": "folder", "value": "data" },
       { "type": "suffix", "value": ".md" },
       { "type": "suffix", "value": ".bak" },
       { "type": "suffix", "value": ".ps1" },

@@ -17,9 +17,11 @@ node_modules/
 .agents/
 scratch/
 aliyun-push-server/
+.worktrees/
 
 # WeChat mini program: never pack non-runtime artifacts
 cert/
+data/
 wiki_*.html
 wiki_*.json
 all_images.json

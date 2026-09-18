@@ -3,7 +3,7 @@ var imageConfig = require('../../config/images')
 var levelUtil = require('../../utils/level')
 var i18n = require('../../utils/i18n')
 var i18nBehavior = require('../../utils/i18nBehavior')
-var historyCache = require('../../utils/historyCache')
+var historyCache = require('./historyCache')
 
 Page({
   behaviors: [i18nBehavior],
@@ -118,3 +118,4 @@ Page({
   onShareAppMessage: function() { return { title: '捕捉统计 - 洛克王国向导', path: '/pages/catch/catch' } },
   onShareTimeline: function() { return { title: '捕捉统计 - 洛克王国向导' } }
 })
+
