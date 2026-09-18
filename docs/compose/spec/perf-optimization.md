@@ -28,6 +28,7 @@ commits: 2ad78d4..3ae0294
 - `pages/privacy/privacy.js` 内联隐私/协议文案，根目录 md 可安全移出包
 - `about.wxml` 曾写死不存在的 `/images/avatar.jpg`，本地图片兜底应走磁盘真实路径或 `config/images.js`
 - 次要遗留：`admin.wxml`/`swarm.wxml` 仍有缺失图片的裸路径兜底（分包内，非主包阻塞）
+- IDE 二次上传 4284KB：主因是开发者工具仍打开 master（ignore 为空 + shell/wiki 大文件）；已 fast-forward 合并 `perf/optimization` → master `24d6def`，主仓主包候选约 358KB
 
 ## [S1] Problem
 
