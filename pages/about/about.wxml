@@ -3,7 +3,7 @@
     <!-- Profile Header -->
     <view class="profile-header">
       <view class="profile-avatar">
-        <image lazy-load class="avatar-img" src="{{aboutData.devAvatar || '/images/avatar.jpg'}}" mode="aspectFill"></image>
+        <image lazy-load class="avatar-img" src="{{aboutData.devAvatar || '/images/avatar.png'}}" mode="aspectFill"></image>
       </view>
       <text class="profile-name" bindtap="{{isAdmin ? 'onEdit' : ''}}" data-field="devName" data-value="{{aboutData.devName}}">{{aboutData.devName}}</text>
       <text class="profile-role">{{_l.aboutDevLabel}}</text>
