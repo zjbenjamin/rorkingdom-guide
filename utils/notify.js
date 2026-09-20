@@ -4,6 +4,7 @@ var i18n = require('./i18n')
 function smartTruncate(text, maxLen) {
   if (!text) return ''
   if (text.length <= maxLen) return text
+  if (maxLen <= 1) return '…'
   return text.substring(0, maxLen - 1) + '…'
 }
 
@@ -20,31 +21,149 @@ var TEMPLATES = {
   interaction: templateConfig.interaction || 'TEMPLATE_ID_INTERACTION'
 }
 
-function resolveOpenid(callback) {
-  var cached = wx.getStorageSync('openid')
-  if (cached) { callback(cached); return }
-  wx.cloud.callFunction({
-    name: 'login',
-    timeout: 3000,
-    success: function(res) {
-      var oid = res.result && res.result.openid
-      if (oid) {
-        wx.setStorageSync('openid', oid)
-        callback(oid)
-      } else {
-        callback(null)
+function isValidTemplateId(id) {
+  return id && id.indexOf('TEMPLATE_ID') === -1 && id.length > 10
+}
+
+function getValidTemplateIds(types) {
+  var ids = []
+  if (!types || types.length === 0) {
+    for (var key in TEMPLATES) {
+      if (TEMPLATES.hasOwnProperty(key) && isValidTemplateId(TEMPLATES[key])) {
+        ids.push({ type: key, id: TEMPLATES[key] })
       }
+    }
+  } else {
+    for (var i = 0; i < types.length; i++) {
+      var tid = TEMPLATES[types[i]]
+      if (tid && isValidTemplateId(tid)) {
+        ids.push({ type: types[i], id: tid })
+      }
+    }
+  }
+  return ids
+}
+
+function getAllTemplateIds() {
+  var ids = []
+  for (var key in TEMPLATES) {
+    if (TEMPLATES.hasOwnProperty(key)) {
+      ids.push(TEMPLATES[key])
+    }
+  }
+  return ids
+}
+
+function checkSetting(callback) {
+  wx.getSetting({
+    withSubscriptions: true,
+    success: function(res) {
+      var settings = res.subscriptionsSetting || {}
+      callback(null, settings)
     },
-    fail: function() { callback(null) }
+    fail: function(err) {
+      callback(err, null)
+    }
   })
+}
+
+function requestSubscribe(types, callback) {
+  var validTemplates = getValidTemplateIds(types)
+  if (validTemplates.length === 0) {
+    callback({
+      errMsg: 'requestSubscribeMessage:fail no valid template ids',
+      noConfig: true,
+      message: '通知模板未配置，请在微信公众平台配置订阅消息模板'
+    }, null)
+    return
+  }
+  var called = false
+  var safeCallback = function(err, result) {
+    if (called) return
+    called = true
+    callback(err, result)
+  }
+  var templateIds = validTemplates.map(function(t) { return t.id })
+  wx.requestSubscribeMessage({
+    tmplIds: templateIds,
+    success: function(res) {
+      var result = {}
+      for (var j = 0; j < validTemplates.length; j++) {
+        var item = validTemplates[j]
+        result[item.type] = res[item.id] || 'reject'
+      }
+      safeCallback(null, result)
+    },
+    fail: function(err) {
+      safeCallback(err, null)
+    }
+  })
+}
+
+function saveSubscription(type, itemName, callback) {
+  if (typeof itemName === 'function') {
+    callback = itemName
+    itemName = null
+  }
+  var db = null
+  if (wx.cloud) db = wx.cloud.database()
+  if (!db) {
+    callback({ errMsg: 'cloud not available' })
+    return
+  }
+  resolveOpenid(function(openid) {
+    if (!openid) {
+      callback({ errMsg: 'get openid failed' })
+      return
+    }
+    doSave(db, type, itemName, openid, callback)
+  })
+}
+
+function doSave(db, type, itemName, openid, callback) {
+  var query = { openid: openid, type: type }
+  if (itemName) query.itemName = itemName
+
+  db.collection('subscribers').where(query).get()
+    .then(function(res) {
+      if (res.data.length > 0) {
+        var sub = res.data[0]
+        var newCount = (sub.count || 0) + 1
+        return db.collection('subscribers').doc(sub._id).update({
+          data: { count: newCount, status: 'active', updateTime: db.serverDate() }
+        })
+      } else {
+        var data = {
+          openid: openid,
+          type: type,
+          count: 1,
+          status: 'active',
+          createTime: db.serverDate()
+        }
+        if (itemName) data.itemName = itemName
+        return db.collection('subscribers').add({ data: data })
+      }
+    })
+    .then(function() {
+      if (callback) callback(null)
+    })
+    .catch(function(err) {
+      if (callback) callback(err)
+    })
 }
 
 function getSubscriptionStatus(callback) {
   var db = null
   if (wx.cloud) db = wx.cloud.database()
-  if (!db) { callback(null, {}); return }
+  if (!db) {
+    callback(null, {})
+    return
+  }
   resolveOpenid(function(openid) {
-    if (!openid) { callback(null, {}); return }
+    if (!openid) {
+      callback(null, {})
+      return
+    }
     db.collection('subscribers').where({ openid: openid, status: 'active' }).get()
       .then(function(res) {
         var status = {}
@@ -61,15 +180,78 @@ function getSubscriptionStatus(callback) {
         }
         callback(null, status)
       })
-      .catch(function(err) { callback(err, null) })
+      .catch(function(err) {
+        callback(err, null)
+      })
+  })
+}
+
+function requestAndSave(types, callback) {
+  requestSubscribe(types, function(err, result) {
+    if (err) {
+      if (err.noConfig) {
+        wx.showModal({
+          title: '功能配置中',
+          content: '该通知功能正在配置中，敬请期待',
+          showCancel: false
+        })
+      }
+      callback(err, null)
+      return
+    }
+    var accepted = []
+    for (var key in result) {
+      if (result[key] === 'accept') {
+        accepted.push(key)
+      }
+    }
+    if (accepted.length === 0) {
+      callback(null, result)
+      return
+    }
+    var done = 0
+    var hasError = false
+    for (var j = 0; j < accepted.length; j++) {
+      saveSubscription(accepted[j], null, function(saveErr) {
+        done++
+        if (saveErr && !hasError) {
+          hasError = true
+          callback(saveErr, null)
+          return
+        }
+        if (done === accepted.length && !hasError) {
+          callback(null, result)
+        }
+      })
+    }
+  })
+}
+
+function requestAndSaveItem(type, itemName, callback) {
+  requestSubscribe([type], function(err, result) {
+    if (err) {
+      if (err.noConfig) {
+        wx.showModal({ title: '功能配置中', content: '该功能正在配置中，敬请期待', showCancel: false })
+      }
+      if (callback) callback(err, null)
+      return
+    }
+    if (result[type] === 'accept') {
+      saveSubscription(type, itemName, function(saveErr) {
+        if (callback) callback(saveErr, result)
+      })
+    } else {
+      if (callback) callback(null, result)
+    }
   })
 }
 
 function pushToSubscribers(type, title, content, page, itemName, itemNames) {
   if (!wx.cloud) {
-    console.error('云开发环境不可用，无法执行云函数推送')
-    return
+    console.error('云开发环境不可用，无法执行云函数推送');
+    return;
   }
+  
   wx.cloud.callFunction({
     name: 'sendSubscribe',
     data: {
@@ -81,19 +263,116 @@ function pushToSubscribers(type, title, content, page, itemName, itemNames) {
       itemNames: itemNames
     },
     success: function(res) {
-      console.log('推送已提交:', res.result)
+      console.log('已成功通过云函数中转给阿里云服务器', res.result)
     },
     fail: function(err) {
-      console.error('推送失败:', err)
+      console.error('云函数中转失败:', err)
     }
   })
 }
 
+function formatNotifyTime(date) {
+  var y = date.getFullYear()
+  var m = String(date.getMonth() + 1).padStart(2, '0')
+  var d = String(date.getDate()).padStart(2, '0')
+  var h = String(date.getHours()).padStart(2, '0')
+  var min = String(date.getMinutes()).padStart(2, '0')
+  return y + '-' + m + '-' + d + ' ' + h + ':' + min
+}
+
+function getOpenidByNickname(nickname, callback) {
+  var db = null
+  if (wx.cloud) db = wx.cloud.database()
+  if (!db) {
+    callback(null)
+    return
+  }
+  db.collection('users').where({ nickName: nickname }).get()
+    .then(function(userRes) {
+      if (userRes.data.length > 0 && userRes.data[0]._openid) {
+        var openid = userRes.data[0]._openid
+        callback(openid)
+      } else {
+        callback(null)
+      }
+    })
+    .catch(function() {
+      callback(null)
+    })
+}
+
+function resolveOpenid(callback) {
+  var openid = ''
+  try {
+    openid = wx.getStorageSync('openid') || ''
+  } catch (e) {}
+  if (openid) {
+    callback(openid)
+    return
+  }
+  wx.cloud.callFunction({
+    name: 'login',
+    timeout: 3000,
+    success: function(loginRes) {
+      if (loginRes.result && loginRes.result.openid) {
+        var oid = loginRes.result.openid
+        wx.setStorageSync('openid', oid)
+        callback(oid)
+      } else {
+        callback(null)
+      }
+    },
+    fail: function() {
+      callback(null)
+    }
+  })
+}
+
+function upsertSubscriber(db, openid, type, maxCount, callback) {
+  var limit = maxCount || 99
+  db.collection('subscribers').where({ openid: openid, type: type }).get()
+    .then(function(res) {
+      if (res.data.length > 0) {
+        var sub = res.data[0]
+        var newCount = (sub.count || 0) + 1
+        if (newCount > limit) newCount = limit
+        return db.collection('subscribers').doc(sub._id).update({
+          data: { count: newCount, status: 'active', updateTime: db.serverDate() }
+        }).then(function() {
+          callback(null, newCount)
+        })
+      } else {
+        return db.collection('subscribers').add({
+          data: {
+            openid: openid,
+            type: type,
+            count: 1,
+            status: 'active',
+            createTime: db.serverDate()
+          }
+        }).then(function() {
+          callback(null, 1)
+        })
+      }
+    })
+    .catch(function(err) {
+      callback(err)
+    })
+}
+
 module.exports = {
   TEMPLATES: TEMPLATES,
-  smartTruncate: smartTruncate,
-  pushI18n: pushI18n,
-  resolveOpenid: resolveOpenid,
+  getAllTemplateIds: getAllTemplateIds,
+  checkSetting: checkSetting,
+  requestSubscribe: requestSubscribe,
+  saveSubscription: saveSubscription,
   getSubscriptionStatus: getSubscriptionStatus,
-  pushToSubscribers: pushToSubscribers
+  requestAndSave: requestAndSave,
+  requestAndSaveItem: requestAndSaveItem,
+  getOpenidByNickname: getOpenidByNickname,
+  pushToSubscribers: pushToSubscribers,
+  resolveOpenid: resolveOpenid,
+  upsertSubscriber: upsertSubscriber,
+  smartTruncate: smartTruncate,
+  pushI18n: pushI18n
 }
