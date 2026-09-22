@@ -54,8 +54,8 @@
           <view class="admin-tab {{activeTab === 'site' ? 'on' : ''}}" bindtap="switchTab" data-tab="site">{{_l.settings}}</view>
         </view>
       </scroll-view>
-      <!-- 固定发布按钮（所有tab可见） -->
-      <view class="global-publish-bar">
+      <!-- 发布按钮：仅公告 Tab 显示 -->
+      <view class="global-publish-bar" wx:if="{{activeTab === 'announce'}}">
         <view class="global-publish-btn" bindtap="openModal">
           <text>{{_l.addBtnPublish}}</text>
         </view>
