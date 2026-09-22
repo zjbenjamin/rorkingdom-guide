@@ -340,6 +340,7 @@
           </view>
         </view>
       </view>
+      <view class="modal-mask" wx:if="{{showModal}}" bindtap="closeModal">
         <view class="modal-box" catchtap="preventClose">
         <view class="modal-header">
           <text class="modal-title">{{editingItem ? '编辑公告' : '发布公告'}}</text>
