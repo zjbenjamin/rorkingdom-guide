@@ -93,7 +93,7 @@ async function doPush(touser, templateId, page, dataPayload, targetType) {
       templateId: templateId,
       page: page || 'pages/index/index',
       data: dataPayload,
-      miniprogramState: 'formal'
+      miniprogramState: event.miniprogramState || process.env.MINIPROGRAM_STATE || 'formal'
     })
     
     if (res.errCode === 0) {

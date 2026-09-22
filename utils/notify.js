@@ -246,9 +246,12 @@ function requestAndSaveItem(type, itemName, callback) {
   })
 }
 
-function pushToSubscribers(type, title, content, page, itemName, itemNames) {
+function pushToSubscribers(type, title, content, page, itemName, itemNames, callback) {
+  if (typeof itemName === 'function') { callback = itemName; itemName = null; itemNames = null; }
+  else if (typeof itemNames === 'function') { callback = itemNames; itemNames = null; }
   if (!wx.cloud) {
     console.error('云开发环境不可用，无法执行云函数推送');
+    if (callback) callback({ errMsg: 'cloud not available' });
     return;
   }
   
@@ -260,13 +263,16 @@ function pushToSubscribers(type, title, content, page, itemName, itemNames) {
       content: content,
       page: page || '/pages/index/index',
       itemName: itemName,
-      itemNames: itemNames
+      itemNames: itemNames,
+      miniprogramState: 'formal' // 体验版联调可临时改为 'trial'
     },
     success: function(res) {
       console.log('已成功通过云函数中转给阿里云服务器', res.result)
+      if (callback) callback(null, res.result)
     },
     fail: function(err) {
       console.error('云函数中转失败:', err)
+      if (callback) callback(err)
     }
   })
 }

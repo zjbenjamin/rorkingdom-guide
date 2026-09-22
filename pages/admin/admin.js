@@ -1838,7 +1838,14 @@ openModal: function(e) {
       activity: '/pages/activity/activity',
       merchant: '/pages/merchant/merchant'
     }
-    notify.pushToSubscribers(type, title, content, pages[type] || '/pages/index/index')
+    notify.pushToSubscribers(type, title, content, pages[type] || '/pages/index/index', null, null, function(err, result) {
+      if (err) {
+        console.error('推送失败:', err)
+        return
+      }
+      var sent = (result && result.sent != null) ? result.sent : 0
+      wx.showToast({ title: sent > 0 ? ('已推送，' + sent + '人') : '已提交（无订阅）', icon: 'none' })
+    })
   },
   formatTime: function(date) {
     if (!date) return ''
@@ -2894,10 +2901,16 @@ openModal: function(e) {
         success: function(res) {
           if (res.confirm) {
             wx.showLoading({ title: notify.pushI18n('submitting', '发送中...') })
-            notify.pushToSubscribers(type, notify.smartTruncate(testTitle, 20), notify.smartTruncate(testContent, 20))
-            wx.hideLoading()
-            wx.showToast({ title: '已提交推送', icon: 'success' })
-            if (self.loadSubscribers) self.loadSubscribers();
+            notify.pushToSubscribers(type, notify.smartTruncate(testTitle, 20), notify.smartTruncate(testContent, 20), null, null, null, function(err, result) {
+              wx.hideLoading()
+              if (err) {
+                wx.showToast({ title: '推送失败，请重试', icon: 'none' })
+                return
+              }
+              var sent = (result && result.sent != null) ? result.sent : 0
+              wx.showToast({ title: sent > 0 ? ('已推送，' + sent + '人') : '已提交（无订阅）', icon: 'success' })
+              if (self.loadSubscribers) self.loadSubscribers()
+            })
           }
         }
       })
