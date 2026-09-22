@@ -41,7 +41,7 @@
         </view>
       </view>
 
-      <!-- Tab 栏 -->
+      <!-- Tab 栏 + 发布按钮 -->
       <scroll-view scroll-x class="admin-tabs-scroll">
         <view class="admin-tabs">
           <view class="admin-tab {{activeTab === 'announce' ? 'on' : ''}}" bindtap="switchTab" data-tab="announce">{{_l.announceTab}}</view>
@@ -54,12 +54,17 @@
           <view class="admin-tab {{activeTab === 'site' ? 'on' : ''}}" bindtap="switchTab" data-tab="site">{{_l.settings}}</view>
         </view>
       </scroll-view>
+      <!-- 固定发布按钮（所有tab可见） -->
+      <view class="global-publish-bar">
+        <view class="global-publish-btn" bindtap="openModal">
+          <text>{{_l.addBtnPublish}}</text>
+        </view>
+      </view>
 
       <!-- 公告管理 -->
       <view wx:if="{{activeTab === 'announce'}}">
         <view class="section-header">
           <text class="section-title">{{_l.announceList}}</text>
-          <view class="add-btn" bindtap="openModal"><text>{{_l.addBtnPublish}}</text></view>
         </view>
         <view class="card-item" wx:for="{{announcements}}" wx:key="_id">
           <view class="card-top">
