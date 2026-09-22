@@ -1772,8 +1772,9 @@ openModal: function(e) {
       }
       var balls = this.data.ballsConfig;
       if (this.data.editingBall) {
+        var fid = form.id;
         for (var i = 0; i < balls.length; i++) {
-          if (balls[i].id === form.id) {
+          if (String(balls[i].id) === String(fid)) {
             balls[i] = Object.assign({}, balls[i], form);
             break;
           }
@@ -1795,7 +1796,8 @@ openModal: function(e) {
         content: '确定要删除这个道具球吗？',
         success: function(res) {
           if (res.confirm) {
-            var balls = self.data.ballsConfig.filter(function(b) { return b.id !== id; });
+            var rid = String(id);
+            var balls = self.data.ballsConfig.filter(function(b) { return String(b.id) !== rid; });
             self.setData({ ballsConfig: balls });
             wx.showToast({ title: '请记得点击保存修改到云端', icon: 'none' });
           }
