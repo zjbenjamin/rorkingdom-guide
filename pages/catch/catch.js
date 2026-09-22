@@ -27,6 +27,13 @@ Page({
   behaviors: [i18nBehavior],
   data: {
     buildTime: '', sysVersion: '初始化中...', showLogShareBtn: true,
+    continuePity: false,
+    missAnim: false,
+    pinnedBallIndex: -1,
+    pityEmoji: '',
+    profitRate: 0,
+    resultElapsedTime: '',
+    usedBallTotal: 0,
     balls: [
       {id:1,name:'普通咕噜球',color:'#999',icon:'⚪',count:0,freeCount:0,rate:'基础捕捉率',price:0},
       {id:2,name:'高级咕噜球',color:'#1565c0',icon:'🔵',count:0,freeCount:0,rate:'捕捉率+30%',price:12000},
@@ -127,8 +134,14 @@ Page({
           var cloudMap = {};
           for (var i = 0; i < cloudBalls.length; i++) { cloudMap[cloudBalls[i].id] = cloudBalls[i]; }
           var merged = [];
+          var defaultIds = {};
           for (var j = 0; j < defaultBalls.length; j++) {
+            defaultIds[defaultBalls[j].id] = true;
             merged.push(cloudMap[defaultBalls[j].id] || defaultBalls[j]);
+          }
+          // 云端自定义球（管理后台新增）必须并入，否则捕捉统计看不到
+          for (var k = 0; k < cloudBalls.length; k++) {
+            if (!defaultIds[cloudBalls[k].id]) merged.push(cloudBalls[k]);
           }
           self.syncBallsConfig(merged);
         } else {
