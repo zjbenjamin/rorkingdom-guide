@@ -595,6 +595,7 @@
           <button class="modal-submit" catchtap="submitAnnouncement" disabled="{{submitting}}">{{submitting ? '提交中...' : (editingItem ? '更新' : '发布')}}</button>
         </view>
       </view>
+      </view>
     </view>
 
 
