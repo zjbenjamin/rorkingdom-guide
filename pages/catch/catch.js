@@ -64,6 +64,7 @@ Page({
     specialTab: 'buy', specialBall: '高级咕噜球',
     specialBalls: ['绝缘球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','奇趣球','补光球','国王球','棱镜球','织梦棱镜球','狂欢棱镜球','淘沙球','童话球'],
     craftBalls: ['国王球','绝缘球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','棱镜球','淘沙球'],
+    cnyBalls: [],
     attributeBalls: ['绝缘球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','淘沙球','童话球'],
     specialCount: '', specialHistory: [],
     totalBallUsed: 0,
@@ -168,7 +169,8 @@ Page({
     var mergedBalls = [];
     var specialBalls = [];
     var craftBalls = [];
-    
+    var cnyBalls = [];
+
     for (var j = 0; j < cloudBalls.length; j++) {
       var cb = cloudBalls[j];
       var lb = localMap[cb.id] || { count: 0, freeCount: 0 };
@@ -183,16 +185,19 @@ Page({
         rate: rateDesc,
         price: cb.price || 0,
         img: cb.img || lb.img || '',
-        source: cb.source || ''
+        source: cb.source || '',
+        isSpecial: !!cb.isSpecial
       });
       if (cb.isBuy) specialBalls.push(cb.name);
       if (cb.isCraft) craftBalls.push(cb.name);
+      if (cb.isSpecial) cnyBalls.push(cb.name);
     }
-    
+
     self.setData({
       balls: mergedBalls,
       specialBalls: specialBalls.length > 0 ? specialBalls : self.data.specialBalls,
-      craftBalls: craftBalls.length > 0 ? craftBalls : self.data.craftBalls
+      craftBalls: craftBalls.length > 0 ? craftBalls : self.data.craftBalls,
+      cnyBalls: cnyBalls
     });
     wx.setStorageSync('catch_balls', mergedBalls);
     self.loadHistory();
@@ -1776,14 +1781,23 @@ Page({
       setTimeout(function() { self.setData({ ballDecrease: {} }) }, 2500)
     }
   },
-  onSpecialTab: function(e) { var tab=e.currentTarget.dataset.t; this.setData({ specialTab:tab, specialBall:tab==='buy'?'高级咕噜球':'国王球', specialBalls:tab==='buy'?this.data.specialBalls:this.data.craftBalls }) },
+  onSpecialTab: function(e) {
+    var tab = e.currentTarget.dataset.t
+    var list = tab === 'buy' ? this.data.specialBalls : (tab === 'craft' ? this.data.craftBalls : this.data.cnyBalls)
+    var first = list && list.length ? list[0] : ''
+    this.setData({
+      specialTab: tab,
+      specialBalls: list,
+      specialBall: first
+    })
+  },
   onSpecialBall: function(e) { this.setData({ specialBall: this.data.specialBalls[e.detail.value] }) },
   onSpecialCount: function(e) { this.setData({ specialCount: e.detail.value }) },
   onAddSpecial: function() {
     var self = this
     var v = parseInt(self.data.specialCount)
     if (!v || v <= 0) return
-    var t = self.data.specialTab === 'buy' ? '购买' : '合成'
+    var t = self.data.specialTab === 'buy' ? '购买' : (self.data.specialTab === 'craft' ? '合成' : '特殊')
     var ballName = self.data.specialBall
     var ballPrice = 0, ballIcon = '', ballImg = '';
     for (var i = 0; i < self.data.balls.length; i++) {
@@ -1795,6 +1809,7 @@ Page({
       }
     }
     var totalCost = 0;
+    // 特殊球为 CNY 计价，不计入洛克贝盈亏
     if (t === '购买' && self.data.quickRecordMode) {
       totalCost = ballPrice * v;
     }

@@ -860,10 +860,20 @@
                 <switch checked="{{ballForm.isCraft}}" bindchange="onBallFormSwitch" data-field="isCraft" color="#00d4ff" />
               </view>
             </view>
-            <view class="form-row" style="margin-top:24rpx;" wx:if="{{ballForm.isBuy || ballForm.isCraft}}">
+            <view class="form-row" style="margin-top:16rpx;">
+              <view class="form-group row half" style="margin-bottom:0;">
+                <text class="form-label">【特殊球】CNY</text>
+                <switch checked="{{ballForm.isSpecial}}" bindchange="onBallFormSwitch" data-field="isSpecial" color="#00d4ff" />
+              </view>
+            </view>
+            <view class="form-row" style="margin-top:24rpx;" wx:if="{{ballForm.isBuy || ballForm.isCraft || ballForm.isSpecial}}">
               <view class="form-group half" wx:if="{{ballForm.isBuy}}" style="margin-bottom:0;">
                 <text class="form-label">价格 (洛克贝)</text>
                 <input class="form-input" type="number" value="{{ballForm.price}}" bindinput="onBallFormInput" data-field="price" placeholder="例如：200" />
+              </view>
+              <view class="form-group half" wx:if="{{ballForm.isSpecial}}" style="margin-bottom:0;">
+                <text class="form-label">价格 (CNY)</text>
+                <input class="form-input" type="digit" value="{{ballForm.price}}" bindinput="onBallFormInput" data-field="price" placeholder="例如：6" />
               </view>
               <view class="form-group half" wx:if="{{ballForm.isCraft}}" style="margin-bottom:0;">
                 <text class="form-label">合成材料 (可选)</text>

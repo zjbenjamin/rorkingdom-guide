@@ -181,6 +181,7 @@
       <view class="sub-tabs-premium">
         <view class="sub-tab-p {{specialTab==='buy'?'on':''}}" bindtap="onSpecialTab" data-t="buy">{{_l.catchBuyBall}}</view>
         <view class="sub-tab-p {{specialTab==='craft'?'on':''}}" bindtap="onSpecialTab" data-t="craft">{{_l.catchCraftBall}}</view>
+        <view class="sub-tab-p {{specialTab==='cny'?'on':''}}" bindtap="onSpecialTab" data-t="cny">{{_l.catchSpecialBall}}</view>
       </view>
 
       <view class="inventory-stats">

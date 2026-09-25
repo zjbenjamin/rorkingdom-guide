@@ -236,7 +236,7 @@ Page({
       showBallModal: false,
       editingBall: null,
       ballForm: {
-        id: '', name: '', isBuy: false, isCraft: false, price: 0,
+        id: '', name: '', isBuy: false, isCraft: false, isSpecial: false, price: 0,
               craftMaterials: '', desc: '', source: '', img: '', color: '', icon: ''
       },
     announcements: [],
@@ -1718,6 +1718,7 @@ openModal: function(e) {
             name: item.name || '',
             isBuy: item.isBuy || false,
             isCraft: item.isCraft || false,
+            isSpecial: item.isSpecial || false,
             price: item.price || 0,
               craftMaterials: item.craftMaterials || '',
             desc: item.desc || item.rate || '',
@@ -1736,6 +1737,7 @@ openModal: function(e) {
             name: '',
             isBuy: false,
             isCraft: false,
+            isSpecial: false,
             price: 0,
               craftMaterials: '',
             desc: '',
