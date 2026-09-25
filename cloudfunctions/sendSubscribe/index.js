@@ -42,9 +42,9 @@ function getDataPayload(type, title, content) {
   
   if (type === 'announcement') {
     return {
-      thing1: { value: '洛克王国向导' },
+      thing1: { value: safeTitle || '洛克王国向导' },
       time2: { value: timeStr },
-      thing4: { value: safeTitle }
+      thing4: { value: safeContent || '请前往小程序查看详情' }
     }
   } else if (type === 'activity') {
     return {
@@ -148,7 +148,8 @@ exports.main = async (event, context) => {
   const _ = db.command
 
   // 0. 定时检查大量出没 (Check Swarms)
-  if (event.checkSwarm || (event.triggerName && event.triggerName.indexOf('Trigger') !== -1) || (!event.type && !event.touser)) {
+  // 仅在显式 checkSwarm 或定时触发器时执行，避免空事件误触发
+  if (event.checkSwarm || (event.triggerName && event.triggerName.indexOf('Trigger') !== -1)) {
     try {
       const swarmRes = await db.collection('swarms').where({
         status: 1,
@@ -172,7 +173,8 @@ exports.main = async (event, context) => {
           }
         }
         
-        if (start && now >= start) {
+        // 到点后 30 分钟内推送，过期不补发，避免保存/定时反复推
+        if (start && now >= start && (now - start) <= 30 * 60 * 1000) {
           updated = true
           
           const subscribers = await db.collection('subscribers')
@@ -191,8 +193,8 @@ exports.main = async (event, context) => {
             }
             
             const cleanPage = 'pages/swarm/swarm'
-            const title = '大量出没刷新'
-            const content = item.name + ' 在 ' + item.location + ' 限时出没'
+            const title = '大量出没: ' + (item.name || '精灵出没')
+            const content = (item.location ? item.location + ' · ' : '') + (item.desc || '限时出没，速来围观')
             const payload = getDataPayload('announcement', title, content)
             const tId = TEMPLATE_IDS['announcement']
             
