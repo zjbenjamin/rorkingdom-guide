@@ -474,11 +474,11 @@ Page({
       })
       .then(function() {
         self.setData({ bannerLoading: false, showBannerModal: false })
-        wx.showToast({ title: '保存成功', icon: 'success' })
+        wx.showToast({ title: '头图已保存到云端', icon: 'success' })
       })
-      .catch(function() {
+      .catch(function(err) {
         self.setData({ bannerLoading: false })
-        wx.showToast({ title: '保存失败', icon: 'none' })
+        wx.showToast({ title: '头图保存失败：' + ((err && err.errMsg) || '请重试'), icon: 'none' })
       })
   },
   startBatchTranslate: function() {
@@ -1813,16 +1813,39 @@ openModal: function(e) {
     saveBallsConfig: function() {
     var self = this;
     if (!db) { wx.showToast({ title: '云环境未就绪', icon: 'none' }); return; }
+    var balls = self.data.ballsConfig || [];
+    if (!balls.length) {
+      wx.showToast({ title: '列表为空，未保存', icon: 'none' });
+      return;
+    }
+    var customCount = 0, specialCount = 0, buyCount = 0, craftCount = 0;
+    for (var i = 0; i < balls.length; i++) {
+      var b = balls[i];
+      if (b.isSpecial) specialCount++;
+      if (b.isBuy) buyCount++;
+      if (b.isCraft) craftCount++;
+      if (String(b.id).indexOf('ball_') === 0) customCount++;
+    }
     self.setData({ ballsSubmitting: true });
     db.collection('site_config').doc('ball_images').set({
-      data: { balls: self.data.ballsConfig }
+      data: { balls: balls }
     }).then(res => {
-        wx.setStorageSync('balls_config_updated', true);
-      wx.showToast({ title: '保存成功', icon: 'success' });
+      wx.setStorageSync('balls_config_updated', true);
       self.setData({ ballsSubmitting: false });
+      wx.showModal({
+        title: '已保存到云端',
+        content: '共 ' + balls.length + ' 种球\n自定义 ' + customCount + ' · 购买 ' + buyCount + ' · 合成 ' + craftCount + ' · 特殊 ' + specialCount + '\n捕捉统计将自动同步',
+        showCancel: false,
+        confirmText: '知道了'
+      });
     }).catch(err => {
-      wx.showToast({ title: '保存失败', icon: 'none' });
       self.setData({ ballsSubmitting: false });
+      var msg = (err && (err.errMsg || err.message)) || '未知错误';
+      wx.showModal({
+        title: '保存失败',
+        content: '未能写入云端：' + msg + '\n请检查网络/云环境后重试',
+        showCancel: false
+      });
     });
   },
 
