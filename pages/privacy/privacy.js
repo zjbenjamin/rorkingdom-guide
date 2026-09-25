@@ -3,8 +3,8 @@ var i18n = require('../../utils/i18n')
 var privacyContent = {
   zh: {
     title: '《洛手助手》隐私保护指引',
-    updateDate: '更新日期：2026年8月5日',
-    effectiveDate: '生效日期：2026年8月5日',
+    updateDate: '更新日期：2026年9月25日',
+    effectiveDate: '生效日期：2026年9月25日',
     sections: [
       {
         title: '一、 我们收集的信息',
@@ -123,8 +123,8 @@ var privacyContent = {
   },
   ja: {
     title: '「Ben\'s Roco Helper」プライバシーポリシー',
-    updateDate: '更新日：2026年8月5日',
-    effectiveDate: '発効日：2026年8月5日',
+    updateDate: '更新日：2026年9月25日',
+    effectiveDate: '発効日：2026年9月25日',
     sections: [
       {
         title: '1. 収集する情報',
@@ -246,7 +246,7 @@ var privacyContent = {
 var agreementContent = {
   zh: {
     title: '《洛手助手》用户服务协议',
-    updateDate: '更新日期：2026年8月5日',
+    updateDate: '更新日期：2026年9月25日',
     sections: [
       {
         title: '一、 服务条款与性质',
@@ -314,7 +314,7 @@ var agreementContent = {
   },
   ja: {
     title: '「Ben\'s Roco Helper」利用規約',
-    updateDate: '更新日：2026年8月5日',
+    updateDate: '更新日：2026年9月25日',
     sections: [
       {
         title: '1. サービスの性質と利用条件',

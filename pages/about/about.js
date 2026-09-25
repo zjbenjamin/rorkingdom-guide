@@ -8,9 +8,8 @@ var i18n = require('../../utils/i18n')
 var todayStr = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0') + '-' + String(new Date().getDate()).padStart(2, '0')
 
 var defaultChangelog = [
-  { version: '1.7.2', date: todayStr, content: '修复：登录页误显示“登录已过期”，改为“登录有效期剩余”\n修复：恢复订阅推送API，体验版推送可用\n修复：管理后台新增咕噜球同步到捕捉统计\n修复：管理后台球删除/编辑（数字id）失败\n优化：测试推送显示真实推送人数\n优化：发布按钮仅在公告Tab显示' },
-  { version: '1.7.1', date: todayStr, content: '新增：地图页Canvas渲染——底图瓦片+7530标记点+缩放平移+分类筛选\n新增：大量出没支持多图轮播与形态标签\n新增：公告/活动发布时自动翻译(中→英日韩)\n优化：全站倒计时与相对时间多语言适配\n优化：捕捉统计按钮权重重排——行动日志最大\n优化：登录页openid缓存与云函数调用优化\n优化：Pad竖屏/横屏全站布局适配\n修复：地图投影Y轴翻转导致标记偏移\n修复：管理后台咕噜球新增后被覆盖丢弃\n修复：推送时间显示UTC时区错误，修正为北京时间\n修复：底部导航栏图标点击无响应' },
-  { version: '1.5.0', date: todayStr, content: '新增：首页顶部语言切换栏（中|日|韩|英）\n新增：管理后台系统设置增加头图编辑\n新增：推送消息智能截断与多语言适配\n优化：远行商人商品列表空数据自动兜底\n优化：登录页openid缓存减少云函数调用\n修复：底部导航栏图标点击无响应\n修复：远行商人页面商品不显示' }
+  { version: '1.8.0', date: todayStr, content: '更新：隐私政策与用户协议\n更新：版号 1.8.0\n优化：更新日志仅保留较近版本，按发布时间排序' },
+  { version: '1.7.2', date: todayStr, content: '修复：登录页误显示“登录已过期”，改为“登录有效期剩余”\n修复：恢复订阅推送API，体验版推送可用\n修复：管理后台新增咕噜球同步到捕捉统计\n修复：管理后台球删除/编辑（数字id）失败\n优化：测试推送显示真实推送人数\n优化：发布按钮仅在公告Tab显示' }
 ]
 
 Page({
@@ -25,7 +24,7 @@ Page({
     showLogShareBtn: true,
     aboutData: {
       appName: '洛手助手',
-      version: i18n.i18n.zh.version || 'v1.5.0',
+      version: i18n.i18n.zh.version || 'v1.8.0',
       versionNote: i18n.i18n.zh.versionNote || '',
       devName: '浙里本杰明',
       devAvatar: 'https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEYA3JqaA4lW5JDNpmiDiR7kV6jjeMAAW0AAscgAAKo-ElXhfFJA7eEXyo9BA.jpeg',
