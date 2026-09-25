@@ -298,12 +298,17 @@ Page({
   onBrushModeSwitch: function(e) {
     var mode = e.currentTarget.dataset.mode;
     var update = { brushMode: mode };
-    if (mode === 'mixed' && this.data.resultPetName) {
-      // 单刷→混刷：携带精灵名到混刷列表第一项
-      update.resultMixedPets = [{ name: this.data.resultPetName }];
-      update.resultMixedPetNames = [this.data.resultPetName];
+    if (mode === 'mixed') {
+      // 单刷目标 → 混刷的目标精灵（不是混刷名单）
+      if (this.data.resultPetName) {
+        update.resultTargetPet = this.data.resultPetName;
+      }
+      if (!this.data.resultMixedPets || !this.data.resultMixedPets.length) {
+        update.resultMixedPets = [{ name: '' }];
+        update.resultMixedPetNames = [];
+      }
     } else if (mode === 'single' && this.data.resultTargetPet) {
-      // 混刷→单刷：携带目标精灵到单刷名
+      // 混刷目标 → 单刷精灵名
       update.resultPetName = this.data.resultTargetPet;
     }
     this.setData(update);
