@@ -366,6 +366,7 @@ Page({
     }
     // 自动计时：从首次点击奇遇到现在
     var autoElapsed = '';
+    if (!self.data.captureStartTime) self.setData({ captureStartTime: Date.now() });
     if (self.data.captureStartTime) {
       var el = Math.floor((Date.now() - self.data.captureStartTime) / 1000);
       autoElapsed = i18n.formatDuration(el) + ' ' + i18n.i18n[i18n.getLanguage()].countdownAuto
@@ -746,8 +747,13 @@ Page({
       var titleLeft = width / 2 - titleW / 2;
       var iconX = titleLeft - iconSize - 12;
       if (iconX < 8) iconX = 8;
+      // 先画占位，外链失败也不会缺图标
+      ctx.font = 'bold ' + iconSize + 'px sans-serif';
+      ctx.fillText('✨', iconX, 50 + iconSize / 3);
       loadImg('https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png', function(img) {
-        ctx.drawImage(img, iconX, 50 - iconSize / 2, iconSize, iconSize);
+        if (img) {
+          try { ctx.drawImage(img, iconX, 50 - iconSize / 2, iconSize, iconSize); } catch (e) {}
+        }
       });
       
       // ─── 5. 统计面板 ───
@@ -860,9 +866,13 @@ Page({
         ctx.fillText(i18n.t('imgCatchDuration'), width/2 - 4, petNameY);
         ctx.fillStyle = '#ffffff';
         var et = last.elapsedTimeText.replace('耗时: ', '').trim() || i18n.t('imgUnknown');
-        if (last.elapsedAuto) et += ' (仅供参考)';
+        if (last.elapsedAuto) et += ' ' + ((i18n.i18n[i18n.getLanguage()] || {}).countdownAuto || '(自动)');
         ctx.font = '12px sans-serif';
         var maxEtW = width - 40 - (width/2 + 70) - 4;
+        if (ctx.measureText(et).width > maxEtW) {
+          ctx.font = '11px sans-serif';
+          maxEtW = width - 40 - (width/2 + 70) - 4;
+        }
         if (ctx.measureText(et).width > maxEtW) {
           while (et.length > 2 && ctx.measureText(et + '…').width > maxEtW) et = et.slice(0, -1);
           et += '…';
