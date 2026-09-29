@@ -130,9 +130,9 @@
                   </view>
                 </view>
                 <view wx:elif="{{block.type === 'swiper'}}" class="rich-swiper-block">
-                  <swiper indicator-dots="true" indicator-active-color="#58a6ff" indicator-color="rgba(255,255,255,0.15)" autoplay="true" circular="true" interval="4000" class="rich-swiper">
+                  <swiper autoplay="true" circular="true" interval="4000" class="rich-swiper" style="height: {{richSwiperHeights[item._id + '_' + index] || '420rpx'}};">
                     <swiper-item wx:for="{{block.urls}}" wx:for-item="url" wx:for-index="ui" wx:key="ui">
-                      <image src="{{url}}" mode="aspectFit" class="rich-swiper-image" catchtap="previewRichImage" data-src="{{url}}"></image>
+                      <image src="{{url}}" mode="widthFix" class="rich-swiper-image" catchtap="previewRichImage" data-src="{{url}}" bindload="onRichSwiperLoad" data-hkey="{{item._id}}_{{index}}" />
                     </swiper-item>
                   </swiper>
                 </view>

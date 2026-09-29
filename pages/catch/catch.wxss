@@ -692,17 +692,20 @@ page {
 }
 
 /* --- 咕噜球可视化列表 --- */
-.ball-visual-list { 
-  display: grid; 
-  grid-template-columns: repeat(3, 1fr); 
-  gap: 10rpx; 
+.ball-visual-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10rpx;
+  align-items: stretch;
 }
 
 .ball-item-card {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
+  height: 100%;
+  min-height: 130rpx;
   background: rgba(255, 255, 255, 0.03);
   border: 1rpx solid rgba(255, 255, 255, 0.06);
   padding: 20rpx 12rpx 16rpx;
@@ -710,6 +713,7 @@ page {
   position: relative;
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 0 0 1rpx rgba(255,255,255,0.02) inset, 0 2rpx 10rpx rgba(0,0,0,0.1);
+  box-sizing: border-box;
 }
 .ball-item-card:active { transform: scale(0.95); }
 .ball-item-card.selected { 
@@ -743,16 +747,83 @@ page {
 }
 
 .ball-info-main { flex: 1; min-width: 0; text-align: left; }
-.ball-name-txt { 
-  font-size: 20rpx; 
-  font-weight: 700; 
-  color: rgba(255,255,255,0.9); 
+.ball-name-txt {
+  font-size: 20rpx;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
   display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   padding: 0 4rpx;
   letter-spacing: 0.5rpx;
+}
+
+/* 价值标签：洛克贝 / CNY / 免费 */
+.ball-value-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6rpx;
+  margin-top: 6rpx;
+  padding: 0 4rpx;
+}
+.value-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4rpx;
+  font-size: 16rpx;
+  font-weight: 700;
+  padding: 2rpx 8rpx;
+  border-radius: 6rpx;
+  line-height: 1.4;
+}
+.value-tag .value-icon {
+  width: 18rpx;
+  height: 18rpx;
+  flex-shrink: 0;
+}
+.value-tag.roco {
+  background: rgba(255, 171, 64, 0.12);
+  color: #ffab40;
+  border: 1rpx solid rgba(255, 171, 64, 0.2);
+}
+.value-tag.cny {
+  background: rgba(233, 30, 99, 0.12);
+  color: #f48fb1;
+  border: 1rpx solid rgba(233, 30, 99, 0.22);
+}
+.value-tag.free {
+  background: rgba(0, 212, 255, 0.1);
+  color: #00d4ff;
+  border: 1rpx solid rgba(0, 212, 255, 0.15);
+}
+
+/* 展开简介：固定高度可上下滑，同行卡片等高 */
+.ball-desc-expanded {
+  width: 100%;
+  height: 200rpx;
+  margin-top: 8rpx;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+}
+.ball-desc-inner {
+  padding: 0 4rpx 8rpx;
+}
+.ball-desc-rate {
+  display: block;
+  margin-bottom: 4rpx;
+  font-size: 18rpx;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.35;
+  word-break: break-word;
+}
+.ball-desc-source {
+  display: block;
+  font-size: 18rpx;
+  color: rgba(255,255,255,0.3);
+  line-height: 1.35;
+  word-break: break-word;
 }
 
 .ball-meta-tags {
@@ -779,7 +850,8 @@ page {
   display: flex;
   align-items: baseline;
   gap: 3rpx;
-  margin-top: 6rpx;
+  margin-top: auto;
+  padding-top: 6rpx;
   width: 100%;
 }
 .ball-count-display .num { 
@@ -821,6 +893,36 @@ page {
   padding: 2rpx 8rpx;
   border-radius: 6rpx;
   border: 1rpx solid rgba(224, 64, 251, 0.2);
+}
+
+/* 获取方式（合成/特殊 → 活动） */
+.inbound-method-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+  padding: 0 8rpx;
+}
+.method-chips {
+  display: flex;
+  gap: 12rpx;
+  flex: 1;
+}
+.method-chip {
+  flex: 1;
+  text-align: center;
+  font-size: 22rpx;
+  font-weight: 700;
+  padding: 14rpx 12rpx;
+  border-radius: 12rpx;
+  background: rgba(255,255,255,0.04);
+  border: 1rpx solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.45);
+}
+.method-chip.on {
+  background: rgba(0,212,255,0.12);
+  border-color: rgba(0,212,255,0.35);
+  color: #00d4ff;
 }
 
 /* 快速采购/合成区域优化 */
@@ -1035,6 +1137,7 @@ page {
 }
 .h-type.buy { background: rgba(0,200,83,0.1); color: #00ff73; border: 1rpx solid rgba(0,255,115,0.15); }
 .h-type.craft { background: rgba(180,80,240,0.1); color: #c050f0; border: 1rpx solid rgba(180,80,240,0.15); }
+.h-type.activity { background: rgba(255,193,7,0.1); color: #ffd54f; border: 1rpx solid rgba(255,193,7,0.18); }
 .h-name { flex: 1; font-size: 20rpx; color: rgba(255,255,255,0.75); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .h-count { font-size: 20rpx; font-weight: 900; color: #00d4ff; flex-shrink: 0; }
 .h-cost { font-size: 18rpx; font-weight: 700; color: #ffab40; flex-shrink: 0; }

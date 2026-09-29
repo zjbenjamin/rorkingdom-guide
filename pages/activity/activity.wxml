@@ -28,7 +28,7 @@
           <text class="act-title headline-title">{{item.title}}</text>
           <block wx:if="{{item.richContent && item.richContent.length > 0}}">
             <view class="act-rich-content">
-              <block wx:for="{{item.richContent}}" wx:for-item="block" wx:key="index">
+              <block wx:for="{{item.richContent}}" wx:for-item="block" wx:for-index="bi" wx:key="bi">
                 <view wx:if="{{block.type === 'music'}}" class="rich-music-block {{currentPlayUrl === block.url && isPlaying ? 'playing' : ''}}" catchtap="playSong" data-url="{{block.url}}" data-name="{{block.name || '推荐单曲'}}" data-cover="{{block.cover || ''}}">
                   <image lazy-load wx:if="{{block.cover}}" class="music-cover" src="{{block.cover}}" mode="aspectFill" />
                   <text class="music-icon {{currentPlayUrl === block.url && isPlaying ? 'rotating' : ''}}">🎵</text>
@@ -53,9 +53,9 @@
                   <text class="quote-text">{{block.content}}</text>
                 </view>
                 <view wx:elif="{{block.type === 'swiper'}}" class="rich-swiper-block">
-                  <swiper class="rich-swiper" indicator-dots="true" autoplay="true" interval="3000" duration="500" circular="true">
-                    <swiper-item wx:for="{{block.urls}}" wx:for-item="url" wx:key="index">
-                      <image lazy-load src="{{url}}" mode="aspectFit" class="rich-swiper-image" catchtap="previewRichImage" data-src="{{url}}" />
+                  <swiper class="rich-swiper" autoplay="true" interval="3000" duration="500" circular="true" style="height: {{richSwiperHeights[item.id + '_' + bi] || '420rpx'}};">
+                    <swiper-item wx:for="{{block.urls}}" wx:for-item="url" wx:for-index="ui" wx:key="ui">
+                      <image lazy-load src="{{url}}" mode="widthFix" class="rich-swiper-image" catchtap="previewRichImage" data-src="{{url}}" bindload="onRichSwiperLoad" data-hkey="{{item.id}}_{{bi}}" />
                     </swiper-item>
                   </swiper>
                 </view>
@@ -145,7 +145,7 @@
         <image lazy-load class="act-image" wx:if="{{item.image}}" src="{{item.image}}" mode="widthFix" />
         <block wx:if="{{item.richContent && item.richContent.length > 0}}">
           <view class="act-rich-content">
-            <block wx:for="{{item.richContent}}" wx:for-item="block" wx:key="index">
+            <block wx:for="{{item.richContent}}" wx:for-item="block" wx:for-index="bi" wx:key="bi">
               <view wx:if="{{block.type === 'music'}}" class="rich-music-block {{item.subType === 'collab' ? 'collab-theme' : ''}} {{currentPlayUrl === block.url && isPlaying ? 'playing' : ''}}" catchtap="playSong" data-url="{{block.url}}" data-name="{{block.name || '推荐单曲'}}" data-cover="{{block.cover || ''}}">
                 <image lazy-load wx:if="{{block.cover}}" class="music-cover" src="{{block.cover}}" mode="aspectFill" />
                 <view class="music-icon {{currentPlayUrl === block.url && isPlaying ? 'rotating' : ''}} {{item.subType === 'collab' && (block.cover || item.image) ? 'collab-icon-box' : ''}}">
@@ -173,9 +173,9 @@
                 <text class="quote-text">{{block.content}}</text>
               </view>
               <view wx:elif="{{block.type === 'swiper'}}" class="rich-swiper-block">
-                <swiper class="rich-swiper" indicator-dots="true" autoplay="true" interval="3000" duration="500" circular="true">
-                  <swiper-item wx:for="{{block.urls}}" wx:for-item="url" wx:key="index">
-                    <image lazy-load src="{{url}}" mode="aspectFit" class="rich-swiper-image" catchtap="previewRichImage" data-src="{{url}}" />
+                <swiper class="rich-swiper" autoplay="true" interval="3000" duration="500" circular="true" style="height: {{richSwiperHeights[item.id + '_' + bi] || '420rpx'}};">
+                  <swiper-item wx:for="{{block.urls}}" wx:for-item="url" wx:for-index="ui" wx:key="ui">
+                    <image lazy-load src="{{url}}" mode="widthFix" class="rich-swiper-image" catchtap="previewRichImage" data-src="{{url}}" bindload="onRichSwiperLoad" data-hkey="{{item.id}}_{{bi}}" />
                   </swiper-item>
                 </swiper>
               </view>

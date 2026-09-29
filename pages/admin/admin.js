@@ -236,7 +236,7 @@ Page({
       showBallModal: false,
       editingBall: null,
       ballForm: {
-        id: '', name: '', isBuy: false, isCraft: false, isSpecial: false, price: 0,
+        id: '', name: '', isBuy: false, isCraft: false, isSpecial: false, isActivity: false, price: 0, cnyPrice: 0,
               craftMaterials: '', desc: '', source: '', img: '', color: '', icon: ''
       },
     announcements: [],
@@ -1697,6 +1697,15 @@ openModal: function(e) {
             merged.push(cloudBalls[m]);
           }
         }
+        // 旧数据：特殊球 CNY 曾记在 price，拆到 cnyPrice
+        for (var n = 0; n < merged.length; n++) {
+          var mb = merged[n];
+          if (mb.isSpecial && !mb.isBuy && !mb.cnyPrice && mb.price) {
+            merged[n] = Object.assign({}, mb, { cnyPrice: mb.price, price: 0 });
+          } else if (mb.cnyPrice == null) {
+            merged[n] = Object.assign({}, mb, { cnyPrice: 0 });
+          }
+        }
         self.setData({ ballsConfig: merged });
       } else {
         self.setData({ ballsConfig: defaultBalls });
@@ -1708,9 +1717,16 @@ openModal: function(e) {
   
   
     openBallModal: function(e) {
-      
+
       var item = (e && e.currentTarget && e.currentTarget.dataset) ? e.currentTarget.dataset.item || null : null;
       if (item) {
+        // 旧数据迁移：特殊球曾把 CNY 记在 price 里
+        var price = item.price || 0;
+        var cnyPrice = item.cnyPrice || 0;
+        if (item.isSpecial && !item.isBuy && !item.cnyPrice && price) {
+          cnyPrice = price;
+          price = 0;
+        }
         this.setData({
           editingBall: item,
           ballForm: {
@@ -1719,9 +1735,9 @@ openModal: function(e) {
             isBuy: item.isBuy || false,
             isCraft: item.isCraft || false,
             isSpecial: item.isSpecial || false,
-            isSpecial: item.isSpecial || false,
-            isSpecial: item.isSpecial || false,
-            price: item.price || 0,
+            isActivity: item.isActivity || false,
+            price: price,
+            cnyPrice: cnyPrice,
               craftMaterials: item.craftMaterials || '',
             desc: item.desc || item.rate || '',
             source: item.source || '',
@@ -1740,8 +1756,9 @@ openModal: function(e) {
             isBuy: false,
             isCraft: false,
             isSpecial: false,
-            isSpecial: false,
+            isActivity: false,
             price: 0,
+            cnyPrice: 0,
               craftMaterials: '',
             desc: '',
             source: '',
@@ -1761,6 +1778,7 @@ openModal: function(e) {
     onBallFormInput: function(e) {
       var field = e.currentTarget.dataset.field;
       var val = e.detail.value;
+      // 洛克贝为整数；CNY 自由输入（含小数），确认时再解析
       if (field === 'price') val = parseInt(val) || 0;
       this.setData({ ['ballForm.' + field]: val });
     },
@@ -1775,6 +1793,10 @@ openModal: function(e) {
         wx.showToast({ title: '请输入名称', icon: 'none' });
         return;
       }
+      // CNY 与洛克贝各自独立，不做换算
+      var cnyRaw = form.cnyPrice;
+      form.cnyPrice = (cnyRaw === '' || cnyRaw === null || cnyRaw === undefined) ? 0 : (parseFloat(cnyRaw) || 0);
+      form.price = parseInt(form.price) || 0;
       var balls = this.data.ballsConfig;
       if (this.data.editingBall) {
         var fid = form.id;
@@ -1818,12 +1840,13 @@ openModal: function(e) {
       wx.showToast({ title: '列表为空，未保存', icon: 'none' });
       return;
     }
-    var customCount = 0, specialCount = 0, buyCount = 0, craftCount = 0;
+    var customCount = 0, specialCount = 0, buyCount = 0, craftCount = 0, activityCount = 0;
     for (var i = 0; i < balls.length; i++) {
       var b = balls[i];
       if (b.isSpecial) specialCount++;
       if (b.isBuy) buyCount++;
       if (b.isCraft) craftCount++;
+      if (b.isActivity) activityCount++;
       if (String(b.id).indexOf('ball_') === 0) customCount++;
     }
     self.setData({ ballsSubmitting: true });
@@ -1834,7 +1857,7 @@ openModal: function(e) {
       self.setData({ ballsSubmitting: false });
       wx.showModal({
         title: '已保存到云端',
-        content: '共 ' + balls.length + ' 种球\n自定义 ' + customCount + ' · 购买 ' + buyCount + ' · 合成 ' + craftCount + ' · 特殊 ' + specialCount + '\n捕捉统计将自动同步',
+        content: '共 ' + balls.length + ' 种球\n自定义 ' + customCount + ' · 购买 ' + buyCount + ' · 合成 ' + craftCount + ' · 特殊 ' + specialCount + ' · 活动 ' + activityCount + '\n捕捉统计将自动同步',
         showCancel: false,
         confirmText: '知道了'
       });
@@ -1893,7 +1916,24 @@ openModal: function(e) {
     db.collection('announcements').where({ type: 'event' }).orderBy('createTime', 'desc').limit(50).get()
       .then(function(res) {
         var cloudActivities = (res.data || []).map(function(item) {
-          return { _id: item._id, title: item.title, content: item.content, type: item.type || '活动', pinned: item.pinned, start: item.start || '', end: item.end || '', image: item.image || '', timeStr: self.formatTime(item.createTime), isCloud: true }
+          return {
+            _id: item._id,
+            title: item.title,
+            content: item.content,
+            richContent: item.richContent || [],
+            subType: item.subType || '',
+            collabLogo: item.collabLogo || '',
+            type: item.type || '活动',
+            pinned: item.pinned,
+            start: item.start || item.startDate || '',
+            end: item.end || item.endDate || '',
+            startDate: item.startDate || item.start || '',
+            endDate: item.endDate || item.end || '',
+            image: item.image || '',
+            source: item.source || '',
+            timeStr: self.formatTime(item.createTime),
+            isCloud: true
+          }
         })
         self.setData({ adminActivities: localMapped.concat(cloudActivities), loading: false })
       })

@@ -93,7 +93,7 @@ async function doPush(touser, templateId, page, dataPayload, targetType) {
       templateId: templateId,
       page: page || 'pages/index/index',
       data: dataPayload,
-      miniprogramState: event.miniprogramState || process.env.MINIPROGRAM_STATE || 'formal'
+      miniprogramState: process.env.MINIPROGRAM_STATE || 'formal'
     })
     
     if (res.errCode === 0) {
@@ -147,7 +147,7 @@ exports.main = async (event, context) => {
   const db = cloud.database()
   const _ = db.command
 
-  // 0. 定时检查大量出没 (Check Swarms)
+  // 0. 定时检查大量出没：预设开始时间到达（状态变为正在出没）后自动推送
   // 仅在显式 checkSwarm 或定时触发器时执行，避免空事件误触发
   if (event.checkSwarm || (event.triggerName && event.triggerName.indexOf('Trigger') !== -1)) {
     try {
@@ -155,33 +155,35 @@ exports.main = async (event, context) => {
         status: 1,
         pushed: _.neq(true)
       }).get()
-      
+
       const swarms = swarmRes.data || []
       const now = Date.now()
-      let updated = false
       let pushedCount = 0
-      
+
       for (let i = 0; i < swarms.length; i++) {
         const item = swarms[i]
         const startStr = item.startDate ? item.startDate.replace(/-/g, '/') + ' ' + (item.startTime || '00:00:00') : null
+        const endStr = item.endDate ? item.endDate.replace(/-/g, '/') + ' ' + (item.endTime || '23:59:59') : null
         // 管理员填的是北京时间，手动转为 UTC 时间戳
-        let start = 0
-        if (startStr) {
-          const parts = startStr.match(/(\d{4})\/(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/)
-          if (parts) {
-            start = Date.UTC(+parts[1], +parts[2]-1, +parts[3], +parts[4]-8, +parts[5], +(parts[6]||0))
-          }
+        function parseCn(str) {
+          if (!str) return 0
+          const parts = str.match(/(\d{4})\/(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/)
+          if (!parts) return 0
+          return Date.UTC(+parts[1], +parts[2]-1, +parts[3], +parts[4]-8, +parts[5], +(parts[6]||0))
         }
-        
-        // 到点后 30 分钟内推送，过期不补发，避免保存/定时反复推
-        if (start && now >= start && (now - start) <= 30 * 60 * 1000) {
-          updated = true
-          
+        const start = parseCn(startStr) || now
+        const end = parseCn(endStr)
+
+        // 已到预设开始时间且未结束 → 正在出没；未推送则推
+        // 不限制「到点后 90 分钟」：编辑地点后保存也要能补推
+        const started = now >= start
+        const notEnded = end ? now <= end : true
+        if (started && notEnded) {
           const subscribers = await db.collection('subscribers')
             .where({ type: 'announcement', status: 'active' })
             .limit(500)
             .get()
-            
+
           if (subscribers.data.length > 0) {
             const uniqueSubs = []
             const seenOpenids = new Set()
@@ -191,25 +193,25 @@ exports.main = async (event, context) => {
                 seenOpenids.add(s.openid)
               }
             }
-            
+
             const cleanPage = 'pages/swarm/swarm'
             const title = '大量出没: ' + (item.name || '精灵出没')
-            const content = (item.location ? item.location + ' · ' : '') + (item.desc || '限时出没，速来围观')
+            const content = (item.location ? item.location + ' · ' : '') + (item.desc || '正在出没，速来围观')
             const payload = getDataPayload('announcement', title, content)
             const tId = TEMPLATE_IDS['announcement']
-            
+
             for (const s of uniqueSubs) {
               const resObj = await doPush(s.openid, tId, cleanPage, payload, 'announcement')
               if (resObj.success) pushedCount++
             }
           }
-          
+
           await db.collection('swarms').doc(item._id).update({
-            data: { pushed: true, updateTime: db.serverDate() }
+            data: { pushed: true, pushedAt: db.serverDate(), updateTime: db.serverDate() }
           })
         }
       }
-      
+
       return { success: true, message: `Checked swarms. Pushed to ${pushedCount} users.` }
     } catch (e) {
       return { success: false, error: e.message }

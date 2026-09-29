@@ -64,7 +64,7 @@
           <view class="item-main">
             <view class="swarm-image-wrap">
               <!-- 多图轮播 -->
-              <swiper class="swarm-swiper" wx:if="{{item.images && item.images.length > 1}}" indicator-dots="{{item.images.length > 1}}" indicator-active-color="#00d4ff" circular>
+              <swiper class="swarm-swiper" wx:if="{{item.images && item.images.length > 1}}" circular>
                 <swiper-item wx:for="{{item.images}}" wx:for-item="img" wx:key="index">
                   <image lazy-load class="swarm-image" src="{{img}}" mode="aspectFill" catchtap="previewImage" data-src="{{img}}" data-urls="{{item.images}}" />
                 </swiper-item>
@@ -74,12 +74,6 @@
                 <image lazy-load class="swarm-image" src="{{item.image || '/images/pet_placeholder.png'}}" mode="aspectFill" catchtap="previewImage" data-src="{{item.image}}" />
               </block>
               <image class="shiny-badge" src="https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png" mode="aspectFit" />
-              <!-- 形态标签 -->
-              <view class="form-tags" wx:if="{{item.forms && item.forms.length > 0}}">
-                <view class="form-tag" wx:for="{{item.forms}}" wx:for-item="form" wx:key="label">
-                  <text>{{form.label}}</text>
-                </view>
-              </view>
             </view>
             <view class="item-details">
               <text class="swarm-name">{{item.name}}</text>
@@ -92,6 +86,28 @@
                 <text class="detail-value">{{item.startDate}} {{item.startTime || ''}} 至 {{item.endDate || '长期'}} {{item.endTime || ''}}</text>
               </view>
             </view>
+          </view>
+
+          <!-- 双形态卡片：同一精灵，左右滑动 -->
+          <view class="form-cards-wrap" wx:if="{{item.forms && item.forms.length > 0}}">
+            <view class="form-cards-head">
+              <text class="form-cards-title">形态</text>
+              <text class="form-cards-hint" wx:if="{{item.forms.length > 1}}">左右滑动</text>
+            </view>
+            <swiper class="form-cards-swiper" previous-margin="0" next-margin="{{item.forms.length > 1 ? '40rpx' : '0'}}" circular="{{item.forms.length > 1}}">
+              <swiper-item wx:for="{{item.forms}}" wx:for-item="form" wx:key="label">
+                <view class="form-card">
+                  <image wx:if="{{form.image}}" class="form-card-img" src="{{form.image}}" mode="aspectFill" catchtap="previewImage" data-src="{{form.image}}" />
+                  <view wx:else class="form-card-img form-card-img-empty">
+                    <text>🐾</text>
+                  </view>
+                  <view class="form-card-body">
+                    <text class="form-card-label">{{form.label || '形态'}}</text>
+                    <text class="form-card-note" wx:if="{{form.note}}">{{form.note}}</text>
+                  </view>
+                </view>
+              </swiper-item>
+            </swiper>
           </view>
 
           <!-- 额外描述 -->
@@ -128,7 +144,7 @@
           <view class="item-main">
             <view class="swarm-image-wrap">
               <!-- 多图轮播 -->
-              <swiper class="swarm-swiper" wx:if="{{item.images && item.images.length > 1}}" indicator-dots="{{item.images.length > 1}}" indicator-active-color="#00d4ff" circular>
+              <swiper class="swarm-swiper" wx:if="{{item.images && item.images.length > 1}}" circular>
                 <swiper-item wx:for="{{item.images}}" wx:for-item="img" wx:key="index">
                   <image lazy-load class="swarm-image" src="{{img}}" mode="aspectFill" catchtap="previewImage" data-src="{{img}}" data-urls="{{item.images}}" />
                 </swiper-item>
@@ -138,12 +154,6 @@
                 <image lazy-load class="swarm-image" src="{{item.image || '/images/pet_placeholder.png'}}" mode="aspectFill" catchtap="previewImage" data-src="{{item.image}}" />
               </block>
               <image class="shiny-badge" src="https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png" mode="aspectFit" />
-              <!-- 形态标签 -->
-              <view class="form-tags" wx:if="{{item.forms && item.forms.length > 0}}">
-                <view class="form-tag" wx:for="{{item.forms}}" wx:for-item="form" wx:key="label">
-                  <text>{{form.label}}</text>
-                </view>
-              </view>
             </view>
             <view class="item-details">
               <text class="swarm-name">{{item.name}}</text>
@@ -156,6 +166,28 @@
                 <text class="detail-value">{{item.startDate}} {{item.startTime || ''}} 至 {{item.endDate || '长期'}} {{item.endTime || ''}}</text>
               </view>
             </view>
+          </view>
+
+          <!-- 双形态卡片：同一精灵，左右滑动 -->
+          <view class="form-cards-wrap" wx:if="{{item.forms && item.forms.length > 0}}">
+            <view class="form-cards-head">
+              <text class="form-cards-title">形态</text>
+              <text class="form-cards-hint" wx:if="{{item.forms.length > 1}}">左右滑动</text>
+            </view>
+            <swiper class="form-cards-swiper" previous-margin="0" next-margin="{{item.forms.length > 1 ? '40rpx' : '0'}}" circular="{{item.forms.length > 1}}">
+              <swiper-item wx:for="{{item.forms}}" wx:for-item="form" wx:key="label">
+                <view class="form-card">
+                  <image wx:if="{{form.image}}" class="form-card-img" src="{{form.image}}" mode="aspectFill" catchtap="previewImage" data-src="{{form.image}}" />
+                  <view wx:else class="form-card-img form-card-img-empty">
+                    <text>🐾</text>
+                  </view>
+                  <view class="form-card-body">
+                    <text class="form-card-label">{{form.label || '形态'}}</text>
+                    <text class="form-card-note" wx:if="{{form.note}}">{{form.note}}</text>
+                  </view>
+                </view>
+              </swiper-item>
+            </swiper>
           </view>
 
           <!-- 额外描述 -->
@@ -258,22 +290,34 @@
             </view>
           </view>
 
-          <!-- 图片链接（支持多张，每行一个） -->
+          <!-- 其他图片（非形态，可选） -->
           <view class="form-group">
             <view class="form-label">
               <text class="form-label-icon">🖼️</text>
-              <text class="form-label-text">图片链接（多张每行一个）</text>
+              <text class="form-label-text">其他图片（可选，多张每行一个）</text>
             </view>
-            <textarea class="modal-textarea" maxlength="-1" placeholder="每行一个图片URL，第一张为主图&#10;例如：&#10;https://...png&#10;https://...jpg" placeholder-class="input-placeholder" value="{{form.imagesText}}" bindinput="onImagesTextInput" style="height: 160rpx;" />
+            <textarea class="modal-textarea" maxlength="-1" placeholder="与形态无关的补充图片&#10;每行一个URL" placeholder-class="input-placeholder" value="{{form.imagesText}}" bindinput="onImagesTextInput" style="height: 120rpx;" />
           </view>
 
-          <!-- 形态标签 -->
+          <!-- 双形态：各自名称 / 图片 / 备注 -->
           <view class="form-group">
             <view class="form-label">
               <text class="form-label-icon">🏷️</text>
-              <text class="form-label-text">形态标签（可选）</text>
+              <text class="form-label-text">形态一</text>
             </view>
-            <input class="modal-input" maxlength="-1" placeholder="用逗号分隔，如：普通,异色,闪光" placeholder-class="input-placeholder" value="{{form.formsText}}" bindinput="onFormsTextInput" />
+            <input class="modal-input" maxlength="-1" placeholder="形态名称，如：普通" placeholder-class="input-placeholder" value="{{form.form1Label}}" bindinput="onFormInput" data-field="form1Label" />
+            <input class="modal-input" style="margin-top: 10rpx;" maxlength="-1" placeholder="形态一图片URL" placeholder-class="input-placeholder" value="{{form.form1Image}}" bindinput="onFormInput" data-field="form1Image" />
+            <textarea class="modal-textarea" style="margin-top: 10rpx; height: 100rpx;" maxlength="-1" placeholder="形态一备注（可选）" placeholder-class="input-placeholder" value="{{form.form1Note}}" bindinput="onFormInput" data-field="form1Note" />
+          </view>
+
+          <view class="form-group">
+            <view class="form-label">
+              <text class="form-label-icon">🏷️</text>
+              <text class="form-label-text">形态二</text>
+            </view>
+            <input class="modal-input" maxlength="-1" placeholder="形态名称，如：异色 / 另一形态" placeholder-class="input-placeholder" value="{{form.form2Label}}" bindinput="onFormInput" data-field="form2Label" />
+            <input class="modal-input" style="margin-top: 10rpx;" maxlength="-1" placeholder="形态二图片URL" placeholder-class="input-placeholder" value="{{form.form2Image}}" bindinput="onFormInput" data-field="form2Image" />
+            <textarea class="modal-textarea" style="margin-top: 10rpx; height: 100rpx;" maxlength="-1" placeholder="形态二备注（可选）" placeholder-class="input-placeholder" value="{{form.form2Note}}" bindinput="onFormInput" data-field="form2Note" />
           </view>
 
           <!-- 备注说明 -->

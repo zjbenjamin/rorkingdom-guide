@@ -195,11 +195,24 @@
         </view>
       </view>
 
+      <!-- 获取方式：仅特殊球板块可选「活动 · 赠」 -->
+      <view class="inbound-method-row" wx:if="{{specialTab==='cny'}}">
+        <text class="form-label-mini">{{_l.catchGetMethod}}</text>
+        <view class="method-chips">
+          <view class="method-chip {{inboundMethod!=='activity'?'on':''}}" bindtap="onInboundMethod" data-m="default">
+            {{_l.ballSpecial}}
+          </view>
+          <view class="method-chip {{inboundMethod==='activity'?'on':''}}" bindtap="onInboundMethod" data-m="activity">
+            {{_l.catchActivityType}} · {{_l.catchFreeTag}}
+          </view>
+        </view>
+      </view>
+
       <!-- 快速采购/合成按钮区 -->
       <view class="quick-add-row-premium">
         <view class="form-group-mini">
           <text class="form-label-mini">{{_l.catchSelectBall}}</text>
-          <picker class="premium-picker-new" bindchange="onSpecialBall" range="{{specialBalls}}" mode="selector">
+          <picker class="premium-picker-new" bindchange="onSpecialBall" range="{{pickerBalls}}" mode="selector">
             <view class="picker-inner-new">
               <text>{{specialBall}}</text>
               <text class="arrow-new">▾</text>
@@ -218,7 +231,7 @@
       <!-- 入库记录 -->
       <view class="special-history-list" wx:if="{{specialHistory.length > 0}}">
         <view class="history-item-mini" wx:for="{{specialHistory}}" wx:key="index">
-          <text class="h-type {{item.type === '购买' ? 'buy' : 'craft'}}">{{item.type}}</text>
+          <text class="h-type {{item.type === '购买' ? 'buy' : (item.type === '活动' ? 'activity' : 'craft')}}">{{item.type}}</text>
           <view style="display:flex; align-items:center; gap:8rpx;">
               <image wx:if="{{item.img && item.img.length > 5}}" src="{{item.img}}" style="width:28rpx; height:28rpx; border-radius:50%;" mode="aspectFill"></image>
               <image wx:elif="{{item.icon && item.icon.length > 5}}" src="{{item.icon}}" style="width:28rpx; height:28rpx; border-radius:50%;" mode="aspectFill"></image>
@@ -244,14 +257,29 @@
             </view>
             <view class="ball-info-main">
               <text class="ball-name-txt" style="color: {{item.color || '#fff'}};">{{item.name}}</text>
-              <view wx:if="{{expandedBallIndex === index && (item.rate || item.source)}}" class="ball-desc-expanded">
-                <text wx:if="{{item.rate}}" style="display:block; margin-bottom:4rpx; font-size:18rpx; color:rgba(255,255,255,0.4); line-height:1.3;">{{item.rate}}</text>
-                <text wx:if="{{item.source}}" style="display:block; color:rgba(255,255,255,0.3); font-size:18rpx;">{{_l.catchSource}}: {{item.source}}</text>
-                <view class="ball-meta-tags" style="margin-top:8rpx;" wx:if="{{item.freeCount > 0 || (item.count - item.freeCount > 0)}}">
-                  <text class="tag buy" wx:if="{{item.count - item.freeCount > 0}}">{{_l.catchBuyTag}} x{{item.count - item.freeCount}}</text>
-                  <text class="tag free" wx:if="{{item.freeCount > 0}}">{{_l.catchFreeTag}} x{{item.freeCount}}</text>
+              <!-- 价值标签：洛克贝 / CNY / 免费 -->
+              <view class="ball-value-tags">
+                <view class="value-tag roco" wx:if="{{item.price > 0}}">
+                  <image class="value-icon" src="https://r2.image-upload.app/ptImg/yhJkDL2B.png" mode="aspectFit" />
+                  <text>{{item.price}}</text>
+                </view>
+                <view class="value-tag cny" wx:if="{{item.cnyPrice > 0}}">
+                  <text>¥{{item.cnyPrice}}</text>
+                </view>
+                <view class="value-tag free" wx:if="{{item.price <= 0 && item.cnyPrice <= 0}}">
+                  <text>{{_l.catchFreeTag}}</text>
                 </view>
               </view>
+              <scroll-view scroll-y class="ball-desc-expanded" wx:if="{{expandedBallIndex === index && (item.rate || item.source)}}">
+                <view class="ball-desc-inner">
+                  <text wx:if="{{item.rate}}" class="ball-desc-rate">{{item.rate}}</text>
+                  <text wx:if="{{item.source}}" class="ball-desc-source">{{_l.catchSource}}: {{item.source}}</text>
+                  <view class="ball-meta-tags" wx:if="{{item.freeCount > 0 || (item.count - item.freeCount > 0)}}">
+                    <text class="tag buy" wx:if="{{item.count - item.freeCount > 0}}">{{_l.catchBuyTag}} x{{item.count - item.freeCount}}</text>
+                    <text class="tag free" wx:if="{{item.freeCount > 0}}">{{_l.catchFreeTag}} x{{item.freeCount}}</text>
+                  </view>
+                </view>
+              </scroll-view>
             </view>
             <view class="ball-count-display">
               <text class="num">{{item.count}}</text>

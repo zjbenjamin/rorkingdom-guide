@@ -62,6 +62,8 @@ Page({
     petNameInput: '', catchCount: 1,
     encounterTab: 'luckybox', carnivalCount: 0, luckyBoxCount: 0,
     specialTab: 'buy', specialBall: '高级咕噜球',
+    inboundMethod: 'default',
+    pickerBalls: [],
     specialBalls: ['绝缘球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','奇趣球','补光球','国王球','棱镜球','织梦棱镜球','狂欢棱镜球','淘沙球','童话球'],
     craftBalls: ['国王球','绝缘球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','棱镜球','淘沙球'],
     cnyBalls: [],
@@ -165,16 +167,26 @@ Page({
     for (var i = 0; i < localBalls.length; i++) {
       localMap[localBalls[i].id] = localBalls[i];
     }
-    
+
     var mergedBalls = [];
-    var specialBalls = [];
+    var buyBalls = [];
     var craftBalls = [];
     var cnyBalls = [];
+    // 活动赠：合成区可赠送的球；特殊区活动赠仅可可果球
+    var craftActivityBalls = [];
+    var cnyActivityBalls = [];
 
     for (var j = 0; j < cloudBalls.length; j++) {
       var cb = cloudBalls[j];
       var lb = localMap[cb.id] || { count: 0, freeCount: 0 };
       var rateDesc = cb.desc || cb.rate || '';
+      // price=洛克贝、cnyPrice=CNY，互不换算；旧数据特殊球把 CNY 记在 price
+      var rocoPrice = cb.price || 0;
+      var cnyPrice = cb.cnyPrice || 0;
+      if (cb.isSpecial && !cb.isBuy && !cb.cnyPrice && rocoPrice) {
+        cnyPrice = rocoPrice;
+        rocoPrice = 0;
+      }
       mergedBalls.push({
         id: cb.id,
         name: cb.name,
@@ -183,25 +195,64 @@ Page({
         count: lb.count || 0,
         freeCount: lb.freeCount || 0,
         rate: rateDesc,
-        price: cb.price || 0,
+        price: rocoPrice,
+        cnyPrice: cnyPrice,
         img: cb.img || lb.img || '',
         source: cb.source || '',
-        isSpecial: !!cb.isSpecial
+        isBuy: !!cb.isBuy,
+        isCraft: !!cb.isCraft,
+        isSpecial: !!cb.isSpecial,
+        isActivity: !!cb.isActivity
       });
-      if (cb.isBuy) specialBalls.push(cb.name);
+      if (cb.isBuy) buyBalls.push(cb.name);
       if (cb.isCraft) craftBalls.push(cb.name);
       if (cb.isSpecial) cnyBalls.push(cb.name);
+      // 合成区活动赠：合成球 + 纯活动球
+      if (cb.isCraft || (cb.isActivity && !cb.isSpecial && !cb.isBuy)) {
+        craftActivityBalls.push(cb.name);
+      }
+      // 特殊区活动赠：仅可可果球
+      if (cb.isSpecial && (cb.isActivity || cb.name === '可可果球')) {
+        if (cnyActivityBalls.indexOf(cb.name) === -1) cnyActivityBalls.push(cb.name);
+      }
+    }
+    // 特殊区至少保留可可果球占位，避免列表被清空
+    if (cnyBalls.length > 0 && cnyActivityBalls.length === 0) {
+      cnyActivityBalls.push('可可果球');
     }
 
     self.setData({
       balls: mergedBalls,
-      specialBalls: specialBalls.length > 0 ? specialBalls : self.data.specialBalls,
+      buyBalls: buyBalls.length > 0 ? buyBalls : (self.data.buyBalls || self.data.specialBalls || []),
       craftBalls: craftBalls.length > 0 ? craftBalls : self.data.craftBalls,
-      cnyBalls: cnyBalls
+      cnyBalls: cnyBalls,
+      craftActivityBalls: craftActivityBalls.length > 0 ? craftActivityBalls : (craftBalls.length ? craftBalls : self.data.craftBalls),
+      cnyActivityBalls: cnyActivityBalls
     });
+    // 刷新当前选择列表
+    self.refreshBallPicker();
     wx.setStorageSync('catch_balls', mergedBalls);
     self.loadHistory();
     self.calcTotalBallUsed();
+  },
+  // 按板块 + 获取方式得到可选球列表
+  getPickerBalls: function() {
+    var d = this.data
+    if (d.specialTab === 'buy') return d.buyBalls && d.buyBalls.length ? d.buyBalls : (d.specialBalls || [])
+    if (d.specialTab === 'craft') return d.craftBalls
+    // 特殊球：默认全部；「活动赠」仅可可果球
+    return d.inboundMethod === 'activity'
+      ? (d.cnyActivityBalls && d.cnyActivityBalls.length ? d.cnyActivityBalls : ['可可果球'])
+      : d.cnyBalls
+  },
+  refreshBallPicker: function() {
+    var list = this.getPickerBalls() || []
+    var first = list.length ? list[0] : ''
+    var keep = this.data.specialBall
+    this.setData({
+      pickerBalls: list,
+      specialBall: (keep && list.indexOf(keep) >= 0) ? keep : first
+    })
   },
   toggleBallDesc: function(e) {
     var index = e.currentTarget.dataset.index;
@@ -743,26 +794,35 @@ Page({
       ctx.fillStyle = orb;
       ctx.fillRect(0, 0, width, height);
       
-      // ─── 4. 标题 ───
+      // ─── 4. 标题 + 异色标（各语言整组居中、垂直对齐）───
       ctx.fillStyle = '#00d4ff';
       var titleText = i18n.t('imgTitle');
       ctx.font = 'bold 24px sans-serif';
       var titleW = ctx.measureText(titleText).width;
-      var titleFontSize = titleW > width * 0.85 ? Math.floor(24 * width * 0.85 / titleW) : 24;
+      var titleFontSize = titleW > width * 0.8 ? Math.floor(24 * width * 0.8 / titleW) : 24;
+      // 图标随字号缩放，长短标题都不歪
+      var iconSize = Math.max(20, Math.round(titleFontSize * 28 / 24));
+      var gap = 12;
+      var maxTitleW = Math.max(40, width - 24 - iconSize - gap);
       ctx.font = 'bold ' + titleFontSize + 'px sans-serif';
       titleW = ctx.measureText(titleText).width;
-      ctx.textAlign = 'center'; ctx.fillText(titleText, width / 2, 50); ctx.textAlign = 'left';
-      // 图标放在标题文字左侧，留足间距防止遮挡
-      var iconSize = Math.round(28 * imgScale);
-      var titleLeft = width / 2 - titleW / 2;
-      var iconX = titleLeft - iconSize - 12;
-      if (iconX < 8) iconX = 8;
-      // 先画占位，外链失败也不会缺图标
-      ctx.font = 'bold ' + iconSize + 'px sans-serif';
-      ctx.fillText('✨', iconX, 50 + iconSize / 3);
+      if (titleW > maxTitleW) {
+        titleFontSize = Math.max(14, Math.floor(titleFontSize * maxTitleW / titleW));
+        ctx.font = 'bold ' + titleFontSize + 'px sans-serif';
+        titleW = ctx.measureText(titleText).width;
+        iconSize = Math.max(18, Math.round(titleFontSize * 28 / 24));
+      }
+      // 图标 + 文字作为一组水平居中，垂直中心同为 y=50
+      var groupW = iconSize + gap + titleW;
+      var iconX = Math.max(8, (width - groupW) / 2);
+      var titleMidY = 50;
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'left';
+      ctx.fillText(titleText, iconX + iconSize + gap, titleMidY);
+      ctx.textBaseline = 'alphabetic';
       loadImg('https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png', function(img) {
         if (img) {
-          try { ctx.drawImage(img, iconX, 50 - iconSize / 2, iconSize, iconSize); } catch (e) {}
+          try { ctx.drawImage(img, iconX, titleMidY - iconSize / 2, iconSize, iconSize); } catch (e) {}
         }
       });
       
@@ -782,12 +842,24 @@ Page({
       ctx.fillText((self.data.userTitle||'').replace(/[^\u4e00-\u9fa5]/g, ''), 36, 195);
       
       ctx.font = 'bold 13px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillText(i18n.t('imgProfitLoss'), width/2 + 16, 175);
+      // 总盈亏数值 + 洛克贝标识
+      var plX = width / 2 + 16;
+      var plY = 195;
+      var plIconSize = 14;
+      var plTextX = plX + plIconSize + 5;
+      loadImg('https://patchwiki.biligame.com/images/nrc/1/10/blxvp7k90uq3p8prz24feerler3yfsi.png', function(img) {
+        if (img) {
+          try { ctx.drawImage(img, plX, plY - plIconSize + 1, plIconSize, plIconSize); } catch (e) {}
+        }
+      });
       if (self.data.accumulatedWealth === 0 || self.data.accumulatedWealth === '0') {
-        ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillText(i18n.t('imgBreakEven'), width/2 + 16, 195);
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillText(i18n.t('imgBreakEven'), plTextX, plY);
       } else {
         var isGain = self.data.accumulatedWealth >= 0;
+        ctx.font = 'bold 13px sans-serif';
         ctx.fillStyle = isGain ? '#3fb950' : '#f85149';
-        ctx.fillText((isGain ? i18n.t('imgProfit') : i18n.t('imgLoss')) + Math.abs(self.data.accumulatedWealth), width/2 + 16, 195);
+        ctx.fillText((isGain ? i18n.t('imgProfit') : i18n.t('imgLoss')) + Math.abs(self.data.accumulatedWealth), plTextX, plY);
       }
       
       // ─── 6. 历史记录详情 ───
@@ -1537,7 +1609,7 @@ Page({
       success: function(res) {
         if (res.confirm) {
           var balls = self.data.balls.map(function(b) {
-            return { id: b.id, name: b.name, color: b.color, count: 0, freeCount: 0, rate: b.rate, price: b.price }
+            return { id: b.id, name: b.name, color: b.color, count: 0, freeCount: 0, rate: b.rate, price: b.price, cnyPrice: b.cnyPrice || 0, isBuy: b.isBuy, isCraft: b.isCraft, isSpecial: b.isSpecial, isActivity: b.isActivity, icon: b.icon, img: b.img, source: b.source }
           })
           wx.removeStorageSync('special_history')
           wx.removeStorageSync('used_ball_total')
@@ -1741,7 +1813,7 @@ Page({
     } else {
       balls[self.data.selectedBall].freeCount = oldFree
     }
-    var cost = ball.price * count
+    var cost = ball.isSpecial && !ball.isBuy ? 0 : (ball.price || 0) * count
     var newCosts = self.data.totalCosts + cost
     var totalBallUsed = 0
     for (var i = 0; i < balls.length; i++) totalBallUsed += balls[i].count
@@ -1788,33 +1860,43 @@ Page({
   },
   onSpecialTab: function(e) {
     var tab = e.currentTarget.dataset.t
-    var list = tab === 'buy' ? this.data.specialBalls : (tab === 'craft' ? this.data.craftBalls : this.data.cnyBalls)
-    var first = list && list.length ? list[0] : ''
     this.setData({
       specialTab: tab,
-      specialBalls: list,
-      specialBall: first
+      inboundMethod: 'default'
     })
+    this.refreshBallPicker()
   },
-  onSpecialBall: function(e) { this.setData({ specialBall: this.data.specialBalls[e.detail.value] }) },
+  onInboundMethod: function(e) {
+    this.setData({ inboundMethod: e.currentTarget.dataset.m || 'default' })
+    this.refreshBallPicker()
+  },
+  onSpecialBall: function(e) {
+    var list = this.data.pickerBalls || this.getPickerBalls() || []
+    this.setData({ specialBall: list[e.detail.value] })
+  },
   onSpecialCount: function(e) { this.setData({ specialCount: e.detail.value }) },
   onAddSpecial: function() {
     var self = this
     var v = parseInt(self.data.specialCount)
     if (!v || v <= 0) return
     var t = self.data.specialTab === 'buy' ? '购买' : (self.data.specialTab === 'craft' ? '合成' : '特殊')
+    // 仅特殊球板块可选「活动」获取（免费）
+    if (self.data.specialTab === 'cny' && self.data.inboundMethod === 'activity') {
+      t = '活动'
+    }
     var ballName = self.data.specialBall
     var ballPrice = 0, ballIcon = '', ballImg = '';
     for (var i = 0; i < self.data.balls.length; i++) {
       if (self.data.balls[i].name === ballName) {
-        ballPrice = self.data.balls[i].price;
+        // 仅购买走洛克贝 price；CNY 的 cnyPrice 不计入洛克贝
+        ballPrice = self.data.balls[i].price || 0;
         ballIcon = self.data.balls[i].icon || '';
         ballImg = self.data.balls[i].img || '';
         break;
       }
     }
     var totalCost = 0;
-    // 特殊球为 CNY 计价，不计入洛克贝盈亏
+    // 活动/合成免费；特殊球 CNY 不计入洛克贝；仅购买可能扣洛克贝
     if (t === '购买' && self.data.quickRecordMode) {
       totalCost = ballPrice * v;
     }
@@ -1827,7 +1909,7 @@ Page({
     for (var i = 0; i < balls.length; i++) {
       if (balls[i].name === ballName) {
         balls[i].count += v
-        if (t === '合成') balls[i].freeCount += v
+        if (t === '合成' || t === '活动') balls[i].freeCount += v
         break
       }
     }

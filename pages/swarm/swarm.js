@@ -27,7 +27,12 @@ Page({
       endTime: '',
       image: '',
       imagesText: '',
-      formsText: '',
+      form1Label: '',
+      form1Image: '',
+      form1Note: '',
+      form2Label: '',
+      form2Image: '',
+      form2Note: '',
       desc: '',
       status: 0
     }
@@ -121,12 +126,13 @@ Page({
   
   // Modal handlers
   openAddModal: function() {
+    this._editingOld = null
     this.setData({
       showModal: true,
       editingId: null,
       editingIndex: null,
       editingSource: '',
-      form: { name: '', location: '', startDate: '', startTime: '', endDate: '', endTime: '', image: '', imagesText: '', formsText: '', desc: '', status: 0 },
+      form: { name: '', location: '', startDate: '', startTime: '', endDate: '', endTime: '', image: '', imagesText: '', form1Label: '', form1Image: '', form1Note: '', form2Label: '', form2Image: '', form2Note: '', desc: '', status: 0 },
       canPublish: false
     })
   },
@@ -139,7 +145,10 @@ Page({
     var index = e.currentTarget.dataset.index
     var source = e.currentTarget.dataset.source
     var item = source === 'active' ? this.data.activeSwarms[index] : this.data.upcomingSwarms[index]
-    
+    var forms = (item.forms || []).map(function(f) {
+      if (typeof f === 'string') return { label: f, image: '', note: '' }
+      return { label: f.label || '', image: f.image || '', note: f.note || f.desc || '' }
+    })
     this.setData({
       showModal: true,
       editingId: item._id,
@@ -154,11 +163,22 @@ Page({
         endTime: item.endTime || '',
         image: item.image || '',
         imagesText: (item.images && item.images.length > 0) ? item.images.join('\n') : (item.image || ''),
-        formsText: (item.forms && item.forms.length > 0) ? item.forms.map(function(f){return f.label}).join(', ') : '',
+        form1Label: forms[0] ? forms[0].label : '',
+        form1Image: forms[0] ? forms[0].image : '',
+        form1Note: forms[0] ? forms[0].note : '',
+        form2Label: forms[1] ? forms[1].label : '',
+        form2Image: forms[1] ? forms[1].image : '',
+        form2Note: forms[1] ? forms[1].note : '',
         desc: item.desc || '',
         status: item.status || 0
       }
     })
+    this._editingOld = {
+      startDate: item.startDate || '',
+      startTime: item.startTime || '',
+      status: item.status || 0,
+      pushed: item.pushed
+    }
     this.checkCanPublish()
   },
   
@@ -174,11 +194,6 @@ Page({
   onImagesTextInput: function(e) {
     var form = this.data.form
     form.imagesText = e.detail.value
-    this.setData({ form: form })
-  },
-  onFormsTextInput: function(e) {
-    var form = this.data.form
-    form.formsText = e.detail.value
     this.setData({ form: form })
   },
   onLocationChange: function(e) {
@@ -228,13 +243,15 @@ Page({
     }
   },
   
+  // 保存：只写库，不推送
   saveFormOnly: function() {
     this._doSave(false)
   },
+  // 发布：上线，并在预设时间到点（正在出没）后自动推送
   saveForm: function() {
     this._doSave(true)
   },
-  
+
   _doSave: function(publish) {
     var self = this
     if (!self.data.canPublish && publish) return
@@ -243,14 +260,35 @@ Page({
       wx.showToast({ title: '请填写名称', icon: 'none' })
       return
     }
-    
+
     self.setData({ saving: true })
-    
+
     var imagesText = (f.imagesText || '').trim()
     var images = imagesText ? imagesText.split('\n').map(function(s){return s.trim()}).filter(function(s){return s}) : (f.image ? [f.image.trim()] : [])
-    var formsText = (f.formsText || '').trim()
-    var forms = formsText ? formsText.split(/[,，、]/).map(function(s){return s.trim()}).filter(function(s){return s}).map(function(label){return {label: label}}) : []
-    
+    // 双形态：各自 label / image / note
+    var forms = []
+    if ((f.form1Label || '').trim() || (f.form1Image || '').trim() || (f.form1Note || '').trim()) {
+      forms.push({
+        label: (f.form1Label || '').trim(),
+        image: (f.form1Image || '').trim(),
+        note: (f.form1Note || '').trim()
+      })
+    }
+    if ((f.form2Label || '').trim() || (f.form2Image || '').trim() || (f.form2Note || '').trim()) {
+      forms.push({
+        label: (f.form2Label || '').trim(),
+        image: (f.form2Image || '').trim(),
+        note: (f.form2Note || '').trim()
+      })
+    }
+    // 形态图并入展示图列表（去重）
+    for (var fi = 0; fi < forms.length; fi++) {
+      if (forms[fi].image && images.indexOf(forms[fi].image) === -1) {
+        images.push(forms[fi].image)
+      }
+    }
+
+    // 保存 = 草稿（status 0），发布 = 上线（status 1）
     var dataToSave = {
       name: (f.name || '').trim(),
       location: (f.location || '').trim(),
@@ -265,23 +303,57 @@ Page({
       status: publish ? 1 : 0,
       updateTime: db.serverDate()
     }
-    
+
     var promise
     if (self.data.editingId) {
+      if (publish) {
+        // 发布：开始时间变更或已到点时重置推送标记，到点/立即可推
+        var old = self._editingOld || {}
+        var oldStart = (old.startDate || '') + ' ' + (old.startTime || '')
+        var newStart = (dataToSave.startDate || '') + ' ' + (dataToSave.startTime || '')
+        var startTs = self._parseCnTime(dataToSave.startDate, dataToSave.startTime)
+        var started = startTs ? Date.now() >= startTs : true
+        if (oldStart !== newStart || started) {
+          dataToSave.pushed = false
+        }
+      }
+      // 保存不动 pushed，不触发推送
       promise = db.collection('swarms').doc(self.data.editingId).update({ data: dataToSave })
     } else {
       dataToSave.createTime = db.serverDate()
+      if (publish) dataToSave.pushed = false
       promise = db.collection('swarms').add({ data: dataToSave })
     }
-    
+
     promise.then(function() {
+      self._editingOld = null
       self.setData({ saving: false, showModal: false })
-      wx.showToast({ title: '保存成功', icon: 'success' })
+      if (!publish) {
+        wx.showToast({ title: '已保存（不推送）', icon: 'success' })
+        self.loadSwarms()
+        return
+      }
+      // 仅发布才检查/推送
+      var startTs = self._parseCnTime(dataToSave.startDate, dataToSave.startTime)
+      var started = startTs ? Date.now() >= startTs : true
+      wx.showToast({ title: started ? '已发布，正在推送通知' : '已发布，到点自动推送', icon: 'success' })
       self.loadSwarms()
+      if (started && wx.cloud) {
+        wx.cloud.callFunction({ name: 'sendSubscribe', data: { checkSwarm: true } }).catch(function() {})
+      }
     }).catch(function(err) {
       self.setData({ saving: false })
       wx.showModal({ title: '保存失败', content: err.message || JSON.stringify(err), showCancel: false })
     })
+  },
+
+  // 北京时间日期+时间 → 毫秒时间戳（与云函数口径一致）
+  _parseCnTime: function(dateStr, timeStr) {
+    if (!dateStr) return 0
+    var s = dateStr.replace(/-/g, '/') + ' ' + (timeStr || '00:00:00')
+    var parts = s.match(/(\d{4})\/(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/)
+    if (!parts) return 0
+    return Date.UTC(+parts[1], +parts[2] - 1, +parts[3], +parts[4] - 8, +parts[5], +(parts[6] || 0))
   },
   
   deleteSwarm: function(e) {

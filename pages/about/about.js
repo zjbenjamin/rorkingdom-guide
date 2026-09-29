@@ -8,6 +8,7 @@ var i18n = require('../../utils/i18n')
 var todayStr = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0') + '-' + String(new Date().getDate()).padStart(2, '0')
 
 var defaultChangelog = [
+  { version: '1.8.1', date: todayStr, content: '新增：咕噜球 CNY 与洛克贝价格分离，可独立填写\n新增：合成/特殊球支持「活动」获取（默认免费）\n新增：大量出没双形态卡片，可左右滑动\n新增：大量出没预设时间到点自动推送（发布推送、保存不推）\n优化：球卡片价值标签、生成图总盈亏洛克贝标识\n优化：公告多图轮播完整比例展示、无背景框与指示点\n修复：活动页联动Logo丢失、视频卡片变纯链接\n修复：视频播放器标题/简介截断' },
   { version: '1.8.0', date: todayStr, content: '更新：隐私政策与用户协议\n更新：版号 1.8.0\n优化：更新日志仅保留较近版本，按发布时间排序' },
   { version: '1.7.2', date: todayStr, content: '修复：登录页误显示“登录已过期”，改为“登录有效期剩余”\n修复：恢复订阅推送API，体验版推送可用\n修复：管理后台新增咕噜球同步到捕捉统计\n修复：管理后台球删除/编辑（数字id）失败\n优化：测试推送显示真实推送人数\n优化：发布按钮仅在公告Tab显示' }
 ]
@@ -24,7 +25,7 @@ Page({
     showLogShareBtn: true,
     aboutData: {
       appName: '洛手助手',
-      version: i18n.i18n.zh.version || 'v1.8.0',
+      version: i18n.i18n.zh.version || 'v1.8.1',
       versionNote: i18n.i18n.zh.versionNote || '',
       devName: '浙里本杰明',
       devAvatar: 'https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEYA3JqaA4lW5JDNpmiDiR7kV6jjeMAAW0AAscgAAKo-ElXhfFJA7eEXyo9BA.jpeg',

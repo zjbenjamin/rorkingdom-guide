@@ -1,15 +1,69 @@
 var app = getApp()
 var i18nBehavior = require('../../utils/i18nBehavior')
 var i18n = require('../../utils/i18n')
+var adminUtil = require('../../utils/admin')
 var activitiesData = [
   { id: 1, title: '异色获取方法', type: '官方权威信息', status: '置顶', start: '', end: '', rewards: [], desc: '通过赛季奇遇、大世界遭遇、生蛋孵蛋、赛季商店兑换等方式获取异色精灵。' }
 ]
 var cloudUrl = require('../../utils/cloudUrl')
 var notify = require('../../utils/notify')
 var db = null
+
+// 富文本块内的 cloud:// 封面/图片转临时链接
+function convertRichCloudUrls(list, callback) {
+  if (!list || !list.length || !wx.cloud) { callback(list); return }
+  var result = list.map(function(item) {
+    var copy = Object.assign({}, item)
+    if (copy.richContent && copy.richContent.length) {
+      copy.richContent = copy.richContent.map(function(b) { return Object.assign({}, b) })
+    }
+    return copy
+  })
+  var fileIDs = []
+  var map = []
+  function push(val, itemIndex, blockIndex, field) {
+    if (val && typeof val === 'string' && val.indexOf('cloud://') === 0) {
+      if (fileIDs.indexOf(val) === -1) fileIDs.push(val)
+      map.push({ itemIndex: itemIndex, blockIndex: blockIndex, field: field, fileID: val })
+    }
+  }
+  for (var i = 0; i < result.length; i++) {
+    var blocks = result[i].richContent || []
+    for (var j = 0; j < blocks.length; j++) {
+      var b = blocks[j]
+      push(b.url, i, j, 'url')
+      push(b.cover, i, j, 'cover')
+      if (b.urls && b.urls.length) {
+        for (var u = 0; u < b.urls.length; u++) push(b.urls[u], i, j, 'urls:' + u)
+      }
+    }
+  }
+  if (!fileIDs.length) { callback(result); return }
+  wx.cloud.getTempFileURL({ fileList: fileIDs }).then(function(res) {
+    var urlMap = {}
+    if (res.fileList) {
+      for (var k = 0; k < res.fileList.length; k++) {
+        if (res.fileList[k].tempFileURL) urlMap[res.fileList[k].fileID] = res.fileList[k].tempFileURL
+      }
+    }
+    for (var m = 0; m < map.length; m++) {
+      var rec = map[m]
+      var url = urlMap[rec.fileID]
+      if (!url) continue
+      var block = result[rec.itemIndex].richContent[rec.blockIndex]
+      if (rec.field.indexOf('urls:') === 0) {
+        block.urls[parseInt(rec.field.slice(5), 10)] = url
+      } else {
+        block[rec.field] = url
+      }
+    }
+    callback(result)
+  }).catch(function() { callback(result) })
+}
+
 Page({
   behaviors: [i18nBehavior],
-  data: { theme: 'light', activities: [], filtered: [], status: '全部', statuses: ['全部','进行中','置顶'], expandedId: -1, isAdmin: false, showEditModal: false, editingItem: null, editTitle: '', editDesc: '', editStatus: '进行中', editType: '', editRewards: '', editStart: '', editEnd: '', editImage: '', subscribedActivity: false, subscribeCount: 0, currentPlayUrl: '', isPlaying: false, showVideoPlayer: false, videoPlayerUrl: '', videoPlayerName: '', videoPlayerCover: '', videoPlayerOwner: '', videoPlayerDesc: '' },
+  data: { theme: 'light', activities: [], filtered: [], status: '全部', statuses: ['全部','进行中','置顶'], expandedId: -1, isAdmin: false, showEditModal: false, editingItem: null, editTitle: '', editDesc: '', editStatus: '进行中', editType: '', editRewards: '', editStart: '', editEnd: '', editImage: '', subscribedActivity: false, subscribeCount: 0, currentPlayUrl: '', isPlaying: false, showVideoPlayer: false, videoPlayerUrl: '', videoPlayerName: '', videoPlayerCover: '', videoPlayerOwner: '', videoPlayerDesc: '', richSwiperHeights: {} },
   onShow: function() {
     this._refreshI18n()
     this.setData({ theme: app.globalData.theme })
@@ -27,17 +81,13 @@ Page({
     var saved = wx.getStorageSync('user_info')
     if (!userInfo && saved) userInfo = saved
     if (!userInfo) { self.setData({ isAdmin: false }); self.sortActivities(); return }
-    db.collection('admin_config').doc('admin').get()
-      .then(function(res) {
-        var adminOpenid = res.data.openid
-        db.collection('users').where({ _openid: adminOpenid }).get()
-          .then(function(userRes) {
-            self.setData({ isAdmin: userRes.data.length > 0 })
-            self.sortActivities()
-          })
-          .catch(function() { self.sortActivities() })
-      })
-      .catch(function() { self.sortActivities() })
+    if (wx.getStorageSync('is_admin_user')) {
+      self.setData({ isAdmin: true })
+    }
+    adminUtil.checkAdmin(self, function(isAdmin) {
+      self.setData({ isAdmin: !!isAdmin })
+      self.sortActivities()
+    })
   },
   sortActivities: function() {
     var self = this
@@ -46,14 +96,37 @@ Page({
         .then(function(res) {
           var lang = i18n.getLanguage()
           var cloudActivities = (res.data || []).map(function(item) {
-            return { id: item._id, title: (lang !== 'zh' && item['title_' + lang]) ? item['title_' + lang] : item.title, desc: (lang !== 'zh' && item['content_' + lang]) ? item['content_' + lang] : item.content, status: item.pinned ? '置顶' : '进行中', type: item.type || '', rewards: item.rewards || [], start: item.start || '', end: item.end || '', image: item.image || '', isCloud: true }
+            var title = (lang !== 'zh' && item['title_' + lang]) ? item['title_' + lang] : item.title
+            var desc = (lang !== 'zh' && item['content_' + lang]) ? item['content_' + lang] : item.content
+            return {
+              id: item._id,
+              title: title,
+              desc: desc,
+              // 富文本/联动字段必须带上，否则视频卡片、联动Logo会丢
+              richContent: item.richContent || [],
+              subType: item.subType || '',
+              collabLogo: item.collabLogo || '',
+              status: item.pinned ? '置顶' : '进行中',
+              pinned: !!item.pinned,
+              type: item.type || '',
+              rewards: item.rewards || [],
+              start: item.start || item.startDate || '',
+              end: item.end || item.endDate || '',
+              startTime: item.startTime || '',
+              endTime: item.endTime || '',
+              source: item.source || '',
+              image: item.image || '',
+              isCloud: true
+            }
           })
           var all = activitiesData.concat(cloudActivities)
           self.setData({ activities: all })
           self.filterList()
-          cloudUrl.convertList(all, 'image', function(converted) {
-            self.setData({ activities: converted })
-            self.filterList()
+          cloudUrl.convertList(all, ['image', 'collabLogo'], function(converted) {
+            convertRichCloudUrls(converted, function(finalList) {
+              self.setData({ activities: finalList })
+              self.filterList()
+            })
           })
         })
         .catch(function() {
@@ -469,6 +542,18 @@ Page({
     })
   },
   preventClose: function() {},
+  // 多图轮播：按原图比例设高度，完整展示无背景框
+  onRichSwiperLoad: function(e) {
+    var key = e.currentTarget.dataset.hkey
+    if (!key) return
+    var w = e.detail.width || 1
+    var h = e.detail.height || 1
+    var hRpx = Math.max(200, Math.min(1200, Math.round(702 * h / w)))
+    var map = this.data.richSwiperHeights || {}
+    if (map[key] === hRpx) return
+    map[key] = hRpx
+    this.setData({ richSwiperHeights: map })
+  },
   previewRichImage: function(e) {
     var src = e.currentTarget.dataset.src
     if (src) wx.previewImage({ urls: [src] })
@@ -530,7 +615,7 @@ Page({
             videoPlayerName: videoTitle,
             videoPlayerCover: data.pic || '',
             videoPlayerOwner: data.ownerName || '',
-            videoPlayerDesc: (data.desc || '').substring(0, 60),
+            videoPlayerDesc: data.desc || '',
             showVideoPlayer: true
           })
         } else {

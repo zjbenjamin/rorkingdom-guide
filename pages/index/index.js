@@ -28,7 +28,8 @@ Page({
     videoPlayerCover: '',
     videoPlayerOwner: '',
     videoPlayerDesc: '',
-    countdowns: {}
+    countdowns: {},
+    richSwiperHeights: {}
   },
 
   onHide: function() {
@@ -551,6 +552,18 @@ Page({
   },
   closeVideoPlayer: function() {
     this.setData({ showVideoPlayer: false, videoPlayerUrl: '', videoPlayerName: '', videoPlayerCover: '', videoPlayerOwner: '', videoPlayerDesc: '' })
+  },
+  // 多图轮播：按原图比例设高度，完整展示无背景框
+  onRichSwiperLoad: function(e) {
+    var key = e.currentTarget.dataset.hkey
+    if (!key) return
+    var w = e.detail.width || 1
+    var h = e.detail.height || 1
+    var hRpx = Math.max(200, Math.min(1200, Math.round(702 * h / w)))
+    var map = this.data.richSwiperHeights || {}
+    if (map[key] === hRpx) return
+    map[key] = hRpx
+    this.setData({ richSwiperHeights: map })
   },
   previewRichImage: function(e) {
     var src = e.currentTarget.dataset.src
