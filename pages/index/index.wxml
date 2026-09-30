@@ -12,21 +12,29 @@
       <view class="repo-tab" bindtap="goAdmin" wx:if="{{isAdmin}}"><text class="repo-tab-icon">⚙</text>{{_l.adminTab}}</view>
       <view class="repo-tab" bindtap="go" data-url="/pages/about/about"><text class="repo-tab-icon">ℹ</text>{{_l.aboutTab}}</view>
       <view class="repo-lang-bar">
-        <view class="lang-btn {{currentLang === 'zh' ? 'active' : ''}}" bindtap="switchLang" data-lang="zh">🇨🇳</view>
+        <view class="lang-btn {{currentLang === 'zh' ? 'active' : ''}}" bindtap="switchLang" data-lang="zh">
+          <image class="lang-flag" src="https://www.emojiall.com/images/60/twitter/1f1e8-1f1f3.png" mode="aspectFit" />
+        </view>
         <view class="lang-sep">|</view>
-        <view class="lang-btn {{currentLang === 'ja' ? 'active' : ''}}" bindtap="switchLang" data-lang="ja">🇯🇵</view>
+        <view class="lang-btn {{currentLang === 'ja' ? 'active' : ''}}" bindtap="switchLang" data-lang="ja">
+          <image class="lang-flag" src="https://www.emojiall.com/images/60/twitter/1f1ef-1f1f5.png" mode="aspectFit" />
+        </view>
         <view class="lang-sep">|</view>
-        <view class="lang-btn {{currentLang === 'ko' ? 'active' : ''}}" bindtap="switchLang" data-lang="ko">🇰🇷</view>
+        <view class="lang-btn {{currentLang === 'ko' ? 'active' : ''}}" bindtap="switchLang" data-lang="ko">
+          <image class="lang-flag" src="https://www.emojiall.com/images/60/twitter/1f1f0-1f1f7.png" mode="aspectFit" />
+        </view>
         <view class="lang-sep">|</view>
-        <view class="lang-btn {{currentLang === 'en' ? 'active' : ''}}" bindtap="switchLang" data-lang="en">🇬🇧</view>
+        <view class="lang-btn {{currentLang === 'en' ? 'active' : ''}}" bindtap="switchLang" data-lang="en">
+          <image class="lang-flag" src="https://www.emojiall.com/images/60/twitter/1f1fa-1f1f8.png" mode="aspectFit" />
+        </view>
       </view>
     </view>
   </view>
 
-  <!-- Hero Banner (admin editable) -->
-  <view class="hero-section" wx:if="{{bannerUrl || (bannerUrls && bannerUrls.length > 0)}}" bindtap="{{isAdmin ? 'toggleBannerModal' : ''}}">
+  <!-- Hero Banner：多图自动轮播，无指示点；编辑入口在管理后台-页面管理 -->
+  <view class="hero-section" wx:if="{{bannerUrl || (bannerUrls && bannerUrls.length > 0)}}">
     <block wx:if="{{bannerUrls && bannerUrls.length > 1}}">
-      <swiper class="hero-swiper" indicator-dots="true" autoplay="true" interval="4000" duration="500" circular="true">
+      <swiper class="hero-swiper" autoplay="true" interval="4000" duration="500" circular="true">
         <swiper-item wx:for="{{bannerUrls}}" wx:key="index">
           <image lazy-load class="hero-image" src="{{item}}" mode="aspectFit"></image>
         </swiper-item>
@@ -173,6 +181,42 @@
       </view>
     </view>
 
+    <!-- ROCOKINGDOM广播站：出没 + 商人同步 -->
+    <view class="broadcast-section" wx:if="{{broadcastList.length > 0}}">
+      <view class="feed-header">
+        <text class="feed-title">ROCOKINGDOM广播站</text>
+        <text class="feed-count">{{broadcastList.length}}</text>
+      </view>
+      <view class="broadcast-list">
+        <view class="broadcast-item" wx:for="{{broadcastList}}" wx:key="index" bindtap="go" data-url="{{item.type === 'swarm' ? '/pages/swarm/swarm' : '/pages/merchant/merchant'}}">
+          <view class="broadcast-badge {{item.type}}">{{item.typeLabel}}</view>
+          <view class="broadcast-body">
+            <view class="broadcast-head">
+              <text class="broadcast-title">{{item.title}}</text>
+              <text class="broadcast-tag" wx:if="{{item.badge}}">{{item.badge}}</text>
+            </view>
+            <text class="broadcast-desc" wx:if="{{item.desc}}">{{item.desc}}</text>
+            <!-- 商人商品列表 -->
+            <view class="broadcast-items" wx:if="{{item.items && item.items.length > 0}}">
+              <view class="broadcast-goods" wx:for="{{item.items}}" wx:for-item="g" wx:for-index="gi" wx:key="gi">
+                <view class="goods-main">
+                  <text class="goods-name">{{g.name}}</text>
+                  <text class="goods-meta" wx:if="{{g.limitCount}}">限售 {{g.limitCount}}</text>
+                </view>
+                <view class="goods-price">
+                  <image class="roco-icon" src="https://patchwiki.biligame.com/images/nrc/1/10/blxvp7k90uq3p8prz24feerler3yfsi.png" mode="aspectFit" />
+                  <text>{{g.price}}</text>
+                </view>
+              </view>
+            </view>
+            <text class="broadcast-countdown" wx:if="{{item.countdownText}}">⏰ {{item.countdownText}}</text>
+            <text class="broadcast-time" wx:if="{{item.time}}">{{item.time}}</text>
+          </view>
+          <text class="broadcast-arrow">▸</text>
+        </view>
+      </view>
+    </view>
+
     <!-- Empty state -->
     <view class="feed-empty" wx:if="{{announcements.length === 0 && isAdmin}}">
       <text class="feed-empty-icon">📭</text>
@@ -186,32 +230,6 @@
   <!-- Footer -->
   <view class="foot">
     <text wx:if="{{icp}}">{{icp}}</text>
-  </view>
-
-  <!-- Banner Edit Modal -->
-  <view class="modal-mask" wx:if="{{showBannerModal}}" bindtap="toggleBannerModal">
-    <view class="modal-box banner-modal" catchtap="preventClose">
-      <view class="modal-header">
-        <text class="modal-title">{{_l.editBanner}}</text>
-        <text class="modal-close" catchtap="toggleBannerModal">✕</text>
-      </view>
-      <view class="modal-body">
-        <view class="banner-preview" wx:if="{{bannerInput}}">
-          <image lazy-load class="preview-img" src="{{bannerInput}}" mode="aspectFill" />
-        </view>
-        <view class="banner-preview empty" wx:else>
-          <text>{{_l.noPreview}}</text>
-        </view>
-        <view class="banner-form">
-          <text class="form-label">{{_l.bannerInputLabel}}</text>
-          <textarea class="banner-input" style="height:160rpx;padding:20rpx;line-height:1.5;" placeholder="{{_l.bannerPlaceholder}}" placeholder-style="color:rgba(255,255,255,0.25)" value="{{bannerInput}}" bindinput="onBannerInput" maxlength="-1"></textarea>
-        </view>
-      </view>
-      <view class="modal-footer">
-        <button class="modal-cancel" catchtap="toggleBannerModal">{{_l.cancel || '取消'}}</button>
-        <button class="modal-save" catchtap="saveBanner" disabled="{{bannerSaving}}">{{bannerSaving ? _l.submitting : _l.confirmUpdate}}</button>
-      </view>
-    </view>
   </view>
 
   <!-- Video Player -->

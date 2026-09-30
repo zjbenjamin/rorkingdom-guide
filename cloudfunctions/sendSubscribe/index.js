@@ -16,16 +16,18 @@ const TEMPLATE_IDS_MAP = {
   'lNJaEuu3rrWx4iU3xtCfnsAnlZzVf6lthZD8zraTw1Y': 'merchant'
 }
 
-function formatDate(date) {
-  // 强制转为北京时间 (UTC+8)，不受服务器时区影响
+function formatDate(date, lang) {
+  // 按订阅者语言对应时区显示（zh +8 / en -5 / ja +9 / ko +9）
+  const TZ = { zh: 8, en: -5, ja: 9, ko: 9 }
+  const offsetHours = typeof TZ[lang] === 'number' ? TZ[lang] : 8
   const utc = date.getTime() + (date.getTimezoneOffset() * 60000)
-  const cn = new Date(utc + 8 * 3600000)
-  const y = cn.getFullYear()
-  const m = String(cn.getMonth() + 1).padStart(2, '0')
-  const d = String(cn.getDate()).padStart(2, '0')
-  const h = String(cn.getHours()).padStart(2, '0')
-  const min = String(cn.getMinutes()).padStart(2, '0')
-  return `${y}年${m}月${d}日 ${h}:${min}`
+  const local = new Date(utc + offsetHours * 3600000)
+  const y = local.getFullYear()
+  const m = String(local.getMonth() + 1).padStart(2, '0')
+  const d = String(local.getDate()).padStart(2, '0')
+  const h = String(local.getHours()).padStart(2, '0')
+  const min = String(local.getMinutes()).padStart(2, '0')
+  return `${y}-${m}-${d} ${h}:${min}`
 }
 
 function truncate(text, maxLen, fallback) {
@@ -35,8 +37,8 @@ function truncate(text, maxLen, fallback) {
   return s.substring(0, maxLen - 1) + '…'
 }
 
-function getDataPayload(type, title, content) {
-  const timeStr = formatDate(new Date())
+function getDataPayload(type, title, content, lang) {
+  const timeStr = formatDate(new Date(), lang)
   const safeTitle = truncate(title, 20, '')
   const safeContent = truncate(content, 20, '请前往小程序查看详情')
   
@@ -197,10 +199,9 @@ exports.main = async (event, context) => {
             const cleanPage = 'pages/swarm/swarm'
             const title = '大量出没: ' + (item.name || '精灵出没')
             const content = (item.location ? item.location + ' · ' : '') + (item.desc || '正在出没，速来围观')
-            const payload = getDataPayload('announcement', title, content)
             const tId = TEMPLATE_IDS['announcement']
-
             for (const s of uniqueSubs) {
+              const payload = getDataPayload('announcement', title, content, s.lang)
               const resObj = await doPush(s.openid, tId, cleanPage, payload, 'announcement')
               if (resObj.success) pushedCount++
             }
@@ -225,8 +226,8 @@ exports.main = async (event, context) => {
   if (touser && templateId) {
     try {
       const targetType = type || TEMPLATE_IDS_MAP[templateId] || 'announcement'
-      const payload = data || getDataPayload(targetType, title, content)
-      
+      const payload = data || getDataPayload(targetType, title, content, event.lang)
+
       const resObj = await doPush(touser, templateId, cleanPage, payload, targetType)
       return { success: resObj.success, sent: resObj.success ? 1 : 0, error: resObj.error }
     } catch (e) {
@@ -270,13 +271,14 @@ exports.main = async (event, context) => {
       }
     }
 
-    const payload = getDataPayload(type, title, content)
     let sentCount = 0
     let lastError = null
 
     for (const s of uniqueSubs) {
       // 用订阅者自身的类型来扣减次数，merchant_item 订阅者也能正确扣减
       const subType = s.type || type
+      // 时间按订阅者语言对应时区格式化
+      const payload = getDataPayload(type, title, content, s.lang)
       const resObj = await doPush(s.openid, targetTemplateId, cleanPage, payload, subType)
       if (resObj.success) {
         sentCount++

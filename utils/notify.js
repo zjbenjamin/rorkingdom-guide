@@ -123,6 +123,7 @@ function saveSubscription(type, itemName, callback) {
 function doSave(db, type, itemName, openid, callback) {
   var query = { openid: openid, type: type }
   if (itemName) query.itemName = itemName
+  var lang = require('./i18n').getLanguage() || 'zh'
 
   db.collection('subscribers').where(query).get()
     .then(function(res) {
@@ -130,7 +131,7 @@ function doSave(db, type, itemName, openid, callback) {
         var sub = res.data[0]
         var newCount = (sub.count || 0) + 1
         return db.collection('subscribers').doc(sub._id).update({
-          data: { count: newCount, status: 'active', updateTime: db.serverDate() }
+          data: { count: newCount, status: 'active', lang: lang, updateTime: db.serverDate() }
         })
       } else {
         var data = {
@@ -138,6 +139,7 @@ function doSave(db, type, itemName, openid, callback) {
           type: type,
           count: 1,
           status: 'active',
+          lang: lang,
           createTime: db.serverDate()
         }
         if (itemName) data.itemName = itemName

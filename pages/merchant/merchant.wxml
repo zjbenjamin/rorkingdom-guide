@@ -126,7 +126,7 @@
                     <view class="item-badge {{item.rarity==='普通'?'badge-normal':''}} {{item.rarity==='稀有'?'badge-rare':''}} {{item.rarity==='史诗'?'badge-epic':''}} {{item.rarity==='传说'?'badge-legend':''}}">{{item.rarity}}</view>
                     <image lazy-load wx:if="{{item.image}}" class="item-image" src="{{item.image}}" mode="aspectFill" catchtap="previewSellingItemImage" data-src="{{item.image}}" />
                     <text class="item-name">{{item.name}}</text>
-                    <text class="item-price">{{item.price}}{{t.currency || '洛克贝'}}</text>
+                    <view class="item-price"><image class="roco-icon" src="https://patchwiki.biligame.com/images/nrc/1/10/blxvp7k90uq3p8prz24feerler3yfsi.png" mode="aspectFit" /><text>{{item.price}}</text></view>
                     <text class="item-effect">{{item.effect}}</text>
                     <view class="item-limit-badge" wx:if="{{item.limitCount}}">限售 {{item.limitCount}}</view>
                     <view class="item-delete" wx:if="{{isAdmin}}" catchtap="deleteSellingItem" data-index="{{item._rawIndex}}">✕</view>
@@ -156,7 +156,7 @@
                     <view class="item-badge {{item.rarity==='普通'?'badge-normal':''}} {{item.rarity==='稀有'?'badge-rare':''}} {{item.rarity==='史诗'?'badge-epic':''}} {{item.rarity==='传说'?'badge-legend':''}}">{{item.rarity}}</view>
                     <image lazy-load wx:if="{{item.image}}" class="item-image" src="{{item.image}}" mode="aspectFill" catchtap="previewSellingItemImage" data-src="{{item.image}}" />
                     <text class="item-name">{{item.name}}</text>
-                    <text class="item-price">{{item.price}}{{t.currency || '洛克贝'}}</text>
+                    <view class="item-price"><image class="roco-icon" src="https://patchwiki.biligame.com/images/nrc/1/10/blxvp7k90uq3p8prz24feerler3yfsi.png" mode="aspectFit" /><text>{{item.price}}</text></view>
                     <text class="item-effect">{{item.effect}}</text>
                     <view class="item-limit-badge" wx:if="{{item.limitCount}}">限售 {{item.limitCount}}</view>
                     <view class="item-countdown-badge" wx:if="{{item.offlineDate}}">
@@ -199,7 +199,7 @@
             </view>
             <image lazy-load wx:if="{{item.image}}" class="item-image" src="{{item.image}}" mode="aspectFill" catchtap="previewItemImage" data-src="{{item.image}}" />
             <text class="item-name">{{item.name}}</text>
-            <text class="item-price">{{item.price}}{{t.currency || '洛克贝'}}</text>
+            <view class="item-price"><image class="roco-icon" src="https://patchwiki.biligame.com/images/nrc/1/10/blxvp7k90uq3p8prz24feerler3yfsi.png" mode="aspectFit" /><text>{{item.price}}</text></view>
             <text class="item-effect">{{item.effect}}</text>
             <text class="item-source" wx:if="{{item.source}}">{{item.source}}</text>
           </view>
@@ -225,7 +225,7 @@
               <view class="item-badge sub-item-badge {{item.rarity==='普通'?'badge-normal':''}} {{item.rarity==='稀有'?'badge-rare':''}} {{item.rarity==='史诗'?'badge-epic':''}} {{item.rarity==='传说'?'badge-legend':''}}">{{item.rarity}}</view>
               <view class="sub-item-info">
                 <text class="sub-item-name">{{item.name}}</text>
-                <text class="sub-item-price">{{item.price}}洛克贝</text>
+                <view class="sub-item-price"><image class="roco-icon sm" src="https://patchwiki.biligame.com/images/nrc/1/10/blxvp7k90uq3p8prz24feerler3yfsi.png" mode="aspectFit" /><text>{{item.price}}</text></view>
               </view>
             </view>
             <text class="unsub-btn" catchtap="subscribeItem" data-name="{{item.name}}">取消订阅</text>
@@ -369,7 +369,7 @@
                       </view>
                     </view>
                     <text class="item-name">{{item.name}}</text>
-                    <text class="item-price">{{item.price}}{{t.currency || '洛克贝'}}</text>
+                    <view class="item-price"><image class="roco-icon" src="https://patchwiki.biligame.com/images/nrc/1/10/blxvp7k90uq3p8prz24feerler3yfsi.png" mode="aspectFit" /><text>{{item.price}}</text></view>
                     <text class="item-effect">{{item.effect}}</text>
                     <view class="item-limit-badge" wx:if="{{item.limitCount}}">限售 {{item.limitCount}}</view>
                     <!-- 删除/下架商品 -->
@@ -491,7 +491,7 @@
               <image lazy-load wx:if="{{item.image}}" class="picker-card-image" src="{{item.image}}" mode="aspectFill" />
               <text class="picker-card-name">{{item.name}}</text>
               <text class="picker-card-effect">{{item.effect}}</text>
-              <text class="picker-card-price">{{item.price}}{{t.currency || '洛克贝'}}</text>
+              <view class="picker-card-price"><image class="roco-icon sm" src="https://patchwiki.biligame.com/images/nrc/1/10/blxvp7k90uq3p8prz24feerler3yfsi.png" mode="aspectFit" /><text>{{item.price}}</text></view>
             </view>
           </view>
         </scroll-view>

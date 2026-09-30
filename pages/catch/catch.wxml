@@ -247,40 +247,42 @@
         </view>
       </view>
 
-      <!-- 咕噜球列表按钮化 -->
+      <!-- 咕噜球列表 -->
       <view class="ball-visual-list">
-        <view wx:for="{{balls}}" wx:key="id" wx:if="{{item.count > 0}}">
-          <view class="ball-item-card {{pinnedBallIndex===index?'pinned':''}}" bindtap="toggleBallDesc" data-index="{{index}}">
-            <view class="ball-icon-circle">
-              <image wx:if="{{item.img}}" src="{{item.img}}" mode="aspectFit" style="width:100%; height:100%; border-radius:50%;" />
-              <text wx:else>{{item.icon}}</text>
-            </view>
-            <view class="ball-info-main">
-              <text class="ball-name-txt" style="color: {{item.color || '#fff'}};">{{item.name}}</text>
-              <!-- 价值标签：洛克贝 / CNY / 免费 -->
-              <view class="ball-value-tags">
-                <view class="value-tag roco" wx:if="{{item.price > 0}}">
-                  <image class="value-icon" src="https://r2.image-upload.app/ptImg/yhJkDL2B.png" mode="aspectFit" />
-                  <text>{{item.price}}</text>
-                </view>
-                <view class="value-tag cny" wx:if="{{item.cnyPrice > 0}}">
-                  <text>¥{{item.cnyPrice}}</text>
-                </view>
-                <view class="value-tag free" wx:if="{{item.price <= 0 && item.cnyPrice <= 0}}">
-                  <text>{{_l.catchFreeTag}}</text>
-                </view>
+        <view wx:for="{{balls}}" wx:key="id" wx:if="{{item.inbounded || item.count > 0 || item.freeCount > 0}}">
+          <view class="ball-item-card {{pinnedBallIndex===index?'pinned':''}} {{expandedBallIndex===index?'expanded':''}}" bindtap="toggleBallDesc" data-index="{{index}}">
+            <view class="ball-card-head">
+              <view class="ball-icon-circle">
+                <image wx:if="{{item.img}}" src="{{item.img}}" mode="aspectFill" class="ball-icon-img" />
+                <text wx:else>{{item.icon}}</text>
               </view>
-              <scroll-view scroll-y class="ball-desc-expanded" wx:if="{{expandedBallIndex === index && (item.rate || item.source)}}">
-                <view class="ball-desc-inner">
-                  <text wx:if="{{item.rate}}" class="ball-desc-rate">{{item.rate}}</text>
-                  <text wx:if="{{item.source}}" class="ball-desc-source">{{_l.catchSource}}: {{item.source}}</text>
-                  <view class="ball-meta-tags" wx:if="{{item.freeCount > 0 || (item.count - item.freeCount > 0)}}">
-                    <text class="tag buy" wx:if="{{item.count - item.freeCount > 0}}">{{_l.catchBuyTag}} x{{item.count - item.freeCount}}</text>
-                    <text class="tag free" wx:if="{{item.freeCount > 0}}">{{_l.catchFreeTag}} x{{item.freeCount}}</text>
+              <view class="ball-head-text">
+                <text class="ball-name-txt" style="color: {{item.color || '#fff'}};">{{item.name}}</text>
+                <view class="ball-value-tags">
+                  <view class="value-tag roco" wx:if="{{item.price > 0}}">
+                    <image class="value-icon" src="https://r2.image-upload.app/ptImg/yhJkDL2B.png" mode="aspectFit" />
+                    <text>{{item.price}}</text>
+                  </view>
+                  <view class="value-tag cny" wx:if="{{item.cnyPrice > 0}}">
+                    <text>{{item.cnyDisplay || item.cnyPrice}}</text>
+                  </view>
+                  <view class="value-tag free" wx:if="{{item.price <= 0 && item.cnyPrice <= 0}}">
+                    <text>{{_l.catchFreeTag}}</text>
                   </view>
                 </view>
-              </scroll-view>
+              </view>
             </view>
+            <!-- 简介区：展开时可见，固定高度上下滑 -->
+            <scroll-view scroll-y class="ball-desc-scroll {{expandedBallIndex===index?'open':''}}" catchtap="noop">
+              <view class="ball-desc-inner">
+                <text wx:if="{{item.rate}}" class="ball-desc-rate">{{item.rate}}</text>
+                <text wx:if="{{item.source}}" class="ball-desc-source">{{_l.catchSource}}: {{item.source}}</text>
+                <view class="ball-meta-tags" wx:if="{{item.freeCount > 0 || (item.count - item.freeCount > 0)}}">
+                  <text class="tag buy" wx:if="{{item.count - item.freeCount > 0}}">{{_l.catchBuyTag}} x{{item.count - item.freeCount}}</text>
+                  <text class="tag free" wx:if="{{item.freeCount > 0}}">{{_l.catchFreeTag}} x{{item.freeCount}}</text>
+                </view>
+              </view>
+            </scroll-view>
             <view class="ball-count-display">
               <text class="num">{{item.count}}</text>
               <text class="unit">{{_l.catchUnit}}</text>

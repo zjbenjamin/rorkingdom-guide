@@ -268,6 +268,9 @@ Page({
     siteConfig: { loginLogoUrl: '' },
     showLogShareBtn: true,
     bannerUrl: '',
+    bannerInput: '',
+    bannerItems: [''],
+    bannerPreviewUrls: [],
     bannerLoading: false,
     pageConfigs: [],
     editorMode: 'simple',
@@ -390,7 +393,13 @@ Page({
     if (!db) return
     db.collection('site_config').doc('banner').get()
       .then(function(res) {
-        self.setData({ bannerUrl: res.data.url || '' })
+        var d = res.data || {}
+        var urls = d.urls && d.urls.length ? d.urls : (d.url && d.url !== 'none' ? [d.url] : [])
+        urls = urls.map(function(s) { return (s || '').trim() }).filter(function(s) { return s && s !== 'none' })
+        self.setData({
+          bannerItems: urls.length ? urls : [''],
+          bannerPreviewUrls: urls
+        })
       })
       .catch(function(e) { console.error(e) })
   },
@@ -406,7 +415,7 @@ Page({
     else if (tab === 'subscribe') this.loadSubscribers()
     else if (tab === 'users') this.loadUsers()
     else if (tab === 'stats') this.loadStats()
-    else if (tab === 'pages') this.loadPageConfigs()
+    else if (tab === 'pages') { this.loadPageConfigs(); this.loadBanner() }
     else if (tab === 'balls') this.loadBallsConfig()
   },
   loadAnnouncements: function() {
@@ -458,23 +467,51 @@ Page({
   toggleBannerModal: function() {
     this.setData({ showBannerModal: !this.data.showBannerModal })
   },
-  onBannerInput: function(e) { this.setData({ bannerUrl: e.detail.value }) },
+  addBannerItem: function() {
+    var list = (this.data.bannerItems || []).slice()
+    list.push('')
+    this.setData({ bannerItems: list })
+  },
+  removeBannerItem: function(e) {
+    var idx = e.currentTarget.dataset.index
+    var list = (this.data.bannerItems || []).slice()
+    list.splice(idx, 1)
+    if (!list.length) list = ['']
+    var urls = list.map(function(s) { return (s || '').trim() }).filter(Boolean)
+    this.setData({ bannerItems: list, bannerPreviewUrls: urls })
+  },
+  onBannerItemInput: function(e) {
+    var idx = e.currentTarget.dataset.index
+    var list = (this.data.bannerItems || []).slice()
+    list[idx] = e.detail.value
+    var urls = list.map(function(s) { return (s || '').trim() }).filter(Boolean)
+    this.setData({ bannerItems: list, bannerPreviewUrls: urls })
+  },
+  onBannerInput: function(e) {
+    var val = e.detail.value || ''
+    var urls = val.split(/\n/).map(function(s) { return s.trim() }).filter(function(s) { return s && s !== 'none' })
+    this.setData({ bannerInput: val, bannerPreviewUrls: urls })
+  },
   saveBanner: function() {
     var self = this
     if (self.data.bannerLoading) return
-    var url = self.data.bannerUrl.trim()
-    if (!url) { wx.showToast({ title: '请输入图片链接', icon: 'none' }); return }
+    var urls = (self.data.bannerItems || [])
+      .map(function(s) { return (s || '').trim() })
+      .filter(function(s) { return s })
+    if (!urls.length) {
+      wx.showToast({ title: '请至少添加一张图片', icon: 'none' })
+      return
+    }
     self.setData({ bannerLoading: true })
-    db.collection('site_config').doc('banner').get()
+    var payload = {
+      url: urls[0],
+      urls: urls,
+      updateTime: db.serverDate()
+    }
+    db.collection('site_config').doc('banner').set({ data: payload })
       .then(function() {
-        return db.collection('site_config').doc('banner').update({ data: { url: url, updateTime: db.serverDate() } })
-      })
-      .catch(function() {
-        return db.collection('site_config').add({ data: { _id: 'banner', url: url, updateTime: db.serverDate() } })
-      })
-      .then(function() {
-        self.setData({ bannerLoading: false, showBannerModal: false })
-        wx.showToast({ title: '头图已保存到云端', icon: 'success' })
+        self.setData({ bannerLoading: false, bannerPreviewUrls: urls })
+        wx.showToast({ title: '头图已保存（' + urls.length + ' 张）', icon: 'success' })
       })
       .catch(function(err) {
         self.setData({ bannerLoading: false })
@@ -587,78 +624,49 @@ Page({
   },
   
     
-    togglePageMaintenance: function(e) {
-      var self = this;
-      var id = e.currentTarget.dataset.id;
-      if (id === 'captureImage') {
-        var currentVal = wx.getStorageSync('show_log_share_btn') !== false;
-        var newVal = !currentVal;
-        wx.setStorageSync('show_log_share_btn', newVal);
-        self.loadPageConfigs();
-        wx.showToast({ title: newVal ? '已开启' : '已关闭', icon: 'success' });
-        return;
-      }
-      if (!db) return;
-
-      db.collection('page_config').doc(id).get().then(function(res) {
-        var newVal = !res.data.maintenance;
-        wx.cloud.callFunction({
-          name: 'updatePageConfig',
-          data: { docId: id, updateData: { maintenance: newVal, updateTime: db.serverDate() } }
-        }).then(function(result) {
-          if (result.result && result.result.success) {
-            wx.showToast({ title: '设置成功', icon: 'success' });
-            self.loadPageConfigs();
-          } else {
-            wx.showToast({ title: '云函数更新失败', icon: 'none' });
-          }
-        }).catch(function(err) {
-          wx.showToast({ title: '调用失败，请先部署云函数 updatePageConfig', icon: 'none' });
-        });
-      }).catch(function(err) {
-        wx.cloud.callFunction({
-          name: 'updatePageConfig',
-          data: { docId: id, updateData: { maintenance: true, useCustom: false, updateTime: db.serverDate() } }
-        }).then(function(result) {
-          wx.showToast({ title: '初始化并设置成功', icon: 'success' });
-          self.loadPageConfigs();
-        }).catch(function(err2) {
-          wx.showToast({ title: '调用失败，请部署云函数', icon: 'none' });
-        });
-      });
+    // 直连数据库写 page_config，不依赖云函数部署
+    _savePageConfig: function(id, patch, okMsg) {
+      var self = this
+      if (!db) { wx.showToast({ title: '云环境未就绪', icon: 'none' }); return }
+      var data = Object.assign({}, patch, { updateTime: db.serverDate() })
+      db.collection('page_config').doc(id).set({ data: data })
+        .then(function() {
+          self.loadPageConfigs()
+          wx.showToast({ title: okMsg || '设置成功', icon: 'success' })
+        })
+        .catch(function(err) {
+          wx.showToast({ title: '保存失败：' + ((err && (err.errMsg || err.message)) || '请重试'), icon: 'none' })
+        })
     },
-
+    togglePageMaintenance: function(e) {
+      var self = this
+      var id = e.currentTarget.dataset.id
+      if (id === 'captureImage') {
+        var currentVal = wx.getStorageSync('show_log_share_btn') !== false
+        var newVal = !currentVal
+        wx.setStorageSync('show_log_share_btn', newVal)
+        self.loadPageConfigs()
+        wx.showToast({ title: newVal ? '已开启' : '已关闭', icon: 'success' })
+        return
+      }
+      if (!db) return
+      var list = self.data.pageConfigs || []
+      var cur = false
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].id === id) { cur = !!list[i].maintenance; break }
+      }
+      self._savePageConfig(id, { maintenance: !cur }, !cur ? '已设为维护中' : '已恢复运行')
+    },
     togglePageCustom: function(e) {
-      var self = this;
-      var id = e.currentTarget.dataset.id;
-      if (!db) return;
-
-      db.collection('page_config').doc(id).get().then(function(res) {
-        var newVal = !res.data.useCustom;
-        wx.cloud.callFunction({
-          name: 'updatePageConfig',
-          data: { docId: id, updateData: { useCustom: newVal, updateTime: db.serverDate() } }
-        }).then(function(result) {
-          if (result.result && result.result.success) {
-            wx.showToast({ title: '设置成功', icon: 'success' });
-            self.loadPageConfigs();
-          } else {
-            wx.showToast({ title: '云函数更新失败', icon: 'none' });
-          }
-        }).catch(function(err) {
-          wx.showToast({ title: '调用失败，请先部署云函数 updatePageConfig', icon: 'none' });
-        });
-      }).catch(function(err) {
-        wx.cloud.callFunction({
-          name: 'updatePageConfig',
-          data: { docId: id, updateData: { useCustom: true, maintenance: false, updateTime: db.serverDate() } }
-        }).then(function(result) {
-          wx.showToast({ title: '初始化并设置成功', icon: 'success' });
-          self.loadPageConfigs();
-        }).catch(function(err2) {
-          wx.showToast({ title: '调用失败，请部署云函数', icon: 'none' });
-        });
-      });
+      var self = this
+      var id = e.currentTarget.dataset.id
+      if (!db) return
+      var list = self.data.pageConfigs || []
+      var cur = false
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].id === id) { cur = !!list[i].useCustom; break }
+      }
+      self._savePageConfig(id, { useCustom: !cur }, '自定义已' + (!cur ? '开启' : '关闭'))
     },
 openModal: function(e) {
     var item = (e && e.currentTarget && e.currentTarget.dataset) ? e.currentTarget.dataset.item || null : null
@@ -1684,16 +1692,16 @@ openModal: function(e) {
       if(res.data && res.data.balls) {
         var cloudBalls = res.data.balls;
         var cloudMap = {};
-        for (var i = 0; i < cloudBalls.length; i++) { cloudMap[cloudBalls[i].id] = cloudBalls[i]; }
+        for (var i = 0; i < cloudBalls.length; i++) { cloudMap[String(cloudBalls[i].id)] = cloudBalls[i]; }
         var merged = [];
         for (var j = 0; j < defaultBalls.length; j++) {
-          merged.push(cloudMap[defaultBalls[j].id] || defaultBalls[j]);
+          merged.push(cloudMap[String(defaultBalls[j].id)] || defaultBalls[j]);
         }
         // 追加不在默认列表中的云端自定义球
         var defaultIds = {};
-        for (var k = 0; k < defaultBalls.length; k++) { defaultIds[defaultBalls[k].id] = true; }
+        for (var k = 0; k < defaultBalls.length; k++) { defaultIds[String(defaultBalls[k].id)] = true; }
         for (var m = 0; m < cloudBalls.length; m++) {
-          if (!defaultIds[cloudBalls[m].id]) {
+          if (!defaultIds[String(cloudBalls[m].id)]) {
             merged.push(cloudBalls[m]);
           }
         }
@@ -1840,26 +1848,48 @@ openModal: function(e) {
       wx.showToast({ title: '列表为空，未保存', icon: 'none' });
       return;
     }
-    var customCount = 0, specialCount = 0, buyCount = 0, craftCount = 0, activityCount = 0;
-    for (var i = 0; i < balls.length; i++) {
-      var b = balls[i];
-      if (b.isSpecial) specialCount++;
-      if (b.isBuy) buyCount++;
-      if (b.isCraft) craftCount++;
-      if (b.isActivity) activityCount++;
-      if (String(b.id).indexOf('ball_') === 0) customCount++;
-    }
     self.setData({ ballsSubmitting: true });
-    db.collection('site_config').doc('ball_images').set({
-      data: { balls: balls }
-    }).then(res => {
-      wx.setStorageSync('balls_config_updated', true);
-      self.setData({ ballsSubmitting: false });
-      wx.showModal({
-        title: '已保存到云端',
-        content: '共 ' + balls.length + ' 种球\n自定义 ' + customCount + ' · 购买 ' + buyCount + ' · 合成 ' + craftCount + ' · 特殊 ' + specialCount + ' · 活动 ' + activityCount + '\n捕捉统计将自动同步',
-        showCancel: false,
-        confirmText: '知道了'
+    // 先读云端再合并写入，避免本地列表不全时把已新增的球覆盖丢失
+    db.collection('site_config').doc('ball_images').get().then(function(res) {
+      var cloudBalls = (res.data && res.data.balls) ? res.data.balls : [];
+      var byId = {};
+      var i;
+      for (i = 0; i < balls.length; i++) {
+        byId[String(balls[i].id)] = balls[i];
+      }
+      var merged = balls.slice();
+      for (i = 0; i < cloudBalls.length; i++) {
+        var cid = String(cloudBalls[i].id);
+        if (!byId[cid]) {
+          // 云端有、本地没有：保留，防止误删/加载失败后保存丢球
+          merged.push(cloudBalls[i]);
+          byId[cid] = cloudBalls[i];
+        }
+      }
+      return merged;
+    }).catch(function() {
+      return balls;
+    }).then(function(merged) {
+      var customCount = 0, specialCount = 0, buyCount = 0, craftCount = 0, activityCount = 0;
+      for (var i = 0; i < merged.length; i++) {
+        var b = merged[i];
+        if (b.isSpecial) specialCount++;
+        if (b.isBuy) buyCount++;
+        if (b.isCraft) craftCount++;
+        if (b.isActivity) activityCount++;
+        if (String(b.id).indexOf('ball_') === 0) customCount++;
+      }
+      return db.collection('site_config').doc('ball_images').set({
+        data: { balls: merged }
+      }).then(function() {
+        wx.setStorageSync('balls_config_updated', true);
+        self.setData({ ballsSubmitting: false, ballsConfig: merged });
+        wx.showModal({
+          title: '已保存到云端',
+          content: '共 ' + merged.length + ' 种球\n自定义 ' + customCount + ' · 购买 ' + buyCount + ' · 合成 ' + craftCount + ' · 特殊 ' + specialCount + ' · 活动 ' + activityCount + '\n捕捉统计将自动同步',
+          showCancel: false,
+          confirmText: '知道了'
+        });
       });
     }).catch(err => {
       self.setData({ ballsSubmitting: false });

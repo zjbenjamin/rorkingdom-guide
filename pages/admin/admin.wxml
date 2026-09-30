@@ -269,6 +269,36 @@
             <view class="btn-edit" catchtap="togglePageCustom" data-id="{{item.id}}">自定义：{{item.useCustom ? '开' : '关'}}</view>
           </view>
         </view>
+
+        <!-- 首页头图（多图轮播） -->
+        <view class="section-header" style="margin-top: 32rpx;">
+          <text class="section-title">首页头图</text>
+          <view class="add-btn" bindtap="addBannerItem"><text>+ 添加图片</text></view>
+        </view>
+        <view class="card-item">
+          <view class="banner-preview" wx:if="{{bannerPreviewUrls.length > 0}}" style="width: 100%; height: 220rpx; border-radius: 12rpx; overflow: hidden; margin-bottom: 16rpx; border: 1rpx solid #30363d; background: #0d1117;">
+            <swiper style="width:100%;height:100%;" autoplay circular interval="3000">
+              <swiper-item wx:for="{{bannerPreviewUrls}}" wx:key="index">
+                <image lazy-load src="{{item}}" mode="aspectFill" style="width:100%;height:100%;" />
+              </swiper-item>
+            </swiper>
+          </view>
+          <view wx:else style="width: 100%; height: 120rpx; border-radius: 12rpx; margin-bottom: 16rpx; border: 1rpx dashed #30363d; background: #0d1117; display: flex; align-items: center; justify-content: center;">
+            <text style="font-size: 24rpx; color: #484f58;">暂无头图，点右上角添加</text>
+          </view>
+
+          <view wx:for="{{bannerItems}}" wx:key="index" style="display:flex;gap:12rpx;align-items:center;margin-bottom:12rpx;">
+            <text style="flex-shrink:0;font-size:22rpx;color:#484f58;width:48rpx;">{{index + 1}}.</text>
+            <input class="form-input" style="flex:1;min-width:0;box-sizing:border-box;background:rgba(0,0,0,0.2);border:1rpx solid rgba(255,255,255,0.1);border-radius:12rpx;padding:16rpx;color:#fff;font-size:22rpx;"
+              placeholder="图片 URL（https:// 或 cloud://）" value="{{item}}" bindinput="onBannerItemInput" data-index="{{index}}" />
+            <text bindtap="removeBannerItem" data-index="{{index}}" style="flex-shrink:0;color:#ff5050;font-size:22rpx;padding:8rpx 12rpx;">删除</text>
+          </view>
+
+          <view class="form-actions" style="margin-top: 24rpx;">
+            <button class="btn-primary" style="width:100%;height:80rpx;background:rgba(0,200,255,0.12);color:#00d4ff;border:1rpx solid rgba(0,200,255,0.2);border-radius:40rpx;display:flex;align-items:center;justify-content:center;font-size:28rpx;"
+              bindtap="saveBanner" disabled="{{bannerLoading}}">{{bannerLoading ? '保存中...' : '保存头图'}}</button>
+          </view>
+        </view>
       </view>
 
       <!-- 统计面板 -->
@@ -312,22 +342,6 @@
           </view>
           <view class="form-actions" style="margin-top: 40rpx;">
             <button class="btn-primary" style="width: 100%; height: 80rpx; background: rgba(0,200,255,0.12); color: #00d4ff; border: 1rpx solid rgba(0,200,255,0.2); border-radius: 40rpx; display: flex; align-items: center; justify-content: center; font-size: 28rpx;" bindtap="saveSiteConfig">保存设置</button>
-          </view>
-        </view>
-        <view class="form-card" style="padding: 32rpx; background: rgba(255,255,255,0.04); border-radius: 24rpx; border: 1rpx solid rgba(255,255,255,0.08); margin-bottom: 24rpx;">
-          <view class="form-group">
-            <text class="form-label" style="display: block; margin-bottom: 16rpx; color: rgba(255,255,255,0.7); font-size: 28rpx;">{{_l.editBanner || '编辑头图'}}</text>
-            <view class="banner-preview" wx:if="{{bannerUrl}}" style="width: 100%; height: 200rpx; border-radius: 8rpx; overflow: hidden; margin-bottom: 16rpx; border: 1rpx solid #30363d; background: #0d1117;">
-              <image lazy-load src="{{bannerUrl}}" mode="aspectFill" style="width: 100%; height: 100%;" />
-            </view>
-            <view wx:else style="width: 100%; height: 120rpx; border-radius: 8rpx; margin-bottom: 16rpx; border: 1rpx dashed #30363d; background: #0d1117; display: flex; align-items: center; justify-content: center;">
-              <text style="font-size: 24rpx; color: #484f58;">{{_l.noPreview || '暂无头图'}}</text>
-            </view>
-            <input class="form-input" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.2); border: 1rpx solid rgba(255,255,255,0.1); border-radius: 12rpx; padding: 20rpx; color: #fff;" placeholder="{{_l.bannerPlaceholder || '输入图片URL'}}" value="{{bannerUrl}}" bindinput="onBannerInput" />
-            <text class="form-hint" style="display: block; margin-top: 12rpx; font-size: 22rpx; color: rgba(255,255,255,0.4);">输入 {{_l.bannerInputLabel || '图片链接'}}，支持完整网络URL或cloud://云存储路径。输入none可隐藏头图</text>
-          </view>
-          <view class="form-actions" style="margin-top: 40rpx;">
-            <button class="btn-primary" style="width: 100%; height: 80rpx; background: rgba(0,200,255,0.12); color: #00d4ff; border: 1rpx solid rgba(0,200,255,0.2); border-radius: 40rpx; display: flex; align-items: center; justify-content: center; font-size: 28rpx;" bindtap="saveBanner" disabled="{{bannerLoading}}">{{bannerLoading ? _l.submitting : _l.confirmUpdate}}</button>
           </view>
         </view>
         <view class="form-card" style="padding: 32rpx; background: rgba(255,255,255,0.04); border-radius: 24rpx; border: 1rpx solid rgba(255,255,255,0.08); margin-bottom: 24rpx;">

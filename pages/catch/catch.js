@@ -5,23 +5,51 @@ var i18n = require('../../utils/i18n')
 var i18nBehavior = require('../../utils/i18nBehavior')
 
 // ... (rest of file continues with formatTime, etc.)
+// 评级标题：只去 emoji，保留中/英/日/韩文字
+function stripTitleEmoji(s) {
+  if (!s) return ''
+  return String(s)
+    .replace(/[\u2600-\u27BF\uFE0F\u200D]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDE4F]|\uD83E[\uDD00-\uDDFF]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+// 捕捉结果按当前语言显示（记录里可能存的是中文）
+function localizeResultText(raw, resultText) {
+  var s = (resultText || '').trim()
+  if (raw === 'success' || s.indexOf('异色捕获成功') >= 0 || s.indexOf('捕获成功') >= 0) {
+    return i18n.t('catchModalResultTitle')
+  }
+  if (raw === 'miss' || s === '歪了') return i18n.t('catchResultMiss')
+  if (s.indexOf('盘点') >= 0) return i18n.t('catchResultCheck')
+  if (s.indexOf('奇遇') >= 0 || raw === 'event') return i18n.t('catchResultEvent')
+  if (s.indexOf('微调') >= 0) return i18n.t('imgAdjust')
+  return s || i18n.t('imgUnknown')
+}
+
+// 耗时：优先用秒数按当前语言格式化
+function localizeElapsed(rec) {
+  if (rec && rec.elapsedSec != null && rec.elapsedSec !== '') {
+    return i18n.formatDuration(Number(rec.elapsedSec) || 0)
+  }
+  if (rec && rec.elapsedTimeText) {
+    return String(rec.elapsedTimeText).replace(/^(耗时|Duration|時間|소요 시간)\s*:?\s*/i, '').trim()
+  }
+  return ''
+}
+
 function formatTime(d) {
   if (!d) d = new Date()
-  var utc = d.getTime() + d.getTimezoneOffset() * 60000
-  var shanghai = new Date(utc + 8 * 3600000)
-  var y = shanghai.getFullYear()
-  var m = String(shanghai.getMonth() + 1).padStart(2, '0')
-  var day = String(shanghai.getDate()).padStart(2, '0')
-  var h = String(shanghai.getHours()).padStart(2, '0')
-  var min = String(shanghai.getMinutes()).padStart(2, '0')
-  var s = String(shanghai.getSeconds()).padStart(2, '0')
-  return y + '-' + m + '-' + day + ' ' + h + ':' + min + ':' + s
+  return i18n.formatDateTime(d) + ':' + (function() {
+    var dd = d instanceof Date ? d : new Date(d)
+    var utc = dd.getTime() + dd.getTimezoneOffset() * 60000
+    var local = new Date(utc + i18n.getLangTzOffsetHours() * 3600000)
+    return String(local.getSeconds()).padStart(2, '0')
+  })()
 }
 function formatTimeShort(d) {
   if (!d) d = new Date()
-  var utc = d.getTime() + d.getTimezoneOffset() * 60000
-  var shanghai = new Date(utc + 8 * 3600000)
-  return String(shanghai.getHours()).padStart(2, '0') + ':' + String(shanghai.getMinutes()).padStart(2, '0') + ':' + String(shanghai.getSeconds()).padStart(2, '0')
+  return i18n.formatTimeHMS(d)
 }
 Page({
   behaviors: [i18nBehavior],
@@ -135,16 +163,16 @@ Page({
         if (res.data && res.data.balls && res.data.balls.length > 0) {
           var cloudBalls = res.data.balls;
           var cloudMap = {};
-          for (var i = 0; i < cloudBalls.length; i++) { cloudMap[cloudBalls[i].id] = cloudBalls[i]; }
+          for (var i = 0; i < cloudBalls.length; i++) { cloudMap[String(cloudBalls[i].id)] = cloudBalls[i]; }
           var merged = [];
           var defaultIds = {};
           for (var j = 0; j < defaultBalls.length; j++) {
-            defaultIds[defaultBalls[j].id] = true;
-            merged.push(cloudMap[defaultBalls[j].id] || defaultBalls[j]);
+            defaultIds[String(defaultBalls[j].id)] = true;
+            merged.push(cloudMap[String(defaultBalls[j].id)] || defaultBalls[j]);
           }
           // 云端自定义球（管理后台新增）必须并入，否则捕捉统计看不到
           for (var k = 0; k < cloudBalls.length; k++) {
-            if (!defaultIds[cloudBalls[k].id]) merged.push(cloudBalls[k]);
+            if (!defaultIds[String(cloudBalls[k].id)]) merged.push(cloudBalls[k]);
           }
           self.syncBallsConfig(merged);
         } else {
@@ -164,8 +192,11 @@ Page({
     var self = this;
     var localBalls = wx.getStorageSync('catch_balls') || [];
     var localMap = {};
+    var localByName = {};
     for (var i = 0; i < localBalls.length; i++) {
-      localMap[localBalls[i].id] = localBalls[i];
+      var lbItem = localBalls[i];
+      localMap[String(lbItem.id)] = lbItem;
+      if (lbItem.name) localByName[lbItem.name] = lbItem;
     }
 
     var mergedBalls = [];
@@ -175,10 +206,17 @@ Page({
     // 活动赠：合成区可赠送的球；特殊区活动赠仅可可果球
     var craftActivityBalls = [];
     var cnyActivityBalls = [];
+    // 仅展示「手动入库过」的球：入库记录里的，或本地仍有库存的
+    var inboundedNames = {};
+    var hist = wx.getStorageSync('special_history') || [];
+    for (var hi = 0; hi < hist.length; hi++) {
+      if (hist[hi] && hist[hi].ball) inboundedNames[hist[hi].ball] = true;
+    }
 
     for (var j = 0; j < cloudBalls.length; j++) {
       var cb = cloudBalls[j];
-      var lb = localMap[cb.id] || { count: 0, freeCount: 0 };
+      // id 可能数字/字符串不一致，按 id + 名称兜底找回本地库存
+      var lb = localMap[String(cb.id)] || localByName[cb.name] || { count: 0, freeCount: 0 };
       var rateDesc = cb.desc || cb.rate || '';
       // price=洛克贝、cnyPrice=CNY，互不换算；旧数据特殊球把 CNY 记在 price
       var rocoPrice = cb.price || 0;
@@ -197,12 +235,17 @@ Page({
         rate: rateDesc,
         price: rocoPrice,
         cnyPrice: cnyPrice,
+        // 按当前语言显示当地货币（CNY 自动换算）
+        cnyDisplay: cnyPrice > 0 ? i18n.formatCny(cnyPrice) : '',
         img: cb.img || lb.img || '',
         source: cb.source || '',
         isBuy: !!cb.isBuy,
         isCraft: !!cb.isCraft,
         isSpecial: !!cb.isSpecial,
-        isActivity: !!cb.isActivity
+        isActivity: !!cb.isActivity,
+        isCustom: String(cb.id).indexOf('ball_') === 0,
+        // 手动入库过（或仍有库存）才在仓库展示
+        inbounded: !!inboundedNames[cb.name] || !!(lb.count > 0 || lb.freeCount > 0)
       });
       if (cb.isBuy) buyBalls.push(cb.name);
       if (cb.isCraft) craftBalls.push(cb.name);
@@ -254,6 +297,7 @@ Page({
       specialBall: (keep && list.indexOf(keep) >= 0) ? keep : first
     })
   },
+  noop: function() {},
   toggleBallDesc: function(e) {
     var index = e.currentTarget.dataset.index;
     if (this.data.expandedBallIndex === index) {
@@ -268,6 +312,13 @@ Page({
     this.setData({
       buildTime: formatTime(n)
     })
+    // 语言切换后刷新当地货币显示
+    var balls = (this.data.balls || []).map(function(b) {
+      var copy = Object.assign({}, b)
+      copy.cnyDisplay = (copy.cnyPrice > 0) ? i18n.formatCny(copy.cnyPrice) : ''
+      return copy
+    })
+    if (balls.length) this.setData({ balls: balls })
     if (wx.getStorageSync('balls_config_updated')) {
       wx.removeStorageSync('balls_config_updated');
       this.fetchCloudBalls();
@@ -550,18 +601,19 @@ Page({
     var autoTag = ' ' + i18n.i18n[i18n.getLanguage()].countdownAuto;
     var resultElapsedAuto = (self.data.resultElapsedTime || '').indexOf(autoTag) >= 0;
     var resultElapsedTime = self.data.resultElapsedTime || '';
+    var resultElapsedSec = null;
     if (!resultElapsedTime || resultElapsedTime.indexOf(autoTag) >= 0) {
       if (self.data.captureStartTime) {
-        var elapsed = Math.floor((Date.now() - self.data.captureStartTime) / 1000);
-        resultElapsedTime = i18n.formatDuration(elapsed);
+        resultElapsedSec = Math.floor((Date.now() - self.data.captureStartTime) / 1000);
+        resultElapsedTime = i18n.formatDuration(resultElapsedSec);
         resultElapsedAuto = true;
       }
     } else if (resultElapsedTime) {
-      var autoTag = ' ' + i18n.i18n[i18n.getLanguage()].countdownAuto;
-      resultElapsedTime = resultElapsedTime.replace(autoTag, '')
+      var autoTag2 = ' ' + i18n.i18n[i18n.getLanguage()].countdownAuto;
+      resultElapsedTime = resultElapsedTime.replace(autoTag2, '')
       resultElapsedAuto = false;
     }
-    self.setData({ balls: balls, totalBallUsed: totalBallUsed, usedBallTotal: newUsedBallTotal, hasActiveBalls: hasActive, canStartCapture: self.data.wealthSet && hasActive, lastUsedCount: totalUsedCount, lastUsedBallName: lastUsedStr, _resultElapsedTime: resultElapsedTime, _resultElapsedAuto: resultElapsedAuto, _resultMixedPetNames: resultMixedPetNames, _resultTargetPet: resultTargetPet });
+    self.setData({ balls: balls, totalBallUsed: totalBallUsed, usedBallTotal: newUsedBallTotal, hasActiveBalls: hasActive, canStartCapture: self.data.wealthSet && hasActive, lastUsedCount: totalUsedCount, lastUsedBallName: lastUsedStr, _resultElapsedTime: resultElapsedTime, _resultElapsedSec: resultElapsedSec, _resultElapsedAuto: resultElapsedAuto, _resultMixedPetNames: resultMixedPetNames, _resultTargetPet: resultTargetPet });
     if (gainVal !== 0) {
       var newGains = self.data.totalGains + gainVal
       wx.setStorageSync('total_gains', newGains)
@@ -588,13 +640,15 @@ Page({
   _buildRecord: function(resultType) {
     var self = this;
     var result = resultType || self.data.result;
-    var usedStr = self.data.lastUsedBallName && self.data.lastUsedBallName.length > 2 ? self.data.lastUsedBallName : '未使用球';
-    var resultText = result === 'success' ? '异色捕获成功' : '歪了';
+    var usedStr = self.data.lastUsedBallName && self.data.lastUsedBallName.length > 2 ? self.data.lastUsedBallName : i18n.t('imgNoBallsUsed');
     var record = {
-      time: formatTimeShort(), balls: usedStr, result: resultText,
+      time: formatTimeShort(), balls: usedStr,
+      result: localizeResultText(result, result === 'success' ? '异色捕获成功' : '歪了'),
       remark: self.data.resultRemark || '', total: 1, cost: 0,
       pet: self.data.resultPetName || '', petImageUrl: self.data.resultPetImageUrl || '',
-      resultRaw: result, elapsedTimeText: self.data._resultElapsedTime ? '耗时: ' + self.data._resultElapsedTime : '',
+      resultRaw: result,
+      elapsedSec: self.data._resultElapsedSec != null ? self.data._resultElapsedSec : null,
+      elapsedTimeText: self.data._resultElapsedTime ? i18n.t('clipDuration') + ': ' + self.data._resultElapsedTime : '',
       ballImageUrl: self._lastUsedBallImg || '',
       encounters: self.data.carnivalCount + self.data.luckyBoxCount,
       brushMode: self.data.brushMode || 'single',
@@ -835,11 +889,11 @@ Page({
       var totalE = self.data.carnivalCount + self.data.luckyBoxCount;
       if (totalE === 0 && last && last.encounters !== undefined) totalE = last.encounters;
       ctx.font = 'bold 13px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillText(i18n.t('imgEncounters'), width/2 + 16, 115);
-      ctx.fillStyle = '#e6edf3'; ctx.font = '13px sans-serif'; ctx.fillText(totalE + ' ' + i18n.t('imgBallsUnit').trim(), width/2 + 16, 135);
+      ctx.fillStyle = '#e6edf3'; ctx.font = '13px sans-serif'; ctx.fillText(totalE + ' ' + i18n.t('imgEncounterUnit'), width/2 + 16, 135);
       
       ctx.font = 'bold 13px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillText(i18n.t('imgLuckRating'), 36, 175);
       ctx.fillStyle = '#ffab40'; ctx.font = 'bold 14px sans-serif';
-      ctx.fillText((self.data.userTitle||'').replace(/[^\u4e00-\u9fa5]/g, ''), 36, 195);
+      ctx.fillText(stripTitleEmoji(self.data.userTitle || ''), 36, 195);
       
       ctx.font = 'bold 13px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillText(i18n.t('imgProfitLoss'), width/2 + 16, 175);
       // 总盈亏数值 + 洛克贝标识
@@ -859,7 +913,7 @@ Page({
         var isGain = self.data.accumulatedWealth >= 0;
         ctx.font = 'bold 13px sans-serif';
         ctx.fillStyle = isGain ? '#3fb950' : '#f85149';
-        ctx.fillText((isGain ? i18n.t('imgProfit') : i18n.t('imgLoss')) + Math.abs(self.data.accumulatedWealth), plTextX, plY);
+        ctx.fillText((isGain ? i18n.t('imgProfit') : i18n.t('imgLoss')) + ' ' + Math.abs(self.data.accumulatedWealth), plTextX, plY);
       }
       
       // ─── 6. 历史记录详情 ───
@@ -893,7 +947,7 @@ Page({
       ctx.fillText(statusLabel, 36, 320);
       var resText = last.result || i18n.t('imgUnknown');
       ctx.fillStyle = last.resultRaw === 'success' ? '#4ade80' : (last.resultRaw === 'miss' ? '#f87171' : '#ffffff');
-      var cleanRes = resText.indexOf('(')>-1 ? resText.substring(0, resText.indexOf('(')).trim() : resText;
+      var cleanRes = localizeResultText(last.resultRaw, resText);
       var statusValueX = 36 + statusLabelW + 10;
       ctx.fillText(cleanRes, statusValueX, 320);
       
@@ -943,11 +997,12 @@ Page({
         ctx.fillText(i18n.t('imgNotFilled'), 106, petNameY);
       }
       
-      if (last.elapsedTimeText) {
+      var etFull = localizeElapsed(last);
+      if (etFull) {
         ctx.fillStyle = '#94a3b8';
         ctx.fillText(i18n.t('imgCatchDuration'), width/2 - 4, petNameY);
         ctx.fillStyle = '#ffffff';
-        var et = last.elapsedTimeText.replace('耗时: ', '').trim() || i18n.t('imgUnknown');
+        var et = etFull || i18n.t('imgUnknown');
         if (last.elapsedAuto) et += ' ' + ((i18n.i18n[i18n.getLanguage()] || {}).countdownAuto || '(自动)');
         ctx.font = '12px sans-serif';
         var maxEtW = width - 40 - (width/2 + 70) - 4;
@@ -980,10 +1035,16 @@ Page({
           inlineX += bs + 6;
         }
         ctx.font = '14px sans-serif'; ctx.fillStyle = '#ffffff';
-        ctx.fillText(ball.name, inlineX, inlineY);
-        var nw = ctx.measureText(ball.name).width;
+        var maxNameW = width - 40 - inlineX - 70;
+        var drawName = ball.name;
+        while (drawName.length > 1 && ctx.measureText(drawName).width > maxNameW) {
+          drawName = drawName.slice(0, -1);
+        }
+        if (drawName !== ball.name) drawName += '…';
+        ctx.fillText(drawName, inlineX, inlineY);
+        var nw = ctx.measureText(drawName).width;
         ctx.font = 'bold 14px sans-serif'; ctx.fillStyle = ball.count > 0 ? '#00d4ff' : 'rgba(255,255,255,0.35)';
-        ctx.fillText('  x ' + ball.count + i18n.t('imgBallsUnit'), inlineX + nw, inlineY);
+        ctx.fillText('  x' + ball.count, inlineX + nw + 8, inlineY);
       } else if (parsedBalls.length > 1) {
         var colW = (width - 90) / 2;
         for (var bj = 0; bj < parsedBalls.length; bj++) {
@@ -1001,12 +1062,18 @@ Page({
           }
           var textX = bx + (ball.img ? bs + 4 : 0);
           ctx.font = '12px sans-serif'; ctx.fillStyle = '#e2e8f0';
-          ctx.fillText(ball.name, textX, textY);
+          // 名称限宽，避免与数量/下一列重叠
+          var maxNameW2 = colW - (ball.img ? bs + 4 : 0) - 56;
+          var drawName2 = ball.name;
+          while (drawName2.length > 1 && ctx.measureText(drawName2).width > maxNameW2) {
+            drawName2 = drawName2.slice(0, -1);
+          }
+          if (drawName2 !== ball.name) drawName2 += '…';
+          ctx.fillText(drawName2, textX, textY);
+          var nameW = ctx.measureText(drawName2).width;
           ctx.font = 'bold 12px sans-serif';
           ctx.fillStyle = ball.count > 0 ? '#00d4ff' : 'rgba(255,255,255,0.35)';
-          var countStr = ' x ' + ball.count + i18n.t('imgBallsUnit');
-          var nameW = ctx.measureText(ball.name).width;
-          ctx.fillText(countStr, textX + nameW, textY);
+          ctx.fillText('x' + ball.count, textX + nameW + 8, textY);
         }
       } else {
         ctx.fillStyle = '#ffffff';
@@ -1094,15 +1161,15 @@ Page({
     
     var text = i18n.t('clipTitle') + '\n' +
                '【' + i18n.t('clipTime') + '】' + (last.time || last.date || '') + '\n' +
-               '【' + i18n.t('clipStatus') + '】' + (last.result || i18n.t('imgUnknown')) + '\n' +
+               '【' + i18n.t('clipStatus') + '】' + localizeResultText(last.resultRaw, last.result) + '\n' +
                brushLabel +
                petDisplay +
                '【' + i18n.t('clipCost') + '】' + (last.balls || i18n.t('imgNoBallsUsed')) + '\n' +
-               '【' + i18n.t('clipDuration') + '】' + (last.elapsedTimeText ? last.elapsedTimeText.replace('耗时: ', '') : i18n.t('imgUnknown')) + '\n\n' +
+               '【' + i18n.t('clipDuration') + '】' + (localizeElapsed(last) || i18n.t('imgUnknown')) + '\n\n' +
                i18n.t('clipStats') + '\n' +
                '【' + i18n.t('clipTime') + '】' + this.data.buildTime + '\n' +
-               '【' + i18n.t('clipEncounters') + '】' + (this.data.carnivalCount + this.data.luckyBoxCount) + ' ' + i18n.t('imgBallsUnit').trim() + '\n' +
-               '【' + i18n.t('clipLuck') + '】' + (this.data.userTitle || '').replace(/[^\u4e00-\u9fa5]/g, '') + '\n' +
+               '【' + i18n.t('clipEncounters') + '】' + (this.data.carnivalCount + this.data.luckyBoxCount) + ' ' + i18n.t('imgEncounterUnit') + '\n' +
+               '【' + i18n.t('clipLuck') + '】' + stripTitleEmoji(this.data.userTitle || '') + '\n' +
                '【' + i18n.t('clipProfit') + '】' + ((this.data.accumulatedWealth === 0 || this.data.accumulatedWealth === '0') ? i18n.t('imgBreakEven') : ((this.data.accumulatedWealth >= 0 ? '+' : '') + this.data.accumulatedWealth + ' ' + i18n.t('currency')));
                
     wx.setClipboardData({
@@ -1329,6 +1396,19 @@ Page({
   },
   onAddCarnival: function() {
     var self = this
+    // 点击可选是否异色
+    wx.showModal({
+      title: '月陨流星雨',
+      content: '本次流星雨是否异色？',
+      confirmText: '异色',
+      cancelText: '非异色',
+      success: function(res) {
+        self._recordCarnival(!!res.confirm, '')
+      }
+    })
+  },
+  _recordCarnival: function(isShiny, ballName) {
+    var self = this
     // 长时无操作(>30min)则重置计时
     if (self.data.captureStartTime && Date.now() - self.data.captureStartTime > 1800000) {
       self.setData({ captureStartTime: 0 });
@@ -1336,15 +1416,16 @@ Page({
     if (!self.data.captureStartTime) self.setData({ captureStartTime: Date.now() });
     var c = self.data.carnivalCount + 1
     var tc = self.data.totalCatches + 1
-    var sc = self.data.successCatches + 1
+    var sc = self.data.successCatches + (isShiny ? 1 : 0)
     wx.setStorageSync('carnival_count', c)
     wx.setStorageSync('total_catches', tc)
     wx.setStorageSync('success_catches', sc)
     self.setData({ carnivalCount: c, totalCatches: tc, successCatches: sc, captureAnim: true })
     setTimeout(function() { self.setData({ captureAnim: false }) }, 600)
-    self.addEncounterRecord('🌟 月陨流星雨', '🌟', c)
+    var label = '🌟 月陨流星雨' + (ballName ? '(' + ballName + ')' : '') + (isShiny ? '(异色)' : '')
+    self.addEncounterRecord(label, '🌟', c)
     self.triggerFairytaleParticles()
-    wx.showToast({ title: '🌟 月陨流星雨', icon: 'none' })
+    wx.showToast({ title: label, icon: 'none' })
   },
   onCarnivalLongPress: function() {
     var self = this
@@ -1609,7 +1690,7 @@ Page({
       success: function(res) {
         if (res.confirm) {
           var balls = self.data.balls.map(function(b) {
-            return { id: b.id, name: b.name, color: b.color, count: 0, freeCount: 0, rate: b.rate, price: b.price, cnyPrice: b.cnyPrice || 0, isBuy: b.isBuy, isCraft: b.isCraft, isSpecial: b.isSpecial, isActivity: b.isActivity, icon: b.icon, img: b.img, source: b.source }
+            return { id: b.id, name: b.name, color: b.color, count: 0, freeCount: 0, rate: b.rate, price: b.price, cnyPrice: b.cnyPrice || 0, cnyDisplay: b.cnyDisplay || '', isBuy: b.isBuy, isCraft: b.isCraft, isSpecial: b.isSpecial, isActivity: b.isActivity, isCustom: b.isCustom, inbounded: b.inbounded, icon: b.icon, img: b.img, source: b.source }
           })
           wx.removeStorageSync('special_history')
           wx.removeStorageSync('used_ball_total')
@@ -1779,7 +1860,8 @@ Page({
   },
   updateGemCost: function() {
     var gemCost = Math.ceil(this.data.totalCosts / 10)
-    var cnyCost = (gemCost / 10).toFixed(1)
+    // CNY 按当前语言换算展示
+    var cnyCost = i18n.formatCny(gemCost / 10)
     this.setData({ gemCost: gemCost, cnyCost: cnyCost })
   },
   onSelectBall: function(e) {
@@ -1909,6 +1991,7 @@ Page({
     for (var i = 0; i < balls.length; i++) {
       if (balls[i].name === ballName) {
         balls[i].count += v
+        balls[i].inbounded = true
         if (t === '合成' || t === '活动') balls[i].freeCount += v
         break
       }

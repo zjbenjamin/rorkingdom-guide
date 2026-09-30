@@ -58,6 +58,7 @@ function getLoginLabels(lang) {
     notifyMerchant: pick('notifyMerchant', pick('notifyNameMerchant', '商人')),
     notifyMerchantDesc: pick('notifyMerchantDesc', '远行商人上新提醒'),
     notifyNa: pick('notifyNa', '未配置'),
+    reset: pick('notifyReset', '重置'),
     adminPanel: pick('adminPanel', '管理后台'),
     deleteAccount: pick('deleteAccount', '注销账户'),
     langLabel: pick('langLabel', '语言'),
@@ -377,6 +378,70 @@ Page({
       }
     }
     self.setData({ notifyConfigured: configured })
+  },
+  // 订阅一次通知（+ 按钮）
+  onNotifyAdd: function(e) {
+    var self = this
+    var type = e.currentTarget.dataset.type
+    if (!type || self.data.notifyAdding) return
+    self.setData({ notifyAdding: true })
+    var notify = require('../../utils/notify')
+    notify.requestAndSave([type], function(err, result) {
+      self.setData({ notifyAdding: false })
+      if (err) {
+        if (!err.noConfig) {
+          wx.showToast({ title: '订阅失败', icon: 'none' })
+        }
+        return
+      }
+      if (result && result[type] === 'accept') {
+        wx.showToast({ title: '订阅成功 +1', icon: 'success' })
+        self.loadNotifyStatus()
+      } else {
+        wx.showToast({ title: '未允许订阅', icon: 'none' })
+      }
+    })
+  },
+  // 重置该类型订阅次数（仅当前用户）
+  onResetSubscribe: function(e) {
+    var self = this
+    var type = e.currentTarget.dataset.type
+    if (!type) return
+    wx.showModal({
+      title: '重置订阅',
+      content: '确定清空「' + type + '」的订阅次数？',
+      success: function(res) {
+        if (!res.confirm) return
+        if (!wx.cloud) {
+          wx.showToast({ title: '云环境不可用', icon: 'none' })
+          return
+        }
+        var notify = require('../../utils/notify')
+        notify.resolveOpenid(function(openid) {
+          if (!openid) {
+            wx.showToast({ title: '获取用户失败', icon: 'none' })
+            return
+          }
+          var db = wx.cloud.database()
+          db.collection('subscribers').where({ openid: openid, type: type }).update({
+            data: { count: 0, status: 'expired', updateTime: db.serverDate() }
+          }).then(function() {
+            wx.showToast({ title: '已重置', icon: 'success' })
+            self.loadNotifyStatus()
+          }).catch(function() {
+            wx.showToast({ title: '重置失败', icon: 'none' })
+          })
+        })
+      }
+    })
+  },
+  onNotifySetting: function() {
+    var self = this
+    if (wx.openSetting) {
+      wx.openSetting({
+        success: function() { self.loadNotifyStatus() }
+      })
+    }
   },
   goAdmin: function() { wx.navigateTo({ url: '/pages/admin/admin' }) },
   showPrivacy: function() { wx.navigateTo({ url: '/pages/privacy/privacy?type=privacy' }) },

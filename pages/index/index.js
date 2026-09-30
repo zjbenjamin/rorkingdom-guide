@@ -13,7 +13,9 @@ Page({
   data: {
     currentLang: 'zh',
     bannerUrl: '',
+    bannerUrls: [],
     bannerFallback: '',
+    broadcastList: [],
     announcements: [],
     subscribeConfig: {},
     subscribedAnnouncement: false,
@@ -60,9 +62,32 @@ Page({
     self.loadAnnouncements()
     self.loadBanner()
     self.loadIcp()
+    self.loadBroadcast()
     self.checkSubscription()
     // 启动倒计时刷新
-    self._countdownTimer = setInterval(function() { self.updateCountdowns() }, 1000)
+    self._countdownTimer = setInterval(function() {
+      self.updateCountdowns()
+      self.updateBroadcastCountdown()
+    }, 1000)
+    self.updateBroadcastCountdown()
+  },
+  updateBroadcastCountdown: function() {
+    var list = this.data.broadcastList || []
+    if (!list.length) return
+    var changed = false
+    var now = Date.now()
+    for (var i = 0; i < list.length; i++) {
+      if (!list[i].offlineTs) continue
+      var diff = list[i].offlineTs - now
+      var text = diff > 0
+        ? (i18n.formatCountdown(diff, 'countdownOnline', 'countdownEnded') || '')
+        : (i18n.i18n[i18n.getLanguage()].countdownEnded || '已结束')
+      if (list[i].countdownText !== text) {
+        list[i].countdownText = text
+        changed = true
+      }
+    }
+    if (changed) this.setData({ broadcastList: list })
   },
   switchLang: function(e) {
     var lang = e.currentTarget.dataset.lang
@@ -79,25 +104,146 @@ Page({
       if (isAdmin) self.setData({ isAdmin: true })
     })
   },
+  // 【ROCOKINGDOM广播站】大量出没 + 远行商人上架同步展示
+  loadBroadcast: function() {
+    var self = this
+    if (!db) {
+      self.setData({ broadcastList: [] })
+      return
+    }
+    var list = []
+    var pending = 2
+    var done = function() {
+      pending--
+      if (pending <= 0) {
+        list.sort(function(a, b) {
+          if (a.sortKey !== b.sortKey) return b.sortKey - a.sortKey
+          return 0
+        })
+        self.setData({ broadcastList: list })
+      }
+    }
+    // 大量出没（进行中/即将）
+    db.collection('swarms').orderBy('createTime', 'desc').limit(30).get()
+      .then(function(res) {
+        var now = Date.now()
+        var rows = res.data || []
+        for (var i = 0; i < rows.length; i++) {
+          var s = rows[i]
+          if (s.status !== 1 && s.status !== '1') continue
+          var startStr = s.startDate ? (s.startDate + ' ' + (s.startTime || '00:00:00')) : ''
+          var endStr = s.endDate ? (s.endDate + ' ' + (s.endTime || '23:59:59')) : ''
+          var start = startStr ? new Date(startStr.replace(/-/g, '/')).getTime() : 0
+          var end = endStr ? new Date(endStr.replace(/-/g, '/')).getTime() : Infinity
+          if (end < now) continue // 过期不展示
+          var active = start <= now
+          var timeText = ''
+          if (startStr) timeText = (s.startDate || '') + (s.startTime ? ' ' + s.startTime : '') + (s.endDate ? ' ~ ' + s.endDate + (s.endTime ? ' ' + s.endTime : '') : '')
+          list.push({
+            type: 'swarm',
+            typeLabel: '出没',
+            title: (s.name || '精灵出没'),
+            desc: (s.location ? s.location + (s.desc ? ' · ' + s.desc : '') : (s.desc || '')),
+            time: timeText,
+            badge: active ? '正在出没' : '即将出没',
+            sortKey: active ? 2000000000000 - Math.abs(now - start) : start
+          })
+        }
+        done()
+      })
+      .catch(function() { done() })
+    // 远行商人在售（仅 currentSelling，不读商品库）
+    db.collection('page_config').doc('merchant').get()
+      .then(function(res) {
+        var d = res.data || {}
+        var selling = d.currentSelling || ''
+        var items = []
+        if (typeof selling === 'string' && selling) {
+          var now = Date.now()
+          var lines = selling.split('\n')
+          for (var i = 0; i < lines.length; i++) {
+            var line = lines[i].trim()
+            if (!line) continue
+            var parts = line.split('|')
+            if (!parts[0] || !parts[0].trim()) continue
+            // 过滤已下架：offlineDate 在过去
+            var offlineDate = (parts.length > 7) ? (parts[7] || '').trim() : ''
+            var offlineTimeStr = (parts.length > 8) ? (parts[8] || '').trim() : '23:59'
+            if (offlineDate) {
+              var endStr = offlineDate + ' ' + (offlineTimeStr === '23:59' ? '23:59:59' : offlineTimeStr + ':00')
+              var endTime = new Date(endStr.replace(/-/g, '/')).getTime()
+              if (!isNaN(endTime) && now >= endTime) continue
+            }
+            var price = parseInt(parts[1]) || 0
+            var limitCount = (parts.length > 6) ? (parts[6] || '').trim() : ''
+            items.push({
+              name: parts[0].trim(),
+              price: price,
+              effect: (parts.length > 2) ? parts[2].trim() : '',
+              limitCount: limitCount,
+              offlineDate: offlineDate,
+              offlineTimeStr: offlineTimeStr
+            })
+          }
+        }
+        if (!items.length) { done(); return }
+        // 汇总最近下架时间，给条目算倒计时
+        var soonest = null
+        for (var k = 0; k < items.length; k++) {
+          if (!items[k].offlineDate) continue
+          var ot = items[k].offlineDate + ' ' + (items[k].offlineTimeStr === '23:59' ? '23:59:59' : items[k].offlineTimeStr + ':00')
+          var ts = new Date(ot.replace(/-/g, '/')).getTime()
+          if (!isNaN(ts) && (!soonest || ts < soonest)) soonest = ts
+        }
+        list.push({
+          type: 'merchant',
+          typeLabel: '商人',
+          title: '远行商人上架',
+          desc: '',
+          items: items,
+          time: '',
+          badge: '在售',
+          offlineTs: soonest || 0,
+          sortKey: 1999999999999
+        })
+        done()
+      })
+      .catch(function() { done() })
+  },
   loadBanner: function() {
     var self = this
     if (!db) return
     db.collection('site_config').doc('banner').get()
       .then(function(res) {
-        if (res.data && res.data.url && res.data.url !== 'none' && res.data.url.indexOf('example.com') === -1) {
-          if (res.data.url.indexOf('cloud://') === 0) {
-            wx.cloud.getTempFileURL({
-              fileList: [res.data.url],
-              success: function(fileRes) {
-                if (fileRes.fileList && fileRes.fileList[0] && fileRes.fileList[0].tempFileURL) {
-                  self.setData({ bannerUrl: fileRes.fileList[0].tempFileURL })
-                }
-              }
-            })
-          } else {
-            self.setData({ bannerUrl: res.data.url })
-          }
+        var d = res.data || {}
+        var raw = d.urls && d.urls.length ? d.urls : (d.url && d.url !== 'none' ? [d.url] : [])
+        raw = raw.map(function(s) { return (s || '').trim() }).filter(function(s) {
+          return s && s !== 'none' && s.indexOf('example.com') === -1
+        })
+        // cloud:// 转临时链接
+        var cloudIds = raw.filter(function(s) { return s.indexOf('cloud://') === 0 })
+        var httpUrls = raw.filter(function(s) { return s.indexOf('cloud://') !== 0 })
+        var finish = function(list) {
+          self.setData({
+            bannerUrls: list,
+            bannerUrl: list[0] || '',
+            bannerInput: list.join('\n')
+          })
         }
+        if (!cloudIds.length) { finish(httpUrls); return }
+        wx.cloud.getTempFileURL({
+          fileList: cloudIds,
+          success: function(fileRes) {
+            var map = {}
+            var fl = (fileRes && fileRes.fileList) || []
+            for (var i = 0; i < fl.length; i++) {
+              if (fl[i].tempFileURL) map[fl[i].fileID] = fl[i].tempFileURL
+            }
+            var resolved = cloudIds.map(function(id) { return map[id] || '' }).filter(Boolean)
+            finish(httpUrls.concat(resolved))
+          },
+          fail: function() { finish(httpUrls) }
+        })
       })
       .catch(function(e) { console.error(e) })
   },

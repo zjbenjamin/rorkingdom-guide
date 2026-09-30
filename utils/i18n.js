@@ -75,7 +75,7 @@ var i18n = {
     langSwitched: '已切换至中文',
     dataSource: '数据来源',
     aboutTitle: '关于我们',
-    version: '版本 v1.8.1',
+    version: '版本 v1.8.3',
     developer: '开发者信息',
     developerRole: '项目开发者',
     myUID: '我的洛克王国UID',
@@ -102,6 +102,7 @@ var i18n = {
     cancelled: '已取消',
     cleared: '已清除',
     reset: '已重置',
+    notifyReset: '重置',
     recorded: '已记录',
     recordedSuccess: '记录成功',
     undoInitial: '撤销初始值',
@@ -430,9 +431,11 @@ var i18n = {
     catchConfirmAdjust: '确认调整',
     imgGenTime: '生成时间',
     imgEncounters: '累计奇遇',
+    imgEncounterUnit: '次',
     imgLuckRating: '欧皇评级',
     imgProfitLoss: '总盈亏',
     imgBreakEven: '持平',
+    imgAdjust: '微调',
     imgProfit: '盈利',
     imgLoss: '亏损',
     imgLatestRecord: '最新记录',
@@ -505,12 +508,12 @@ var i18n = {
     clickToExpand: 'Tap to expand',
     clickToCollapse: 'Collapse',
     catchTitle: 'Catch Statistics',
-    rococoRecord: 'Rococo Record',
-    initialRococo: 'Initial Rococo',
+    rococoRecord: 'Roco Coins Log',
+    initialRococo: 'Initial Roco Coins',
     setInitial: 'Set',
     resetInitial: 'Reset Initial',
-    accumulatedRococo: 'Accumulated Rococo',
-    currentRococo: 'Current Rococo',
+    accumulatedRococo: 'Total Roco Coins',
+    currentRococo: 'Current Roco Coins',
     encounterStats: 'Encounter Stats',
     encounterRecord: 'Encounter Record',
     carnival: 'Carnival',
@@ -533,11 +536,11 @@ var i18n = {
     clearHistory: 'Clear',
     noRecord: 'No records',
     exportStats: '📊 Export Stats',
-    merchantTitle: 'Merchant',
-    merchantBusy: 'Merchant is away',
+    merchantTitle: 'Traveling Merchant',
+    merchantBusy: 'Traveling Merchant is away',
     merchantHint: 'Please check other apps or official channels for today\'s schedule',
-    merchantChannel: 'Official channel: In-game Merchant details page',
-    merchantPrices: 'Merchant Item Prices',
+    merchantChannel: 'Official channel: In-game Traveling Merchant details',
+    merchantPrices: 'Traveling Merchant Item Prices',
     merchantPushTitle: '{n} New Items',
     merchantPushEmptyTitle: 'Merchant Update',
     merchantPushEmptyContent: 'Listing info updated',
@@ -546,7 +549,7 @@ var i18n = {
     langSwitched: 'Switched to English',
     dataSource: 'Data Sources',
     aboutTitle: 'About',
-    version: 'Guide App v1.8.1',
+    version: 'Guide App v1.8.3',
     developer: 'Developer Info',
     developerRole: 'Project Developer',
     myUID: 'My Roco Kingdom UID',
@@ -573,6 +576,7 @@ var i18n = {
     cancelled: 'Cancelled',
     cleared: 'Cleared',
     reset: 'Reset',
+    notifyReset: 'Reset',
     recorded: 'Recorded',
     recordedSuccess: 'Recorded successfully',
     undoInitial: 'Undo Initial',
@@ -591,21 +595,21 @@ var i18n = {
     clearAllData: 'Clear all data',
     clearCatchStats: 'Clear catch statistics',
     clearEncounterStats: 'Clear encounter statistics',
-    clearAll: 'Clear all catch data, encounters, and rococo records',
+    clearAll: 'Clear all catch data, encounters, and Roco Coins logs',
     cannotUndo: 'This action cannot be undone',
     useBall: 'Use',
     confirmUse: 'Confirm Use',
-    noBallSelected: 'Please select a ball first',
+    noBallSelected: 'Please select a Gulu Ball first',
     enterCount: 'Enter count',
     currentlyUsing: 'Current total balls used',
-    ballCost: 'Ball cost rococo',
+    ballCost: 'Ball cost (Roco Coins)',
     autoRecord: 'Records will auto-update ball type counts below',
     encounterEvent: 'Encounter Event Record',
     specialEvent: 'Special Event Stats',
-    purchaseBall: 'Purchase Ball',
-    craftBall: 'Craft Ball',
-    selectBallType: 'Ball Type',
-    expandView: 'Tap to view ball types',
+    purchaseBall: 'Purchase Gulu Ball',
+    craftBall: 'Craft Gulu Ball',
+    selectBallType: 'Gulu Ball Type',
+    expandView: 'Tap to view Gulu Ball types',
     collapseView: 'Collapse',
     basicRate: 'Basic Capture Rate',
     boostRate: 'Capture Rate +30%',
@@ -680,11 +684,11 @@ var i18n = {
     pinnedDone: 'Pinned',
     noActivityAdmin: 'No activities',
     saveToCloud: 'Save to Cloud',
-    ballBuy: 'Buy Ball',
-    ballCraft: 'Craft Ball',
+    ballBuy: 'Buy Gulu Ball',
+    ballCraft: 'Craft Gulu Ball',
     ballSpecial: 'Special',
     priceRoco: 'Roco Coins',
-    priceCNY: 'CNY',
+    priceCNY: 'USD',
     ballPrice: 'Price',
     ballDesc: 'Description',
     ballSource: 'Source',
@@ -797,7 +801,7 @@ var i18n = {
     catchTitleLive: 'Shiny Catch Live Monitor',
     catchResetData: 'Reset Data',
     catchWaitSync: 'Waiting for sync...',
-    catchInitHint: 'Initialize Rococo assets & purchase balls first',
+    catchInitHint: 'Initialize Roco Coins assets & purchase Gulu Balls first',
     catchEncounterCount: 'Total Encounters',
     catchCarnival: 'Moonfall Meteor',
     catchLuckyBox: 'Moonfall Star',
@@ -806,10 +810,10 @@ var i18n = {
     catchManualReset: 'Manual Reset',
     catchSuccessBtn: 'Capture Success',
     catchMissBtn: 'Missed This',
-    catchWealthPanel: 'Rococo Asset Dashboard',
+    catchWealthPanel: 'Roco Coins Dashboard',
     catchAutoDeduct: 'Auto Deduct',
     catchManualDeduct: 'Manual Deduct',
-    catchInitCoin: 'Enter initial Rococo amount',
+    catchInitCoin: 'Enter initial Roco Coins',
     catchInitAsset: 'Initialize Assets',
     catchCurrentAsset: 'Current Balance',
     catchInitialAmount: 'Initial Amount',
@@ -817,11 +821,11 @@ var i18n = {
     catchProfitRate: 'P/L Rate',
     catchResetAsset: 'Reset Assets',
     catchAssetAdjust: '💰 Asset Adjustment',
-    catchBallWarehouse: 'Ball Warehouse',
+    catchBallWarehouse: 'Gulu Ball Warehouse',
     catchStockDetail: 'Inventory & Purchases',
     catchResetBalls: 'Reset Balls',
-    catchBuyBall: 'Purchase Balls',
-    catchCraftBall: 'Craft Balls',
+    catchBuyBall: 'Purchase Gulu Balls',
+    catchCraftBall: 'Craft Gulu Balls',
     catchStockTotal: 'Total Stock',
     catchHistUsed: 'Historical Used',
     catchSelectBall: 'Select Ball',
@@ -871,7 +875,7 @@ var i18n = {
     catchContinueEnable: 'Continue streak (Pity +1)',
     catchContinueDisable: 'Stop here (Reset pity)',
     catchThisGain: 'This Gain',
-    catchCoinPlaceholder: 'Rococo amount (optional)',
+    catchCoinPlaceholder: 'Roco Coins (optional)',
     catchTargetPet: 'Target Pet',
     catchPetNamePlaceholder: 'Pet name (optional)',
     catchMixedList: 'Mixed Pet List',
@@ -893,16 +897,18 @@ var i18n = {
     catch10Encounters: '10 Encounters',
     catchEncounterGain: 'Encounter Gain',
     catchAdjustAmount: 'Adjust Amount',
-    catchAdjustAmountPlaceholder10: 'Enter total Rococo from 10 encounters',
+    catchAdjustAmountPlaceholder10: 'Enter total Roco Coins from 10 encounters',
     catchAdjustAmountPlaceholder: 'Enter adjustment amount',
     catchAdjustRemark: 'Remark',
     catchAdjustRemarkPlaceholder: 'e.g. Quest reward, disconnect compensation',
     catchConfirmAdjust: 'Confirm Adjustment',
     imgGenTime: 'Generated',
     imgEncounters: 'Encounters',
+    imgEncounterUnit: 'times',
     imgLuckRating: 'Luck Rating',
     imgProfitLoss: 'P/L',
     imgBreakEven: 'Even',
+    imgAdjust: 'Adjust',
     imgProfit: 'Profit',
     imgLoss: 'Loss',
     imgLatestRecord: 'Latest Record',
@@ -914,7 +920,7 @@ var i18n = {
     imgNotFilled: 'N/A',
     imgCatchDuration: 'Duration',
     imgBallsConsumed: 'Balls Used',
-    imgBallsUnit: ' × ',
+    imgBallsUnit: '',
     imgNoBallsUsed: 'No balls used',
     imgFooterTech: 'Powered by Roco Helper',
     imgFooterDev: 'Dev: R O C K',
@@ -976,11 +982,11 @@ var i18n = {
     clickToCollapse: '折りたたむ',
     catchTitle: '捕獲統計',
     rococoRecord: 'ロココ記録',
-    initialRococo: '初期ロココ',
+    initialRococo: '初期ロココイン',
     setInitial: '設定',
     resetInitial: '初期値リセット',
-    accumulatedRococo: '累計ロココ',
-    currentRococo: '現在のロココ',
+    accumulatedRococo: '累計ロココイン',
+    currentRococo: '現在のロココイン',
     encounterStats: '遭遇統計',
     encounterRecord: '遭遇記録',
     carnival: 'カーニバル',
@@ -1016,7 +1022,7 @@ var i18n = {
     langSwitched: '日本語に切り替えました',
     dataSource: 'データソース',
     aboutTitle: 'について',
-    version: 'ガイドアプリ v1.8.1',
+    version: 'ガイドアプリ v1.8.3',
     developer: '開発者情報',
     developerRole: 'プロジェクト開発者',
     myUID: 'マイロック王国UID',
@@ -1043,6 +1049,7 @@ var i18n = {
     cancelled: 'キャンセルしました',
     cleared: 'クリアしました',
     reset: 'リセット',
+    notifyReset: 'リセット',
     recorded: '記録しました',
     recordedSuccess: '正常に記録しました',
     undoInitial: '初期値を元に戻す',
@@ -1154,7 +1161,7 @@ var i18n = {
     ballCraft: 'クラフトボール',
     ballSpecial: '特殊',
     priceRoco: 'ロココイン',
-    priceCNY: 'CNY',
+    priceCNY: 'JPY',
     ballPrice: '価格',
     ballDesc: '説明',
     ballSource: '入手方法',
@@ -1279,7 +1286,7 @@ var i18n = {
     catchWealthPanel: 'ロココ資産ダッシュボード',
     catchAutoDeduct: '自動課金モード',
     catchManualDeduct: '手動課金モード',
-    catchInitCoin: '初期ロココ数を入力',
+    catchInitCoin: '初期ロココイン数を入力',
     catchInitAsset: '資産を初期化',
     catchCurrentAsset: '現在の残高',
     catchInitialAmount: '初期残高',
@@ -1370,9 +1377,11 @@ var i18n = {
     catchConfirmAdjust: '調整確定',
     imgGenTime: '生成日時',
     imgEncounters: '累計遭遇',
+    imgEncounterUnit: '回',
     imgLuckRating: '運勢評価',
     imgProfitLoss: '損益',
     imgBreakEven: '収支均衡',
+    imgAdjust: '微調整',
     imgProfit: '利益',
     imgLoss: '損失',
     imgLatestRecord: '最新記録',
@@ -1446,11 +1455,11 @@ var i18n = {
     clickToCollapse: '접기',
     catchTitle: '포획 통계',
     rococoRecord: '로코코 기록',
-    initialRococo: '초기 로코코',
+    initialRococo: '초기 로코 코인',
     setInitial: '설정',
     resetInitial: '초기값 초기화',
-    accumulatedRococo: '누적 로코코',
-    currentRococo: '현재 로코코',
+    accumulatedRococo: '누적 로코 코인',
+    currentRococo: '현재 로코 코인',
     encounterStats: '조우 통계',
     encounterRecord: '조우 기록',
     carnival: '카니발',
@@ -1486,7 +1495,7 @@ var i18n = {
     langSwitched: '한국어로 전환되었습니다',
     dataSource: '데이터 출처',
     aboutTitle: '정보',
-    version: '가이드 앱 v1.8.1',
+    version: '가이드 앱 v1.8.3',
     developer: '개발자 정보',
     developerRole: '프로젝트 개발자',
     myUID: '내 로코왕국 UID',
@@ -1513,6 +1522,7 @@ var i18n = {
     cancelled: '취소됨',
     cleared: '초기화됨',
     reset: '초기화',
+    notifyReset: '초기화',
     recorded: '기록됨',
     recordedSuccess: '기록이 완료되었습니다',
     undoInitial: '초기값 되돌리기',
@@ -1538,7 +1548,7 @@ var i18n = {
     noBallSelected: '먼저 볼을 선택해주세요',
     enterCount: '개수 입력',
     currentlyUsing: '현재 사용한 총 볼 개수',
-    ballCost: '볼 구매 로코코 비용',
+    ballCost: '볼 구매 로코 코인 비용',
     autoRecord: '기록 시 아래 볼 종류 개수가 자동 갱신됩니다',
     encounterEvent: '조우 이벤트 기록',
     specialEvent: '특별 이벤트 통계',
@@ -1624,7 +1634,7 @@ var i18n = {
     ballCraft: '제작 볼',
     ballSpecial: '특수',
     priceRoco: '로코 코인',
-    priceCNY: 'CNY',
+    priceCNY: 'KRW',
     ballPrice: '가격',
     ballDesc: '설명',
     ballSource: '획득처',
@@ -1749,7 +1759,7 @@ var i18n = {
     catchWealthPanel: '로코코 자산 대시보드',
     catchAutoDeduct: '자동 차감 모드',
     catchManualDeduct: '수동 차감 모드',
-    catchInitCoin: '초기 로코코 수량 입력',
+    catchInitCoin: '초기 로코 코인 수량 입력',
     catchInitAsset: '자산 초기화',
     catchCurrentAsset: '현재 잔액',
     catchInitialAmount: '초기 잔액',
@@ -1840,9 +1850,11 @@ var i18n = {
     catchConfirmAdjust: '조정 확인',
     imgGenTime: '생성 시간',
     imgEncounters: '누적 조우',
+    imgEncounterUnit: '회',
     imgLuckRating: '행운 등급',
     imgProfitLoss: '손익',
     imgBreakEven: '본전',
+    imgAdjust: '미세 조정',
     imgProfit: '이익',
     imgLoss: '손실',
     imgLatestRecord: '최신 기록',
@@ -1952,6 +1964,78 @@ function formatDuration(totalSec) {
   return result
 }
 
+// CNY → 当前语言对应货币（近似汇率，仅展示用）
+var CNY_FX = {
+  zh: { code: 'CNY', symbol: '¥', rate: 1, decimals: 2 },
+  en: { code: 'USD', symbol: '$', rate: 0.14, decimals: 2 },
+  ja: { code: 'JPY', symbol: '¥', rate: 21, decimals: 0 },
+  ko: { code: 'KRW', symbol: '₩', rate: 190, decimals: 0 }
+}
+
+function getCurrencyMeta(lang) {
+  return CNY_FX[lang || currentLang] || CNY_FX.zh
+}
+
+function formatCny(amount) {
+  var n = parseFloat(amount)
+  if (isNaN(n)) n = 0
+  var meta = getCurrencyMeta()
+  var v = n * meta.rate
+  var s
+  if (meta.decimals === 0) s = String(Math.round(v))
+  else {
+    s = v.toFixed(meta.decimals)
+    if (s.indexOf('.') > -1) s = s.replace(/\.?0+$/, '')
+  }
+  return meta.symbol + s
+}
+
+// 语言对应展示时区（小时偏移，相对 UTC）
+var LANG_TZ_OFFSET_HOURS = {
+  zh: 8,    // 中国 UTC+8
+  en: -5,   // 英文区（美东）UTC-5
+  ja: 9,    // 日本 UTC+9
+  ko: 9     // 韩国 UTC+9
+}
+
+function getLangTzOffsetHours(lang) {
+  var v = LANG_TZ_OFFSET_HOURS[lang || currentLang]
+  return typeof v === 'number' ? v : 8
+}
+
+function formatDateTime(d, lang) {
+  if (!d) d = new Date()
+  if (!(d instanceof Date)) d = new Date(d)
+  var utc = d.getTime() + d.getTimezoneOffset() * 60000
+  var local = new Date(utc + getLangTzOffsetHours(lang) * 3600000)
+  var y = local.getFullYear()
+  var m = String(local.getMonth() + 1).padStart(2, '0')
+  var day = String(local.getDate()).padStart(2, '0')
+  var h = String(local.getHours()).padStart(2, '0')
+  var min = String(local.getMinutes()).padStart(2, '0')
+  return y + '-' + m + '-' + day + ' ' + h + ':' + min
+}
+
+function formatTimeHMS(d, lang) {
+  if (!d) d = new Date()
+  if (!(d instanceof Date)) d = new Date(d)
+  var utc = d.getTime() + d.getTimezoneOffset() * 60000
+  var local = new Date(utc + getLangTzOffsetHours(lang) * 3600000)
+  return String(local.getHours()).padStart(2, '0') + ':' +
+    String(local.getMinutes()).padStart(2, '0') + ':' +
+    String(local.getSeconds()).padStart(2, '0')
+}
+
+function formatFullDateTime(d, lang) {
+  return formatDateTime(d, lang) + ':' + String((function() {
+    var dd = d || new Date()
+    if (!(dd instanceof Date)) dd = new Date(dd)
+    var utc = dd.getTime() + dd.getTimezoneOffset() * 60000
+    var local = new Date(utc + getLangTzOffsetHours(lang) * 3600000)
+    return String(local.getSeconds()).padStart(2, '0')
+  })())
+}
+
 module.exports = {
   t: t,
   initLang: initLang,
@@ -1960,5 +2044,10 @@ module.exports = {
   i18n: i18n,
   formatCountdown: formatCountdown,
   formatRelativeTime: formatRelativeTime,
-  formatDuration: formatDuration
+  formatDuration: formatDuration,
+  formatCny: formatCny,
+  getCurrencyMeta: getCurrencyMeta,
+  getLangTzOffsetHours: getLangTzOffsetHours,
+  formatDateTime: formatDateTime,
+  formatTimeHMS: formatTimeHMS
 }

@@ -8,9 +8,10 @@ var i18n = require('../../utils/i18n')
 var todayStr = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0') + '-' + String(new Date().getDate()).padStart(2, '0')
 
 var defaultChangelog = [
-  { version: '1.8.1', date: todayStr, content: '新增：咕噜球 CNY 与洛克贝价格分离，可独立填写\n新增：合成/特殊球支持「活动」获取（默认免费）\n新增：大量出没双形态卡片，可左右滑动\n新增：大量出没预设时间到点自动推送（发布推送、保存不推）\n优化：球卡片价值标签、生成图总盈亏洛克贝标识\n优化：公告多图轮播完整比例展示、无背景框与指示点\n修复：活动页联动Logo丢失、视频卡片变纯链接\n修复：视频播放器标题/简介截断' },
-  { version: '1.8.0', date: todayStr, content: '更新：隐私政策与用户协议\n更新：版号 1.8.0\n优化：更新日志仅保留较近版本，按发布时间排序' },
-  { version: '1.7.2', date: todayStr, content: '修复：登录页误显示“登录已过期”，改为“登录有效期剩余”\n修复：恢复订阅推送API，体验版推送可用\n修复：管理后台新增咕噜球同步到捕捉统计\n修复：管理后台球删除/编辑（数字id）失败\n优化：测试推送显示真实推送人数\n优化：发布按钮仅在公告Tab显示' }
+  { version: '1.8.3', date: todayStr, content: '【新增】CNY 按语言自动换算当地货币\n【新增】时间/推送按语言国家时区\n【新增】首页头图多图自动轮播（后台页面管理编辑，无指示点）\n【新增】月陨流星雨可选是否异色\n【新增】咕噜球卡片价值标签、生成图洛克贝标识\n【优化】生图英文/日韩文案本地化，奇遇次数单位「次」\n【优化】仓库只显示手动入库的球\n【优化】国际版英日韩用词，英文区美国国旗图\n【优化】球卡片展开简介可滑动且不遮挡\n【修复】页面状态管理按钮直连数据库（无需云函数）\n【修复】通知设置 +/重置可点击\n【修复】活动页联动 Logo 与视频卡片\n【修复】视频播放器标题/简介截断\n【修复】更新日志删除后被重新合并回\n更新：版号 1.8.3' },
+  { version: '1.8.2', date: todayStr, content: '【修复】管理后台新增球在捕捉统计中丢失（保存合并云端、库存按名称兜底）\n【修复】球卡片展开高度不齐，简介改为框内滑动\n更新：版号 1.8.2' },
+  { version: '1.8.1', date: todayStr, content: '【新增】咕噜球 CNY 与洛克贝价格分离，可独立填写\n【新增】合成/特殊球支持「活动」获取（默认免费）\n【新增】大量出没双形态卡片，可左右滑动\n【新增】大量出没预设时间到点自动推送（发布推、保存不推）\n【优化】生成图总盈亏洛克贝标识\n【优化】公告多图完整比例展示，无背景框与指示点\n【修复】活动页联动 Logo 丢失、视频卡片变纯链接\n【修复】视频播放器标题/简介截断' },
+  { version: '1.8.0', date: todayStr, content: '更新：隐私政策与用户协议\n优化：更新日志仅保留较近版本\n更新：版号 1.8.0' }
 ]
 
 Page({
@@ -25,7 +26,7 @@ Page({
     showLogShareBtn: true,
     aboutData: {
       appName: '洛手助手',
-      version: i18n.i18n.zh.version || 'v1.8.1',
+      version: i18n.i18n.zh.version || 'v1.8.3',
       versionNote: i18n.i18n.zh.versionNote || '',
       devName: '浙里本杰明',
       devAvatar: 'https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEYA3JqaA4lW5JDNpmiDiR7kV6jjeMAAW0AAscgAAKo-ElXhfFJA7eEXyo9BA.jpeg',
@@ -108,17 +109,10 @@ Page({
             merged[key] = cloudData[key] !== undefined ? cloudData[key] : defaults[key]
           }
         }
-        var changelogList = cloudData.changelogList || []
-        // 合并本地默认日志：云端不存在的版本追加到列表头部
-        var cloudVersions = {}
-        for (var i = 0; i < changelogList.length; i++) {
-          cloudVersions[changelogList[i].version] = true
-        }
-        for (var j = defaultChangelog.length - 1; j >= 0; j--) {
-          if (!cloudVersions[defaultChangelog[j].version]) {
-            changelogList.unshift(defaultChangelog[j])
-          }
-        }
+        // 云端已有 changelogList（含删空）则以云端为准，避免本地默认项被删后又合并回来
+        var changelogList = (cloudData.changelogList !== undefined && cloudData.changelogList !== null)
+          ? cloudData.changelogList.slice()
+          : defaultChangelog.slice()
         for (var i = 0; i < changelogList.length; i++) {
           changelogList[i].lines = self.parseChangelog(changelogList[i].content || '')
         }
