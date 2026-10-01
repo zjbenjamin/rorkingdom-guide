@@ -34,9 +34,9 @@
   <!-- Hero Banner：多图自动轮播，无指示点；编辑入口在管理后台-页面管理 -->
   <view class="hero-section" wx:if="{{bannerUrl || (bannerUrls && bannerUrls.length > 0)}}">
     <block wx:if="{{bannerUrls && bannerUrls.length > 1}}">
-      <swiper class="hero-swiper" autoplay="true" interval="4000" duration="500" circular="true">
+      <swiper class="hero-swiper" autoplay="true" interval="4000" duration="500" circular="true" style="height: {{heroSwiperH > 0 ? heroSwiperH + 'rpx' : 'auto'}};">
         <swiper-item wx:for="{{bannerUrls}}" wx:key="index">
-          <image lazy-load class="hero-image" src="{{item}}" mode="aspectFit"></image>
+          <image lazy-load class="hero-image" src="{{item}}" mode="widthFix" bindload="onHeroBannerLoad"></image>
         </swiper-item>
       </swiper>
     </block>
@@ -76,7 +76,7 @@
   <!-- Announcements Feed -->
   <view class="feed-section">
     <view class="feed-header">
-      <text class="feed-title">{{_l.announcements}}</text>
+      <text class="feed-title">ROCOKINGDOM{{_l.announcements}}</text>
       <view class="feed-header-right">
         <text class="feed-count" wx:if="{{announcements.length > 0}}">{{announcements.length}}{{_l.unitItems}}</text>
         <text class="feed-sub {{subscribedAnnouncement ? 'active' : ''}}" catchtap="subscribeAnnouncement">{{subscribedAnnouncement ? _l.subscribed + '(' + subscribeCount + '/99)' : _l.subscribeAdd}}</text>
@@ -93,7 +93,6 @@
           </view>
           <view class="feed-item-right">
             <text class="feed-time">{{item.timeStr}}</text>
-            <text class="feed-translate-btn" wx:if="{{isAdmin}}" catchtap="translateOne" data-id="{{item._id}}" data-title="{{item.title}}" data-content="{{item.content}}">🌐</text>
             <text class="feed-arrow {{expandedIndex === index ? 'up' : ''}}">▸</text>
           </view>
         </view>
@@ -138,7 +137,7 @@
                   </view>
                 </view>
                 <view wx:elif="{{block.type === 'swiper'}}" class="rich-swiper-block">
-                  <swiper autoplay="true" circular="true" interval="4000" class="rich-swiper" style="height: {{richSwiperHeights[item._id + '_' + index] || '420rpx'}};">
+                  <swiper autoplay="true" circular="true" interval="4000" class="rich-swiper" style="height: {{richSwiperHeights[item._id + '_' + index] || 0}}rpx;">
                     <swiper-item wx:for="{{block.urls}}" wx:for-item="url" wx:for-index="ui" wx:key="ui">
                       <image src="{{url}}" mode="widthFix" class="rich-swiper-image" catchtap="previewRichImage" data-src="{{url}}" bindload="onRichSwiperLoad" data-hkey="{{item._id}}_{{index}}" />
                     </swiper-item>
@@ -181,48 +180,129 @@
       </view>
     </view>
 
-    <!-- ROCOKINGDOM广播站：出没 + 商人同步 -->
-    <view class="broadcast-section" wx:if="{{broadcastList.length > 0}}">
-      <view class="feed-header">
-        <text class="feed-title">ROCOKINGDOM广播站</text>
-        <text class="feed-count">{{broadcastList.length}}</text>
-      </view>
-      <view class="broadcast-list">
-        <view class="broadcast-item" wx:for="{{broadcastList}}" wx:key="index" bindtap="go" data-url="{{item.type === 'swarm' ? '/pages/swarm/swarm' : '/pages/merchant/merchant'}}">
-          <view class="broadcast-badge {{item.type}}">{{item.typeLabel}}</view>
-          <view class="broadcast-body">
-            <view class="broadcast-head">
-              <text class="broadcast-title">{{item.title}}</text>
-              <text class="broadcast-tag" wx:if="{{item.badge}}">{{item.badge}}</text>
-            </view>
-            <text class="broadcast-desc" wx:if="{{item.desc}}">{{item.desc}}</text>
-            <!-- 商人商品列表 -->
-            <view class="broadcast-items" wx:if="{{item.items && item.items.length > 0}}">
-              <view class="broadcast-goods" wx:for="{{item.items}}" wx:for-item="g" wx:for-index="gi" wx:key="gi">
-                <view class="goods-main">
-                  <text class="goods-name">{{g.name}}</text>
-                  <text class="goods-meta" wx:if="{{g.limitCount}}">限售 {{g.limitCount}}</text>
-                </view>
-                <view class="goods-price">
-                  <image class="roco-icon" src="https://patchwiki.biligame.com/images/nrc/1/10/blxvp7k90uq3p8prz24feerler3yfsi.png" mode="aspectFit" />
-                  <text>{{g.price}}</text>
-                </view>
-              </view>
-            </view>
-            <text class="broadcast-countdown" wx:if="{{item.countdownText}}">⏰ {{item.countdownText}}</text>
-            <text class="broadcast-time" wx:if="{{item.time}}">{{item.time}}</text>
-          </view>
-          <text class="broadcast-arrow">▸</text>
-        </view>
-      </view>
-    </view>
-
     <!-- Empty state -->
     <view class="feed-empty" wx:if="{{announcements.length === 0 && isAdmin}}">
       <text class="feed-empty-icon">📭</text>
       <text class="feed-empty-text">{{_l.noAnnounce}}</text>
       <view class="feed-empty-btn" bindtap="goAdmin">
         <text class="btn-text">{{_l.publish}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 远行商人 -->
+  <view class="panel merchant-panel" wx:if="{{merchantCard}}">
+    <view class="panel-header">
+      <view class="panel-header-left">
+        <view class="panel-bar merchant"></view>
+        <text class="panel-title">{{_l.merchantTitle || '远行商人'}}</text>
+        <text class="panel-badge merchant" wx:if="{{merchantCard.badge}}">{{merchantCard.badge}}</text>
+      </view>
+      <view class="panel-header-right">
+        <text class="panel-count" wx:if="{{merchantCard.items.length}}">{{merchantCard.items.length}}{{_l.unitItems || '件'}}</text>
+        <text class="sub-btn {{subscribedMerchant ? 'on' : ''}}" catchtap="subscribeMerchantFeed">{{subscribedMerchant ? _l.subscribed : _l.subscribeAdd}}</text>
+      </view>
+    </view>
+
+    <view class="panel-body" bindtap="go" data-url="/pages/merchant/merchant">
+      <!-- 空态 / 维护中 -->
+      <view class="panel-empty" wx:if="{{!merchantCard.items.length}}">
+        <text class="panel-empty-text">{{merchantCard.desc || _l.broadcastMaintain || '运营数据维护中'}}</text>
+      </view>
+
+      <!-- 商品列表 -->
+      <view class="goods-list" wx:if="{{merchantCard.items.length}}">
+        <!-- 常规商品 -->
+        <view class="goods-group" wx:if="{{merchantCard.normalItems.length}}">
+          <view class="goods-group-header">
+            <text class="goods-group-title">常规商品</text>
+            <text class="goods-group-time" wx:if="{{merchantCard.normalOfflineLabel || merchantCard.normalCountdown}}">
+              <text wx:if="{{merchantCard.normalOfflineLabel}}">下架 {{merchantCard.normalOfflineLabel}}</text>
+              <text wx:if="{{merchantCard.normalCountdown}}" class="goods-group-remain"> · {{merchantCard.normalCountdown}}</text>
+            </text>
+          </view>
+          <view class="goods-row {{expandedGoodsIndex === ('m_' + gi) ? 'open' : ''}}" wx:for="{{merchantCard.normalItems}}" wx:for-item="g" wx:for-index="gi" wx:key="gi" catchtap="toggleBroadcastGoods" data-key="m_{{gi}}">
+            <image wx:if="{{g.image}}" class="goods-thumb" src="{{g.image}}" mode="aspectFill" />
+            <view wx:else class="goods-thumb goods-thumb-empty"></view>
+            <view class="goods-info">
+              <view class="goods-title-line">
+                <text class="goods-name">{{g.name}}</text>
+                <text class="goods-limit" wx:if="{{g.limitCount}}">限{{g.limitCount}}</text>
+              </view>
+              <text class="goods-effect" wx:if="{{g.effect}}">{{g.effect}}</text>
+              <text class="goods-offline" wx:if="{{g.remainText}}">⏳ {{g.remainText}}</text>
+            </view>
+            <view class="goods-price">
+              <image class="roco-icon" src="https://patchwiki.biligame.com/images/nrc/1/10/blxvp7k90uq3p8prz24feerler3yfsi.png" mode="aspectFit" />
+              <text class="goods-price-num">{{g.price}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 限时商品 -->
+        <view class="goods-group" wx:if="{{merchantCard.limitedItems.length}}">
+          <view class="goods-group-header">
+            <text class="goods-group-title">限时商品</text>
+            <text class="goods-group-time">单独计时下架</text>
+          </view>
+          <view class="goods-row {{expandedGoodsIndex === ('m_' + gi) ? 'open' : ''}}" wx:for="{{merchantCard.limitedItems}}" wx:for-item="g" wx:for-index="gi" wx:key="gi" catchtap="toggleBroadcastGoods" data-key="lm_{{gi}}">
+            <image wx:if="{{g.image}}" class="goods-thumb" src="{{g.image}}" mode="aspectFill" />
+            <view wx:else class="goods-thumb goods-thumb-empty"></view>
+            <view class="goods-info">
+              <view class="goods-title-line">
+                <text class="goods-name">{{g.name}}</text>
+                <text class="goods-limit" wx:if="{{g.limitCount}}">限{{g.limitCount}}</text>
+                <text class="goods-time-tag">限时</text>
+              </view>
+              <text class="goods-effect" wx:if="{{g.effect}}">{{g.effect}}</text>
+              <text class="goods-offline" wx:if="{{g.offlineLabel || g.remainText}}">
+                <text wx:if="{{g.offlineLabel}}">⏳ {{g.offlineLabel}}</text>
+                <text wx:if="{{g.remainText}}" class="goods-offline-remain"> · {{g.remainText}}</text>
+              </text>
+            </view>
+            <view class="goods-price">
+              <image class="roco-icon" src="https://patchwiki.biligame.com/images/nrc/1/10/blxvp7k90uq3p8prz24feerler3yfsi.png" mode="aspectFit" />
+              <text class="goods-price-num">{{g.price}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 大量出没：只展示最新一条 -->
+  <view class="panel swarm-panel" wx:if="{{swarmItem}}">
+    <view class="panel-header">
+      <view class="panel-header-left">
+        <view class="panel-bar swarm"></view>
+        <text class="panel-title">{{_l.swarm || '大量出没'}}</text>
+        <text class="panel-badge {{swarmItem.active ? 'swarm-on' : 'swarm-soon'}}">{{swarmItem.badge}}</text>
+      </view>
+      <view class="panel-header-right">
+        <text class="sub-btn {{subscribedSwarm ? 'on' : ''}}" catchtap="subscribeSwarmFeed">{{subscribedSwarm ? _l.subscribed : _l.subscribeAdd}}</text>
+      </view>
+    </view>
+
+    <view class="panel-body swarm-body" bindtap="go" data-url="/pages/swarm/swarm">
+      <view class="swarm-hero">
+        <view class="swarm-hero-img-wrap" wx:if="{{swarmItem.image || (swarmItem.images && swarmItem.images.length > 1)}}">
+          <swiper class="swarm-hero-img" wx:if="{{swarmItem.images.length > 1}}" autoplay circular interval="3200">
+            <swiper-item wx:for="{{swarmItem.images}}" wx:for-item="img" wx:for-index="ii" wx:key="ii">
+              <image class="swarm-hero-img" src="{{img}}" mode="aspectFill" />
+            </swiper-item>
+          </swiper>
+          <image wx:elif="{{swarmItem.image}}" class="swarm-hero-img" src="{{swarmItem.image}}" mode="aspectFill" />
+        </view>
+        <view class="swarm-hero-info">
+          <text class="swarm-hero-name">{{swarmItem.name}}</text>
+          <text class="swarm-hero-loc" wx:if="{{swarmItem.location}}">{{swarmItem.location}}</text>
+          <text class="swarm-hero-time" wx:if="{{swarmItem.time}}">{{swarmItem.time}}</text>
+          <text class="swarm-hero-desc" wx:if="{{swarmItem.desc}}">{{swarmItem.desc}}</text>
+        </view>
+      </view>
+      <view class="panel-foot" wx:if="{{swarmItem.countdownText}}">
+        <text class="panel-foot-label" wx:if="{{swarmItem.active}}">剩余</text>
+        <text class="panel-foot-value">{{swarmItem.countdownText}}</text>
       </view>
     </view>
   </view>

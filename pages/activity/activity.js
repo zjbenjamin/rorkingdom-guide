@@ -63,7 +63,7 @@ function convertRichCloudUrls(list, callback) {
 
 Page({
   behaviors: [i18nBehavior],
-  data: { theme: 'light', activities: [], filtered: [], status: '全部', statuses: ['全部','进行中','置顶'], expandedId: -1, isAdmin: false, showEditModal: false, editingItem: null, editTitle: '', editDesc: '', editStatus: '进行中', editType: '', editRewards: '', editStart: '', editEnd: '', editImage: '', subscribedActivity: false, subscribeCount: 0, currentPlayUrl: '', isPlaying: false, showVideoPlayer: false, videoPlayerUrl: '', videoPlayerName: '', videoPlayerCover: '', videoPlayerOwner: '', videoPlayerDesc: '', richSwiperHeights: {} },
+  data: { theme: 'light', activities: [], filtered: [], status: '全部', statuses: ['全部','进行中','置顶'], expandedId: -1, isAdmin: false, showEditModal: false, editingItem: null, editTitle: '', editDesc: '', editStatus: '进行中', editType: '', editRewards: '', editStart: '', editEnd: '', subscribedActivity: false, subscribeCount: 0, currentPlayUrl: '', isPlaying: false, showVideoPlayer: false, videoPlayerUrl: '', videoPlayerName: '', videoPlayerCover: '', videoPlayerOwner: '', videoPlayerDesc: '', richSwiperHeights: {} },
   onShow: function() {
     this._refreshI18n()
     this.setData({ theme: app.globalData.theme })
@@ -115,7 +115,6 @@ Page({
               startTime: item.startTime || '',
               endTime: item.endTime || '',
               source: item.source || '',
-              image: item.image || '',
               isCloud: true
             }
           })
@@ -168,7 +167,7 @@ Page({
     this.setData({ expandedId: this.data.expandedId === id ? -1 : id })
   },
   onAddActivity: function() {
-    this.setData({ showEditModal: true, editingItem: null, editTitle: '', editDesc: '', editStatus: '进行中', editType: '活动', editRewards: '', editStart: '', editEnd: '', editImage: '' })
+    this.setData({ showEditModal: true, editingItem: null, editTitle: '', editDesc: '', editStatus: '进行中', editType: '活动', editRewards: '', editStart: '', editEnd: '', })
   },
   onEditActivity: function(e) {
     var item = e.currentTarget.dataset.item
@@ -176,7 +175,7 @@ Page({
       showEditModal: true, editingItem: item,
       editTitle: item.title, editDesc: item.desc, editStatus: item.status,
       editType: item.type || '', editRewards: (item.rewards || []).join('\n'),
-      editStart: item.start || '', editEnd: item.end || '', editImage: item.image || ''
+      editStart: item.start || '', editEnd: item.end || ''
     })
   },
   onCloseModal: function() { this.setData({ showEditModal: false }) },
@@ -188,47 +187,7 @@ Page({
   onStartInput: function(e) { this.setData({ editStart: e.detail.value }) },
   onEndInput: function(e) { this.setData({ editEnd: e.detail.value }) },
   onStatusChange: function(e) { var statuses = ['进行中','即将开始','置顶']; this.setData({ editStatus: statuses[e.detail.value] }) },
-  chooseEditImage: function() {
-    var self = this
-    wx.chooseImage({
-      count: 1,
-      sizeType: ['compressed'],
-      sourceType: ['album', 'camera'],
-      success: function(res) {
-        var filePath = res.tempFilePaths[0]
-        wx.showLoading({ title: '上传中...' })
-        var ext = filePath.split('.').pop() || 'jpg'
-        var cloudPath = 'activities/' + Date.now() + '.' + ext
-        wx.cloud.uploadFile({ cloudPath: cloudPath, filePath: filePath })
-          .then(function(uploadRes) {
-            wx.hideLoading()
-            self.setData({ editImage: uploadRes.fileID })
-          })
-          .catch(function() {
-            wx.hideLoading()
-            wx.showToast({ title: '上传失败', icon: 'none' })
-          })
-      }
-    })
-  },
-  inputEditImageUrl: function() {
-    var self = this
-    wx.showModal({
-      title: '输入图片链接',
-      content: '',
-      editable: true,
-      placeholderText: '粘贴图片URL地址',
-      success: function(res) {
-        if (res.confirm && res.content && res.content.trim()) {
-          self.setData({ editImage: res.content.trim() })
-        }
-      }
-    })
-  },
-  removeEditImage: function() {
-    this.setData({ editImage: '' })
-  },
-  importActivityFile: function() {
+        importActivityFile: function() {
     var self = this
     wx.chooseMessageFile({
       count: 1,
@@ -292,7 +251,7 @@ Page({
     if (!title) { wx.showToast({ title: '请输入标题', icon: 'none' }); return }
     self.setData({ submitting: true })
     var rewards = self.data.editRewards ? self.data.editRewards.split('\n').filter(function(r) { return r.trim() }) : []
-    var data = { title: title, content: desc, type: 'event', pinned: self.data.editStatus === '置顶', rewards: rewards, start: self.data.editStart, end: self.data.editEnd, image: self.data.editImage, updateTime: db.serverDate() }
+    var data = { title: title, content: desc, type: 'event', pinned: self.data.editStatus === '置顶', rewards: rewards, start: self.data.editStart, end: self.data.editEnd, updateTime: db.serverDate() }
     var promise = self.data.editingItem && self.data.editingItem.isCloud
       ? db.collection('announcements').doc(self.data.editingItem.id).update({ data: data })
       : (data.createTime = db.serverDate(), data.author = app.globalData.userInfo ? app.globalData.userInfo.nickName : 'Admin', db.collection('announcements').add({ data: data }))
@@ -548,7 +507,7 @@ Page({
     if (!key) return
     var w = e.detail.width || 1
     var h = e.detail.height || 1
-    var hRpx = Math.max(200, Math.min(1200, Math.round(702 * h / w)))
+    var hRpx = Math.max(180, Math.round(702 * h / w))
     var map = this.data.richSwiperHeights || {}
     if (map[key] === hRpx) return
     map[key] = hRpx

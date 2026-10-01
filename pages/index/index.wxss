@@ -82,14 +82,35 @@
 
 /* ── Hero Banner ── */
 .hero-section {
-  margin: 20rpx 24rpx 0;
-  border: 1rpx solid #30363d;
-  border-radius: 12rpx;
-  overflow: hidden;
+  margin: 16rpx 0 0;
+  /* 无边框、无圆角外框，避免出现一圈难看的框 */
+  border: none;
+  border-radius: 0;
+  overflow: visible;
+  background: transparent;
 }
-.hero-image { width: 100%; display: block; }
-.hero-swiper { width: 100%; height: 500rpx; background: #0d1117; }
-.hero-swiper .hero-image { width: 100%; height: 100%; display: block; background: #0d1117; }
+.hero-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: none;
+  border-radius: 0;
+}
+.hero-swiper {
+  width: 100%;
+  background: transparent;
+  overflow: visible;
+}
+.hero-swiper .hero-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: transparent;
+}
+.hero-swiper swiper-item {
+  overflow: visible;
+  background: transparent;
+}
 
 /* ── Quick Nav ── */
 .quick-nav {
@@ -186,8 +207,7 @@
   width: 24rpx; text-align: center;
 }
 .feed-arrow.up { transform: rotate(90deg); }
-.feed-translate-btn { font-size: 18rpx; color: rgba(0,212,255,0.5); margin-right: 4rpx; }
-.feed-translate-btn:active { color: #00d4ff; }
+
 
 /* Expanded */
 .feed-item-body {
@@ -208,145 +228,295 @@
   padding: 20rpx;
 }
 
-/* ROCOKINGDOM广播站 */
-.broadcast-section {
-  margin-top: 28rpx;
-  padding-top: 20rpx;
-  border-top: 1rpx solid #21262d;
-}
-.broadcast-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16rpx;
-  margin-top: 14rpx;
-}
-.broadcast-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 14rpx;
-  background: linear-gradient(180deg, rgba(13, 17, 23, 0.95), rgba(13, 17, 23, 0.8));
-  border: 1rpx solid #21262d;
-  border-radius: 16rpx;
-  padding: 18rpx 16rpx;
-}
-.broadcast-item:active { opacity: 0.88; }
-.broadcast-badge {
-  flex-shrink: 0;
-  font-size: 20rpx;
-  font-weight: 700;
-  padding: 6rpx 12rpx;
-  border-radius: 8rpx;
-  margin-top: 2rpx;
-}
-.broadcast-badge.swarm {
-  background: rgba(0, 212, 255, 0.1);
-  color: #00d4ff;
-  border: 1rpx solid rgba(0, 212, 255, 0.18);
-}
-.broadcast-badge.merchant {
-  background: rgba(255, 171, 64, 0.1);
-  color: #ffab40;
-  border: 1rpx solid rgba(255, 171, 64, 0.18);
-}
-.broadcast-body { flex: 1; min-width: 0; }
-.broadcast-head {
-  display: flex;
-  align-items: center;
-  gap: 10rpx;
-  margin-bottom: 10rpx;
-}
-.broadcast-title {
-  font-size: 28rpx;
-  font-weight: 700;
-  color: #e6edf3;
-  flex: 1;
-  min-width: 0;
+/* ===== 面板：远行商人 / 大量出没 ===== */
+.panel {
+  margin: 20rpx 24rpx 0;
+  border: 1rpx solid #30363d;
+  border-radius: 12rpx;
+  background: #161b22;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
-.broadcast-tag {
-  flex-shrink: 0;
-  font-size: 20rpx;
-  color: #00d4ff;
-  background: rgba(0, 212, 255, 0.08);
-  border: 1rpx solid rgba(0, 212, 255, 0.16);
-  border-radius: 999rpx;
-  padding: 2rpx 12rpx;
-}
-.broadcast-desc {
-  display: block;
-  font-size: 22rpx;
-  color: rgba(230, 237, 243, 0.65);
-  line-height: 1.5;
-  word-break: break-word;
-}
-.broadcast-items {
-  margin-top: 4rpx;
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-}
-.broadcast-goods {
+.panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16rpx;
-  padding: 12rpx 14rpx;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1rpx solid rgba(255, 255, 255, 0.05);
-  border-radius: 10rpx;
+  padding: 20rpx 24rpx;
+  background: #0d1117;
+  border-bottom: 1rpx solid #21262d;
 }
-.goods-main {
+.panel-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  flex: 1;
+  min-width: 0;
+}
+.panel-header-right {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  flex-shrink: 0;
+}
+.panel-bar {
+  width: 6rpx;
+  height: 28rpx;
+  border-radius: 3rpx;
+  flex-shrink: 0;
+}
+.panel-bar.merchant { background: #d29922; }
+.panel-bar.swarm { background: #00d4ff; }
+.panel-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #e6edf3;
+}
+.panel-badge {
+  font-size: 18rpx;
+  font-weight: 600;
+  padding: 2rpx 10rpx;
+  border-radius: 4rpx;
+}
+.panel-badge.merchant {
+  color: #d29922;
+  background: rgba(210, 153, 34, 0.12);
+}
+.panel-badge.swarm-on {
+  color: #00d4ff;
+  background: rgba(0, 212, 255, 0.12);
+}
+.panel-badge.swarm-soon {
+  color: #d29922;
+  background: rgba(210, 153, 34, 0.12);
+}
+.panel-count {
+  font-size: 20rpx;
+  color: #8b949e;
+}
+.sub-btn {
+  font-size: 20rpx;
+  font-weight: 600;
+  color: #58a6ff;
+  padding: 4rpx 14rpx;
+  border-radius: 20rpx;
+  border: 1rpx solid rgba(88, 166, 255, 0.35);
+}
+.sub-btn.on {
+  color: #3fb950;
+  border-color: rgba(63, 185, 80, 0.35);
+}
+.panel-body {
+  padding: 0;
+}
+.panel-empty {
+  padding: 32rpx 24rpx;
+}
+.panel-empty-text {
+  font-size: 22rpx;
+  color: #6e7681;
+}
+.panel-foot {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  padding: 14rpx 24rpx;
+  border-top: 1rpx solid #21262d;
+  background: rgba(210, 153, 34, 0.04);
+}
+.panel-foot-label {
+  font-size: 20rpx;
+  color: #8b949e;
+}
+.panel-foot-value {
+  font-size: 20rpx;
+  font-weight: 600;
+  color: #d29922;
+}
+
+/* ── 商人商品行 ── */
+.goods-list {
+  display: flex;
+  flex-direction: column;
+}
+.goods-group {
+  display: flex;
+  flex-direction: column;
+}
+.goods-group + .goods-group {
+  border-top: 1rpx solid #21262d;
+}
+.goods-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+  padding: 12rpx 24rpx 8rpx;
+  background: rgba(210, 153, 34, 0.04);
+}
+.goods-group-title {
+  font-size: 20rpx;
+  font-weight: 700;
+  color: #d29922;
+  flex-shrink: 0;
+}
+.goods-group-time {
+  font-size: 18rpx;
+  color: #8b949e;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.goods-group-remain {
+  color: #d29922;
+  font-weight: 600;
+}
+.goods-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 16rpx 24rpx;
+  border-bottom: 1rpx solid #21262d;
+}
+.goods-row:last-child { border-bottom: none; }
+.goods-row:active { background: #1c2128; }
+.goods-thumb {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 6rpx;
+  flex-shrink: 0;
+  background: #0d1117;
+  border: 1rpx solid #21262d;
+}
+.goods-thumb-empty {
+  background: #21262d;
+}
+.goods-info {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 4rpx;
 }
+.goods-title-line {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  min-width: 0;
+}
 .goods-name {
   font-size: 24rpx;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.88);
+  color: #c9d1d9;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.goods-meta {
+.goods-limit {
+  flex-shrink: 0;
   font-size: 18rpx;
-  color: rgba(255, 171, 64, 0.8);
+  color: #d29922;
+  background: rgba(210, 153, 34, 0.12);
+  border-radius: 4rpx;
+  padding: 2rpx 8rpx;
+}
+.goods-time-tag {
+  flex-shrink: 0;
+  font-size: 18rpx;
+  color: #f85149;
+  background: rgba(248, 81, 73, 0.12);
+  border-radius: 4rpx;
+  padding: 2rpx 8rpx;
+}
+.goods-offline {
+  font-size: 18rpx;
+  color: #8b949e;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.goods-offline-remain {
+  color: #d29922;
+  font-weight: 600;
+}
+.goods-effect {
+  font-size: 20rpx;
+  color: #6e7681;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .goods-price {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 6rpx;
-  font-size: 26rpx;
-  font-weight: 800;
-  color: #ffab40;
-  font-family: 'DIN Alternate', monospace;
 }
 .roco-icon {
-  width: 24rpx;
-  height: 24rpx;
+  width: 22rpx;
+  height: 22rpx;
 }
-.broadcast-countdown {
+.goods-price-num {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: #d29922;
+}
+
+/* ── 大量出没单条 ── */
+.swarm-hero {
+  display: flex;
+  gap: 20rpx;
+  padding: 20rpx 24rpx;
+}
+.swarm-hero-img-wrap {
+  width: 140rpx;
+  height: 140rpx;
+  flex-shrink: 0;
+  border-radius: 10rpx;
+  overflow: hidden;
+  background: #0d1117;
+  border: 1rpx solid #21262d;
+}
+.swarm-hero-img {
+  width: 140rpx;
+  height: 140rpx;
   display: block;
-  margin-top: 10rpx;
+}
+.swarm-hero-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+.swarm-hero-name {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #e6edf3;
+}
+.swarm-hero-loc {
   font-size: 22rpx;
-  color: #ffd54f;
+  color: #58a6ff;
 }
-.broadcast-time {
-  display: block;
-  margin-top: 6rpx;
+.swarm-hero-time {
   font-size: 20rpx;
-  color: rgba(255, 255, 255, 0.3);
+  color: #6e7681;
 }
+.swarm-hero-desc {
+  font-size: 20rpx;
+  color: #8b949e;
+  line-height: 1.55;
+}
+
+/* 旧 broadcast 通用件 */
 .broadcast-arrow {
   flex-shrink: 0;
-  color: rgba(255, 255, 255, 0.2);
-  font-size: 22rpx;
-  margin-top: 6rpx;
+  color: #484f58;
+  font-size: 28rpx;
+  line-height: 1;
+  font-weight: 600;
 }
 
 /* Rich content: swiper (滚动图) — 完整比例、无背景框 */
@@ -482,6 +652,7 @@
   .repo-header { max-width: 720px; margin: 0 auto; }
   .quick-nav { display: grid; grid-template-columns: repeat(3, 1fr); }
   .feed-section { max-width: 720px; margin: 0 auto 24rpx; }
+  .panel { max-width: 720px; margin-left: auto; margin-right: auto; }
   .modal-box { max-width: 640px; margin-left: auto; margin-right: auto; }
 }
 
@@ -491,5 +662,6 @@
   .repo-header { max-width: 960px; margin: 0 auto; }
   .quick-nav { display: grid; grid-template-columns: repeat(3, 1fr); }
   .feed-section { max-width: 960px; margin: 0 auto 24rpx; }
+  .panel { max-width: 960px; margin-left: auto; margin-right: auto; }
   .modal-box { max-width: 720px; margin-left: auto; margin-right: auto; }
 }

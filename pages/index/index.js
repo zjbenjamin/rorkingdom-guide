@@ -15,7 +15,14 @@ Page({
     bannerUrl: '',
     bannerUrls: [],
     bannerFallback: '',
-    broadcastList: [],
+    merchantCard: null,
+    swarmItem: null,
+    expandedGoodsIndex: '',
+    subscribedMerchant: false,
+    merchantSubCount: 0,
+    subscribedSwarm: false,
+    swarmSubCount: 0,
+    heroSwiperH: 0,
     announcements: [],
     subscribeConfig: {},
     subscribedAnnouncement: false,
@@ -36,9 +43,13 @@ Page({
 
   onHide: function() {
     if (this._countdownTimer) { clearInterval(this._countdownTimer); this._countdownTimer = null }
+    if (this._announcementsTimer) { clearInterval(this._announcementsTimer); this._announcementsTimer = null }
+    this._stopAnnouncementsWatch()
   },
   onUnload: function() {
     if (this._countdownTimer) { clearInterval(this._countdownTimer); this._countdownTimer = null }
+    if (this._announcementsTimer) { clearInterval(this._announcementsTimer); this._announcementsTimer = null }
+    this._stopAnnouncementsWatch()
     if (this.timerId) {
       clearInterval(this.timerId);
       this.timerId = null;
@@ -50,6 +61,7 @@ Page({
     self.setData({ currentLang: i18n.getLanguage() })
     // 先清除旧定时器，防止多个setInterval叠加卡死主线程
     if (self._countdownTimer) { clearInterval(self._countdownTimer); self._countdownTimer = null }
+    if (self._announcementsTimer) { clearInterval(self._announcementsTimer); self._announcementsTimer = null }
     var n = new Date()
     var subscribeConfig = wx.getStorageSync('subscribe_config') || { announcement: true, activity: true, system: true, merchant: true, interaction: true }
     self.setData({
@@ -60,6 +72,11 @@ Page({
     if (wx.cloud) db = wx.cloud.database()
     self.checkAdmin()
     self.loadAnnouncements()
+    self._startAnnouncementsWatch()
+    // 兜底静默刷新：watch 断线时仍能周期拿到最新公告
+    self._announcementsTimer = setInterval(function() {
+      self.loadAnnouncements()
+    }, 45000)
     self.loadBanner()
     self.loadIcp()
     self.loadBroadcast()
@@ -72,22 +89,136 @@ Page({
     self.updateBroadcastCountdown()
   },
   updateBroadcastCountdown: function() {
-    var list = this.data.broadcastList || []
-    if (!list.length) return
-    var changed = false
+    var self = this
     var now = Date.now()
-    for (var i = 0; i < list.length; i++) {
-      if (!list[i].offlineTs) continue
-      var diff = list[i].offlineTs - now
-      var text = diff > 0
-        ? (i18n.formatCountdown(diff, 'countdownOnline', 'countdownEnded') || '')
-        : (i18n.i18n[i18n.getLanguage()].countdownEnded || '已结束')
-      if (list[i].countdownText !== text) {
-        list[i].countdownText = text
+    var dict = i18n.i18n[i18n.getLanguage()] || i18n.i18n.zh || {}
+    var changed = false
+
+    // ── 大量出没（单条）：到结束时间自动清空 ──
+    var swarm = this.data.swarmItem
+    if (swarm) {
+      if (swarm.endTs && now >= swarm.endTs) {
+        swarm = null
         changed = true
+      } else {
+        var text = swarm.countdownText
+        if (swarm.startTs && now < swarm.startTs) {
+          // 不足24小时：距上线 X时X分X秒
+          var sd = swarm.startTs - now
+          var sPrefix = sd < 86400000 ? 'countdownOnline' : 'countdownNextSwarm'
+          text = i18n.formatCountdown(sd, sPrefix, 'countdownEnded') || ''
+        } else if (swarm.endTs && swarm.endTs > now) {
+          text = i18n.formatCountdown(swarm.endTs - now, 'countdownOffline', 'countdownEnded') || ''
+        }
+        if (swarm.countdownText !== text) {
+          swarm = Object.assign({}, swarm, { countdownText: text })
+          changed = true
+        }
       }
     }
-    if (changed) this.setData({ broadcastList: list })
+
+    // ── 远行商人卡片：商品实时剔除 + 下架倒计时 ──
+    var merchant = this.data.merchantCard
+    if (merchant) {
+      merchant = Object.assign({}, merchant)
+      if (merchant.items && merchant.items.length) {
+        var bulkTs = merchant.bulkTs || 0
+        var goods = []
+        for (var j = 0; j < merchant.items.length; j++) {
+          var g = merchant.items[j]
+          var exp = 0
+          if (g.offlineDate) {
+            var ot = g.offlineDate + ' ' + (g.offlineTimeStr === '23:59' ? '23:59:59' : (g.offlineTimeStr || '23:59:59'))
+            exp = new Date(ot.replace(/-/g, '/')).getTime()
+          } else {
+            exp = bulkTs
+          }
+          if (exp && !isNaN(exp) && now >= exp) { changed = true; continue }
+          g = Object.assign({}, g)
+          g.remainText = self._remainText(exp, now, dict)
+          goods.push(g)
+        }
+        if (!goods.length) {
+          changed = true
+          merchant.items = []
+          merchant.normalItems = []
+          merchant.limitedItems = []
+          merchant.desc = dict.broadcastMaintain || '运营数据维护中'
+          merchant.badge = ''
+          merchant.normalCountdown = ''
+          merchant.normalOfflineLabel = ''
+        } else {
+          if (goods.length !== merchant.items.length) changed = true
+          merchant.items = goods
+          var normals = []
+          var limited = []
+          for (var n = 0; n < goods.length; n++) {
+            if (goods[n].offlineDate) limited.push(goods[n])
+            else normals.push(goods[n])
+          }
+          merchant.normalItems = normals
+          merchant.limitedItems = limited
+
+          var nCount = self._remainText(bulkTs, now, dict)
+          if (merchant.normalCountdown !== nCount) {
+            merchant.normalCountdown = nCount
+            changed = true
+          }
+          if (bulkTs && bulkTs > 0) {
+            var nLabel = self._offlineLabel({ offlineDate: self._tsToDateStr(bulkTs), offlineTimeStr: self._tsToTimeStr(bulkTs) })
+            if (merchant.normalOfflineLabel !== nLabel) {
+              merchant.normalOfflineLabel = nLabel
+              changed = true
+            }
+          } else if (merchant.normalOfflineLabel) {
+            merchant.normalOfflineLabel = ''
+            changed = true
+          }
+
+          var prevItems = this.data.merchantCard && this.data.merchantCard.items
+          if (!prevItems || prevItems.length !== goods.length) {
+            changed = true
+          } else {
+            for (var r = 0; r < goods.length; r++) {
+              if (!prevItems[r] || prevItems[r].remainText !== goods[r].remainText) {
+                changed = true
+                break
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (changed) this.setData({ swarmItem: swarm, merchantCard: merchant })
+  },
+  _remainText: function(exp, now, dict) {
+    if (!exp || isNaN(exp)) return ''
+    var diff = exp - now
+    if (diff > 0) return i18n.formatDuration(Math.floor(diff / 1000)) || ''
+    return (dict && dict.countdownDelisted) || '已下架'
+  },
+  _tsToDateStr: function(ts) {
+    var d = new Date(ts)
+    var pad = function(n) { return n < 10 ? '0' + n : '' + n }
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
+  },
+  _tsToTimeStr: function(ts) {
+    var d = new Date(ts)
+    var pad = function(n) { return n < 10 ? '0' + n : '' + n }
+    return pad(d.getHours()) + ':' + pad(d.getMinutes())
+  },
+  _offlineLabel: function(g) {
+    if (!g || !g.offlineDate) return ''
+    var t = g.offlineTimeStr === '23:59' ? '24:00' : (g.offlineTimeStr || '24:00')
+    return g.offlineDate + ' ' + t
+  },
+  // 商人商品：点击展开/收起简介
+  toggleBroadcastGoods: function(e) {
+    var key = e.currentTarget.dataset.key
+    this.setData({
+      expandedGoodsIndex: this.data.expandedGoodsIndex === key ? '' : key
+    })
   },
   switchLang: function(e) {
     var lang = e.currentTarget.dataset.lang
@@ -104,75 +235,133 @@ Page({
       if (isAdmin) self.setData({ isAdmin: true })
     })
   },
-  // 【ROCOKINGDOM广播站】大量出没 + 远行商人上架同步展示
+  // 【首页双栏】大量出没（只展示最新一条）+ 远行商人上架（独立卡片）
   loadBroadcast: function() {
     var self = this
     if (!db) {
-      self.setData({ broadcastList: [] })
+      self.setData({ merchantCard: null, swarmItem: null })
       return
     }
-    var list = []
-    var pending = 2
-    var done = function() {
-      pending--
-      if (pending <= 0) {
-        list.sort(function(a, b) {
-          if (a.sortKey !== b.sortKey) return b.sortKey - a.sortKey
-          return 0
-        })
-        self.setData({ broadcastList: list })
-      }
-    }
-    // 大量出没（进行中/即将）
-    db.collection('swarms').orderBy('createTime', 'desc').limit(30).get()
+    // ── 大量出没：只取最新一条（进行中优先，否则最近将开的） ──
+    db.collection('swarms').orderBy('createTime', 'desc').limit(50).get()
       .then(function(res) {
         var now = Date.now()
         var rows = res.data || []
+        var parsed = []
         for (var i = 0; i < rows.length; i++) {
           var s = rows[i]
-          if (s.status !== 1 && s.status !== '1') continue
           var startStr = s.startDate ? (s.startDate + ' ' + (s.startTime || '00:00:00')) : ''
           var endStr = s.endDate ? (s.endDate + ' ' + (s.endTime || '23:59:59')) : ''
           var start = startStr ? new Date(startStr.replace(/-/g, '/')).getTime() : 0
           var end = endStr ? new Date(endStr.replace(/-/g, '/')).getTime() : Infinity
-          if (end < now) continue // 过期不展示
-          var active = start <= now
-          var timeText = ''
-          if (startStr) timeText = (s.startDate || '') + (s.startTime ? ' ' + s.startTime : '') + (s.endDate ? ' ~ ' + s.endDate + (s.endTime ? ' ' + s.endTime : '') : '')
-          list.push({
-            type: 'swarm',
-            typeLabel: '出没',
-            title: (s.name || '精灵出没'),
-            desc: (s.location ? s.location + (s.desc ? ' · ' + s.desc : '') : (s.desc || '')),
-            time: timeText,
-            badge: active ? '正在出没' : '即将出没',
-            sortKey: active ? 2000000000000 - Math.abs(now - start) : start
-          })
+          if (!isNaN(start) && !isNaN(end) && end < now) continue // 过期不展示
+          parsed.push({ s: s, start: start, end: end, startStr: startStr })
         }
-        done()
+        // 排序：进行中的在前（更早结束的靠前），未开始的按开始时间正序
+        parsed.sort(function(a, b) {
+          var aActive = a.start <= now
+          var bActive = b.start <= now
+          if (aActive !== bActive) return aActive ? -1 : 1
+          if (aActive) {
+            var ae = (a.end !== Infinity) ? a.end : 8640000000000000
+            var be = (b.end !== Infinity) ? b.end : 8640000000000000
+            return ae - be
+          }
+          return a.start - b.start
+        })
+        var top = parsed[0]
+        if (!top) {
+          self.setData({ swarmItem: null })
+          return
+        }
+        var s = top.s
+        var start = top.start
+        var end = top.end
+        var active = start && start <= now
+        var timeText = ''
+        if (top.startStr) timeText = (s.startDate || '') + (s.startTime ? ' ' + s.startTime : '') + (s.endDate ? ' ~ ' + s.endDate + (s.endTime ? ' ' + s.endTime : '') : '')
+        var countdownText = ''
+        if (!active && start) {
+          var sdiff = start - now
+          var sprefix = sdiff < 86400000 ? 'countdownOnline' : 'countdownNextSwarm'
+          countdownText = i18n.formatCountdown(sdiff, sprefix, 'countdownEnded') || ''
+        } else if (active && end && end !== Infinity && end > now) {
+          countdownText = i18n.formatCountdown(end - now, 'countdownOffline', 'countdownEnded') || ''
+        }
+        var images = []
+        if (s.images && s.images.length) {
+          for (var ii = 0; ii < s.images.length; ii++) {
+            if (s.images[ii]) images.push(s.images[ii])
+          }
+        }
+        if (!images.length && s.image) images = [s.image]
+        if (!images.length && s.forms && s.forms.length) {
+          for (var f = 0; f < s.forms.length; f++) {
+            var fi = (s.forms[f] && s.forms[f].image) ? s.forms[f].image : ''
+            if (fi) { images.push(fi) }
+          }
+        }
+        var cover = images[0] || ''
+        var desc = s.desc || ''
+        if (!desc && s.forms && s.forms.length) {
+          var notes = []
+          for (var n = 0; n < s.forms.length; n++) {
+            var note = (s.forms[n] && (s.forms[n].note || s.forms[n].desc)) || ''
+            var label = (s.forms[n] && s.forms[n].label) || ''
+            if (note) notes.push((label ? label + '：' : '') + note)
+          }
+          desc = notes.join('；')
+        }
+        self.setData({
+          swarmItem: {
+            id: s._id || 'swarm_0',
+            name: (s.name || '精灵出没'),
+            image: cover,
+            images: images,
+            location: s.location || '',
+            desc: desc,
+            time: timeText,
+            active: !!active,
+            badge: active ? '出没中' : '即将出没',
+            startTs: start || 0,
+            endTs: (end !== Infinity) ? end : 0,
+            countdownText: countdownText
+          }
+        })
       })
-      .catch(function() { done() })
-    // 远行商人在售（仅 currentSelling，不读商品库）
+      .catch(function() { self.setData({ swarmItem: null }) })
+    // ── 远行商人：独立卡片，只读 currentSelling ──
     db.collection('page_config').doc('merchant').get()
       .then(function(res) {
         var d = res.data || {}
         var selling = d.currentSelling || ''
         var items = []
+        var now = Date.now()
+        var bulkTs = d.offlineTime
+        if (bulkTs && typeof bulkTs === 'object' && bulkTs.getTime) bulkTs = bulkTs.getTime()
+        if (!(bulkTs && typeof bulkTs === 'number' && bulkTs > 1e12)) {
+          bulkTs = 0
+          if (d.offlineDate) {
+            var bulk = d.offlineDate + ' ' + ((d.offlineTimeStr && d.offlineTimeStr !== '23:59') ? d.offlineTimeStr + ':00' : '23:59:59')
+            var bts = new Date(bulk.replace(/-/g, '/')).getTime()
+            if (!isNaN(bts)) bulkTs = bts
+          }
+        }
         if (typeof selling === 'string' && selling) {
-          var now = Date.now()
           var lines = selling.split('\n')
           for (var i = 0; i < lines.length; i++) {
             var line = lines[i].trim()
             if (!line) continue
             var parts = line.split('|')
             if (!parts[0] || !parts[0].trim()) continue
-            // 过滤已下架：offlineDate 在过去
             var offlineDate = (parts.length > 7) ? (parts[7] || '').trim() : ''
             var offlineTimeStr = (parts.length > 8) ? (parts[8] || '').trim() : '23:59'
             if (offlineDate) {
               var endStr = offlineDate + ' ' + (offlineTimeStr === '23:59' ? '23:59:59' : offlineTimeStr + ':00')
               var endTime = new Date(endStr.replace(/-/g, '/')).getTime()
               if (!isNaN(endTime) && now >= endTime) continue
+            } else if (bulkTs && now >= bulkTs) {
+              continue
             }
             var price = parseInt(parts[1]) || 0
             var limitCount = (parts.length > 6) ? (parts[6] || '').trim() : ''
@@ -180,35 +369,65 @@ Page({
               name: parts[0].trim(),
               price: price,
               effect: (parts.length > 2) ? parts[2].trim() : '',
+              image: (parts.length > 5) ? (parts[5] || '').trim() : '',
               limitCount: limitCount,
               offlineDate: offlineDate,
-              offlineTimeStr: offlineTimeStr
+              offlineTimeStr: offlineTimeStr,
+              offlineLabel: offlineDate ? (offlineDate + ' ' + (offlineTimeStr === '23:59' ? '24:00' : (offlineTimeStr || '24:00'))) : ''
             })
           }
         }
-        if (!items.length) { done(); return }
-        // 汇总最近下架时间，给条目算倒计时
-        var soonest = null
-        for (var k = 0; k < items.length; k++) {
-          if (!items[k].offlineDate) continue
-          var ot = items[k].offlineDate + ' ' + (items[k].offlineTimeStr === '23:59' ? '23:59:59' : items[k].offlineTimeStr + ':00')
-          var ts = new Date(ot.replace(/-/g, '/')).getTime()
-          if (!isNaN(ts) && (!soonest || ts < soonest)) soonest = ts
+        if (!items.length) {
+          self.setData({
+            merchantCard: {
+              items: [],
+              normalItems: [],
+              limitedItems: [],
+              desc: (i18n.i18n[i18n.getLanguage()].broadcastMaintain || '运营数据维护中'),
+              badge: '',
+              bulkTs: bulkTs || 0,
+              normalCountdown: '',
+              normalOfflineLabel: ''
+            }
+          })
+          return
         }
-        list.push({
-          type: 'merchant',
-          typeLabel: '商人',
-          title: '远行商人上架',
-          desc: '',
-          items: items,
-          time: '',
-          badge: '在售',
-          offlineTs: soonest || 0,
-          sortKey: 1999999999999
+        var normalItems = []
+        var limitedItems = []
+        var pad2 = function(n) { return n < 10 ? '0' + n : '' + n }
+        for (var q = 0; q < items.length; q++) {
+          var gi = Object.assign({}, items[q])
+          var gexp = gi.offlineDate
+            ? new Date((gi.offlineDate + ' ' + (gi.offlineTimeStr === '23:59' ? '23:59:59' : (gi.offlineTimeStr || '23:59:59'))).replace(/-/g, '/')).getTime()
+            : bulkTs
+          gi.remainText = (gexp && !isNaN(gexp) && gexp > Date.now())
+            ? (i18n.formatDuration(Math.floor((gexp - Date.now()) / 1000)) || '')
+            : (gi.offlineDate ? (i18n.i18n[i18n.getLanguage()].countdownDelisted || '已下架') : '')
+          if (gi.offlineDate) limitedItems.push(gi)
+          else normalItems.push(gi)
+        }
+        var normalOfflineLabel = ''
+        if (bulkTs && bulkTs > 0) {
+          var bd = new Date(bulkTs)
+          normalOfflineLabel = bd.getFullYear() + '-' + pad2(bd.getMonth() + 1) + '-' + pad2(bd.getDate()) + ' ' + pad2(bd.getHours()) + ':' + pad2(bd.getMinutes())
+        }
+        var normalCountdown = (bulkTs && bulkTs > Date.now())
+          ? (i18n.formatDuration(Math.floor((bulkTs - Date.now()) / 1000)) || '')
+          : (bulkTs ? (i18n.i18n[i18n.getLanguage()].countdownDelisted || '已下架') : '')
+        self.setData({
+          merchantCard: {
+            items: items,
+            normalItems: normalItems,
+            limitedItems: limitedItems,
+            desc: '',
+            badge: '在售',
+            bulkTs: bulkTs || 0,
+            normalCountdown: normalCountdown,
+            normalOfflineLabel: normalOfflineLabel
+          }
         })
-        done()
       })
-      .catch(function() { done() })
+      .catch(function() {})
   },
   loadBanner: function() {
     var self = this
@@ -287,6 +506,36 @@ Page({
       this.setData({ countdowns: countdowns });
     }
   },
+  _applyAnnouncementList: function(list) {
+    var self = this
+    list = list || []
+    var now = Date.now()
+    var filtered = []
+    for (var i = 0; i < list.length; i++) {
+      list[i].timeStr = self.formatTime(list[i].createTime);
+      if (list[i].startDate) {
+        var sd = list[i].startDate.replace(/-/g, '/');
+        if (sd.length <= 10) sd += ' 00:00:00';
+        list[i].autoOnlineTime = new Date(sd).getTime();
+      }
+      if (list[i].endDate) {
+        var ed = list[i].endDate.replace(/-/g, '/');
+        if (ed.length <= 10) ed += ' 23:59:59';
+        list[i].autoDeleteTime = new Date(ed).getTime();
+      }
+      // 管理员看到所有，普通用户看不到未到上线时间或已过期的
+      var onlineOk = self.data.isAdmin || !list[i].autoOnlineTime || list[i].autoOnlineTime <= now
+      var deleteOk = self.data.isAdmin || !list[i].autoDeleteTime || list[i].autoDeleteTime > now
+      if (onlineOk && deleteOk) {
+        filtered.push(list[i])
+      }
+    }
+    cloudUrl.convertList(filtered, 'image', function(converted) {
+      localizeItems(converted)
+      self.setData({ announcements: converted, countdowns: {} })
+      self.updateCountdowns();
+    })
+  },
   loadAnnouncements: function() {
     var self = this
     if (!db) return
@@ -299,35 +548,37 @@ Page({
       .limit(10)
       .get()
       .then(function(res) {
-        var list = res.data || []
-        var now = Date.now()
-        var filtered = []
-        for (var i = 0; i < list.length; i++) {
-          list[i].timeStr = self.formatTime(list[i].createTime);
-          if (list[i].startDate) {
-            var sd = list[i].startDate.replace(/-/g, '/');
-            if (sd.length <= 10) sd += ' 00:00:00';
-            list[i].autoOnlineTime = new Date(sd).getTime();
-          }
-          if (list[i].endDate) {
-            var ed = list[i].endDate.replace(/-/g, '/');
-            if (ed.length <= 10) ed += ' 23:59:59';
-            list[i].autoDeleteTime = new Date(ed).getTime();
-          }
-          // 管理员看到所有，普通用户看不到未到上线时间或已过期的
-          var onlineOk = self.data.isAdmin || !list[i].autoOnlineTime || list[i].autoOnlineTime <= now
-          var deleteOk = self.data.isAdmin || !list[i].autoDeleteTime || list[i].autoDeleteTime > now
-          if (onlineOk && deleteOk) {
-            filtered.push(list[i])
-          }
-        }
-        cloudUrl.convertList(filtered, 'image', function(converted) {
-          localizeItems(converted)
-          self.setData({ announcements: converted, countdowns: {} })
-          self.updateCountdowns();
-        })
+        self._applyAnnouncementList(res.data || [])
       })
       .catch(function(e) { console.error(e) })
+  },
+  _startAnnouncementsWatch: function() {
+    var self = this
+    if (!db || self._announcementsWatcher) return
+    try {
+      self._announcementsWatcher = db.collection('announcements')
+        .where({ type: db.command.neq('event') })
+        .orderBy('pinned', 'desc')
+        .orderBy('createTime', 'desc')
+        .limit(10)
+        .watch({
+          onChange: function(snapshot) {
+            if (!snapshot || !snapshot.docs) return
+            self._applyAnnouncementList(snapshot.docs)
+          },
+          onError: function(err) {
+            console.error('watch announcements error', err)
+          }
+        })
+    } catch (e) {
+      console.error('watch announcements failed', e)
+    }
+  },
+  _stopAnnouncementsWatch: function() {
+    if (this._announcementsWatcher) {
+      try { this._announcementsWatcher.close() } catch (e) {}
+      this._announcementsWatcher = null
+    }
   },
   refreshAnnouncements: function() {
     this.loadAnnouncements()
@@ -351,38 +602,7 @@ Page({
   },
   goAbout: function() { wx.navigateTo({ url: '/pages/about/about' }) },
   goAdmin: function() { wx.navigateTo({ url: '/pages/admin/admin' }) },
-  translateOne: function(e) {
-    var self = this
-    var id = e.currentTarget.dataset.id
-    var title = e.currentTarget.dataset.title
-    var content = e.currentTarget.dataset.content
-    if (!id || !title || !wx.cloud) return
-    wx.showLoading({ title: '翻译中...' })
-    var data = {}
-    wx.cloud.callFunction({
-      name: 'translateText',
-      data: { text: title, from: 'zh', targets: ['en', 'ja', 'ko'] }
-    }).then(function(res) {
-      var t = res.result.translations || {}
-      for (var lang in t) { if (t[lang]) data['title_' + lang] = t[lang] }
-      return wx.cloud.callFunction({
-        name: 'translateText',
-        data: { text: (content || title).substring(0, 500), from: 'zh', targets: ['en', 'ja', 'ko'] }
-      })
-    }).then(function(res) {
-      var t = res.result.translations || {}
-      for (var lang in t) { if (t[lang]) data['content_' + lang] = t[lang] }
-      var _db = wx.cloud.database()
-      return _db.collection('announcements').doc(id).update({ data: data })
-    }).then(function() {
-      wx.hideLoading()
-      wx.showToast({ title: '翻译完成', icon: 'success' })
-      self.loadAnnouncements()
-    }).catch(function() {
-      wx.hideLoading()
-      wx.showToast({ title: '翻译失败', icon: 'none' })
-    })
-  },
+
   showAnnouncement: function(e) {
     var idx = e.currentTarget.dataset.i
     if (this.data.expandedIndex === idx) {
@@ -469,6 +689,18 @@ Page({
   checkSubscription: function() {
     var self = this
     if (!db) return
+    notify.getSubscriptionStatus(function(err, status) {
+      if (!err && status) {
+        self.setData({
+          subscribedMerchant: !!status.merchant,
+          merchantSubCount: status.merchantCount || 0,
+          subscribedSwarm: !!status.announcement,
+          swarmSubCount: status.announcementCount || 0,
+          subscribedAnnouncement: !!status.announcement,
+          subscribeCount: status.announcementCount || 0
+        })
+      }
+    })
     wx.cloud.callFunction({ name: 'login' }).then(function(res) {
       var openid = res.result.openid
       if (!openid) return
@@ -484,6 +716,44 @@ Page({
         })
         .catch(function(e) { console.error(e) })
     }).catch(function(e) { console.error(e) })
+  },
+  // 右上角订阅按钮：商人上新
+  subscribeMerchantFeed: function() {
+    var self = this
+    if (self.data.subscribedMerchant) {
+      wx.showToast({ title: '已订阅商人上新', icon: 'none' })
+      return
+    }
+    if (!app.globalData.userInfo) {
+      wx.showToast({ title: '请先登录', icon: 'none' })
+      return
+    }
+    notify.requestAndSave(['merchant'], function(err, result) {
+      if (err) return
+      if (result && result.merchant === 'accept') {
+        self.setData({ subscribedMerchant: true })
+        wx.showToast({ title: '已订阅商人上新', icon: 'success' })
+      }
+    })
+  },
+  // 右上角订阅按钮：大量出没（走 announcement 通道）
+  subscribeSwarmFeed: function() {
+    var self = this
+    if (self.data.subscribedSwarm) {
+      wx.showToast({ title: '已订阅出没通知', icon: 'none' })
+      return
+    }
+    if (!app.globalData.userInfo) {
+      wx.showToast({ title: '请先登录', icon: 'none' })
+      return
+    }
+    notify.requestAndSave(['announcement'], function(err, result) {
+      if (err) return
+      if (result && result.announcement === 'accept') {
+        self.setData({ subscribedSwarm: true })
+        wx.showToast({ title: '已订阅出没通知', icon: 'success' })
+      }
+    })
   },
   toggleBannerModal: function() {
     var self = this
@@ -705,11 +975,20 @@ Page({
     if (!key) return
     var w = e.detail.width || 1
     var h = e.detail.height || 1
-    var hRpx = Math.max(200, Math.min(1200, Math.round(702 * h / w)))
+    // 按容器实际宽约 702rpx 换算，完整显示原图比例
+    var hRpx = Math.max(180, Math.round(702 * h / w))
     var map = this.data.richSwiperHeights || {}
     if (map[key] === hRpx) return
     map[key] = hRpx
     this.setData({ richSwiperHeights: map })
+  },
+  onHeroBannerLoad: function(e) {
+    var w = e.detail.width || 1
+    var h = e.detail.height || 1
+    // 750rpx 全宽下的完整高度，多图取最大，不留黑边
+    var hRpx = Math.max(120, Math.round(750 * h / w))
+    var maxH = Math.max(this.data.heroSwiperH || 0, hRpx)
+    if (this.data.heroSwiperH !== maxH) this.setData({ heroSwiperH: maxH })
   },
   previewRichImage: function(e) {
     var src = e.currentTarget.dataset.src

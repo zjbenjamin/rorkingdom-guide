@@ -105,6 +105,10 @@
     <view class="section">
       <view class="section-title">{{_l.dataSource}}</view>
       <view class="section-body">
+        <view class="source-logo-row">
+          <image class="source-logo-img" src="https://rocokingdom.com/web/assets/images/home/header/icons/new-logo-dark-en.png" mode="aspectFit" />
+          <text class="source-logo-text">洛克王国世界官方</text>
+        </view>
         <view class="list-item"><text class="list-item-icon">📖</text><text class="list-item-text">精灵图鉴：洛克王国手游WIKI（CC BY-NC-SA 4.0）</text></view>
         <view class="list-item"><text class="list-item-icon">🎒</text><text class="list-item-text">道具图鉴：洛克王国手游WIKI（CC BY-NC-SA 4.0）</text></view>
         <view class="list-item"><text class="list-item-icon">🥚</text><text class="list-item-text">蛋组数据：洛克王国WIKI（CC BY-NC-SA 4.0）</text></view>

@@ -89,47 +89,51 @@ function pingAliyunServer(payload) {
 }
 
 async function doPush(touser, templateId, page, dataPayload, targetType) {
-  try {
-    const res = await cloud.openapi.subscribeMessage.send({
-      touser: touser,
-      templateId: templateId,
-      page: page || 'pages/index/index',
-      data: dataPayload,
-      miniprogramState: process.env.MINIPROGRAM_STATE || 'formal'
-    })
-    
-    if (res.errCode === 0) {
-      if (targetType) {
-        const db = cloud.database()
-        const _ = db.command
-        await db.collection('subscribers').where({
-          openid: touser,
-          type: targetType,
-          status: 'active'
-        }).update({
-          data: {
-            count: _.inc(-1),
-            updateTime: db.serverDate()
-          }
-        })
-        await db.collection('subscribers').where({
-          openid: touser,
-          type: targetType,
-          count: _.lte(0)
-        }).update({
-          data: {
-            status: 'expired',
-            updateTime: db.serverDate()
-          }
-        })
+  const states = ['formal', 'trial', 'developer']
+  let lastErr = null
+  for (const st of states) {
+    try {
+      const res = await cloud.openapi.subscribeMessage.send({
+        touser: touser,
+        templateId: templateId,
+        page: page || 'pages/index/index',
+        data: dataPayload,
+        miniprogramState: process.env.MINIPROGRAM_STATE || st
+      })
+      if (res.errCode === 0) {
+        if (targetType) {
+          const db = cloud.database()
+          const _ = db.command
+          await db.collection('subscribers').where({
+            openid: touser,
+            type: targetType,
+            status: 'active'
+          }).update({
+            data: {
+              count: _.inc(-1),
+              updateTime: db.serverDate()
+            }
+          })
+          await db.collection('subscribers').where({
+            openid: touser,
+            type: targetType,
+            count: _.lte(0)
+          }).update({
+            data: {
+              status: 'expired',
+              updateTime: db.serverDate()
+            }
+          })
+        }
+        return { success: true }
       }
-      return { success: true }
+      lastErr = res.errMsg
+    } catch (err) {
+      lastErr = err.message || err.errMsg || String(err)
     }
-    return { success: false, error: res.errMsg }
-  } catch (err) {
-    console.error('Push error for', touser, err)
-    return { success: false, error: err.message || err.errMsg || String(err) }
   }
+  console.error('Push error for', touser, lastErr)
+  return { success: false, error: lastErr }
 }
 
 exports.main = async (event, context) => {
@@ -151,7 +155,20 @@ exports.main = async (event, context) => {
 
   // 0. 定时检查大量出没：预设开始时间到达（状态变为正在出没）后自动推送
   // 仅在显式 checkSwarm 或定时触发器时执行，避免空事件误触发
-  if (event.checkSwarm || (event.triggerName && event.triggerName.indexOf('Trigger') !== -1)) {
+  // 微信定时触发器 event 形态可能是 { triggerName } 或 { triggers: [{ name }] }
+  var isTimerTrigger = false
+  if (event.triggerName && String(event.triggerName).indexOf('Trigger') !== -1) {
+    isTimerTrigger = true
+  } else if (Array.isArray(event.triggers)) {
+    for (var ti = 0; ti < event.triggers.length; ti++) {
+      var tn = event.triggers[ti] && event.triggers[ti].name
+      if (tn && String(tn).indexOf('Trigger') !== -1) {
+        isTimerTrigger = true
+        break
+      }
+    }
+  }
+  if (event.checkSwarm || isTimerTrigger) {
     try {
       const swarmRes = await db.collection('swarms').where({
         status: 1,

@@ -206,12 +206,6 @@ Page({
     // 活动赠：合成区可赠送的球；特殊区活动赠仅可可果球
     var craftActivityBalls = [];
     var cnyActivityBalls = [];
-    // 仅展示「手动入库过」的球：入库记录里的，或本地仍有库存的
-    var inboundedNames = {};
-    var hist = wx.getStorageSync('special_history') || [];
-    for (var hi = 0; hi < hist.length; hi++) {
-      if (hist[hi] && hist[hi].ball) inboundedNames[hist[hi].ball] = true;
-    }
 
     for (var j = 0; j < cloudBalls.length; j++) {
       var cb = cloudBalls[j];
@@ -243,9 +237,7 @@ Page({
         isCraft: !!cb.isCraft,
         isSpecial: !!cb.isSpecial,
         isActivity: !!cb.isActivity,
-        isCustom: String(cb.id).indexOf('ball_') === 0,
-        // 手动入库过（或仍有库存）才在仓库展示
-        inbounded: !!inboundedNames[cb.name] || !!(lb.count > 0 || lb.freeCount > 0)
+        isCustom: String(cb.id).indexOf('ball_') === 0
       });
       if (cb.isBuy) buyBalls.push(cb.name);
       if (cb.isCraft) craftBalls.push(cb.name);
@@ -472,7 +464,7 @@ Page({
     var items = [];
     for (var i = 0; i < self.data.balls.length; i++) {
       var b = self.data.balls[i];
-      if (purchased[b.name]) {
+      if (purchased[b.name] && (b.count > 0 || b.freeCount > 0)) {
         items.push({ name: b.name, remain: '', currentCount: b.count || 0 });
       }
     }
@@ -1589,7 +1581,7 @@ Page({
     var items = [];
     for (var i = 0; i < this.data.balls.length; i++) {
       var ball = this.data.balls[i];
-      if (purchasedBalls[ball.name]) {
+      if (purchasedBalls[ball.name] && (ball.count > 0 || ball.freeCount > 0)) {
         items.push({
           name: ball.name,
           remain: '',
@@ -1690,7 +1682,7 @@ Page({
       success: function(res) {
         if (res.confirm) {
           var balls = self.data.balls.map(function(b) {
-            return { id: b.id, name: b.name, color: b.color, count: 0, freeCount: 0, rate: b.rate, price: b.price, cnyPrice: b.cnyPrice || 0, cnyDisplay: b.cnyDisplay || '', isBuy: b.isBuy, isCraft: b.isCraft, isSpecial: b.isSpecial, isActivity: b.isActivity, isCustom: b.isCustom, inbounded: b.inbounded, icon: b.icon, img: b.img, source: b.source }
+            return { id: b.id, name: b.name, color: b.color, count: 0, freeCount: 0, rate: b.rate, price: b.price, cnyPrice: b.cnyPrice || 0, cnyDisplay: b.cnyDisplay || '', isBuy: b.isBuy, isCraft: b.isCraft, isSpecial: b.isSpecial, isActivity: b.isActivity, isCustom: b.isCustom, icon: b.icon, img: b.img, source: b.source }
           })
           wx.removeStorageSync('special_history')
           wx.removeStorageSync('used_ball_total')
@@ -1991,7 +1983,6 @@ Page({
     for (var i = 0; i < balls.length; i++) {
       if (balls[i].name === ballName) {
         balls[i].count += v
-        balls[i].inbounded = true
         if (t === '合成' || t === '活动') balls[i].freeCount += v
         break
       }

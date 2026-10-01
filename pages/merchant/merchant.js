@@ -63,7 +63,9 @@ var initialItems = [
   { id: 58, name: '武系粉尘', price: 500, effect: '武系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/23/su3uy9wfjwvx3ifjaia3l88j2kjr5mg.png/100px-100135.png', limitCount: '' },
   { id: 59, name: '翼系粉尘', price: 500, effect: '翼系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/3/35/5mp1ohcm72pgsxax5kq3x1aophw3lh0.png/100px-100136.png', limitCount: '' },
   { id: 60, name: '地系粉尘', price: 500, effect: '地系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/7/7a/n6n70lv43avntp8zie9k18a4zw41l8i.png/100px-100129.png', limitCount: '' },
-  { id: 61, name: '幻系粉尘', price: 500, effect: '幻系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/24/sgt0lc5llwfvlcmjhr1awhwq6st35fj.png/100px-100139.png', limitCount: '' }
+  { id: 61, name: '幻系粉尘', price: 500, effect: '幻系精灵培养材料，用于合成技能石和精灵突破', rarity: '普通', source: '炼金转化获得/对应系别精灵掉落', image: 'https://patchwiki.biligame.com/images/rocom/thumb/2/24/sgt0lc5llwfvlcmjhr1awhwq6st35fj.png/100px-100139.png', limitCount: '' },
+  { id: 62, name: '可可果球', price: 50, effect: '用可可果制成的精灵球，价格实惠，适合日常捕捉', rarity: '普通', source: '远行商人/活动奖励', image: '', limitCount: '' },
+  { id: 63, name: '有些调皮的球', price: 0, effect: '有些调皮的球，曾经在打水蛋大赛里赢得冠军。旅行商人偶尔赠送，「可可乐」活动获得', rarity: '稀有', source: '旅行商人/活动获得', image: '', limitCount: '' }
 ]
 
 var cloudUrl = require('../../utils/cloudUrl')
@@ -71,12 +73,80 @@ var notify = require('../../utils/notify')
 var admin = require('../../utils/admin')
 var db = null
 
-function serializeItem(item) {
-  return item.name + '|' + item.price + '|' + item.effect + '|' + item.rarity + '|' + item.source + '|' + (item.image || '') + '|' + (item.limitCount || '') + '|' + (item.offlineDate || '') + '|' + (item.offlineTimeStr || '')
-}
-
 function serializeItems(items) {
   return items.map(serializeItem).join('\n')
+}
+
+function isUrlLike(s) {
+  if (!s) return false
+  s = String(s).trim()
+  return s.indexOf('http://') === 0 || s.indexOf('https://') === 0 || s.indexOf('cloud://') === 0
+}
+
+// 字段内不能出现 | 和换行，否则 name|price|effect|... 会错位
+function cleanField(s) {
+  if (s === undefined || s === null) return ''
+  return String(s)
+    .replace(/\r\n|\r|\n/g, ' ')
+    .replace(/\|/g, '｜')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function serializeItem(item) {
+  return cleanField(item.name) + '|' + (parseInt(item.price, 10) || 0) + '|' + cleanField(item.effect) + '|' + cleanField(item.rarity || '普通') + '|' + cleanField(item.source || '远行商人') + '|' + String(item.image || '').trim() + '|' + cleanField(item.limitCount || '') + '|' + cleanField(item.offlineDate || '') + '|' + cleanField(item.offlineTimeStr || '')
+}
+
+function findCatalogImage(name, catalog) {
+  if (!name || !catalog) return ''
+  for (var i = 0; i < catalog.length; i++) {
+    if (catalog[i].name === name && catalog[i].image) return catalog[i].image
+  }
+  return ''
+}
+
+function findCatalogNameByEffect(effect, catalog) {
+  if (!effect || !catalog) return ''
+  var best = ''
+  for (var i = 0; i < catalog.length; i++) {
+    var n = catalog[i].name
+    if (n && effect.indexOf(n) !== -1 && n.length > best.length) best = n
+  }
+  return best
+}
+
+// 修复「图片URL被写进名称 / 图片为空」等脏数据
+function sanitizeItem(item, catalog) {
+  if (!item) return item
+  var out = {}
+  for (var k in item) {
+    if (Object.prototype.hasOwnProperty.call(item, k)) out[k] = item[k]
+  }
+  var name = String(out.name || '').trim()
+  var image = String(out.image || '').trim()
+
+  if (isUrlLike(name)) {
+    if (!isUrlLike(image)) image = name
+    name = ''
+  }
+  if (image && !isUrlLike(image) && image.indexOf('://') === -1 && image.indexOf('cloud://') !== 0) {
+    // 允许本地路径；其它奇怪值丢弃
+    if (image.indexOf('/') !== 0 && image.indexOf('images/') !== 0) image = ''
+  }
+
+  if (!name && out.effect) {
+    name = findCatalogNameByEffect(out.effect, catalog || initialItems)
+  }
+  if (!name) name = '未命名物品'
+  if (isUrlLike(name)) name = '未命名物品'
+
+  if (!image) {
+    image = findCatalogImage(name, catalog || initialItems)
+  }
+
+  out.name = name
+  out.image = image
+  return out
 }
 
 function buildNotifyContent(names, maxLen) {
@@ -237,6 +307,41 @@ Page({
     var e = new Date(end)
     var pad = function(n) { return n < 10 ? '0' + n : n }
     return pad(s.getMonth() + 1) + '-' + pad(s.getDate()) + ' ' + pad(s.getHours()) + ':' + pad(s.getMinutes()) + ' - ' + pad(e.getHours()) + ':' + pad(e.getMinutes())
+  },
+  // 上架时按远行商人日程（remoteSelling）自动匹配单品的下架日期与时段
+  applyScheduleTime: function(item) {
+    if (!item) return item
+    var out = Object.assign({}, item)
+    if (out.offlineDate || out._offlineDate) return out
+    var name = String(out.name || '').trim()
+    if (!name) return out
+    var list = this.data.remoteSelling || []
+    var now = Date.now()
+    var upcoming = null, fallback = null
+    for (var i = 0; i < list.length; i++) {
+      var p = list[i]
+      if (!p || !p.end || String(p.name || '').trim() !== name) continue
+      if (p.end > now) {
+        if (!upcoming || p.end < upcoming.end) upcoming = p
+      } else {
+        if (!fallback || p.end > fallback.end) fallback = p
+      }
+    }
+    var match = upcoming || fallback
+    if (!match) return out
+    var e = new Date(match.end)
+    // 整点 00:00 结束视为上一日 23:59
+    if (e.getHours() === 0 && e.getMinutes() === 0) e = new Date(match.end - 60000)
+    var pad = function(n) { return n < 10 ? '0' + n : '' + n }
+    var dateStr = e.getFullYear() + '-' + pad(e.getMonth() + 1) + '-' + pad(e.getDate())
+    var timeStr = pad(e.getHours()) + ':' + pad(e.getMinutes())
+    var ends = ['12:00', '16:00', '20:00', '23:59']
+    out.offlineDate = dateStr
+    out.offlineTimeStr = timeStr
+    out._offlineDate = dateStr
+    out._offlineTimeStr = timeStr
+    out._timeSlotIndex = ends.indexOf(timeStr)
+    return out
   },
   calculateRemoteRound: function() {
     var now = new Date()
@@ -443,7 +548,7 @@ Page({
         var d = res.data
         var now = Date.now()
         var currentSelling = d.currentSelling ? self.parseItems(d.currentSelling) : []
-        var currentSellingText = d.currentSelling || ''
+        var currentSellingText = currentSelling.length > 0 ? self.serializeItems(currentSelling) : ''
         var currentSellingImage = d.currentSellingImage || ''
         if (d.offlineTime && now >= d.offlineTime) {
           // 只清除常驻商品（无单独offlineDate的），保留未到期的限时商品
@@ -543,28 +648,39 @@ Page({
     })
   },
   parseItems: function(text) {
-    var lines = text.split('\n')
+    var lines = String(text || '').split('\n')
     var items = []
     for (var i = 0; i < lines.length; i++) {
       var line = lines[i].trim()
       if (!line) continue
       var parts = line.split('|')
-      if (parts.length >= 4) {
-        items.push({
-          id: i + 1,
-          name: parts[0].trim(),
-          price: parseInt(parts[1]) || 0,
-          effect: parts[2].trim(),
-          rarity: parts[3].trim() || '普通',
-          source: (parts.length > 4) ? parts[4].trim() : '远行商人',
-          image: (parts.length > 5) ? parts[5].trim() : undefined,
-          limitCount: (parts.length > 6) ? parts[6].trim() : undefined,
-          offlineDate: (parts.length > 7) ? parts[7].trim() : undefined,
-          offlineTimeStr: (parts.length > 8) ? parts[8].trim() : undefined,
-          _offlineDate: (parts.length > 7) ? parts[7].trim() : undefined,
-          _offlineTimeStr: (parts.length > 8) ? parts[8].trim() : undefined
-        })
+      // 至少要有名称|价格|效果|稀有度
+      if (parts.length < 4) continue
+
+      // 兼容错位：若第0段是URL而第5段不是，把URL当作图片
+      var rawName = (parts[0] || '').trim()
+      var rawImage = (parts.length > 5) ? (parts[5] || '').trim() : ''
+      var name = rawName
+      var image = rawImage
+      if (isUrlLike(rawName)) {
+        if (!isUrlLike(image)) image = rawName
+        name = ''
       }
+
+      items.push(sanitizeItem({
+        id: i + 1,
+        name: name,
+        price: parseInt(parts[1], 10) || 0,
+        effect: (parts[2] || '').trim(),
+        rarity: (parts[3] || '').trim() || '普通',
+        source: (parts.length > 4) ? (parts[4] || '').trim() : '远行商人',
+        image: image,
+        limitCount: (parts.length > 6) ? (parts[6] || '').trim() : undefined,
+        offlineDate: (parts.length > 7) ? (parts[7] || '').trim() : undefined,
+        offlineTimeStr: (parts.length > 8) ? (parts[8] || '').trim() : undefined,
+        _offlineDate: (parts.length > 7) ? (parts[7] || '').trim() : undefined,
+        _offlineTimeStr: (parts.length > 8) ? (parts[8] || '').trim() : undefined
+      }))
     }
     return items
   },
@@ -685,15 +801,7 @@ Page({
     this.setData({ selectedForSelling: selected, selectedCountForModal: newSelectedCount })
   },
   serializeItems: function(items) {
-    var lines = []
-    for (var i = 0; i < items.length; i++) {
-      var item = items[i]
-      var offDate = item.offlineDate || item._offlineDate || ''
-      var offTime = item.offlineTimeStr || item._offlineTimeStr || ''
-      var line = item.name + '|' + item.price + '|' + (item.effect || '') + '|' + (item.rarity || '普通') + '|' + (item.source || '远行商人') + '|' + (item.image || '') + '|' + (item.limitCount || '') + '|' + offDate + '|' + offTime
-      lines.push(line)
-    }
-    return lines.join('\n')
+    return serializeItems(items)
   },
     
   syncSellingArrays: function(sellingArray) {
@@ -729,7 +837,7 @@ Page({
       var itemsToAdd = [];
       for (var i = 0; i < (this.data.availableItems || []).length; i++) {
         if (selectedIds.indexOf(String(this.data.availableItems[i].id)) !== -1) {
-          itemsToAdd.push(this.data.availableItems[i]);
+          itemsToAdd.push(self.applyScheduleTime(this.data.availableItems[i]));
         }
       }
       
@@ -798,6 +906,7 @@ Page({
     try {
       var item = e.currentTarget.dataset.item;
       if (!item) return;
+      item = self.applyScheduleTime(item);
       var currentSelling = self.data.currentSelling || [];
       var exists = false;
       for (var i = 0; i < currentSelling.length; i++) {
@@ -879,7 +988,9 @@ Page({
       parsed = parsed.slice(0, 8)
       wx.showToast({ title: '最多8件，已截取前8件', icon: 'none' })
     }
-    
+    // 回写清洗后的数据，避免名称/图片字段错乱继续留在库里
+    text = parsed.length > 0 ? self.serializeItems(parsed) : ''
+
     // 自动回写图片到商品库 items
     var itemsChanged = false
     var updatedItems = self.data.items.slice()
@@ -981,6 +1092,7 @@ Page({
       parsed = parsed.slice(0, 8)
       wx.showToast({ title: '最多8件，已截取前8件', icon: 'none' })
     }
+    text = parsed.length > 0 ? self.serializeItems(parsed) : ''
 
     var itemsChanged = false
     var updatedItems = self.data.items.slice()
@@ -1546,15 +1658,15 @@ Page({
         cells.push((rawCells[k] || '').trim())
       }
       if (cells.length >= 3) {
-        var name = cells[0]
-        var price = parseInt(cells[1]) || 0
-        var effect = cells[2] || ''
-        var rarity = cells[3] || '普通'
-        var source = cells[4] || '远行商人'
-        var image = cells[5] || ''
-        var limitCount = cells[6] || ''
+        var name = cleanField(cells[0])
+        var price = parseInt(cells[1], 10) || 0
+        var effect = cleanField(cells[2] || '')
+        var rarity = cleanField(cells[3] || '普通') || '普通'
+        var source = cleanField(cells[4] || '远行商人') || '远行商人'
+        var image = String(cells[5] || '').trim()
+        var limitCount = cleanField(cells[6] || '')
         if (name && price > 0) {
-          items.push({
+          items.push(sanitizeItem({
             id: Date.now() + i,
             name: name,
             price: price,
@@ -1563,7 +1675,7 @@ Page({
             source: source,
             image: image,
             limitCount: limitCount
-          })
+          }, self.data.items))
         }
       }
     }
@@ -2122,6 +2234,40 @@ Page({
     var src = e.currentTarget.dataset.src
     if (src) wx.previewImage({ urls: [src] })
   },
+  onItemImageError: function(e) {
+    var key = e.currentTarget.dataset.key || ''
+    var self = this
+    if (key.indexOf('selling-') === 0) {
+      var sellingId = String(key.slice(8))
+      var selling = (self.data.currentSelling || []).map(function(it) {
+        if (String(it.id) === sellingId) {
+          var copy = {}
+          for (var k in it) {
+            if (Object.prototype.hasOwnProperty.call(it, k)) copy[k] = it[k]
+          }
+          copy.image = ''
+          return copy
+        }
+        return it
+      })
+      self.setData({ currentSelling: selling })
+      self.syncSellingArrays(selling)
+    } else if (key.indexOf('item-') === 0) {
+      var itemId = String(key.slice(5))
+      var items = (self.data.items || []).map(function(it) {
+        if (String(it.id) === itemId) {
+          var copy = {}
+          for (var k2 in it) {
+            if (Object.prototype.hasOwnProperty.call(it, k2)) copy[k2] = it[k2]
+          }
+          copy.image = ''
+          return copy
+        }
+        return it
+      })
+      self.setData({ items: items })
+    }
+  },
   onNewItemInput: function(e) {
     var field = e.currentTarget.dataset.field
     var value = e.detail.value
@@ -2134,19 +2280,44 @@ Page({
   addMerchantItem: function() {
     var self = this
     if (self.data.addingItem) return
-    var item = self.data.newItem
-    if (!item.name.trim()) {
+    var form = self.data.newItem || {}
+    var rawName = String(form.name || '').trim()
+    var rawImage = String(form.image || '').trim()
+    var rawEffect = String(form.effect || '').trim()
+
+    // 名称粘成图片链接时自动纠正，避免再出现 URL 当标题的坏卡片
+    if (isUrlLike(rawName)) {
+      if (!rawImage) rawImage = rawName
+      rawName = findCatalogNameByEffect(rawEffect, self.data.items)
+      if (!rawName) {
+        wx.showToast({ title: '名称不能是图片链接，请填写物品名称', icon: 'none' })
+        return
+      }
+      wx.showToast({ title: '已自动修正名称/图片字段', icon: 'none' })
+    }
+
+    if (!rawName) {
       wx.showToast({ title: '请输入物品名称', icon: 'none' })
       return
     }
-    if (!item.price.trim() || isNaN(parseInt(item.price))) {
+    if (!String(form.price || '').trim() || isNaN(parseInt(form.price, 10))) {
       wx.showToast({ title: '请输入有效价格', icon: 'none' })
       return
     }
-    if (!item.effect.trim()) {
+    if (!rawEffect) {
       wx.showToast({ title: '请输入物品效果', icon: 'none' })
       return
     }
+
+    var item = sanitizeItem({
+      name: cleanField(rawName),
+      price: parseInt(form.price, 10),
+      effect: cleanField(rawEffect),
+      rarity: cleanField(form.rarity || '普通') || '普通',
+      source: cleanField(form.source || '远行商人') || '远行商人',
+      image: rawImage
+    }, self.data.items)
+
     self.setData({ addingItem: true })
 
     var editIndex = self.data.editingItemIndex
@@ -2154,12 +2325,12 @@ Page({
       var items = self.data.items.slice()
       items[editIndex] = {
         id: items[editIndex].id,
-        name: item.name.trim(),
-        price: parseInt(item.price),
-        effect: item.effect.trim(),
+        name: item.name,
+        price: item.price,
+        effect: item.effect,
         rarity: item.rarity,
-        source: item.source.trim() || '远行商人',
-        image: item.image.trim() || ''
+        source: item.source,
+        image: item.image
       }
       var customItemsText = serializeItems(items)
       db.collection('page_config').doc('merchant').update({
@@ -2184,12 +2355,12 @@ Page({
 
     var newItemData = {
       id: Date.now(),
-      name: item.name.trim(),
-      price: parseInt(item.price),
-      effect: item.effect.trim(),
+      name: item.name,
+      price: item.price,
+      effect: item.effect,
       rarity: item.rarity,
-      source: item.source.trim() || '远行商人',
-      image: item.image.trim() || ''
+      source: item.source,
+      image: item.image
     }
     var currentItems = self.data.items || []
     currentItems.unshift(newItemData)

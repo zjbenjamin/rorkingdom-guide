@@ -47,7 +47,7 @@
       </view>
 
       <view class="swarm-list">
-        <view class="swarm-item-card {{item.statusInfo.statusClass}}" wx:for="{{activeSwarms}}" wx:key="id">
+        <view class="swarm-item-card {{item.statusInfo.statusClass}} {{item.descExpanded ? 'desc-open' : ''}}" wx:for="{{activeSwarms}}" wx:key="id" bindtap="toggleDesc" data-source="active" data-index="{{index}}">
           <!-- 顶部状态栏 -->
           <view class="item-top">
             <view class="status-badge {{item.statusInfo.statusClass}}">
@@ -66,12 +66,12 @@
               <!-- 多图轮播 -->
               <swiper class="swarm-swiper" wx:if="{{item.images && item.images.length > 1}}" circular>
                 <swiper-item wx:for="{{item.images}}" wx:for-item="img" wx:key="index">
-                  <image lazy-load class="swarm-image" src="{{img}}" mode="aspectFill" catchtap="previewImage" data-src="{{img}}" data-urls="{{item.images}}" />
+                  <image lazy-load class="swarm-image" src="{{img}}" mode="aspectFit" catchtap="previewImage" data-src="{{img}}" data-urls="{{item.images}}" />
                 </swiper-item>
               </swiper>
               <!-- 单图 -->
               <block wx:else>
-                <image lazy-load class="swarm-image" src="{{item.image || '/images/pet_placeholder.png'}}" mode="aspectFill" catchtap="previewImage" data-src="{{item.image}}" />
+                <image lazy-load class="swarm-image" src="{{item.image || '/images/pet_placeholder.png'}}" mode="aspectFit" catchtap="previewImage" data-src="{{item.image}}" />
               </block>
               <image class="shiny-badge" src="https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png" mode="aspectFit" />
             </view>
@@ -89,7 +89,7 @@
           </view>
 
           <!-- 双形态卡片：同一精灵，左右滑动 -->
-          <view class="form-cards-wrap" wx:if="{{item.forms && item.forms.length > 0}}">
+          <view class="form-cards-wrap" wx:if="{{item.forms && item.forms.length > 0}}" catchtap="noop">
             <view class="form-cards-head">
               <text class="form-cards-title">形态</text>
               <text class="form-cards-hint" wx:if="{{item.forms.length > 1}}">左右滑动</text>
@@ -97,9 +97,12 @@
             <swiper class="form-cards-swiper" previous-margin="0" next-margin="{{item.forms.length > 1 ? '40rpx' : '0'}}" circular="{{item.forms.length > 1}}">
               <swiper-item wx:for="{{item.forms}}" wx:for-item="form" wx:key="label">
                 <view class="form-card">
-                  <image wx:if="{{form.image}}" class="form-card-img" src="{{form.image}}" mode="aspectFill" catchtap="previewImage" data-src="{{form.image}}" />
-                  <view wx:else class="form-card-img form-card-img-empty">
-                    <text>🐾</text>
+                  <view class="form-card-img-wrap">
+                    <image wx:if="{{form.image}}" class="form-card-img" src="{{form.image}}" mode="aspectFill" catchtap="previewImage" data-src="{{form.image}}" />
+                    <view wx:else class="form-card-img form-card-img-empty">
+                      <text>🐾</text>
+                    </view>
+                    <image wx:if="{{form.isShiny}}" class="shiny-badge form-shiny-badge" src="https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png" mode="aspectFit" />
                   </view>
                   <view class="form-card-body">
                     <text class="form-card-label">{{form.label || '形态'}}</text>
@@ -110,10 +113,18 @@
             </swiper>
           </view>
 
-          <!-- 额外描述 -->
-          <view class="item-footer" wx:if="{{item.desc}}">
-            <text class="footer-icon">💡</text>
-            <text class="footer-text">{{item.desc}}</text>
+          <!-- 简介：点击精灵卡片展开 -->
+          <view class="item-desc-area" wx:if="{{item.desc}}">
+            <view class="desc-bar">
+              <text class="desc-bar-icon">💡</text>
+              <text class="desc-bar-label">简介</text>
+              <text class="desc-bar-arrow {{item.descExpanded ? 'open' : ''}}">▾</text>
+            </view>
+            <view class="desc-panel {{item.descExpanded ? 'open' : ''}}">
+              <scroll-view scroll-y class="desc-scroll" catchtap="noop">
+                <text class="desc-text">{{item.desc}}</text>
+              </scroll-view>
+            </view>
           </view>
         </view>
       </view>
@@ -127,12 +138,15 @@
       </view>
 
       <view class="swarm-list">
-        <view class="swarm-item-card {{item.statusInfo.statusClass}}" wx:for="{{upcomingSwarms}}" wx:key="id">
+        <view class="swarm-item-card {{item.statusInfo.statusClass}} {{item.descExpanded ? 'desc-open' : ''}}" wx:for="{{upcomingSwarms}}" wx:key="id" bindtap="toggleDesc" data-source="upcoming" data-index="{{index}}">
           <!-- 顶部状态栏 -->
           <view class="item-top">
             <view class="status-badge {{item.statusInfo.statusClass}}">
               <text class="badge-dot"></text>
               <text class="badge-text">{{item.statusInfo.statusText}}</text>
+            </view>
+            <view class="countdown-badge" wx:if="{{item.countdownText}}">
+              <text class="countdown-badge-text">{{item.countdownText}}</text>
             </view>
             <view class="admin-item-actions" wx:if="{{isAdmin}}">
               <text class="action-edit" catchtap="openEditModal" data-index="{{index}}" data-source="upcoming">✏️</text>
@@ -146,12 +160,12 @@
               <!-- 多图轮播 -->
               <swiper class="swarm-swiper" wx:if="{{item.images && item.images.length > 1}}" circular>
                 <swiper-item wx:for="{{item.images}}" wx:for-item="img" wx:key="index">
-                  <image lazy-load class="swarm-image" src="{{img}}" mode="aspectFill" catchtap="previewImage" data-src="{{img}}" data-urls="{{item.images}}" />
+                  <image lazy-load class="swarm-image" src="{{img}}" mode="aspectFit" catchtap="previewImage" data-src="{{img}}" data-urls="{{item.images}}" />
                 </swiper-item>
               </swiper>
               <!-- 单图 -->
               <block wx:else>
-                <image lazy-load class="swarm-image" src="{{item.image || '/images/pet_placeholder.png'}}" mode="aspectFill" catchtap="previewImage" data-src="{{item.image}}" />
+                <image lazy-load class="swarm-image" src="{{item.image || '/images/pet_placeholder.png'}}" mode="aspectFit" catchtap="previewImage" data-src="{{item.image}}" />
               </block>
               <image class="shiny-badge" src="https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png" mode="aspectFit" />
             </view>
@@ -169,7 +183,7 @@
           </view>
 
           <!-- 双形态卡片：同一精灵，左右滑动 -->
-          <view class="form-cards-wrap" wx:if="{{item.forms && item.forms.length > 0}}">
+          <view class="form-cards-wrap" wx:if="{{item.forms && item.forms.length > 0}}" catchtap="noop">
             <view class="form-cards-head">
               <text class="form-cards-title">形态</text>
               <text class="form-cards-hint" wx:if="{{item.forms.length > 1}}">左右滑动</text>
@@ -177,9 +191,12 @@
             <swiper class="form-cards-swiper" previous-margin="0" next-margin="{{item.forms.length > 1 ? '40rpx' : '0'}}" circular="{{item.forms.length > 1}}">
               <swiper-item wx:for="{{item.forms}}" wx:for-item="form" wx:key="label">
                 <view class="form-card">
-                  <image wx:if="{{form.image}}" class="form-card-img" src="{{form.image}}" mode="aspectFill" catchtap="previewImage" data-src="{{form.image}}" />
-                  <view wx:else class="form-card-img form-card-img-empty">
-                    <text>🐾</text>
+                  <view class="form-card-img-wrap">
+                    <image wx:if="{{form.image}}" class="form-card-img" src="{{form.image}}" mode="aspectFill" catchtap="previewImage" data-src="{{form.image}}" />
+                    <view wx:else class="form-card-img form-card-img-empty">
+                      <text>🐾</text>
+                    </view>
+                    <image wx:if="{{form.isShiny}}" class="shiny-badge form-shiny-badge" src="https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png" mode="aspectFit" />
                   </view>
                   <view class="form-card-body">
                     <text class="form-card-label">{{form.label || '形态'}}</text>
@@ -190,10 +207,18 @@
             </swiper>
           </view>
 
-          <!-- 额外描述 -->
-          <view class="item-footer" wx:if="{{item.desc}}">
-            <text class="footer-icon">💡</text>
-            <text class="footer-text">{{item.desc}}</text>
+          <!-- 简介：点击精灵卡片展开 -->
+          <view class="item-desc-area" wx:if="{{item.desc}}">
+            <view class="desc-bar">
+              <text class="desc-bar-icon">💡</text>
+              <text class="desc-bar-label">简介</text>
+              <text class="desc-bar-arrow {{item.descExpanded ? 'open' : ''}}">▾</text>
+            </view>
+            <view class="desc-panel {{item.descExpanded ? 'open' : ''}}">
+              <scroll-view scroll-y class="desc-scroll" catchtap="noop">
+                <text class="desc-text">{{item.desc}}</text>
+              </scroll-view>
+            </view>
           </view>
         </view>
       </view>
@@ -290,44 +315,59 @@
             </view>
           </view>
 
-          <!-- 其他图片（非形态，可选） -->
+          <!-- 形态模式 -->
           <view class="form-group">
             <view class="form-label">
-              <text class="form-label-icon">🖼️</text>
-              <text class="form-label-text">其他图片（可选，多张每行一个）</text>
+              <text class="form-label-icon">📐</text>
+              <text class="form-label-text">形态模式</text>
             </view>
-            <textarea class="modal-textarea" maxlength="-1" placeholder="与形态无关的补充图片&#10;每行一个URL" placeholder-class="input-placeholder" value="{{form.imagesText}}" bindinput="onImagesTextInput" style="height: 120rpx;" />
+            <view class="form-mode-switch">
+              <view class="form-mode-btn {{formMode === 'single' ? 'active' : ''}}" catchtap="onFormModeChange" data-mode="single">单形态</view>
+              <view class="form-mode-btn {{formMode === 'multi' ? 'active' : ''}}" catchtap="onFormModeChange" data-mode="multi">多形态</view>
+            </view>
           </view>
 
-          <!-- 双形态：各自名称 / 图片 / 备注 -->
-          <view class="form-group">
-            <view class="form-label">
-              <text class="form-label-icon">🏷️</text>
-              <text class="form-label-text">形态一</text>
+          <!-- 单形态：精灵图片URL + 精灵备注 -->
+          <block wx:if="{{formMode === 'single'}}">
+            <view class="form-group">
+              <view class="form-label">
+                <text class="form-label-icon">🖼️</text>
+                <text class="form-label-text">精灵图片URL</text>
+              </view>
+              <input class="modal-input" maxlength="-1" placeholder="精灵图片URL" placeholder-class="input-placeholder" value="{{form.image}}" bindinput="onFormInput" data-field="image" />
             </view>
-            <input class="modal-input" maxlength="-1" placeholder="形态名称，如：普通" placeholder-class="input-placeholder" value="{{form.form1Label}}" bindinput="onFormInput" data-field="form1Label" />
-            <input class="modal-input" style="margin-top: 10rpx;" maxlength="-1" placeholder="形态一图片URL" placeholder-class="input-placeholder" value="{{form.form1Image}}" bindinput="onFormInput" data-field="form1Image" />
-            <textarea class="modal-textarea" style="margin-top: 10rpx; height: 100rpx;" maxlength="-1" placeholder="形态一备注（可选）" placeholder-class="input-placeholder" value="{{form.form1Note}}" bindinput="onFormInput" data-field="form1Note" />
-          </view>
 
-          <view class="form-group">
-            <view class="form-label">
-              <text class="form-label-icon">🏷️</text>
-              <text class="form-label-text">形态二</text>
+            <view class="form-group">
+              <view class="form-label">
+                <text class="form-label-icon">📝</text>
+                <text class="form-label-text">精灵备注</text>
+              </view>
+              <textarea class="modal-textarea" placeholder="简单说明精灵出没的天气、等级、捕捉技巧或放生收益" value="{{form.desc}}" bindinput="onFormInput" data-field="desc" cursor-spacing="120" />
             </view>
-            <input class="modal-input" maxlength="-1" placeholder="形态名称，如：异色 / 另一形态" placeholder-class="input-placeholder" value="{{form.form2Label}}" bindinput="onFormInput" data-field="form2Label" />
-            <input class="modal-input" style="margin-top: 10rpx;" maxlength="-1" placeholder="形态二图片URL" placeholder-class="input-placeholder" value="{{form.form2Image}}" bindinput="onFormInput" data-field="form2Image" />
-            <textarea class="modal-textarea" style="margin-top: 10rpx; height: 100rpx;" maxlength="-1" placeholder="形态二备注（可选）" placeholder-class="input-placeholder" value="{{form.form2Note}}" bindinput="onFormInput" data-field="form2Note" />
-          </view>
+          </block>
 
-          <!-- 备注说明 -->
-          <view class="form-group">
-            <view class="form-label">
-              <text class="form-label-icon">📝</text>
-              <text class="form-label-text">备注说明</text>
+          <!-- 多形态：形态1 / 形态2 -->
+          <block wx:if="{{formMode === 'multi'}}">
+            <view class="form-group">
+              <view class="form-label">
+                <text class="form-label-icon">🏷️</text>
+                <text class="form-label-text">形态1</text>
+              </view>
+              <input class="modal-input" maxlength="-1" placeholder="形态名称，如：普通" placeholder-class="input-placeholder" value="{{form.form1Label}}" bindinput="onFormInput" data-field="form1Label" />
+              <input class="modal-input" style="margin-top: 10rpx;" maxlength="-1" placeholder="形态图片URL" placeholder-class="input-placeholder" value="{{form.form1Image}}" bindinput="onFormInput" data-field="form1Image" />
+              <textarea class="modal-textarea" style="margin-top: 10rpx; height: 100rpx;" maxlength="-1" placeholder="形态备注（可选）" placeholder-class="input-placeholder" value="{{form.form1Note}}" bindinput="onFormInput" data-field="form1Note" />
             </view>
-            <textarea class="modal-textarea" placeholder="简单说明精灵出没的天气、等级、捕捉技巧或放生收益" value="{{form.desc}}" bindinput="onFormInput" data-field="desc" cursor-spacing="120" />
-          </view>
+
+            <view class="form-group">
+              <view class="form-label">
+                <text class="form-label-icon">🏷️</text>
+                <text class="form-label-text">形态2</text>
+              </view>
+              <input class="modal-input" maxlength="-1" placeholder="形态名称，如：异色" placeholder-class="input-placeholder" value="{{form.form2Label}}" bindinput="onFormInput" data-field="form2Label" />
+              <input class="modal-input" style="margin-top: 10rpx;" maxlength="-1" placeholder="形态图片URL" placeholder-class="input-placeholder" value="{{form.form2Image}}" bindinput="onFormInput" data-field="form2Image" />
+              <textarea class="modal-textarea" style="margin-top: 10rpx; height: 100rpx;" maxlength="-1" placeholder="形态备注（可选）" placeholder-class="input-placeholder" value="{{form.form2Note}}" bindinput="onFormInput" data-field="form2Note" />
+            </view>
+          </block>
         </view>
       </scroll-view>
 

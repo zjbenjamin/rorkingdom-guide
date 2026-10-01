@@ -124,8 +124,9 @@
                 <view class="selling-items">
                   <view class="item-card selling-item" wx:for="{{batchSellingItems}}" wx:key="id">
                     <view class="item-badge {{item.rarity==='普通'?'badge-normal':''}} {{item.rarity==='稀有'?'badge-rare':''}} {{item.rarity==='史诗'?'badge-epic':''}} {{item.rarity==='传说'?'badge-legend':''}}">{{item.rarity}}</view>
-                    <image lazy-load wx:if="{{item.image}}" class="item-image" src="{{item.image}}" mode="aspectFill" catchtap="previewSellingItemImage" data-src="{{item.image}}" />
-                    <text class="item-name">{{item.name}}</text>
+                    <image lazy-load wx:if="{{item.image}}" class="item-image" src="{{item.image}}" mode="aspectFill" catchtap="previewSellingItemImage" data-src="{{item.image}}" binderror="onItemImageError" data-key="selling-{{item.id}}" />
+                    <view class="item-image-placeholder" wx:else><text class="item-image-placeholder-icon">🎁</text></view>
+                    <text class="item-name">{{item.name && item.name.indexOf('http') !== 0 ? item.name : '未命名物品'}}</text>
                     <view class="item-price"><image class="roco-icon" src="https://patchwiki.biligame.com/images/nrc/1/10/blxvp7k90uq3p8prz24feerler3yfsi.png" mode="aspectFit" /><text>{{item.price}}</text></view>
                     <text class="item-effect">{{item.effect}}</text>
                     <view class="item-limit-badge" wx:if="{{item.limitCount}}">限售 {{item.limitCount}}</view>
@@ -154,8 +155,9 @@
                 <view class="selling-items">
                   <view class="item-card selling-item" wx:for="{{individualSellingItems}}" wx:key="id">
                     <view class="item-badge {{item.rarity==='普通'?'badge-normal':''}} {{item.rarity==='稀有'?'badge-rare':''}} {{item.rarity==='史诗'?'badge-epic':''}} {{item.rarity==='传说'?'badge-legend':''}}">{{item.rarity}}</view>
-                    <image lazy-load wx:if="{{item.image}}" class="item-image" src="{{item.image}}" mode="aspectFill" catchtap="previewSellingItemImage" data-src="{{item.image}}" />
-                    <text class="item-name">{{item.name}}</text>
+                    <image lazy-load wx:if="{{item.image}}" class="item-image" src="{{item.image}}" mode="aspectFill" catchtap="previewSellingItemImage" data-src="{{item.image}}" binderror="onItemImageError" data-key="selling-{{item.id}}" />
+                    <view class="item-image-placeholder" wx:else><text class="item-image-placeholder-icon">🎁</text></view>
+                    <text class="item-name">{{item.name && item.name.indexOf('http') !== 0 ? item.name : '未命名物品'}}</text>
                     <view class="item-price"><image class="roco-icon" src="https://patchwiki.biligame.com/images/nrc/1/10/blxvp7k90uq3p8prz24feerler3yfsi.png" mode="aspectFit" /><text>{{item.price}}</text></view>
                     <text class="item-effect">{{item.effect}}</text>
                     <view class="item-limit-badge" wx:if="{{item.limitCount}}">限售 {{item.limitCount}}</view>
@@ -197,8 +199,9 @@
                 </view>
               </view>
             </view>
-            <image lazy-load wx:if="{{item.image}}" class="item-image" src="{{item.image}}" mode="aspectFill" catchtap="previewItemImage" data-src="{{item.image}}" />
-            <text class="item-name">{{item.name}}</text>
+            <image lazy-load wx:if="{{item.image}}" class="item-image" src="{{item.image}}" mode="aspectFill" catchtap="previewItemImage" data-src="{{item.image}}" binderror="onItemImageError" data-key="item-{{item.id}}" />
+            <view class="item-image-placeholder" wx:else><text class="item-image-placeholder-icon">🎁</text></view>
+            <text class="item-name">{{item.name && item.name.indexOf('http') !== 0 ? item.name : '未命名物品'}}</text>
             <view class="item-price"><image class="roco-icon" src="https://patchwiki.biligame.com/images/nrc/1/10/blxvp7k90uq3p8prz24feerler3yfsi.png" mode="aspectFit" /><text>{{item.price}}</text></view>
             <text class="item-effect">{{item.effect}}</text>
             <text class="item-source" wx:if="{{item.source}}">{{item.source}}</text>
@@ -368,7 +371,7 @@
                         </view>
                       </view>
                     </view>
-                    <text class="item-name">{{item.name}}</text>
+                    <text class="item-name">{{item.name && item.name.indexOf('http') !== 0 ? item.name : '未命名物品'}}</text>
                     <view class="item-price"><image class="roco-icon" src="https://patchwiki.biligame.com/images/nrc/1/10/blxvp7k90uq3p8prz24feerler3yfsi.png" mode="aspectFit" /><text>{{item.price}}</text></view>
                     <text class="item-effect">{{item.effect}}</text>
                     <view class="item-limit-badge" wx:if="{{item.limitCount}}">限售 {{item.limitCount}}</view>
@@ -488,8 +491,9 @@
                 <view class="picker-badge {{item.rarity==='普通'?'badge-normal':''}} {{item.rarity==='稀有'?'badge-rare':''}} {{item.rarity==='史诗'?'badge-epic':''}} {{item.rarity==='传说'?'badge-legend':''}}">{{item.rarity}}</view>
                 <view class="picker-card-add">{{selectedForSelling[item.id] ? '✓' : '＋'}}</view>
               </view>
-              <image lazy-load wx:if="{{item.image}}" class="picker-card-image" src="{{item.image}}" mode="aspectFill" />
-              <text class="picker-card-name">{{item.name}}</text>
+              <image lazy-load wx:if="{{item.image}}" class="picker-card-image" src="{{item.image}}" mode="aspectFill" binderror="onItemImageError" data-key="item-{{item.id}}" />
+              <view class="item-image-placeholder" wx:else style="width:100%;height:140rpx;margin:0 auto 12rpx auto;"><text class="item-image-placeholder-icon">🎁</text></view>
+              <text class="picker-card-name">{{item.name && item.name.indexOf('http') !== 0 ? item.name : '未命名物品'}}</text>
               <text class="picker-card-effect">{{item.effect}}</text>
               <view class="picker-card-price"><image class="roco-icon sm" src="https://patchwiki.biligame.com/images/nrc/1/10/blxvp7k90uq3p8prz24feerler3yfsi.png" mode="aspectFit" /><text>{{item.price}}</text></view>
             </view>

@@ -249,7 +249,7 @@
 
       <!-- 咕噜球列表 -->
       <view class="ball-visual-list">
-        <view wx:for="{{balls}}" wx:key="id" wx:if="{{item.inbounded || item.count > 0 || item.freeCount > 0}}">
+        <view wx:for="{{balls}}" wx:key="id" wx:if="{{item.count > 0 || item.freeCount > 0}}">
           <view class="ball-item-card {{pinnedBallIndex===index?'pinned':''}} {{expandedBallIndex===index?'expanded':''}}" bindtap="toggleBallDesc" data-index="{{index}}">
             <view class="ball-card-head">
               <view class="ball-icon-circle">

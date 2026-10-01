@@ -15,6 +15,7 @@ Page({
     editingId: null,
     editingIndex: null,
     editingSource: '',
+    formMode: 'single',
     locationOptions: [],
     saving: false,
     canPublish: false,
@@ -26,7 +27,6 @@ Page({
       endDate: '',
       endTime: '',
       image: '',
-      imagesText: '',
       form1Label: '',
       form1Image: '',
       form1Note: '',
@@ -52,6 +52,63 @@ Page({
   },
   onShow: function() {
     if (wx.cloud && !db) db = wx.cloud.database()
+    this._startCountdownTimer()
+  },
+  onHide: function() {
+    this._stopCountdownTimer()
+  },
+  onUnload: function() {
+    this._stopCountdownTimer()
+  },
+  _startCountdownTimer: function() {
+    var self = this
+    self._stopCountdownTimer()
+    self.updateCountdowns()
+    self._countdownTimer = setInterval(function() {
+      self.updateCountdowns()
+    }, 1000)
+  },
+  _stopCountdownTimer: function() {
+    if (this._countdownTimer) {
+      clearInterval(this._countdownTimer)
+      this._countdownTimer = null
+    }
+  },
+  // 不足24小时的未开始项：距上线 X时X分X秒
+  updateCountdowns: function() {
+    var now = Date.now()
+    var list = this.data.upcomingSwarms
+    if (!list || !list.length) return
+    var changed = false
+    var next = list.map(function(item) {
+      var startTs = item.startTs || 0
+      var text = ''
+      if (startTs && startTs > now && (startTs - now) < 86400000) {
+        text = i18n.formatCountdown(startTs - now, 'countdownOnline', 'countdownEnded') || ''
+      }
+      if (item.countdownText !== text) {
+        changed = true
+        return Object.assign({}, item, { countdownText: text })
+      }
+      return item
+    })
+    if (changed) this.setData({ upcomingSwarms: next })
+  },
+  // 点击精灵卡片展开/收起简介
+  toggleDesc: function(e) {
+    var source = e.currentTarget.dataset.source
+    var index = Number(e.currentTarget.dataset.index)
+    var key = source === 'active' ? 'activeSwarms' : 'upcomingSwarms'
+    var list = this.data[key]
+    if (!list || !list[index]) return
+    list[index].descExpanded = !list[index].descExpanded
+    var patch = {}
+    patch[key] = list
+    this.setData(patch)
+  },
+  noop: function() {},
+  onFormModeChange: function(e) {
+    this.setData({ formMode: e.currentTarget.dataset.mode || 'single' })
   },
   checkAdmin: function() {
     var self = this
@@ -99,28 +156,69 @@ Page({
         if (!item.forms || !Array.isArray(item.forms)) {
           item.forms = []
         }
+        // 形态是否异色（仅认「异色」）
+        item.forms = item.forms.map(function(f) {
+          if (typeof f === 'string') {
+            return { label: f, image: '', note: '', isShiny: f.indexOf('异色') >= 0 }
+          }
+          var label = f.label || ''
+          return {
+            label: label,
+            image: f.image || '',
+            note: f.note || f.desc || '',
+            isShiny: label.indexOf('异色') >= 0
+          }
+        })
         // compute status
         var startStr = item.startDate ? item.startDate.replace(/-/g, '/') + ' ' + (item.startTime || '00:00:00') : null
         var endStr = item.endDate ? item.endDate.replace(/-/g, '/') + ' ' + (item.endTime || '23:59:59') : null
         var start = startStr ? new Date(startStr) : new Date(0)
         var end = endStr ? new Date(endStr) : new Date(8640000000000000)
-        
+        item.startTs = start.getTime()
+        item.endTs = end.getTime()
+        item.countdownText = ''
+
         if (now >= start && now <= end) {
           item.statusInfo = { statusClass: 'status-active', statusText: i18n.i18n[i18n.getLanguage()].swarmActive || '出没中' }
+          // 正在出没：简介默认展开
+          item.descExpanded = true
           active.push(item)
         } else if (now < start) {
           item.statusInfo = { statusClass: 'status-upcoming', statusText: i18n.i18n[i18n.getLanguage()].swarmUpcoming || '未开始' }
+          // 不足24小时：距上线 X时X分X秒 + 简介默认展开
+          var diff = start.getTime() - now.getTime()
+          if (diff > 0 && diff < 86400000) {
+            item.countdownText = i18n.formatCountdown(diff, 'countdownOnline', 'countdownEnded') || ''
+            item.descExpanded = true
+          } else {
+            item.descExpanded = false
+          }
           upcoming.push(item)
         } else {
           item.statusInfo = { statusClass: 'status-ended', statusText: i18n.i18n[i18n.getLanguage()].countdownEnded || '已结束' }
+          item.descExpanded = false
           // We can push to upcoming for admin to see, or a separate ended list.
           if (self.data.isAdmin) {
              upcoming.push(item)
           }
         }
       })
-      
+
+      // 按出没时间（开始时间）升序
+      function byStart(a, b) {
+        return (a.startTs || 0) - (b.startTs || 0)
+      }
+      active.sort(byStart)
+      // 即将出没：未开始在前按出没时间升序，已结束（管理员可见）排在最后
+      upcoming.sort(function(a, b) {
+        var aEnded = a.statusInfo && a.statusInfo.statusClass === 'status-ended'
+        var bEnded = b.statusInfo && b.statusInfo.statusClass === 'status-ended'
+        if (aEnded !== bEnded) return aEnded ? 1 : -1
+        return byStart(a, b)
+      })
+
       self.setData({ activeSwarms: active, upcomingSwarms: upcoming })
+      self._startCountdownTimer()
     }).catch(function(e) { console.error(e) })
   },
   
@@ -132,7 +230,8 @@ Page({
       editingId: null,
       editingIndex: null,
       editingSource: '',
-      form: { name: '', location: '', startDate: '', startTime: '', endDate: '', endTime: '', image: '', imagesText: '', form1Label: '', form1Image: '', form1Note: '', form2Label: '', form2Image: '', form2Note: '', desc: '', status: 0 },
+      formMode: 'single',
+      form: { name: '', location: '', startDate: '', startTime: '', endDate: '', endTime: '', image: '', form1Label: '', form1Image: '', form1Note: '', form2Label: '', form2Image: '', form2Note: '', desc: '', status: 0 },
       canPublish: false
     })
   },
@@ -154,6 +253,7 @@ Page({
       editingId: item._id,
       editingIndex: index,
       editingSource: source,
+      formMode: forms.length > 0 ? 'multi' : 'single',
       form: {
         name: item.name || '',
         location: item.location || '',
@@ -162,7 +262,6 @@ Page({
         endDate: item.endDate || '',
         endTime: item.endTime || '',
         image: item.image || '',
-        imagesText: (item.images && item.images.length > 0) ? item.images.join('\n') : (item.image || ''),
         form1Label: forms[0] ? forms[0].label : '',
         form1Image: forms[0] ? forms[0].image : '',
         form1Note: forms[0] ? forms[0].note : '',
@@ -181,7 +280,7 @@ Page({
     }
     this.checkCanPublish()
   },
-  
+
   // Form input handlers
   onFormInput: function(e) {
     var field = e.currentTarget.dataset.field
@@ -190,11 +289,6 @@ Page({
     form[field] = val
     this.setData({ form: form })
     this.checkCanPublish()
-  },
-  onImagesTextInput: function(e) {
-    var form = this.data.form
-    form.imagesText = e.detail.value
-    this.setData({ form: form })
   },
   onLocationChange: function(e) {
     var idx = e.detail.value
@@ -263,32 +357,37 @@ Page({
 
     self.setData({ saving: true })
 
-    var imagesText = (f.imagesText || '').trim()
-    var images = imagesText ? imagesText.split('\n').map(function(s){return s.trim()}).filter(function(s){return s}) : (f.image ? [f.image.trim()] : [])
-    // 双形态：各自 label / image / note
+    var formMode = self.data.formMode || 'single'
+    var images = []
     var forms = []
-    if ((f.form1Label || '').trim() || (f.form1Image || '').trim() || (f.form1Note || '').trim()) {
-      forms.push({
-        label: (f.form1Label || '').trim(),
-        image: (f.form1Image || '').trim(),
-        note: (f.form1Note || '').trim()
-      })
-    }
-    if ((f.form2Label || '').trim() || (f.form2Image || '').trim() || (f.form2Note || '').trim()) {
-      forms.push({
-        label: (f.form2Label || '').trim(),
-        image: (f.form2Image || '').trim(),
-        note: (f.form2Note || '').trim()
-      })
-    }
-    // 形态图并入展示图列表（去重）
-    for (var fi = 0; fi < forms.length; fi++) {
-      if (forms[fi].image && images.indexOf(forms[fi].image) === -1) {
-        images.push(forms[fi].image)
+    if (formMode === 'multi') {
+      // 多形态：形态1 / 形态2
+      if ((f.form1Label || '').trim() || (f.form1Image || '').trim() || (f.form1Note || '').trim()) {
+        forms.push({
+          label: (f.form1Label || '').trim(),
+          image: (f.form1Image || '').trim(),
+          note: (f.form1Note || '').trim()
+        })
       }
+      if ((f.form2Label || '').trim() || (f.form2Image || '').trim() || (f.form2Note || '').trim()) {
+        forms.push({
+          label: (f.form2Label || '').trim(),
+          image: (f.form2Image || '').trim(),
+          note: (f.form2Note || '').trim()
+        })
+      }
+      for (var fi = 0; fi < forms.length; fi++) {
+        if (forms[fi].image && images.indexOf(forms[fi].image) === -1) {
+          images.push(forms[fi].image)
+        }
+      }
+    } else {
+      // 单形态：精灵图片URL
+      if ((f.image || '').trim()) images.push(f.image.trim())
     }
 
-    // 保存 = 草稿（status 0），发布 = 上线（status 1）
+    // 新增：保存=草稿(status 0)，发布=上线(status 1)
+    // 编辑：保存不动 status（避免已上线被改回草稿导致到点不自动推），发布才置 1
     var dataToSave = {
       name: (f.name || '').trim(),
       location: (f.location || '').trim(),
@@ -300,8 +399,10 @@ Page({
       images: images,
       forms: forms,
       desc: (f.desc || '').trim(),
-      status: publish ? 1 : 0,
       updateTime: db.serverDate()
+    }
+    if (publish || !self.data.editingId) {
+      dataToSave.status = publish ? 1 : 0
     }
 
     var promise
@@ -339,7 +440,11 @@ Page({
       wx.showToast({ title: started ? '已发布，正在推送通知' : '已发布，到点自动推送', icon: 'success' })
       self.loadSwarms()
       if (started && wx.cloud) {
-        wx.cloud.callFunction({ name: 'sendSubscribe', data: { checkSwarm: true } }).catch(function() {})
+        wx.cloud.callFunction({ name: 'sendSubscribe', data: { checkSwarm: true } }).then(function(res) {
+          console.log('大量出没推送结果', res && res.result)
+        }).catch(function(err) {
+          console.error('大量出没推送失败', err)
+        })
       }
     }).catch(function(err) {
       self.setData({ saving: false })

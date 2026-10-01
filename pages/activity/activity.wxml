@@ -53,7 +53,7 @@
                   <text class="quote-text">{{block.content}}</text>
                 </view>
                 <view wx:elif="{{block.type === 'swiper'}}" class="rich-swiper-block">
-                  <swiper class="rich-swiper" autoplay="true" interval="3000" duration="500" circular="true" style="height: {{richSwiperHeights[item.id + '_' + bi] || '420rpx'}};">
+                  <swiper class="rich-swiper" autoplay="true" interval="3000" duration="500" circular="true" style="height: {{richSwiperHeights[item.id + '_' + bi] || 0}}rpx;">
                     <swiper-item wx:for="{{block.urls}}" wx:for-item="url" wx:for-index="ui" wx:key="ui">
                       <image lazy-load src="{{url}}" mode="widthFix" class="rich-swiper-image" catchtap="previewRichImage" data-src="{{url}}" bindload="onRichSwiperLoad" data-hkey="{{item.id}}_{{bi}}" />
                     </swiper-item>
@@ -86,7 +86,7 @@
                     </view>
                   </view>
                 </view>
-                <view wx:elif="{{block.type === 'image' && block.url !== item.image}}" class="rich-image-block" catchtap="previewRichImage" data-src="{{block.url}}">
+                <view wx:elif="{{block.type === 'image'}}" class="rich-image-block" catchtap="previewRichImage" data-src="{{block.url}}">
                   <image lazy-load class="rich-image" src="{{block.url}}" mode="widthFix" />
                 </view>
                 <view wx:elif="{{block.type === 'divider'}}" class="divider-block">
@@ -142,7 +142,6 @@
 
         </view>
         <text class="act-title">{{item.title}}</text>
-        <image lazy-load class="act-image" wx:if="{{item.image}}" src="{{item.image}}" mode="widthFix" />
         <block wx:if="{{item.richContent && item.richContent.length > 0}}">
           <view class="act-rich-content">
             <block wx:for="{{item.richContent}}" wx:for-item="block" wx:for-index="bi" wx:key="bi">
@@ -173,7 +172,7 @@
                 <text class="quote-text">{{block.content}}</text>
               </view>
               <view wx:elif="{{block.type === 'swiper'}}" class="rich-swiper-block">
-                <swiper class="rich-swiper" autoplay="true" interval="3000" duration="500" circular="true" style="height: {{richSwiperHeights[item.id + '_' + bi] || '420rpx'}};">
+                <swiper class="rich-swiper" autoplay="true" interval="3000" duration="500" circular="true" style="height: {{richSwiperHeights[item.id + '_' + bi] || 0}}rpx;">
                   <swiper-item wx:for="{{block.urls}}" wx:for-item="url" wx:for-index="ui" wx:key="ui">
                     <image lazy-load src="{{url}}" mode="widthFix" class="rich-swiper-image" catchtap="previewRichImage" data-src="{{url}}" bindload="onRichSwiperLoad" data-hkey="{{item.id}}_{{bi}}" />
                   </swiper-item>
@@ -213,7 +212,7 @@
                   </view>
                 </view>
               </view>
-              <view wx:elif="{{block.type === 'image' && block.url !== item.image}}" class="rich-image-block" catchtap="previewRichImage" data-src="{{block.url}}">
+              <view wx:elif="{{block.type === 'image'}}" class="rich-image-block" catchtap="previewRichImage" data-src="{{block.url}}">
                 <image lazy-load class="rich-image" src="{{block.url}}" mode="widthFix" />
               </view>
               <view wx:elif="{{block.type === 'divider'}}" class="divider-block">

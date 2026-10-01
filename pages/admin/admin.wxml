@@ -279,7 +279,7 @@
           <view class="banner-preview" wx:if="{{bannerPreviewUrls.length > 0}}" style="width: 100%; height: 220rpx; border-radius: 12rpx; overflow: hidden; margin-bottom: 16rpx; border: 1rpx solid #30363d; background: #0d1117;">
             <swiper style="width:100%;height:100%;" autoplay circular interval="3000">
               <swiper-item wx:for="{{bannerPreviewUrls}}" wx:key="index">
-                <image lazy-load src="{{item}}" mode="aspectFill" style="width:100%;height:100%;" />
+                <image lazy-load src="{{item}}" mode="aspectFit" style="width:100%;height:100%;" />
               </swiper-item>
             </swiper>
           </view>
@@ -289,6 +289,9 @@
 
           <view wx:for="{{bannerItems}}" wx:key="index" style="display:flex;gap:12rpx;align-items:center;margin-bottom:12rpx;">
             <text style="flex-shrink:0;font-size:22rpx;color:#484f58;width:48rpx;">{{index + 1}}.</text>
+            <image wx:if="{{item}}" src="{{item}}" mode="aspectFill" catchtap="previewBlockImage" data-src="{{item}}"
+              style="flex-shrink:0;width:96rpx;height:64rpx;border-radius:8rpx;border:1rpx solid #30363d;background:#0d1117;" />
+            <view wx:else style="flex-shrink:0;width:96rpx;height:64rpx;border-radius:8rpx;border:1rpx dashed #30363d;background:#0d1117;"></view>
             <input class="form-input" style="flex:1;min-width:0;box-sizing:border-box;background:rgba(0,0,0,0.2);border:1rpx solid rgba(255,255,255,0.1);border-radius:12rpx;padding:16rpx;color:#fff;font-size:22rpx;"
               placeholder="图片 URL（https:// 或 cloud://）" value="{{item}}" bindinput="onBannerItemInput" data-index="{{index}}" />
             <text bindtap="removeBannerItem" data-index="{{index}}" style="flex-shrink:0;color:#ff5050;font-size:22rpx;padding:8rpx 12rpx;">删除</text>
@@ -382,10 +385,6 @@
               <text class="form-label">联动Logo</text>
               <input class="form-input" placeholder-class="form-input-placeholder" placeholder="请输入联动品牌Logo URL (选填)" value="{{formCollabLogo}}" bindinput="onCollabLogoInput" />
             </view>
-            <view class="form-group" wx:if="{{formType === 'event' && formSubType === 'collab'}}">
-              <text class="form-label">联动封面</text>
-              <input class="form-input" placeholder-class="form-input-placeholder" placeholder="请输入封面图片 URL (选填)" value="{{formCollabCover}}" bindinput="onCollabCoverInput" />
-            </view>
           <view class="form-group">
             <text class="form-label">标题</text>
             <input class="form-input" placeholder-class="form-input-placeholder" placeholder="输入公告标题" value="{{formTitle}}" bindinput="onTitleInput" maxlength="50" />
@@ -393,41 +392,42 @@
           <view class="form-group">
             <view class="form-label-row">
               <text class="form-label">内容</text>
+              <text class="label-preview-btn" catchtap="openFormPreview">预览</text>
             </view>
-            
+
             <!-- 富文本编辑工具栏 -->
             <view class="rich-toolbar">
+              <view class="toolbar-group-label">格式</view>
               <view class="toolbar-row">
-                                  <view class="tool-btn" catchtap="undo">
-                    <text class="tool-icon">↩️</text>
-                  </view>
-                  <view class="tool-btn {{currentAlign === 'left' ? 'active' : ''}}" catchtap="alignLeft">
-                    <text class="tool-icon" style="font-size:24rpx;">居左</text>
-                  </view>
-                  <view class="tool-btn {{currentAlign === 'center' ? 'active' : ''}}" catchtap="alignCenter">
-                    <text class="tool-icon" style="font-size:24rpx;">居中</text>
-                  </view>
-                  <view class="tool-btn {{currentAlign === 'right' ? 'active' : ''}}" catchtap="alignRight">
-                    <text class="tool-icon" style="font-size:24rpx;">居右</text>
-                  </view>
-
-                  <view class="tool-btn {{currentFontWeight === 'bold' ? 'active' : ''}}" catchtap="toggleBold">
+                <view class="tool-btn" catchtap="undo">
+                  <text class="tool-icon">↩️</text>
+                </view>
+                <view class="tool-btn {{currentAlign === 'left' ? 'active' : ''}}" catchtap="alignLeft">
+                  <text class="tool-icon" style="font-size:24rpx;">居左</text>
+                </view>
+                <view class="tool-btn {{currentAlign === 'center' ? 'active' : ''}}" catchtap="alignCenter">
+                  <text class="tool-icon" style="font-size:24rpx;">居中</text>
+                </view>
+                <view class="tool-btn {{currentAlign === 'right' ? 'active' : ''}}" catchtap="alignRight">
+                  <text class="tool-icon" style="font-size:24rpx;">居右</text>
+                </view>
+                <view class="tool-btn {{currentFontWeight === 'bold' ? 'active' : ''}}" catchtap="toggleBold">
                   <text class="tool-icon" style="font-weight:bold;">B</text>
                 </view>
-                                  <view class="tool-btn {{currentUnderline ? 'active' : ''}}" catchtap="toggleUnderline">
-                    <text class="tool-icon" style="text-decoration:underline;">U</text>
-                  </view>
-                  <view class="tool-btn {{currentStrike ? 'active' : ''}}" catchtap="toggleStrike">
-                    <text class="tool-icon" style="text-decoration:line-through;">S</text>
-                  </view>
-                  <view class="tool-btn {{currentHeader === 2 ? 'active' : ''}}" catchtap="toggleHeader2">
-                    <text class="tool-icon" style="font-weight:bold;">H2</text>
-                  </view>
-                  <view class="tool-btn {{currentHeader === 3 ? 'active' : ''}}" catchtap="toggleHeader3">
-                    <text class="tool-icon" style="font-weight:bold;">H3</text>
-                  </view>
-                  <view class="tool-btn {{currentFontStyle === 'italic' ? 'active' : ''}}" catchtap="toggleItalic">
+                <view class="tool-btn {{currentFontStyle === 'italic' ? 'active' : ''}}" catchtap="toggleItalic">
                   <text class="tool-icon" style="font-style:italic;">I</text>
+                </view>
+                <view class="tool-btn {{currentUnderline ? 'active' : ''}}" catchtap="toggleUnderline">
+                  <text class="tool-icon" style="text-decoration:underline;">U</text>
+                </view>
+                <view class="tool-btn {{currentStrike ? 'active' : ''}}" catchtap="toggleStrike">
+                  <text class="tool-icon" style="text-decoration:line-through;">S</text>
+                </view>
+                <view class="tool-btn {{currentHeader === 2 ? 'active' : ''}}" catchtap="toggleHeader2">
+                  <text class="tool-icon" style="font-weight:bold;">H2</text>
+                </view>
+                <view class="tool-btn {{currentHeader === 3 ? 'active' : ''}}" catchtap="toggleHeader3">
+                  <text class="tool-icon" style="font-weight:bold;">H3</text>
                 </view>
                 <view class="tool-btn" catchtap="showFontSizePicker">
                   <text class="tool-icon">Aa</text>
@@ -439,6 +439,9 @@
                   <text class="tool-icon">𝐓</text>
                   <text class="tool-text">字体</text>
                 </view>
+              </view>
+              <view class="toolbar-group-label">插入</view>
+              <view class="toolbar-row">
                 <view class="tool-btn" catchtap="addRichQuoteBlock">
                   <text class="tool-icon">❝</text>
                   <text class="tool-text">引用</text>
@@ -461,7 +464,7 @@
                 </view>
                 <view class="tool-btn" catchtap="showImageBlockDialog">
                   <text class="tool-icon">🖼️</text>
-                  <text class="tool-text">正文插图</text>
+                  <text class="tool-text">插图</text>
                 </view>
                 <view class="tool-btn" catchtap="showSwiperDialog">
                   <text class="tool-icon">🔄</text>
@@ -473,7 +476,7 @@
                 </view>
                 <view class="tool-btn" catchtap="showLinkDialog">
                   <text class="tool-icon">🔗</text>
-                  <text class="tool-text">超链接</text>
+                  <text class="tool-text">链接</text>
                 </view>
                 <view class="tool-btn" catchtap="addRichTextBlock">
                   <text class="tool-icon">＋</text>
@@ -505,7 +508,7 @@
             
             <!-- 已添加的富文本块 -->
             <view class="rich-blocks" wx:if="{{formRichContent.length > 0}}">
-              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}} {{item.type === 'music' ? 'music-block-item' : ''}} {{item.type === 'video' ? 'video-block-item' : ''}} {{item.type === 'table' ? 'table-block-item' : ''}} {{item.type === 'divider' ? 'divider-block-item' : ''}} {{item.type === 'link' ? 'link-block-item' : ''}}" wx:for="{{formRichContent}}" wx:key="index">
+              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}} {{item.type === 'music' ? 'music-block-item' : ''}} {{item.type === 'video' ? 'video-block-item' : ''}} {{item.type === 'table' ? 'table-block-item' : ''}} {{item.type === 'divider' ? 'divider-block-item' : ''}} {{item.type === 'link' ? 'link-block-item' : ''}} {{item.type === 'image' || item.type === 'swiper' ? 'media-wide' : ''}}" wx:for="{{formRichContent}}" wx:key="index">
                 <view class="block-content">
                   <text wx:if="{{item.type === 'quote'}}" class="block-quote-icon">❝</text>
                   <block wx:elif="{{item.type === 'music'}}">
@@ -519,8 +522,17 @@
                     <text class="block-text video-text-info">{{item.platformName || '在线'}}视频{{item.name ? ': ' + item.name : ''}}</text>
                   </block>
                   <block wx:elif="{{item.type === 'swiper'}}">
-                    <text class="block-video-icon">🔄</text>
-                    <text class="block-text video-text-info">滚动图片 (共{{item.urls.length}}张)</text>
+                    <view class="media-live-preview">
+                      <view class="media-live-head">
+                        <text class="block-video-icon">🔄</text>
+                        <text class="block-text video-text-info">滚动图片 · {{item.urls.length}} 张（可左右滑动）</text>
+                      </view>
+                      <swiper class="media-live-swiper" autoplay circular interval="3000">
+                        <swiper-item wx:for="{{item.urls}}" wx:for-item="surl" wx:for-index="si" wx:key="si">
+                          <image class="media-live-img" src="{{surl}}" mode="aspectFit" catchtap="previewBlockImage" data-src="{{surl}}" />
+                        </swiper-item>
+                      </swiper>
+                    </view>
                   </block>
                   <block wx:elif="{{item.type === 'table'}}">
                     <view class="table-block-preview">
@@ -534,9 +546,12 @@
                     </view>
                   </block>
                   <block wx:elif="{{item.type === 'image'}}">
-                    <text class="block-image-icon">🖼️</text>
-                    <view class="image-block-preview">
-                      <image src="{{item.url}}" mode="aspectFill" />
+                    <view class="media-live-preview">
+                      <view class="media-live-head">
+                        <text class="block-image-icon">🖼️</text>
+                        <text class="block-text video-text-info">正文插图（点图可放大）</text>
+                      </view>
+                      <image class="media-live-img single" src="{{item.url}}" mode="widthFix" catchtap="previewBlockImage" data-src="{{item.url}}" />
                     </view>
                   </block>
                   <block wx:elif="{{item.type === 'divider'}}">
@@ -562,17 +577,18 @@
                   <text wx:else class="block-text" style="font-size:{{item.size}}rpx;color:{{item.color}};font-weight:{{item.weight}};font-style:{{item.style}};{{item.fontFamily && item.fontFamily !== 'sans-serif' ? 'font-family:' + item.fontFamily + ';' : ''}}">{{item.content}}</text>
                 </view>
                 <view class="block-actions">
+                  <view class="block-btn" catchtap="moveRichBlockStep" data-idx="{{index}}" data-dir="-1" data-target="form">↑</view>
+                  <view class="block-btn" catchtap="moveRichBlockStep" data-idx="{{index}}" data-dir="1" data-target="form">↓</view>
                   <block wx:if="{{item.type === 'music' || item.type === 'video'}}">
-                    <view class="block-btn" catchtap="editMediaCover" data-idx="{{index}}" data-target="form">换封面</view>
-                    <view class="block-btn" catchtap="showMoveTopActionSheet" data-idx="{{index}}" data-target="form">置顶</view>
-                    <view class="block-btn" catchtap="showMoveBottomActionSheet" data-idx="{{index}}" data-target="form">置底</view>
+                    <view class="block-btn" catchtap="editMediaCover" data-idx="{{index}}" data-target="form">封面</view>
                   </block>
-                  <view class="block-btn" wx:if="{{item.type !== 'music' && item.type !== 'video' && item.type !== 'table' && item.type !== 'image' && item.type !== 'divider' && item.type !== 'link' && item.type !== 'attachment'}}" catchtap="editRichBlock" data-idx="{{index}}">编辑</view>
+                  <view class="block-btn" wx:if="{{item.type === 'swiper'}}" catchtap="editRichBlock" data-idx="{{index}}">管理</view>
+                  <view class="block-btn" wx:if="{{item.type !== 'music' && item.type !== 'video' && item.type !== 'table' && item.type !== 'image' && item.type !== 'divider' && item.type !== 'link' && item.type !== 'attachment' && item.type !== 'swiper'}}" catchtap="editRichBlock" data-idx="{{index}}">编辑</view>
                   <view class="block-btn delete" catchtap="removeRichBlock" data-idx="{{index}}">删除</view>
                 </view>
               </view>
             </view>
-            
+
             <editor id="editor" class="form-editor" placeholder="输入公告内容" bindstatuschange="onStatusChange" bindready="onEditorReady" bindinput="onEditorInput" show-img-size show-img-toolbar show-img-resize></editor>
           </view>
           <view class="form-group">
@@ -611,6 +627,7 @@
         </view>
         <view class="modal-footer">
           <text class="char-count">{{formContent.length}}/5000</text>
+          <button class="modal-submit modal-submit-secondary" catchtap="openFormPreview" style="width:auto;padding:0 24rpx;">预览</button>
           <button class="modal-submit" catchtap="submitAnnouncement" disabled="{{submitting}}">{{submitting ? '提交中...' : (editingItem ? '更新' : '发布')}}</button>
         </view>
       </view>
@@ -643,40 +660,41 @@
           <view class="form-group">
             <view class="form-label-row">
               <text class="form-label">描述</text>
+              <text class="label-preview-btn" catchtap="openActivityPreview">预览</text>
             </view>
             <!-- 富文本编辑工具栏 -->
             <view class="rich-toolbar">
+              <view class="toolbar-group-label">格式</view>
               <view class="toolbar-row">
-                                  <view class="tool-btn" catchtap="activityUndo">
-                    <text class="tool-icon">↩️</text>
-                  </view>
-                  <view class="tool-btn {{activityAlign === 'left' ? 'active' : ''}}" catchtap="activityAlignLeft">
-                    <text class="tool-icon" style="font-size:24rpx;">居左</text>
-                  </view>
-                  <view class="tool-btn {{activityAlign === 'center' ? 'active' : ''}}" catchtap="activityAlignCenter">
-                    <text class="tool-icon" style="font-size:24rpx;">居中</text>
-                  </view>
-                  <view class="tool-btn {{activityAlign === 'right' ? 'active' : ''}}" catchtap="activityAlignRight">
-                    <text class="tool-icon" style="font-size:24rpx;">居右</text>
-                  </view>
-
-                  <view class="tool-btn {{activityFontWeight === 'bold' ? 'active' : ''}}" catchtap="toggleActivityBold">
+                <view class="tool-btn" catchtap="activityUndo">
+                  <text class="tool-icon">↩️</text>
+                </view>
+                <view class="tool-btn {{activityAlign === 'left' ? 'active' : ''}}" catchtap="activityAlignLeft">
+                  <text class="tool-icon" style="font-size:24rpx;">居左</text>
+                </view>
+                <view class="tool-btn {{activityAlign === 'center' ? 'active' : ''}}" catchtap="activityAlignCenter">
+                  <text class="tool-icon" style="font-size:24rpx;">居中</text>
+                </view>
+                <view class="tool-btn {{activityAlign === 'right' ? 'active' : ''}}" catchtap="activityAlignRight">
+                  <text class="tool-icon" style="font-size:24rpx;">居右</text>
+                </view>
+                <view class="tool-btn {{activityFontWeight === 'bold' ? 'active' : ''}}" catchtap="toggleActivityBold">
                   <text class="tool-icon" style="font-weight:bold;">B</text>
                 </view>
-                                  <view class="tool-btn {{activityUnderline ? 'active' : ''}}" catchtap="activityToggleUnderline">
-                    <text class="tool-icon" style="text-decoration:underline;">U</text>
-                  </view>
-                  <view class="tool-btn {{activityStrike ? 'active' : ''}}" catchtap="activityToggleStrike">
-                    <text class="tool-icon" style="text-decoration:line-through;">S</text>
-                  </view>
-                  <view class="tool-btn {{activityHeader === 2 ? 'active' : ''}}" catchtap="activityToggleHeader2">
-                    <text class="tool-icon" style="font-weight:bold;">H2</text>
-                  </view>
-                  <view class="tool-btn {{activityHeader === 3 ? 'active' : ''}}" catchtap="activityToggleHeader3">
-                    <text class="tool-icon" style="font-weight:bold;">H3</text>
-                  </view>
-                  <view class="tool-btn {{activityFontStyle === 'italic' ? 'active' : ''}}" catchtap="toggleActivityItalic">
+                <view class="tool-btn {{activityFontStyle === 'italic' ? 'active' : ''}}" catchtap="toggleActivityItalic">
                   <text class="tool-icon" style="font-style:italic;">I</text>
+                </view>
+                <view class="tool-btn {{activityUnderline ? 'active' : ''}}" catchtap="activityToggleUnderline">
+                  <text class="tool-icon" style="text-decoration:underline;">U</text>
+                </view>
+                <view class="tool-btn {{activityStrike ? 'active' : ''}}" catchtap="activityToggleStrike">
+                  <text class="tool-icon" style="text-decoration:line-through;">S</text>
+                </view>
+                <view class="tool-btn {{activityHeader === 2 ? 'active' : ''}}" catchtap="activityToggleHeader2">
+                  <text class="tool-icon" style="font-weight:bold;">H2</text>
+                </view>
+                <view class="tool-btn {{activityHeader === 3 ? 'active' : ''}}" catchtap="activityToggleHeader3">
+                  <text class="tool-icon" style="font-weight:bold;">H3</text>
                 </view>
                 <view class="tool-btn" catchtap="showActivityFontSizePicker">
                   <text class="tool-icon">Aa</text>
@@ -688,6 +706,9 @@
                   <text class="tool-icon">𝐓</text>
                   <text class="tool-text">字体</text>
                 </view>
+              </view>
+              <view class="toolbar-group-label">插入</view>
+              <view class="toolbar-row">
                 <view class="tool-btn" catchtap="addActivityRichQuoteBlock">
                   <text class="tool-icon">❝</text>
                   <text class="tool-text">引用</text>
@@ -710,7 +731,7 @@
                 </view>
                 <view class="tool-btn" catchtap="showActivityImageBlockDialog">
                   <text class="tool-icon">🖼️</text>
-                  <text class="tool-text">正文插图</text>
+                  <text class="tool-text">插图</text>
                 </view>
                 <view class="tool-btn" catchtap="showActivitySwiperDialog">
                   <text class="tool-icon">🔄</text>
@@ -722,7 +743,7 @@
                 </view>
                 <view class="tool-btn" catchtap="showActivityLinkDialog">
                   <text class="tool-icon">🔗</text>
-                  <text class="tool-text">超链接</text>
+                  <text class="tool-text">链接</text>
                 </view>
                 <view class="tool-btn" catchtap="addActivityRichTextBlock">
                   <text class="tool-icon">＋</text>
@@ -750,7 +771,7 @@
             </view>
             <!-- 已添加的富文本块 -->
             <view class="rich-blocks" wx:if="{{activityRichContent.length > 0}}">
-              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}} {{item.type === 'music' ? 'music-block-item' : ''}} {{item.type === 'video' ? 'video-block-item' : ''}} {{item.type === 'table' ? 'table-block-item' : ''}} {{item.type === 'divider' ? 'divider-block-item' : ''}} {{item.type === 'link' ? 'link-block-item' : ''}}" wx:for="{{activityRichContent}}" wx:key="index">
+              <view class="rich-block {{item.type === 'quote' ? 'quote-block' : ''}} {{item.type === 'music' ? 'music-block-item' : ''}} {{item.type === 'video' ? 'video-block-item' : ''}} {{item.type === 'table' ? 'table-block-item' : ''}} {{item.type === 'divider' ? 'divider-block-item' : ''}} {{item.type === 'link' ? 'link-block-item' : ''}} {{item.type === 'image' || item.type === 'swiper' ? 'media-wide' : ''}}" wx:for="{{activityRichContent}}" wx:key="index">
                 <view class="block-content">
                   <text wx:if="{{item.type === 'quote'}}" class="block-quote-icon">❝</text>
                   <block wx:elif="{{item.type === 'music'}}">
@@ -764,8 +785,17 @@
                     <text class="block-text video-text-info">{{item.platformName || '在线'}}视频{{item.name ? ': ' + item.name : ''}}</text>
                   </block>
                   <block wx:elif="{{item.type === 'swiper'}}">
-                    <text class="block-video-icon">🔄</text>
-                    <text class="block-text video-text-info">滚动图片 (共{{item.urls.length}}张)</text>
+                    <view class="media-live-preview">
+                      <view class="media-live-head">
+                        <text class="block-video-icon">🔄</text>
+                        <text class="block-text video-text-info">滚动图片 · {{item.urls.length}} 张（可左右滑动）</text>
+                      </view>
+                      <swiper class="media-live-swiper" autoplay circular interval="3000">
+                        <swiper-item wx:for="{{item.urls}}" wx:for-item="surl" wx:for-index="si" wx:key="si">
+                          <image class="media-live-img" src="{{surl}}" mode="aspectFit" catchtap="previewBlockImage" data-src="{{surl}}" />
+                        </swiper-item>
+                      </swiper>
+                    </view>
                   </block>
                   <block wx:elif="{{item.type === 'table'}}">
                     <view class="table-block-preview">
@@ -779,9 +809,12 @@
                     </view>
                   </block>
                   <block wx:elif="{{item.type === 'image'}}">
-                    <text class="block-image-icon">🖼️</text>
-                    <view class="image-block-preview">
-                      <image src="{{item.url}}" mode="aspectFill" />
+                    <view class="media-live-preview">
+                      <view class="media-live-head">
+                        <text class="block-image-icon">🖼️</text>
+                        <text class="block-text video-text-info">正文插图（点图可放大）</text>
+                      </view>
+                      <image class="media-live-img single" src="{{item.url}}" mode="widthFix" catchtap="previewBlockImage" data-src="{{item.url}}" />
                     </view>
                   </block>
                   <block wx:elif="{{item.type === 'divider'}}">
@@ -807,12 +840,13 @@
                   <text wx:else class="block-text" style="font-size:{{item.size}}rpx;color:{{item.color}};font-weight:{{item.weight}};font-style:{{item.style}};{{item.fontFamily && item.fontFamily !== 'sans-serif' ? 'font-family:' + item.fontFamily + ';' : ''}}">{{item.content}}</text>
                 </view>
                 <view class="block-actions">
+                  <view class="block-btn" catchtap="moveRichBlockStep" data-idx="{{index}}" data-dir="-1" data-target="activity">↑</view>
+                  <view class="block-btn" catchtap="moveRichBlockStep" data-idx="{{index}}" data-dir="1" data-target="activity">↓</view>
                   <block wx:if="{{item.type === 'music' || item.type === 'video'}}">
-                    <view class="block-btn" catchtap="editMediaCover" data-idx="{{index}}" data-target="activity">换封面</view>
-                    <view class="block-btn" catchtap="showMoveTopActionSheet" data-idx="{{index}}" data-target="activity">置顶</view>
-                    <view class="block-btn" catchtap="showMoveBottomActionSheet" data-idx="{{index}}" data-target="activity">置底</view>
+                    <view class="block-btn" catchtap="editMediaCover" data-idx="{{index}}" data-target="activity">封面</view>
                   </block>
-                  <view class="block-btn" wx:if="{{item.type !== 'music' && item.type !== 'video' && item.type !== 'table' && item.type !== 'image' && item.type !== 'divider' && item.type !== 'link' && item.type !== 'attachment'}}" catchtap="editActivityRichBlock" data-idx="{{index}}">编辑</view>
+                  <view class="block-btn" wx:if="{{item.type === 'swiper'}}" catchtap="editActivityRichBlock" data-idx="{{index}}">管理</view>
+                  <view class="block-btn" wx:if="{{item.type !== 'music' && item.type !== 'video' && item.type !== 'table' && item.type !== 'image' && item.type !== 'divider' && item.type !== 'link' && item.type !== 'attachment' && item.type !== 'swiper'}}" catchtap="editActivityRichBlock" data-idx="{{index}}">编辑</view>
                   <view class="block-btn delete" catchtap="removeActivityRichBlock" data-idx="{{index}}">删除</view>
                 </view>
               </view>
@@ -850,6 +884,7 @@
           </view>
         </view>
         <view class="modal-footer">
+          <button class="modal-submit modal-submit-secondary" catchtap="openActivityPreview" style="width:auto;padding:0 24rpx;">预览</button>
           <button class="modal-submit" catchtap="submitActivity" disabled="{{activitySubmitting}}">{{activitySubmitting ? '提交中...' : (activityEditingItem ? '更新' : '发布并推送')}}</button>
         </view>
       </view>
@@ -958,6 +993,56 @@
         <view class="modal-footer">
           <button class="modal-cancel" bindtap="closeSwarmModal">取消</button>
           <button class="modal-save" bindtap="saveSwarmLocation">保存</button>
+        </view>
+      </view>
+    </view>
+
+    <!-- 发布前整篇预览 -->
+    <view class="modal-mask preview-mask" wx:if="{{showContentPreview}}" bindtap="closeContentPreview">
+      <view class="preview-box" catchtap="preventClose">
+        <view class="preview-header">
+          <text class="preview-title">{{previewKind === 'activity' ? '活动预览' : '公告预览'}}（首页展示效果）</text>
+          <text class="modal-close" catchtap="closeContentPreview">✕</text>
+        </view>
+        <view class="preview-body">
+          <view class="preview-feed-card">
+            <view class="preview-feed-head">
+              <view class="preview-badge">{{previewTypeLabel}}</view>
+              <text class="preview-feed-title">{{previewTitle || '（未填标题）'}}</text>
+            </view>
+            <view class="preview-feed-body">
+              <block wx:for="{{previewBlocks}}" wx:key="index">
+                <image wx:if="{{item.type === 'image'}}" class="preview-img" src="{{item.url}}" mode="widthFix" catchtap="previewBlockImage" data-src="{{item.url}}" />
+                <swiper wx:elif="{{item.type === 'swiper'}}" class="preview-swiper" autoplay circular interval="3000">
+                  <swiper-item wx:for="{{item.urls}}" wx:for-item="surl" wx:for-index="si" wx:key="si">
+                    <image class="media-live-img" src="{{surl}}" mode="aspectFit" catchtap="previewBlockImage" data-src="{{surl}}" />
+                  </swiper-item>
+                </swiper>
+                <view wx:elif="{{item.type === 'quote'}}" class="preview-quote">{{item.content}}</view>
+                <view wx:elif="{{item.type === 'music'}}" class="preview-media-tag">🎵 音乐：{{item.name || '推荐单曲'}}</view>
+                <view wx:elif="{{item.type === 'video'}}" class="preview-media-tag">🎬 视频：{{item.name || item.platformName || '在线视频'}}</view>
+                <view wx:elif="{{item.type === 'divider'}}" class="preview-divider"></view>
+                <view wx:elif="{{item.type === 'link'}}" class="preview-link">{{item.isVideo ? '📺' : '🔗'}} {{item.text}}</view>
+                <view wx:elif="{{item.type === 'attachment'}}" class="preview-media-tag">📎 {{item.name}} {{item.sizeText}}</view>
+                <view wx:elif="{{item.type === 'table'}}" class="preview-table">
+                  <view class="preview-table-row header">
+                    <view class="preview-table-cell" wx:for="{{item.headers}}" wx:for-item="h" wx:for-index="hi" wx:key="hi">{{h}}</view>
+                  </view>
+                  <view class="preview-table-row" wx:for="{{item.rows}}" wx:for-item="row" wx:for-index="ri" wx:key="ri">
+                    <view class="preview-table-cell" wx:for="{{row}}" wx:for-item="cell" wx:for-index="ci" wx:key="ci">{{cell}}</view>
+                  </view>
+                </view>
+                <view wx:elif="{{item.type === 'text'}}" class="preview-rich-text">
+                  <rich-text wx:if="{{item.html}}" nodes="{{item.html}}" />
+                  <text wx:else>{{item.content}}</text>
+                </view>
+              </block>
+              <view wx:if="{{previewEditorHtml}}" class="preview-rich-text">
+                <rich-text nodes="{{previewEditorHtml}}" />
+              </view>
+              <view wx:if="{{previewSource}}" class="preview-source">来源：{{previewSource}}</view>
+            </view>
+          </view>
         </view>
       </view>
     </view>

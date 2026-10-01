@@ -256,7 +256,7 @@ function pushToSubscribers(type, title, content, page, itemName, itemNames, call
     if (callback) callback({ errMsg: 'cloud not available' });
     return;
   }
-  
+
   wx.cloud.callFunction({
     name: 'sendSubscribe',
     data: {
@@ -265,15 +265,14 @@ function pushToSubscribers(type, title, content, page, itemName, itemNames, call
       content: content,
       page: page || '/pages/index/index',
       itemName: itemName,
-      itemNames: itemNames,
-      miniprogramState: 'formal' // 体验版联调可临时改为 'trial'
+      itemNames: itemNames
     },
     success: function(res) {
-      console.log('已成功通过云函数中转给阿里云服务器', res.result)
+      console.log('推送结果', type, res && res.result)
       if (callback) callback(null, res.result)
     },
     fail: function(err) {
-      console.error('云函数中转失败:', err)
+      console.error('推送失败:', type, err)
       if (callback) callback(err)
     }
   })

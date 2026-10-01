@@ -1,0 +1,557 @@
+{
+  "rows": [
+    {
+      "key": "appName",
+      "zh": "洛手助手",
+      "en": "洛手助手 Helper",
+      "ja": "洛手助手 ヘルパー",
+      "ko": ""
+    },
+    {
+      "key": "merchant",
+      "zh": "远行商人",
+      "en": "Merchant",
+      "ja": "商人",
+      "ko": ""
+    },
+    {
+      "key": "merchantShop",
+      "zh": "远行商人",
+      "en": "Merchant Shop",
+      "ja": "商人の店",
+      "ko": ""
+    },
+    {
+      "key": "merchantTitle",
+      "zh": "远行商人",
+      "en": "Traveling Merchant",
+      "ja": "商人",
+      "ko": ""
+    },
+    {
+      "key": "merchantBusy",
+      "zh": "远行商人出差中",
+      "en": "Traveling Merchant is away",
+      "ja": "商人は不在です",
+      "ko": ""
+    },
+    {
+      "key": "petHandbook",
+      "zh": "精灵图鉴",
+      "en": "Pet Handbook",
+      "ja": "ペット図鑑",
+      "ko": ""
+    },
+    {
+      "key": "swarm",
+      "zh": "大量出没",
+      "en": "Swarm",
+      "ja": "大量出現",
+      "ko": ""
+    },
+    {
+      "key": "swarmTitle",
+      "zh": "⚡ 大量出没监控 ⚡",
+      "en": "⚡ Swarm Monitor ⚡",
+      "ja": "⚡ 大量出現モニター ⚡",
+      "ko": ""
+    },
+    {
+      "key": "swarmSubtitle",
+      "zh": "洛克王国手游 · 野外精灵限时大量刷新",
+      "en": "Roco Kingdom · Limited wild spawn alerts",
+      "ja": "ロコ王国 · 期間限定野生出現アラート",
+      "ko": ""
+    },
+    {
+      "key": "swarmActive",
+      "zh": "出没中",
+      "en": "Active",
+      "ja": "出現中",
+      "ko": ""
+    },
+    {
+      "key": "swarmActiveLabel",
+      "zh": "⚡ 大量出没",
+      "en": "⚡ Active Swarms",
+      "ja": "⚡ 開催中の大量出現",
+      "ko": ""
+    },
+    {
+      "key": "swarmBroadcast",
+      "zh": "出没补货广播",
+      "en": "Spawn Broadcast",
+      "ja": "出現放送",
+      "ko": ""
+    },
+    {
+      "key": "swarmPreset",
+      "zh": "大量出没地点预设",
+      "en": "Swarm Location Presets",
+      "ja": "大量出現地点プリセット",
+      "ko": ""
+    },
+    {
+      "key": "swarmAdminTitle",
+      "zh": "出没管理控制台",
+      "en": "Swarm Management Console",
+      "ja": "出現管理コンソール",
+      "ko": ""
+    },
+    {
+      "key": "currency",
+      "zh": "洛克贝",
+      "en": "Roco Coins",
+      "ja": "ロココイン",
+      "ko": ""
+    },
+    {
+      "key": "gemCurrency",
+      "zh": "洛克钻",
+      "en": "Roco Gems",
+      "ja": "ロコジェム",
+      "ko": ""
+    },
+    {
+      "key": "priceRoco",
+      "zh": "洛克贝",
+      "en": "Roco Coins",
+      "ja": "ロココイン",
+      "ko": ""
+    },
+    {
+      "key": "rococoRecord",
+      "zh": "洛克贝记录",
+      "en": "Roco Coins Log",
+      "ja": "ロココ記録",
+      "ko": ""
+    },
+    {
+      "key": "initialRococo",
+      "zh": "洛克贝初始值",
+      "en": "Initial Roco Coins",
+      "ja": "初期ロココイン",
+      "ko": ""
+    },
+    {
+      "key": "accumulatedRococo",
+      "zh": "累计洛克贝",
+      "en": "Total Roco Coins",
+      "ja": "累計ロココイン",
+      "ko": ""
+    },
+    {
+      "key": "currentRococo",
+      "zh": "当前洛克贝",
+      "en": "Current Roco Coins",
+      "ja": "現在のロココイン",
+      "ko": ""
+    },
+    {
+      "key": "ballsConfigTitle",
+      "zh": "咕噜球仓库配置",
+      "en": "Ball Warehouse Config",
+      "ja": "ボール倉庫設定",
+      "ko": ""
+    },
+    {
+      "key": "ballBuy",
+      "zh": "购买球",
+      "en": "Buy Gulu Ball",
+      "ja": "購入ボール",
+      "ko": ""
+    },
+    {
+      "key": "ballCraft",
+      "zh": "合成球",
+      "en": "Craft Gulu Ball",
+      "ja": "クラフトボール",
+      "ko": ""
+    },
+    {
+      "key": "noBallSelected",
+      "zh": "请先选择咕噜球",
+      "en": "Please select a Gulu Ball first",
+      "ja": "先にボールを選択してください",
+      "ko": ""
+    },
+    {
+      "key": "ballCost",
+      "zh": "球消耗洛克贝",
+      "en": "Ball cost (Roco Coins)",
+      "ja": "ボールコスト（ロココ）",
+      "ko": ""
+    },
+    {
+      "key": "craftBall",
+      "zh": "合成球",
+      "en": "Craft Gulu Ball",
+      "ja": "ボールクラフト",
+      "ko": ""
+    },
+    {
+      "key": "selectBallType",
+      "zh": "咕噜球类型",
+      "en": "Gulu Ball Type",
+      "ja": "ボールタイプ",
+      "ko": ""
+    },
+    {
+      "key": "expandView",
+      "zh": "点击展开查看咕噜球类型",
+      "en": "Tap to view Gulu Ball types",
+      "ja": "タップしてボール種類を表示",
+      "ko": ""
+    },
+    {
+      "key": "catchInitHint",
+      "zh": "请先初始化洛克贝资产并购买咕噜球",
+      "en": "Initialize Roco Coins assets & purchase Gulu Balls first",
+      "ja": "ロココ資産を初期化し、ボールを購入してください",
+      "ko": ""
+    },
+    {
+      "key": "catchSuccessBtn",
+      "zh": "捕获成功",
+      "en": "Capture Success",
+      "ja": "捕獲成功",
+      "ko": ""
+    },
+    {
+      "key": "catchWealthPanel",
+      "zh": "洛克贝资产看板",
+      "en": "Roco Coins Dashboard",
+      "ja": "ロココ資産ダッシュボード",
+      "ko": ""
+    },
+    {
+      "key": "catchBallWarehouse",
+      "zh": "咕噜球仓库",
+      "en": "Gulu Ball Warehouse",
+      "ja": "ボール倉庫",
+      "ko": ""
+    },
+    {
+      "key": "catchCraftBall",
+      "zh": "合成新球",
+      "en": "Craft Gulu Balls",
+      "ja": "ボールクラフト",
+      "ko": ""
+    },
+    {
+      "key": "catchCraftType",
+      "zh": "合成",
+      "en": "Craft",
+      "ja": "クラフト",
+      "ko": ""
+    },
+    {
+      "key": "catchEmptyStock",
+      "zh": "库存清空，请先采购咕噜球",
+      "en": "Stock empty, please purchase balls first",
+      "ja": "在庫なし、ボールを購入してください",
+      "ko": ""
+    },
+    {
+      "key": "catchModalResultTitle",
+      "zh": "异色捕获成功",
+      "en": "Shiny Captured!",
+      "ja": "色違い捕獲成功",
+      "ko": ""
+    },
+    {
+      "key": "catchTargetPet",
+      "zh": "目标精灵",
+      "en": "Target Pet",
+      "ja": "ターゲットペット",
+      "ko": ""
+    },
+    {
+      "key": "catchMixedList",
+      "zh": "混刷精灵列表",
+      "en": "Mixed Pet List",
+      "ja": "混合ペットリスト",
+      "ko": ""
+    },
+    {
+      "key": "catchAddPet",
+      "zh": "添加精灵",
+      "en": "Add Pet",
+      "ja": "ペット追加",
+      "ko": ""
+    },
+    {
+      "key": "imgTitle",
+      "zh": "异色捕捉统计战报",
+      "en": "Shiny Catch Report",
+      "ja": "色違い捕獲レポート",
+      "ko": ""
+    },
+    {
+      "key": "imgPetName",
+      "zh": "精灵名称",
+      "en": "Pet",
+      "ja": "ペット名",
+      "ko": ""
+    },
+    {
+      "key": "clipTitle",
+      "zh": "🎯 洛手助手捕捉战报",
+      "en": "🎯 Roco Helper Catch Report",
+      "ja": "🎯 Roco Helper 捕獲レポート",
+      "ko": ""
+    },
+    {
+      "key": "clipPet",
+      "zh": "精灵",
+      "en": "Pet",
+      "ja": "ペット",
+      "ko": ""
+    },
+    {
+      "key": "skillSource",
+      "zh": "数据来源：洛克王国手游WIKI（CC BY-NC-SA 4.0）",
+      "en": "Source: Roco Kingdom Wiki (CC BY-NC-SA 4.0)",
+      "ja": "データ提供：ロコ王国WIKI（CC BY-NC-SA 4.0）",
+      "ko": ""
+    },
+    {
+      "key": "myUID",
+      "zh": "我的洛克王国UID",
+      "en": "My Roco Kingdom UID",
+      "ja": "マイロック王国UID",
+      "ko": ""
+    },
+    {
+      "key": "title5",
+      "zh": "🍀 幸运小洛克",
+      "en": "🍀 Lucky Rookie",
+      "ja": "🍀 ラッキールーキー",
+      "ko": ""
+    },
+    {
+      "key": "basicRate",
+      "zh": "基础捕捉率",
+      "en": "Basic Capture Rate",
+      "ja": "基本捕獲率",
+      "ko": ""
+    },
+    {
+      "key": "boostRate",
+      "zh": "捕捉率+30%",
+      "en": "Capture Rate +30%",
+      "ja": "捕獲率+30%",
+      "ko": ""
+    },
+    {
+      "key": "captureAll",
+      "zh": "100%捕捉",
+      "en": "100% Capture",
+      "ja": "100%捕獲",
+      "ko": ""
+    },
+    {
+      "key": "guaranteedExcellent",
+      "zh": "必定了不起",
+      "en": "Guaranteed Excellent",
+      "ja": "確定優秀",
+      "ko": ""
+    },
+    {
+      "key": "perfect",
+      "zh": "完美无瑕",
+      "en": "Perfect",
+      "ja": "パーフェクト",
+      "ko": ""
+    },
+    {
+      "key": "randomTalent",
+      "zh": "天赋随机",
+      "en": "Random Talent",
+      "ja": "ランダム才能",
+      "ko": ""
+    },
+    {
+      "key": "sparkleRandom",
+      "zh": "炫彩颜色粒子随机",
+      "en": "Random Sparkle Color",
+      "ja": "ランダムキラキラ色",
+      "ko": ""
+    },
+    {
+      "key": "seasonTheme",
+      "zh": "炫彩粒子为当前赛季主题颜色统一",
+      "en": "Sparkle matches current season theme",
+      "ja": "キラキラが今シーズンのテーマに合致",
+      "ko": ""
+    },
+    {
+      "key": "boostAttr",
+      "zh": "提升对应属性50%捕捉概率",
+      "en": "+50% capture rate for matching attribute",
+      "ja": "属性一致で捕獲率+50%",
+      "ko": ""
+    },
+    {
+      "key": "carnival",
+      "zh": "狂欢时刻",
+      "en": "Carnival",
+      "ja": "カーニバル",
+      "ko": ""
+    },
+    {
+      "key": "luckyBox",
+      "zh": "惊喜幸运盒",
+      "en": "Lucky Box",
+      "ja": "ラッキーボックス",
+      "ko": ""
+    },
+    {
+      "key": "encounterHint",
+      "zh": "保底机制：每80次捕捉保证1次惊喜幸运盒",
+      "en": "Guarantee: Every 80 catches guarantees 1 Lucky Box",
+      "ja": "保証：80回捕獲ごとにラッキーボックス1個確定",
+      "ko": ""
+    },
+    {
+      "key": "catchResult",
+      "zh": "捕捉结果",
+      "en": "Catch Result",
+      "ja": "捕獲結果",
+      "ko": ""
+    },
+    {
+      "key": "home",
+      "zh": "首页",
+      "en": "Home",
+      "ja": "ホーム",
+      "ko": ""
+    },
+    {
+      "key": "pets",
+      "zh": "图鉴",
+      "en": "Handbook",
+      "ja": "ペット図鑑",
+      "ko": ""
+    },
+    {
+      "key": "activity",
+      "zh": "活动",
+      "en": "Events",
+      "ja": "イベント",
+      "ko": ""
+    },
+    {
+      "key": "mine",
+      "zh": "我的",
+      "en": "Mine",
+      "ja": "マイページ",
+      "ko": ""
+    },
+    {
+      "key": "guides",
+      "zh": "攻略指南",
+      "en": "Guides",
+      "ja": "ガイド",
+      "ko": ""
+    },
+    {
+      "key": "items",
+      "zh": "道具图鉴",
+      "en": "Items",
+      "ja": "アイテム",
+      "ko": ""
+    },
+    {
+      "key": "skills",
+      "zh": "技能图鉴",
+      "en": "Skills",
+      "ja": "スキル",
+      "ko": ""
+    },
+    {
+      "key": "catch",
+      "zh": "捕捉统计",
+      "en": "Catch Stats",
+      "ja": "捕獲統計",
+      "ko": ""
+    },
+    {
+      "key": "egg",
+      "zh": "孵蛋查询",
+      "en": "Egg Query",
+      "ja": "タマゴ検索",
+      "ko": ""
+    },
+    {
+      "key": "redeem",
+      "zh": "兑换码查询",
+      "en": "Redeem Code",
+      "ja": "交換コード",
+      "ko": ""
+    },
+    {
+      "key": "map",
+      "zh": "洛手地图",
+      "en": "Luoke Map",
+      "ja": "ロックマップ",
+      "ko": ""
+    },
+    {
+      "key": "about",
+      "zh": "关于我们",
+      "en": "About",
+      "ja": "について",
+      "ko": ""
+    },
+    {
+      "key": "login",
+      "zh": "登录",
+      "en": "Login",
+      "ja": "ログイン",
+      "ko": ""
+    },
+    {
+      "key": "news",
+      "zh": "新闻资讯",
+      "en": "News",
+      "ja": "お知らせ",
+      "ko": ""
+    },
+    {
+      "key": "itemHandbook",
+      "zh": "道具图鉴",
+      "en": "Item Handbook",
+      "ja": "アイテム図鑑",
+      "ko": ""
+    },
+    {
+      "key": "eggQuery",
+      "zh": "孵蛋查询",
+      "en": "Egg Query",
+      "ja": "タマゴ検索",
+      "ko": ""
+    },
+    {
+      "key": "activityCalendar",
+      "zh": "活动日历",
+      "en": "Activity Calendar",
+      "ja": "イベントカレンダー",
+      "ko": ""
+    },
+    {
+      "key": "catchStats",
+      "zh": "捕捉统计",
+      "en": "Catch Stats",
+      "ja": "捕獲統計",
+      "ko": ""
+    },
+    {
+      "key": "guideManual",
+      "zh": "攻略指南",
+      "en": "Guide Manual",
+      "ja": "ガイドマニュアル",
+      "ko": ""
+    }
+  ]
+}

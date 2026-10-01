@@ -8,222 +8,45 @@ var activitiesData = [
   { id: 1, title: '异色获取方法', type: '官方权威信息', status: '置顶', start: '', end: '', rewards: [], desc: '通过赛季奇遇、大世界遭遇、生蛋孵蛋、赛季商店兑换等方式获取异色精灵。' }
 ]
 
-function parseMusicShare(text) {
-  if (!text) return { url: null, name: null };
-  var url = null;
-  var srcRegex = /src\s*=\s*['"]([^'"]+)['"]/i;
-  var srcMatch = text.match(srcRegex);
-  if (srcMatch) {
-    url = srcMatch[1];
-    if (url.indexOf('//') === 0) url = 'https:' + url;
-  } else {
-    var urlRegex = /(https?:\/\/[^\s'"<>）)】\]》]+)/i;
-    var urlMatch = text.match(urlRegex);
-    url = urlMatch ? urlMatch[1] : null;
-  }
+var richEditor = require('./richEditor')
+var parseMusicShare = richEditor.parseMusicShare
+var convertMusicUrl = richEditor.convertMusicUrl
+var parseGuessedName = richEditor.parseGuessedName
+var parseBilibiliUrl = richEditor.parseBilibiliUrl
+var parseWeiboUrl = richEditor.parseWeiboUrl
+var parseVideoUrl = richEditor.parseVideoUrl
+var parseTableInput = richEditor.parseTableInput
+var extractCleanURL = richEditor.extractCleanURL
 
-  if (url) {
-    url = convertMusicUrl(url);
-  }
-
-  var name = null;
-
-  var dotSpaceDot = text.match(/^(.+?)[\s]*[·\-—][\s]*(.+?)[\s]*$/);
-  if (!dotSpaceDot) {
-    var patterns = [
-      /《([^》]+)》\s*[-\-—·]\s*(.+)/,
-      /([^-—·]+)[\s]*[·\-—][\s]*(.+)/
-    ];
-    for (var p = 0; p < patterns.length; p++) {
-      var m = text.match(patterns[p]);
-      if (m && m[1] && m[2]) {
-        var left = m[1].replace(/https?:\/\/[^\s]+/g, '').trim();
-        var right = m[2].replace(/https?:\/\/[^\s]+/g, '').trim();
-        if (left && right && left.length < 30 && right.length < 30) {
-          var isPlatform = /网易云|QQ音乐|酷狗|酷我|虾米|spotify|apple/i.test(left) || /网易云|QQ音乐|酷狗|酷我|虾米|spotify|apple/i.test(right);
-          if (!isPlatform) {
-            name = left + ' - ' + right;
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  if (!name) {
-    var bracketPatterns = [
-      /《([^》]+)》/,
-      /【([^】]+)】/,
-      /「([^」]+)」/,
-      /\[([^\]]+)\]/
-    ];
-    for (var i = 0; i < bracketPatterns.length; i++) {
-      var match = text.match(bracketPatterns[i]);
-      if (match && match[1].trim() && match[1].trim().length < 40) {
-        name = match[1].trim();
-        break;
-      }
-    }
-  }
-
-  return { url: url, name: name };
-}
-
-function convertMusicUrl(url) {
-  if (!url) return url;
-  url = url.replace(/[,;!！。，；、]+$/, '');
-  var neteaseId = url.match(/(?:music\.163\.com\/.*[?&]id=|music\.163\.com\/song\/(?:media\/outer\/)?(?:\?id=)?|163cn\.tv\/\w+\/?.*?song\/?.*?[?&]id=|song\?id=)(\d+)/i);
-  if (neteaseId && neteaseId[1]) {
-    return 'https://music.163.com/song/media/outer/url?id=' + neteaseId[1] + '.mp3';
-  }
-  if (url.indexOf('163cn.tv') > -1 || url.indexOf('m.163.com') > -1) {
-    return url;
-  }
-  return url;
-}
-
-function parseGuessedName(text, url) {
-  if (!text) return '';
-  var cleanText = text;
-  if (url) {
-    cleanText = cleanText.replace(url, '');
-    var shortUrl = url.replace(/^https?:/, '');
-    cleanText = cleanText.replace(shortUrl, '');
-  }
-  cleanText = cleanText.replace(/<[^>]+>/g, '');
-
-  var keywords = [
-    /分享.*?的单曲/g,
-    /分享单曲/g,
-    /分享.*?的歌/g,
-    /来自@网易云音乐/g,
-    /来自@QQ音乐/g,
-    /来自@酷狗音乐/g,
-    /来自@酷我音乐/g,
-    /来自@/g,
-    /QQ音乐/g,
-    /网易云音乐/g,
-    /酷狗音乐/g,
-    /酷我音乐/g,
-    /抖音/g,
-    /快手/g,
-    /微博/g,
-    /朋友圈/g,
-    /\[.*?链接\]/g,
-    /\(.*?链接\)/g,
-    /\(.*?复制.*?\)/g,
-    /复制此链接/g,
-    /打开.*?直接播放/g,
-    /点击.*?听歌/g,
-    /http[^\s]+/g,
-    /\s*[-–—·]\s*网易云音乐/g,
-    /\s*[-–—·]\s*QQ音乐/g,
-    /\s*[-–—·]\s*酷狗音乐/g,
-    /\s*[-–—·]\s*酷我音乐/g,
-    /\[/g, /\]/g,
-    /【/g, /】/g,
-    /「/g, /」/g,
-    /《/g, /》/g,
-    /\(/g, /\)/g,
-    /（/g, /）/g,
-    /🎧/g, /🎵/g, /🎶/g, /🎸/g, /🎤/g, /🎼/g
-  ];
-  keywords.forEach(function(kw) {
-    cleanText = cleanText.replace(kw, '');
-  });
-  cleanText = cleanText.replace(/^[:：\s,，\-——+··]+/g, '');
-  cleanText = cleanText.replace(/[:：\s,，\-——+··]+$/g, '');
-  cleanText = cleanText.replace(/\s{2,}/g, ' ');
-  cleanText = cleanText.trim();
-  if (cleanText && cleanText.length > 0 && cleanText.length < 50) {
-    return cleanText;
-  }
-  return '';
-}
-
-function parseBilibiliUrl(url) {
-  if (!url) return null
-  var bvMatch = url.match(/BV[a-zA-Z0-9]{10,}/)
-  if (bvMatch) return { platform: 'bilibili', platformName: 'B站', id: bvMatch[0], url: 'https://www.bilibili.com/video/' + bvMatch[0] }
-  var avMatch = url.match(/av(\d{6,})/i)
-  if (avMatch) return { platform: 'bilibili', platformName: 'B站', id: 'av' + avMatch[1], url: 'https://www.bilibili.com/video/av' + avMatch[1] + '/' }
-  var shortMatch = url.match(/b23\.tv\/([a-zA-Z0-9]+)/)
-  if (shortMatch) return { platform: 'bilibili', platformName: 'B站', id: shortMatch[1], url: url }
-  return null
-}
-
-function parseWeiboUrl(url) {
-  if (!url) return null
-  var fidMatch = url.match(/fid=([0-9:]+)/)
-  if (fidMatch) return { platform: 'weibo', platformName: '微博', id: fidMatch[1], url: 'https://video.weibo.com/show?fid=' + fidMatch[1] }
-  var showMatch = url.match(/(?:tv\/show|show)\/([0-9:]+)/)
-  if (showMatch) return { platform: 'weibo', platformName: '微博', id: showMatch[1], url: 'https://video.weibo.com/show?fid=' + showMatch[1] }
-  
-  // 解析微博文章 (ttarticle)
-  var articleMatch = url.match(/ttarticle\/p\/show\?id=(\d+)/) || url.match(/weibo\.com\/ttarticle\/p\/show\?id=(\d+)/)
-  if (articleMatch) return { platform: 'weibo_article', platformName: '微博文章', id: articleMatch[1], url: 'https://weibo.com/ttarticle/p/show?id=' + articleMatch[1] }
-  
-  if (url.indexOf('weibo.com') > -1 || url.indexOf('weibo.cn') > -1) {
-    return { platform: 'weibo', platformName: '微博', id: '', url: url }
-  }
-  return null
-}
-
-function parseVideoUrl(url) {
-  if (!url) return null
-  return parseBilibiliUrl(url) || parseWeiboUrl(url) || null
-}
-
-function parseTableInput(text) {
-  if (!text || !text.trim()) return null
-  var lines = text.trim().split('\n')
-  if (lines.length < 2) {
-    var commaLines = text.trim().split(/\n|;/)
-    if (commaLines.length >= 2) lines = commaLines
-    else return null
-  }
-  var rows = []
-  var cols = 0
-  for (var i = 0; i < lines.length; i++) {
-    var line = lines[i].trim()
-    if (!line) continue
-    var seps = ['|', '\t', ',']
-    var bestSep = '|'
-    var bestCount = 0
-    for (var s = 0; s < seps.length; s++) {
-      var parts = line.split(seps[s])
-      var count = 0
-      for (var p = 0; p < parts.length; p++) {
-        var part = parts[p].trim()
-        if (part && !/^[-—*=_]{3,}$/.test(part)) count++
-      }
-      if (count > bestCount) { bestCount = count; bestSep = seps[s]; cols = Math.max(cols, count) }
-    }
-    var cells = line.split(bestSep).map(function(c) { return c.trim() }).filter(function(c, idx) { return c || idx < cols })
-    if (cells.length > 0) rows.push(cells)
-  }
-  if (rows.length < 2) {
-    return null
-  }
-  var headers = rows[0]
-  var dataRows = rows.slice(1)
-  return { headers: headers, rows: dataRows, rowCount: dataRows.length, colCount: headers.length }
-}
-
-function extractCleanURL(text) {
-  if (!text) return ''
-  text = text.replace(/[\r\n]+/g, ' ').trim()
-  var urlMatch = text.match(/(https?:\/\/[^\s'"<>）)】\]》《，,。;；!！?？]+)/i)
-  if (urlMatch) {
-    var url = urlMatch[1]
-    url = url.replace(/[,;.!?？)，,】\]》）;:：。、]+$/, '')
-    return url
-  }
-  if (/^https?:\/\//i.test(text)) {
-    return text.replace(/[,;.!?？)，,】\]》）;:：。、\s]+$/, '')
-  }
-  return text
-}
+var editorOps = require('./editorOps')
+var formOps = editorOps.createRichEditorOps({
+  ctxKey: 'editorCtx',
+  listKey: 'formRichContent',
+  contentKey: 'formContent',
+  htmlKey: 'formHtml',
+  font: {
+    style: 'currentFontStyle', weight: 'currentFontWeight', size: 'currentFontSize',
+    color: 'currentFontColor', family: 'currentFontFamily', underline: 'currentUnderline',
+    strike: 'currentStrike', header: 'currentHeader', align: 'currentAlign'
+  },
+  picker: { size: 'showSizePicker', color: 'showColorPicker', family: 'showFontFamilyPicker' },
+  editIdxKey: '_formEditIdx',
+  parseTableInput: parseTableInput
+})
+var activityOps = editorOps.createRichEditorOps({
+  ctxKey: 'activityEditorCtx',
+  listKey: 'activityRichContent',
+  contentKey: 'activityFormContent',
+  htmlKey: 'activityFormHtml',
+  font: {
+    style: 'activityFontStyle', weight: 'activityFontWeight', size: 'activityFontSize',
+    color: 'activityFontColor', family: 'activityFontFamily', underline: 'activityUnderline',
+    strike: 'activityStrike', header: 'activityHeader', align: 'activityAlign'
+  },
+  picker: { size: 'showActivitySizePicker', color: 'showActivityColorPicker', family: 'showActivityFontFamilyPicker' },
+  editIdxKey: '_activityEditIdx',
+  parseTableInput: parseTableInput
+})
 
 Page({
   behaviors: [i18nBehavior],
@@ -256,9 +79,10 @@ Page({
       formSubType: 'regular',
       formCollabLogo: '',
     formPinned: false,
-    formImage: '',
     formStartDate: '',
+    formStartTime: '',
     formEndDate: '',
+    formEndTime: '',
     formRichContent: [],
     formSource: '',
     submitting: false,
@@ -316,7 +140,8 @@ Page({
     activityFormStatus: '进行中',
     activityFormStart: '',
     activityFormEnd: '',
-    activityFormImage: '',
+    activityFormStartTime: '',
+    activityFormEndTime: '',
     activityFormSource: '',
     activitySubmitting: false,
     activityEditorMode: 'simple',
@@ -333,7 +158,14 @@ Page({
     localActivities: [],
     deletedLocalIds: [],
     subscribers: [],
-    subscribeConfig: { announcement: true, activity: true, merchant: true }
+    subscribeConfig: { announcement: true, activity: true, merchant: true },
+    showContentPreview: false,
+    previewKind: 'announcement',
+    previewTitle: '',
+    previewTypeLabel: '公告',
+    previewBlocks: [],
+    previewEditorHtml: '',
+    previewSource: ''
   },
   onLoad: function() {
     this._refreshI18n()
@@ -672,33 +504,132 @@ openModal: function(e) {
     var item = (e && e.currentTarget && e.currentTarget.dataset) ? e.currentTarget.dataset.item || null : null
     var richContent = []
     var source = ''
-    if (item && item.richContent) {
+    var formContent = ''
+    var formHtml = ''
+    if (item && item.richContent && item.richContent.length > 0) {
       richContent = item.richContent
     } else if (item && item.content) {
-      richContent = [{ type: 'text', content: item.content, style: 'normal', weight: 'normal', size: 28, color: '#ffffff' }]
+      // 旧数据无 richContent：只放进编辑器，避免再拼一个 text 块导致内容重复
+      formContent = item.content
+      formHtml = item.content
     }
     if (item && item.source) {
       source = item.source
     }
+    // 新建时尝试恢复未提交草稿
+    var draft = null
+    if (!item) draft = this._restoreAnnounceDraft()
+    if (draft) {
+      wx.showModal({
+        title: '发现未发布草稿',
+        content: '标题：' + (draft.formTitle || '（无标题）'),
+        confirmText: '恢复草稿',
+        cancelText: '不用，新建',
+        success: function(mr) {
+          if (mr.confirm) {
+            this.setData({
+              showModal: true,
+              editingItem: null,
+              formTitle: draft.formTitle || '',
+              formContent: draft.formContent || '',
+              formHtml: draft.formHtml || '',
+              formType: draft.formType || 'notice',
+              formSubType: draft.formSubType || 'regular',
+              formCollabLogo: draft.formCollabLogo || '',
+              formPinned: !!draft.formPinned,
+              formRichContent: draft.formRichContent || [],
+              formSource: draft.formSource || '',
+              formStartDate: draft.formStartDate || '',
+              formStartTime: draft.formStartTime || '',
+              formEndDate: draft.formEndDate || '',
+              formEndTime: draft.formEndTime || ''
+            })
+          } else {
+            this._clearAnnounceDraft()
+            this._openAnnounceBlank()
+          }
+        }.bind(this)
+      })
+      return
+    }
+    this._formEditIdx = null
     this.setData({
       showModal: true,
       editingItem: item,
       formTitle: item ? item.title : '',
-      formContent: (item && item.richContent && item.richContent.length > 0) ? '' : (item ? item.content : ''),
+      formContent: formContent,
+      formHtml: formHtml,
       formType: item ? item.type : 'notice',
         formSubType: item ? (item.subType || 'regular') : 'regular',
         formCollabLogo: item ? (item.collabLogo || '') : '',
-        formCollabCover: (item && item.subType === 'collab') ? (item.image || '') : '',
       formPinned: item ? item.pinned : false,
-      formImage: item ? (item.image || '') : '',
       formRichContent: richContent,
       formSource: source,
       formStartDate: item ? (item.startDate || '') : '',
-      formEndDate: item ? (item.endDate || '') : ''
+      formStartTime: item ? (item.startTime || '') : '',
+      formEndDate: item ? (item.endDate || '') : '',
+      formEndTime: item ? (item.endTime || '') : '',
+      // 重置编辑器样式状态，防止上次编辑残留
+      currentFontStyle: 'normal',
+      currentFontWeight: 'normal',
+      currentFontSize: 28,
+      currentFontColor: '#ffffff',
+      currentFontFamily: 'sans-serif',
+      currentUnderline: false,
+      currentStrike: false,
+      currentHeader: 0,
+      currentAlign: '',
+      showSizePicker: false,
+      showColorPicker: false,
+      showFontFamilyPicker: false
     })
   },
   closeModal: function() {
+    this._saveAnnounceDraft()
     this.setData({ showModal: false })
+  },
+  // ── 公告草稿：防误关丢失 ──
+  _saveAnnounceDraft: function() {
+    var d = this.data
+    if (d.editingItem) return
+    var has = d.formTitle || d.formContent || (d.formRichContent && d.formRichContent.length)
+    if (!has) { try { wx.removeStorageSync('admin_draft_announce') } catch (e) {} return }
+    try {
+      wx.setStorageSync('admin_draft_announce', {
+        formTitle: d.formTitle, formContent: d.formContent, formHtml: d.formHtml,
+        formType: d.formType, formSubType: d.formSubType,
+        formCollabLogo: d.formCollabLogo,
+        formSource: d.formSource, formPinned: d.formPinned,
+        formRichContent: d.formRichContent,
+        formStartDate: d.formStartDate, formStartTime: d.formStartTime,
+        formEndDate: d.formEndDate, formEndTime: d.formEndTime
+      })
+    } catch (e) {}
+  },
+  _restoreAnnounceDraft: function() {
+    var draft = null
+    try { draft = wx.getStorageSync('admin_draft_announce') } catch (e) {}
+    if (!draft) return null
+    return draft
+  },
+  _clearAnnounceDraft: function() {
+    try { wx.removeStorageSync('admin_draft_announce') } catch (e) {}
+  },
+  // 放弃草稿后打开空白发布公告弹窗
+  _openAnnounceBlank: function() {
+    this.setData({
+      showModal: true,
+      editingItem: null,
+      formTitle: '', formContent: '', formHtml: '',
+      formType: 'notice', formSubType: 'regular',
+      formCollabLogo: '',
+      formPinned: false, formRichContent: [], formSource: '',
+      formStartDate: '', formStartTime: '', formEndDate: '', formEndTime: '',
+      currentFontStyle: 'normal', currentFontWeight: 'normal', currentFontSize: 28,
+      currentFontColor: '#ffffff', currentFontFamily: 'sans-serif',
+      currentUnderline: false, currentStrike: false, currentHeader: 0, currentAlign: '',
+      showSizePicker: false, showColorPicker: false, showFontFamilyPicker: false
+    })
   },
   preventClose: function() {},
   showMusicDialog: function() {
@@ -773,11 +704,7 @@ openModal: function(e) {
       });
       return;
     }
-    var richContent = (self.data.formRichContent || []).concat([block])
-    var formContent = self.data.formContent
-    if (block.url) formContent = formContent.replace(block.url, '').replace(/\s{2,}/g, ' ').trim()
-    self.setData({ formRichContent: richContent, formContent: formContent })
-    wx.showToast({ title: '已添加: ' + block.name, icon: 'success' })
+    self._insertFormBlock(block, { stripUrls: block.url ? [block.url] : [], toast: '已添加: ' + block.name })
   },
   _showMusicDialogFallback: function() {
     var self = this
@@ -873,10 +800,7 @@ openModal: function(e) {
       return;
     }
     var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name || '', url: videoInfo.url, vid: videoInfo.id, cover: videoInfo.cover }
-    var richContent = (self.data.formRichContent || []).concat([block])
-    var formContent = self.data.formContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
-    self.setData({ formRichContent: richContent, formContent: formContent })
-    wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
+    self._insertFormBlock(block, { stripUrls: [videoInfo.url], toast: '已添加: ' + videoInfo.platformName + '视频' })
   },
   showTableDialog: function() {
     var self = this
@@ -892,10 +816,7 @@ openModal: function(e) {
             wx.showToast({ title: '未识别表格，请检查格式（至少2行）', icon: 'none' })
             return
           }
-          var block = { type: 'table', headers: tableData.headers, rows: tableData.rows, colCount: tableData.colCount, rowCount: tableData.rowCount }
-          var richContent = (self.data.formRichContent || []).concat([block])
-          self.setData({ formRichContent: richContent })
-          wx.showToast({ title: '已添加: ' + tableData.colCount + '列' + tableData.rowCount + '行表格', icon: 'success' })
+          self._insertFormBlock({ type: 'table', headers: tableData.headers, rows: tableData.rows, colCount: tableData.colCount, rowCount: tableData.rowCount }, { toast: '已添加: ' + tableData.colCount + '列' + tableData.rowCount + '行表格' })
         }
       }
     })
@@ -914,10 +835,7 @@ openModal: function(e) {
             wx.showToast({ title: '未识别表格，请检查格式（至少2行）', icon: 'none' })
             return
           }
-          var block = { type: 'table', headers: tableData.headers, rows: tableData.rows, colCount: tableData.colCount, rowCount: tableData.rowCount }
-          var richContent = (self.data.activityRichContent || []).concat([block])
-          self.setData({ activityRichContent: richContent })
-          wx.showToast({ title: '已添加: ' + tableData.colCount + '列' + tableData.rowCount + '行表格', icon: 'success' })
+          self._insertActivityBlock({ type: 'table', headers: tableData.headers, rows: tableData.rows, colCount: tableData.colCount, rowCount: tableData.rowCount }, { toast: '已添加: ' + tableData.colCount + '列' + tableData.rowCount + '行表格' })
         }
       }
     })
@@ -928,10 +846,14 @@ openModal: function(e) {
     var self = this
     wx.createSelectorQuery().in(this).select('#editor').context(function(res) {
       self.editorCtx = res.context
+      if (!self.editorCtx) return
       if (self.data.formContent) {
         self.editorCtx.setContents({
           html: self.data.formHtml || self.data.formContent
         })
+      } else {
+        // 弹窗复用编辑器实例时清空残留内容
+        self.editorCtx.clear()
       }
     }).exec()
   },
@@ -958,8 +880,7 @@ openModal: function(e) {
       currentAlign: formats.align || ''
     })
   },
-  onImageInput: function(e) { this.setData({ formImage: e.detail.value }) },
-  onSourceInput: function(e) { this.setData({ formSource: e.detail.value }) },
+    onSourceInput: function(e) { this.setData({ formSource: e.detail.value }) },
   onStartDateChange: function(e) { this.setData({ formStartDate: e.detail.value }) },
   onStartTimeChange: function(e) { this.setData({ formStartTime: e.detail.value }) },
   onEndDateChange: function(e) { this.setData({ formEndDate: e.detail.value }) },
@@ -967,204 +888,43 @@ openModal: function(e) {
   onTypeChange: function(e) { var types = ['notice', 'update', 'event', 'tip']; this.setData({ formType: types[e.detail.value] }) },
     onSubTypeChange: function(e) { var types = ['regular', 'season', 'collab']; this.setData({ formSubType: types[e.detail.value] }) },
     onCollabLogoInput: function(e) { this.setData({ formCollabLogo: e.detail.value }) },
-    onCollabCoverInput: function(e) { this.setData({ formCollabCover: e.detail.value }) },
-
+    
   togglePinned: function() { this.setData({ formPinned: !this.data.formPinned }) },
-  _autoCommitText: function(updates) {
-    var content = this.data.formContent.trim()
-    if (content) {
-      var block = {
-        type: 'text', content: content,
-        style: this.data.currentFontStyle,
-        weight: this.data.currentFontWeight,
-        size: this.data.currentFontSize,
-        color: this.data.currentFontColor,
-        fontFamily: this.data.currentFontFamily
-      }
-      var richContent = (this.data.formRichContent || []).concat([block])
-      var setData = { formRichContent: richContent, formContent: '' }
-      if (updates) { for (var k in updates) setData[k] = updates[k] }
-      this.setData(setData)
-    } else if (updates) {
-      this.setData(updates)
-    }
-  },
-  toggleBold: function() {
-    if (this.editorCtx) {
-      this.editorCtx.format('bold')
-    }
-  },
-  toggleItalic: function() {
-    if (this.editorCtx) {
-      this.editorCtx.format('italic')
-    }
-  },
-  toggleUnderline: function() {
-    if (this.editorCtx) {
-      this.editorCtx.format('underline')
-    }
-  },
-  toggleStrike: function() {
-    if (this.editorCtx) {
-      this.editorCtx.format('strike')
-    }
-  },
-  toggleHeader2: function() {
-    if (this.editorCtx) {
-      this.editorCtx.format('header', 'H2')
-    }
-  },
-  toggleHeader3: function() {
-    if (this.editorCtx) {
-      this.editorCtx.format('header', 'H3')
-    }
-  },
-  setFontSize: function(e) {
-    var size = e.currentTarget.dataset.size
-    this.setData({ showSizePicker: false })
-    if (this.editorCtx) {
-      this.editorCtx.format('fontSize', (size / 2) + 'px')
-    }
-  },
-  setFontColor: function(e) {
-    var color = e.currentTarget.dataset.color
-    this.setData({ showColorPicker: false })
-    if (this.editorCtx) {
-      this.editorCtx.format('color', color)
-    }
-  },
-  setFontFamily: function(e) {
-    var family = e.currentTarget.dataset.family
-    this.setData({ showFontFamilyPicker: false })
-    if (this.editorCtx) {
-      this.editorCtx.format('fontFamily', family)
-    }
-  },
-  showFontSizePicker: function() {
-    this.setData({ showSizePicker: !this.data.showSizePicker, showColorPicker: false, showFontFamilyPicker: false })
-  },
-  showFontColorPicker: function() {
-    this.setData({ showColorPicker: !this.data.showColorPicker, showSizePicker: false, showFontFamilyPicker: false })
-  },
-  showFontFamilyPicker: function() {
-    this.setData({ showFontFamilyPicker: !this.data.showFontFamilyPicker, showSizePicker: false, showColorPicker: false })
-  },
-  addRichTextBlock: function() {
-    var self = this
-    if (!self.editorCtx) {
-      wx.showToast({ title: '编辑器未就绪', icon: 'none' })
-      return
-    }
-    self.editorCtx.getContents({
-      success: function(res) {
-        var html = res.html
-        var text = res.text.trim()
-        if (!text) {
-          wx.showToast({ title: '请输入内容', icon: 'none' })
-          return
-        }
-        var block = {
-          type: 'text',
-          content: text,
-          html: html,
-          style: self.data.currentFontStyle,
-          weight: self.data.currentFontWeight,
-          size: self.data.currentFontSize,
-          color: self.data.currentFontColor,
-          fontFamily: self.data.currentFontFamily
-        }
-        var richContent = self.data.formRichContent.concat([block])
-        self.setData({
-          formRichContent: richContent,
-          formContent: '',
-          formHtml: ''
-        })
-        self.editorCtx.clear()
-      }
-    })
-  },
-  addRichQuoteBlock: function() {
-    var self = this
-    var content = this.data.formContent.trim()
-    if (!content) {
-      wx.showToast({ title: '请输入引用内容', icon: 'none' })
-      return
-    }
-    var block = {
-      type: 'quote',
-      content: content,
-      style: 'normal',
-      weight: 'normal',
-      size: 26,
-      color: 'rgba(255,255,255,0.7)'
-    }
-    var richContent = this.data.formRichContent.concat([block])
-    this.setData({
-      formRichContent: richContent,
-      formContent: '',
-      formHtml: ''
-    })
-    if (this.editorCtx) {
-      this.editorCtx.clear()
-    }
-  },
-  moveRichBlock: function(e) {
-    var idx = e.currentTarget.dataset.idx;
-    var pos = e.currentTarget.dataset.pos;
-    var richContent = this.data.formRichContent.slice();
-    var block = richContent.splice(idx, 1)[0];
-    if (pos === 'top1') richContent.unshift(block);
-    else if (pos === 'top2') richContent.splice(Math.min(1, richContent.length), 0, block);
-    else if (pos === 'bottom1') richContent.push(block);
-    else if (pos === 'bottom2') richContent.splice(Math.max(0, richContent.length - 1), 0, block);
-    this.setData({ formRichContent: richContent });
-  },
-  showMoveTopActionSheet: function(e) {
-    var self = this;
-    var idx = e.currentTarget.dataset.idx;
-    var target = e.currentTarget.dataset.target;
-    wx.showActionSheet({
-      itemList: ['置顶到第1位', '置顶到第2位'],
-      success: function(res) {
-        var pos = res.tapIndex === 0 ? 'top1' : 'top2';
-        if (target === 'form') {
-          self.moveRichBlock({ currentTarget: { dataset: { idx: idx, pos: pos } } });
-        } else {
-          self.moveActivityRichBlock({ currentTarget: { dataset: { idx: idx, pos: pos } } });
-        }
-      }
-    });
-  },
-  showMoveBottomActionSheet: function(e) {
-    var self = this;
-    var idx = e.currentTarget.dataset.idx;
-    var target = e.currentTarget.dataset.target;
-    wx.showActionSheet({
-      itemList: ['沉底到最后1位', '沉底到倒数第2位'],
-      success: function(res) {
-        var pos = res.tapIndex === 0 ? 'bottom1' : 'bottom2';
-        if (target === 'form') {
-          self.moveRichBlock({ currentTarget: { dataset: { idx: idx, pos: pos } } });
-        } else {
-          self.moveActivityRichBlock({ currentTarget: { dataset: { idx: idx, pos: pos } } });
-        }
-      }
-    });
-  },
-  removeRichBlock: function(e) {
+  _autoCommitText: formOps.autoCommitText,
+  // 统一插入入口：先落草稿再插块（公告）
+  _insertFormBlock: function(block, opts) { formOps.insertBlock.call(this, block, opts) },
+  // 统一插入入口：先落草稿再插块（活动）
+  _insertActivityBlock: function(block, opts) { activityOps.insertBlock.call(this, block, opts) },
+  toggleBold: formOps.toggleBold,
+  toggleItalic: formOps.toggleItalic,
+  toggleUnderline: formOps.toggleUnderline,
+  toggleStrike: formOps.toggleStrike,
+  toggleHeader2: formOps.toggleHeader2,
+  toggleHeader3: formOps.toggleHeader3,
+  setFontSize: formOps.setFontSize,
+  setFontColor: formOps.setFontColor,
+  setFontFamily: formOps.setFontFamily,
+  showFontSizePicker: formOps.showFontSizePicker,
+  showFontColorPicker: formOps.showFontColorPicker,
+  showFontFamilyPicker: formOps.showFontFamilyPicker,
+  addRichTextBlock: formOps.addRichTextBlock,
+  addRichQuoteBlock: formOps.addRichQuoteBlock,
+  // 块上移/下移一格（公告与活动共用）
+  moveRichBlockStep: function(e) {
     var idx = e.currentTarget.dataset.idx
-    var richContent = this.data.formRichContent.slice()
-    var block = richContent[idx]
-    richContent.splice(idx, 1)
-    var formContent = this.data.formContent
-    if ((block.type === 'video' || block.type === 'music') && block.url) {
-      formContent = formContent.replace(block.url, '').replace(/\s{2,}/g, ' ').trim()
-    }
-    this.setData({ formRichContent: richContent, formContent: formContent })
-    if (this.editorCtx) {
-      this.editorCtx.clear()
-    }
+    var dir = e.currentTarget.dataset.dir
+    var target = e.currentTarget.dataset.target || 'form'
+    var key = target === 'activity' ? 'activityRichContent' : 'formRichContent'
+    var list = (this.data[key] || []).slice()
+    var to = idx + dir
+    if (to < 0 || to >= list.length) return
+    var block = list.splice(idx, 1)[0]
+    list.splice(to, 0, block)
+    var upd = {}
+    upd[key] = list
+    this.setData(upd)
   },
+  removeRichBlock: formOps.removeRichBlock,
   editRichBlock: function(e) {
     var idx = e.currentTarget.dataset.idx
     var block = this.data.formRichContent[idx]
@@ -1189,7 +949,28 @@ openModal: function(e) {
       });
       return;
     }
+    // 引用块原地编辑，避免拉进编辑器后丢失 quote 类型
+    if (block.type === 'quote') {
+      var self2 = this
+      wx.showModal({
+        title: '编辑引用',
+        content: block.content || '',
+        editable: true,
+        placeholderText: '输入引用内容',
+        success: function(mr) {
+          if (mr.confirm && mr.content !== undefined) {
+            var rc = self2.data.formRichContent.slice()
+            rc[idx] = Object.assign({}, block, { content: mr.content })
+            self2.setData({ formRichContent: rc })
+            wx.showToast({ title: '已更新引用', icon: 'success' })
+          }
+        }
+      })
+      return
+    }
     richContent.splice(idx, 1)
+    // 记录原位置：改完落块时插回原处，而不是沉到文末
+    this._formEditIdx = idx
     this.setData({
       formRichContent: richContent,
       formContent: block.html || block.content,
@@ -1206,50 +987,48 @@ openModal: function(e) {
       })
     }
   },
-  chooseFormImage: function() {
-    var self = this
-    wx.chooseImage({
-      count: 1,
-      sizeType: ['compressed'],
-      sourceType: ['album', 'camera'],
-      success: function(res) {
-        var filePath = res.tempFilePaths[0]
-        wx.showLoading({ title: '上传中...' })
-        var ext = filePath.split('.').pop() || 'jpg'
-        var cloudPath = 'announcements/' + Date.now() + '.' + ext
-        wx.cloud.uploadFile({ cloudPath: cloudPath, filePath: filePath })
-          .then(function(uploadRes) {
-            wx.hideLoading()
-            self.setData({ formImage: uploadRes.fileID })
-          })
-          .catch(function() {
-            wx.hideLoading()
-            wx.showToast({ title: '上传失败', icon: 'none' })
-          })
-      }
-    })
+          previewBlockImage: function(e) {
+    var src = e.currentTarget.dataset.src
+    if (src) wx.previewImage({ urls: [src], current: src })
   },
-  inputImageUrl: function() {
-    var self = this
-    wx.showModal({
-      title: '输入图片链接',
-      content: '',
-      editable: true,
-      placeholderText: '粘贴图片URL地址',
-      success: function(res) {
-        if (res.confirm && res.content && res.content.trim()) {
-          self.setData({ formImage: res.content.trim() })
-        }
-      }
-    })
-  },
-  removeFormImage: function() {
-    this.setData({ formImage: '' })
-  },
-  previewFormImage: function() {
-    if (this.data.formImage) {
-      wx.previewImage({ urls: [this.data.formImage] })
+  _buildPreviewBlocks: function(richContent, editorHtml) {
+    var blocks = (richContent || []).slice()
+    if (editorHtml) {
+      blocks.push({ type: 'text', content: '', html: editorHtml })
     }
+    return blocks
+  },
+  _typeLabel: function(type) {
+    return type === 'notice' ? '公告' : type === 'update' ? '更新' : type === 'event' ? '活动' : '提示'
+  },
+  openFormPreview: function() {
+    var content = this.data.formContent || ''
+    var blocks = this._buildPreviewBlocks(this.data.formRichContent, this.data.formHtml || content)
+    this.setData({
+      showContentPreview: true,
+      previewKind: 'announcement',
+      previewTitle: this.data.formTitle,
+      previewTypeLabel: this._typeLabel(this.data.formType),
+      previewBlocks: blocks,
+      previewEditorHtml: '',
+      previewSource: this.data.formSource || ''
+    })
+  },
+  openActivityPreview: function() {
+    var content = this.data.activityFormContent || ''
+    var blocks = this._buildPreviewBlocks(this.data.activityRichContent, this.data.activityFormHtml || content)
+    this.setData({
+      showContentPreview: true,
+      previewKind: 'activity',
+      previewTitle: this.data.activityFormTitle,
+      previewTypeLabel: this.data.activityFormType || '活动',
+      previewBlocks: blocks,
+      previewEditorHtml: '',
+      previewSource: this.data.activityFormSource || ''
+    })
+  },
+  closeContentPreview: function() {
+    this.setData({ showContentPreview: false })
   },
   importFileToTable: function() {
     var self = this
@@ -1305,17 +1084,7 @@ openModal: function(e) {
       }
     })
   },
-  _processImportedTextToTable: function(text) {
-    var tableData = parseTableInput(text)
-    if (!tableData) {
-      wx.showToast({ title: '未识别出表格数据，请确保文件内含有至少两行、每行使用分隔符的分隔内容', icon: 'none' })
-      return
-    }
-    var block = { type: 'table', headers: tableData.headers, rows: tableData.rows, colCount: tableData.colCount, rowCount: tableData.rowCount }
-    var richContent = (this.data.formRichContent || []).concat([block])
-    this.setData({ formRichContent: richContent })
-    wx.showToast({ title: '表格导入成功', icon: 'success' })
-  },
+  _processImportedTextToTable: formOps.processImportedTextToTable,
   showAttachmentDialog: function() {
     var self = this
     wx.chooseMessageFile({
@@ -1339,9 +1108,7 @@ openModal: function(e) {
             size: file.size,
             sizeText: sizeText
           }
-          var richContent = (self.data.formRichContent || []).concat([block])
-          self.setData({ formRichContent: richContent })
-          wx.showToast({ title: '附件上传成功', icon: 'success' })
+          self._insertFormBlock(block, { toast: '附件上传成功' })
         }).catch(function(err) {
           wx.hideLoading()
           wx.showToast({ title: '附件上传失败', icon: 'none' })
@@ -1374,9 +1141,7 @@ openModal: function(e) {
                 var text = (resText.content || '').trim() || '快捷链接'
                 var isVideo = /v\.qq\.com|bilibili\.com|video|youtube/i.test(url)
                 var block = { type: 'link', text: text, url: url, isVideo: isVideo }
-                var richContent = (self.data.formRichContent || []).concat([block])
-                self.setData({ formRichContent: richContent })
-                wx.showToast({ title: '超链接已添加', icon: 'success' })
+                self._insertFormBlock(block, { toast: '超链接已添加' })
               }
             }
           })
@@ -1385,43 +1150,8 @@ openModal: function(e) {
     })
   },
   showDividerDialog: function() {
-    var self = this
-    if (!self.editorCtx) {
-      wx.showToast({ title: '编辑器未就绪', icon: 'none' })
-      return
-    }
-    self.editorCtx.getContents({
-      success: function(res) {
-        var html = res.html
-        var text = res.text.trim()
-        var richContent = self.data.formRichContent.slice()
-        if (text) {
-          richContent.push({
-            type: 'text',
-            content: text,
-            html: html,
-            style: 'normal',
-            weight: 'normal',
-            size: 28,
-            color: '#ffffff',
-            fontFamily: 'sans-serif'
-          })
-        }
-        richContent.push({ type: 'divider' })
-        self.setData({
-          formRichContent: richContent,
-          formContent: '',
-          formHtml: '',
-          currentFontStyle: 'normal',
-          currentFontWeight: 'normal',
-          currentFontSize: 28,
-          currentFontColor: '#ffffff',
-          currentFontFamily: 'sans-serif'
-        })
-        self.editorCtx.clear()
-        wx.showToast({ title: '已添加分割线', icon: 'success' })
-      }
-    })
+    // 先落草稿再插分割线，顺序与所见一致
+    this._insertFormBlock({ type: 'divider' }, { toast: '已添加分割线' })
   },
   submitAnnouncement: function() {
     var self = this
@@ -1433,85 +1163,23 @@ openModal: function(e) {
       wx.showToast({ title: '请输入内容', icon: 'none' }); return
     }
     self.setData({ submitting: true })
-    var finalContent = content
-    var richContent = []
+    var richContent = (self.data.formRichContent || []).slice()
     if (content) {
-      richContent = self.data.formRichContent.concat([{
+      // 编辑中的块插回原位；否则新文字落到文末
+      var draftBlock = {
         type: 'text', content: content, html: self.data.formHtml || '', style: self.data.currentFontStyle,
         weight: self.data.currentFontWeight, size: self.data.currentFontSize, color: self.data.currentFontColor,
         fontFamily: self.data.currentFontFamily
-      }])
-    } else {
-      richContent = self.data.formRichContent
-    }
-    var htmlParts = []
-    for (var i = 0; i < richContent.length; i++) {
-      var block = richContent[i]
-      if (block.type === 'quote') {
-        htmlParts.push('<blockquote style="border-left:4rpx solid rgba(0,212,255,0.3);padding-left:12rpx;color:rgba(255,255,255,0.7);font-size:26rpx;margin:12rpx 0;">' + block.content + '</blockquote>')
-      } else if (block.type === 'music') {
-        htmlParts.push('<p style="color:#00d4ff;font-size:26rpx;margin:12rpx 0;text-decoration:underline;">🎵 推荐单曲: ' + block.name + ' (' + block.url + ')</p>')
-      } else if (block.type === 'video') {
-        var platformEmoji = block.platform === 'bilibili' ? '📺' : '🎬'
-        var videoTitle = block.name ? block.name + ' - ' : ''
-        htmlParts.push('<p style="color:#ff6b9d;font-size:26rpx;margin:12rpx 0;">' + platformEmoji + ' 视频: ' + videoTitle + '<a href="' + block.url + '" style="color:#ff6b9d;text-decoration:underline;">' + block.url + '</a></p>')
-      } else if (block.type === 'image') {
-        htmlParts.push('<p style="text-align:center;margin:12rpx 0;"><img src="' + block.url + '" style="max-width:100%;border-radius:12rpx;" /></p>')
-      } else if (block.type === 'attachment') {
-        htmlParts.push('<p style="color:#ffab40;font-size:26rpx;margin:12rpx 0;">📎 附件: <a href="' + block.url + '" style="color:#ffab40;text-decoration:underline;">' + block.name + '</a></p>')
-      } else if (block.type === 'divider') {
-        htmlParts.push('<hr style="border:none;border-top:1px dashed rgba(255,255,255,0.15);margin:24rpx 0;" />')
-      } else if (block.type === 'link') {
-        var linkEmoji = block.isVideo ? '📺' : '🔗'
-        htmlParts.push('<p style="color:#00d4ff;font-size:26rpx;margin:12rpx 0;">' + linkEmoji + ' 链接: <a href="' + block.url + '" style="color:#00d4ff;text-decoration:underline;">' + block.text + '</a></p>')
-      } else if (block.type === 'table') {
-        var tableHtml = '<table style="width:100%;border-collapse:collapse;margin:12rpx 0;font-size:24rpx;color:#fff;text-align:center;">'
-        tableHtml += '<thead><tr>'
-        for (var ci = 0; ci < block.headers.length; ci++) {
-          tableHtml += '<th style="padding:12rpx 8rpx;background:rgba(0,200,255,0.1);border:1rpx solid rgba(0,200,255,0.2);font-weight:700;color:#00d4ff;">' + block.headers[ci] + '</th>'
-        }
-        tableHtml += '</tr></thead><tbody>'
-        for (var ri = 0; ri < block.rows.length; ri++) {
-          tableHtml += '<tr style="background:' + (ri % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)') + ';">'
-          var row = block.rows[ri]
-          var maxCols = Math.max(block.headers.length, (row ? row.length : 0))
-          for (var cj = 0; cj < maxCols; cj++) {
-            tableHtml += '<td style="padding:10rpx 8rpx;border:1rpx solid rgba(255,255,255,0.06);">' + (row && row[cj] ? row[cj] : '') + '</td>'
-          }
-          tableHtml += '</tr>'
-        }
-        tableHtml += '</tbody></table>'
-        htmlParts.push(tableHtml)
+      }
+      var editIdx = self._formEditIdx
+      if (typeof editIdx === 'number' && editIdx >= 0 && editIdx <= richContent.length) {
+        richContent.splice(editIdx, 0, draftBlock)
       } else {
-        if (block.html) {
-          htmlParts.push(block.html)
-        } else {
-          var style = 'font-size:' + block.size + 'rpx;color:' + block.color + ';'
-          if (block.weight === 'bold') style += 'font-weight:bold;'
-          if (block.style === 'italic') style += 'font-style:italic;'
-          if (block.fontFamily && block.fontFamily !== 'sans-serif') style += 'font-family:' + block.fontFamily + ';'
-          var contentWithBreaks = (block.content || '').replace(/\n/g, '<br/>')
-          htmlParts.push('<p style="' + style + '">' + contentWithBreaks + '</p>')
-        }
+        richContent.push(draftBlock)
       }
+      self._formEditIdx = null
     }
-    finalContent = htmlParts.join('')
-    
-    var coverImage = self.data.formImage || ''
-    if (self.data.formType === 'event' && self.data.formSubType === 'collab') {
-      coverImage = self.data.formCollabCover ? self.data.formCollabCover.trim() : coverImage
-    }
-    if (!coverImage) {
-      for (var i = 0; i < richContent.length; i++) {
-        if (richContent[i].type === 'image' && richContent[i].url) {
-          coverImage = richContent[i].url
-          break
-        } else if ((richContent[i].type === 'video' || richContent[i].type === 'music') && richContent[i].cover) {
-          coverImage = richContent[i].cover
-          break
-        }
-      }
-    }
+    var finalContent = richEditor.buildHtmlFromRichContent(richContent)
 
     var data = {
       title: title,
@@ -1522,9 +1190,10 @@ openModal: function(e) {
       subType: self.data.formType === 'event' ? self.data.formSubType : '',
       collabLogo: (self.data.formType === 'event' && self.data.formSubType === 'collab') ? self.data.formCollabLogo.trim() : '',
       pinned: self.data.formPinned,
-      image: coverImage,
       startDate: self.data.formStartDate,
+      startTime: self.data.formStartTime || '',
       endDate: self.data.formEndDate,
+      endTime: self.data.formEndTime || '',
       updateTime: db.serverDate()
     }
     var promise
@@ -1537,7 +1206,8 @@ openModal: function(e) {
     }
     var editItemId = self.data.editingItem ? self.data.editingItem._id : null
     promise.then(function(res) {
-      self.setData({ submitting: false, showModal: false, editingItem: null, formImage: '', formHtml: '' });
+      self.setData({ submitting: false, showModal: false, editingItem: null, formHtml: '' });
+      self._clearAnnounceDraft()
       wx.showToast({ title: '操作成功', icon: 'success' });
       self.loadAnnouncements();
       self.pushSubscribe('announcement', notify.smartTruncate(title, 20), notify.smartTruncate(content || title, 20));
@@ -1782,7 +1452,6 @@ openModal: function(e) {
     closeBallModal: function() {
       this.setData({ showBallModal: false });
     },
-    preventClose: function() {},
     onBallFormInput: function(e) {
       var field = e.currentTarget.dataset.field;
       var val = e.detail.value;
@@ -2004,29 +1673,125 @@ openModal: function(e) {
     var item = (e && e.currentTarget && e.currentTarget.dataset) ? e.currentTarget.dataset.item || null : null
     var richContent = []
     var source = ''
-    if (item && item.richContent) {
+    var activityFormContent = ''
+    var activityFormHtml = ''
+    if (item && item.richContent && item.richContent.length > 0) {
       richContent = item.richContent
     } else if (item && item.content) {
-      richContent = [{ type: 'text', content: item.content, style: 'normal', weight: 'normal', size: 28, color: '#ffffff' }]
+      // 旧数据无 richContent：只放进编辑器，避免再拼一个 text 块导致内容重复
+      activityFormContent = item.content
+      activityFormHtml = item.content
     }
     if (item && item.source) {
       source = item.source
     }
+    // 新建时尝试恢复未提交草稿
+    if (!item) {
+      var adraft = this._restoreActivityDraft()
+      if (adraft) {
+        var selfA = this
+        wx.showModal({
+          title: '发现未发布草稿',
+          content: '标题：' + (adraft.activityFormTitle || '（无标题）'),
+          confirmText: '恢复草稿',
+          cancelText: '不用，新建',
+          success: function(mr) {
+            if (mr.confirm) {
+              selfA.setData({
+                showActivityModal: true,
+                activityEditingItem: null,
+                activityFormTitle: adraft.activityFormTitle || '',
+                activityFormContent: adraft.activityFormContent || '',
+                activityFormHtml: adraft.activityFormHtml || '',
+                activityFormType: adraft.activityFormType || '活动',
+                activityFormStatus: adraft.activityFormStatus || '进行中',
+                activityFormStart: adraft.activityFormStart || '',
+                activityFormStartTime: adraft.activityFormStartTime || '',
+                activityFormEnd: adraft.activityFormEnd || '',
+                activityFormEndTime: adraft.activityFormEndTime || '',
+                activityFormSource: adraft.activityFormSource || '',
+                activityRichContent: adraft.activityRichContent || []
+              })
+            } else {
+              selfA._clearActivityDraft()
+              selfA.setData({
+                showActivityModal: true, activityEditingItem: null,
+                activityFormTitle: '', activityFormContent: '', activityFormHtml: '',
+                activityFormType: '活动', activityFormStatus: '进行中',
+                activityFormStart: '', activityFormStartTime: '',
+                activityFormEnd: '', activityFormEndTime: '',
+      activityFormSource: '', activityRichContent: []
+              })
+            }
+          }
+        })
+        return
+      }
+    }
+    this._activityEditIdx = null
     this.setData({
       showActivityModal: true,
       activityEditingItem: item,
       activityFormTitle: item ? item.title : '',
-      activityFormContent: (item && item.richContent && item.richContent.length > 0) ? '' : (item ? item.content : ''),
+      activityFormContent: activityFormContent,
+      activityFormHtml: activityFormHtml,
       activityFormType: item ? (item.type || '活动') : '活动',
       activityFormStatus: item ? (item.pinned ? '置顶' : '进行中') : '进行中',
-      activityFormStart: item ? (item.start || '') : '',
-      activityFormEnd: item ? (item.end || '') : '',
-      activityFormImage: item ? (item.image || '') : '',
+      activityFormStart: item ? (item.start || item.startDate || '') : '',
+      activityFormStartTime: item ? (item.startTime || '') : '',
+      activityFormEnd: item ? (item.end || item.endDate || '') : '',
+      activityFormEndTime: item ? (item.endTime || '') : '',
       activityFormSource: source,
-      activityRichContent: richContent
+      activityRichContent: richContent,
+      // 重置编辑器样式状态，防止上次编辑残留
+      activityFontStyle: 'normal',
+      activityFontWeight: 'normal',
+      activityFontSize: 28,
+      activityFontColor: '#ffffff',
+      activityFontFamily: 'sans-serif',
+      activityUnderline: false,
+      activityStrike: false,
+      activityHeader: 0,
+      activityAlign: '',
+      showActivitySizePicker: false,
+      showActivityColorPicker: false,
+      showActivityFontFamilyPicker: false
     })
   },
-  closeActivityModal: function() { this.setData({ showActivityModal: false }) },
+  closeActivityModal: function() {
+    this._saveActivityDraft()
+    this.setData({ showActivityModal: false })
+  },
+  // ── 活动草稿：防误关丢失 ──
+  _saveActivityDraft: function() {
+    var d = this.data
+    if (d.activityEditingItem) return
+    var has = d.activityFormTitle || d.activityFormContent || (d.activityRichContent && d.activityRichContent.length)
+    if (!has) { try { wx.removeStorageSync('admin_draft_activity') } catch (e) {} return }
+    try {
+      wx.setStorageSync('admin_draft_activity', {
+        activityFormTitle: d.activityFormTitle,
+        activityFormContent: d.activityFormContent,
+        activityFormHtml: d.activityFormHtml,
+        activityFormType: d.activityFormType,
+        activityFormStatus: d.activityFormStatus,
+        activityFormStart: d.activityFormStart,
+        activityFormStartTime: d.activityFormStartTime,
+        activityFormEnd: d.activityFormEnd,
+        activityFormEndTime: d.activityFormEndTime,
+        activityFormSource: d.activityFormSource,
+        activityRichContent: d.activityRichContent
+      })
+    } catch (e) {}
+  },
+  _restoreActivityDraft: function() {
+    var draft = null
+    try { draft = wx.getStorageSync('admin_draft_activity') } catch (e) {}
+    return draft || null
+  },
+  _clearActivityDraft: function() {
+    try { wx.removeStorageSync('admin_draft_activity') } catch (e) {}
+  },
   showActivityMusicDialog: function() {
     var self = this
     wx.getClipboardData({
@@ -2095,11 +1860,7 @@ openModal: function(e) {
     })
   },
   _addActivityMusicBlock: function(self, block) {
-    var richContent = (self.data.activityRichContent || []).concat([block])
-    var formContent = self.data.activityFormContent
-    if (block.url) formContent = formContent.replace(block.url, '').replace(/\s{2,}/g, ' ').trim()
-    self.setData({ activityRichContent: richContent, activityFormContent: formContent })
-    wx.showToast({ title: '已添加: ' + block.name, icon: 'success' })
+    self._insertActivityBlock(block, { stripUrls: block.url ? [block.url] : [], toast: '已添加: ' + block.name })
   },
   _showVideoDialogFallback: function() {
     var self = this
@@ -2125,10 +1886,7 @@ openModal: function(e) {
             success: function(nameRes) {
               var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
               var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id }
-              var richContent = (self.data.formRichContent || []).concat([block])
-              var formContent = self.data.formContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
-              self.setData({ formRichContent: richContent, formContent: formContent })
-              wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
+              self._insertFormBlock(block, { stripUrls: [videoInfo.url], toast: '已添加: ' + videoInfo.platformName + '视频' })
             }
           })
         }
@@ -2148,10 +1906,7 @@ openModal: function(e) {
             success: function(cb) {
               var text = (cb.data || '').trim()
               if (text && self._isImageUrl(text)) {
-                var block = { type: 'image', url: text }
-                var richContent = (self.data.formRichContent || []).concat([block])
-                self.setData({ formRichContent: richContent })
-                wx.showToast({ title: '已添加图片', icon: 'success' })
+                self._insertFormBlock({ type: 'image', url: text }, { toast: '已添加图片' })
               } else if (text) {
                 wx.showModal({
                   title: '剪贴板内容',
@@ -2159,10 +1914,7 @@ openModal: function(e) {
                   confirmText: '添加',
                   success: function(mr) {
                     if (mr.confirm) {
-                      var block = { type: 'image', url: text }
-                      var richContent = (self.data.formRichContent || []).concat([block])
-                      self.setData({ formRichContent: richContent })
-                      wx.showToast({ title: '已添加图片', icon: 'success' })
+                      self._insertFormBlock({ type: 'image', url: text }, { toast: '已添加图片' })
                     }
                   }
                 })
@@ -2182,10 +1934,7 @@ openModal: function(e) {
             placeholderText: '粘贴图片URL地址',
             success: function(urlRes) {
               if (urlRes.confirm && urlRes.content && urlRes.content.trim()) {
-                var block = { type: 'image', url: urlRes.content.trim() }
-                var richContent = (self.data.formRichContent || []).concat([block])
-                self.setData({ formRichContent: richContent })
-                wx.showToast({ title: '已添加图片', icon: 'success' })
+                self._insertFormBlock({ type: 'image', url: urlRes.content.trim() }, { toast: '已添加图片' })
               }
             }
           })
@@ -2203,10 +1952,7 @@ openModal: function(e) {
               wx.cloud.uploadFile({ cloudPath: cloudPath, filePath: filePath })
                 .then(function(uploadRes) {
                   wx.hideLoading()
-                  var block = { type: 'image', url: uploadRes.fileID }
-                  var richContent = (self.data.formRichContent || []).concat([block])
-                  self.setData({ formRichContent: richContent })
-                  wx.showToast({ title: '已添加图片', icon: 'success' })
+                  self._insertFormBlock({ type: 'image', url: uploadRes.fileID }, { toast: '已添加图片' })
                 })
                 .catch(function() {
                   wx.hideLoading()
@@ -2228,10 +1974,7 @@ openModal: function(e) {
             success: function(cb) {
               var text = (cb.data || '').trim()
               if (text && self._isImageUrl(text)) {
-                var block = { type: 'image', url: text }
-                var richContent = (self.data.activityRichContent || []).concat([block])
-                self.setData({ activityRichContent: richContent })
-                wx.showToast({ title: '已添加图片', icon: 'success' })
+                self._insertActivityBlock({ type: 'image', url: text }, { toast: '已添加图片' })
               } else if (text) {
                 wx.showModal({
                   title: '剪贴板内容',
@@ -2239,10 +1982,7 @@ openModal: function(e) {
                   confirmText: '添加',
                   success: function(mr) {
                     if (mr.confirm) {
-                      var block = { type: 'image', url: text }
-                      var richContent = (self.data.activityRichContent || []).concat([block])
-                      self.setData({ activityRichContent: richContent })
-                      wx.showToast({ title: '已添加图片', icon: 'success' })
+                      self._insertActivityBlock({ type: 'image', url: text }, { toast: '已添加图片' })
                     }
                   }
                 })
@@ -2262,10 +2002,7 @@ openModal: function(e) {
             placeholderText: '粘贴图片URL地址',
             success: function(urlRes) {
               if (urlRes.confirm && urlRes.content && urlRes.content.trim()) {
-                var block = { type: 'image', url: urlRes.content.trim() }
-                var richContent = (self.data.activityRichContent || []).concat([block])
-                self.setData({ activityRichContent: richContent })
-                wx.showToast({ title: '已添加图片', icon: 'success' })
+                self._insertActivityBlock({ type: 'image', url: urlRes.content.trim() }, { toast: '已添加图片' })
               }
             }
           })
@@ -2283,10 +2020,7 @@ openModal: function(e) {
               wx.cloud.uploadFile({ cloudPath: cloudPath, filePath: filePath })
                 .then(function(uploadRes) {
                   wx.hideLoading()
-                  var block = { type: 'image', url: uploadRes.fileID }
-                  var richContent = (self.data.activityRichContent || []).concat([block])
-                  self.setData({ activityRichContent: richContent })
-                  wx.showToast({ title: '已添加图片', icon: 'success' })
+                  self._insertActivityBlock({ type: 'image', url: uploadRes.fileID }, { toast: '已添加图片' })
                 })
                 .catch(function() {
                   wx.hideLoading()
@@ -2328,10 +2062,7 @@ openModal: function(e) {
                     var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
                     self._askForCover(function(cover) {
                       var block = { type: 'video', platform: 'other', platformName: '其他', name: name, url: inputUrl, vid: '', cover: cover }
-                      var richContent = (self.data.activityRichContent || []).concat([block])
-                      var formContent = self.data.activityFormContent.replace(inputUrl, '').replace(/\s{2,}/g, ' ').trim()
-                      self.setData({ activityRichContent: richContent, activityFormContent: formContent })
-                      wx.showToast({ title: '已添加视频', icon: 'success' })
+                      self._insertActivityBlock(block, { stripUrls: [inputUrl], toast: '已添加视频' })
                     })
                   }
                 })
@@ -2349,10 +2080,7 @@ openModal: function(e) {
                 var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
                 self._askForCover(function(cover) {
                   var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id, cover: cover }
-                  var richContent = (self.data.activityRichContent || []).concat([block])
-                  var formContent = self.data.activityFormContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
-                  self.setData({ activityRichContent: richContent, activityFormContent: formContent })
-                  wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
+                  self._insertActivityBlock(block, { stripUrls: [videoInfo.url], toast: '已添加: ' + videoInfo.platformName + '视频' })
                 })
               }
             })
@@ -2380,10 +2108,7 @@ openModal: function(e) {
                       var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
                       self._askForCover(function(cover) {
                         var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id, cover: cover }
-                        var richContent = (self.data.activityRichContent || []).concat([block])
-                        var formContent = self.data.activityFormContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
-                        self.setData({ activityRichContent: richContent, activityFormContent: formContent })
-                        wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
+                        self._insertActivityBlock(block, { stripUrls: [videoInfo.url], toast: '已添加: ' + videoInfo.platformName + '视频' })
                       })
                     }
                   })
@@ -2395,10 +2120,7 @@ openModal: function(e) {
   },
   _addActivityVideoBlock: function(self, videoInfo, name) {
     var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name || '', url: videoInfo.url, vid: videoInfo.id }
-    var richContent = (self.data.activityRichContent || []).concat([block])
-    var formContent = self.data.activityFormContent.replace(videoInfo.url, '').replace(/\s{2,}/g, ' ').trim()
-    self.setData({ activityRichContent: richContent, activityFormContent: formContent })
-    wx.showToast({ title: '已添加: ' + videoInfo.platformName + '视频', icon: 'success' })
+    self._insertActivityBlock(block, { stripUrls: [videoInfo.url], toast: '已添加: ' + videoInfo.platformName + '视频' })
   },
   onActivityTitleInput: function(e) { this.setData({ activityFormTitle: e.detail.value }) },
   onActivityContentInput: function(e) { this.setData({ activityFormContent: e.detail.value }) },
@@ -2406,10 +2128,14 @@ openModal: function(e) {
     var self = this
     wx.createSelectorQuery().in(this).select('#activityEditor').context(function(res) {
       self.activityEditorCtx = res.context
+      if (!self.activityEditorCtx) return
       if (self.data.activityFormContent) {
         self.activityEditorCtx.setContents({
           html: self.data.activityFormHtml || self.data.activityFormContent
         })
+      } else {
+        // 弹窗复用编辑器实例时清空残留内容
+        self.activityEditorCtx.clear()
       }
     }).exec()
   },
@@ -2446,169 +2172,22 @@ openModal: function(e) {
   onActivityEndChange: function(e) { this.setData({ activityFormEnd: e.detail.value }) },
   onActivitySourceInput: function(e) { this.setData({ activityFormSource: e.detail.value }) },
   onActivityStatusChange: function(e) { var statuses = ['进行中','即将开始','置顶']; this.setData({ activityFormStatus: statuses[e.detail.value] }) },
-  _autoCommitActivityText: function(updates) {
-    var content = this.data.activityFormContent.trim()
-    if (content) {
-      var block = {
-        type: 'text', content: content,
-        style: this.data.activityFontStyle,
-        weight: this.data.activityFontWeight,
-        size: this.data.activityFontSize,
-        color: this.data.activityFontColor,
-        fontFamily: this.data.activityFontFamily
-      }
-      var richContent = (this.data.activityRichContent || []).concat([block])
-      var setData = { activityRichContent: richContent, activityFormContent: '' }
-      if (updates) { for (var k in updates) setData[k] = updates[k] }
-      this.setData(setData)
-    } else if (updates) {
-      this.setData(updates)
-    }
-  },
-  toggleActivityBold: function() {
-    if (this.activityEditorCtx) {
-      this.activityEditorCtx.format('bold')
-    }
-  },
-  toggleActivityItalic: function() {
-    if (this.activityEditorCtx) {
-      this.activityEditorCtx.format('italic')
-    }
-  },
-  activityToggleUnderline: function() {
-    if (this.activityEditorCtx) {
-      this.activityEditorCtx.format('underline')
-    }
-  },
-  activityToggleStrike: function() {
-    if (this.activityEditorCtx) {
-      this.activityEditorCtx.format('strike')
-    }
-  },
-  activityToggleHeader2: function() {
-    if (this.activityEditorCtx) {
-      this.activityEditorCtx.format('header', 'H2')
-    }
-  },
-  activityToggleHeader3: function() {
-    if (this.activityEditorCtx) {
-      this.activityEditorCtx.format('header', 'H3')
-    }
-  },
-  setActivityFontSize: function(e) {
-    var size = e.currentTarget.dataset.size
-    this.setData({ showActivitySizePicker: false })
-    if (this.activityEditorCtx) {
-      this.activityEditorCtx.format('fontSize', (size / 2) + 'px')
-    }
-  },
-  setActivityFontColor: function(e) {
-    var color = e.currentTarget.dataset.color
-    this.setData({ showActivityColorPicker: false })
-    if (this.activityEditorCtx) {
-      this.activityEditorCtx.format('color', color)
-    }
-  },
-  setActivityFontFamily: function(e) {
-    var family = e.currentTarget.dataset.family
-    this.setData({ showActivityFontFamilyPicker: false })
-    if (this.activityEditorCtx) {
-      this.activityEditorCtx.format('fontFamily', family)
-    }
-  },
-  showActivityFontSizePicker: function() {
-    this.setData({ showActivitySizePicker: !this.data.showActivitySizePicker, showActivityColorPicker: false, showActivityFontFamilyPicker: false })
-  },
-  showActivityFontColorPicker: function() {
-    this.setData({ showActivityColorPicker: !this.data.showActivityColorPicker, showActivitySizePicker: false, showActivityFontFamilyPicker: false })
-  },
-  showActivityFontFamilyPicker: function() {
-    this.setData({ showActivityFontFamilyPicker: !this.data.showActivityFontFamilyPicker, showActivitySizePicker: false, showActivityColorPicker: false })
-  },
-  addActivityRichTextBlock: function() {
-    var self = this
-    if (!self.activityEditorCtx) {
-      wx.showToast({ title: '编辑器未就绪', icon: 'none' })
-      return
-    }
-    self.activityEditorCtx.getContents({
-      success: function(res) {
-        var html = res.html
-        var text = res.text.trim()
-        if (!text) {
-          wx.showToast({ title: '请输入内容', icon: 'none' })
-          return
-        }
-        var block = {
-          type: 'text',
-          content: text,
-          html: html,
-          style: self.data.activityFontStyle,
-          weight: self.data.activityFontWeight,
-          size: self.data.activityFontSize,
-          color: self.data.activityFontColor,
-          fontFamily: self.data.activityFontFamily
-        }
-        var richContent = self.data.activityRichContent.concat([block])
-        self.setData({
-          activityRichContent: richContent,
-          activityFormContent: '',
-          activityFormHtml: ''
-        })
-        self.activityEditorCtx.clear()
-      }
-    })
-  },
-  addActivityRichQuoteBlock: function() {
-    var self = this
-    var content = this.data.activityFormContent.trim()
-    if (!content) {
-      wx.showToast({ title: '请输入引用内容', icon: 'none' })
-      return
-    }
-    var block = {
-      type: 'quote',
-      content: content,
-      style: 'normal',
-      weight: 'normal',
-      size: 26,
-      color: 'rgba(255,255,255,0.7)'
-    }
-    var richContent = this.data.activityRichContent.concat([block])
-    this.setData({
-      activityRichContent: richContent,
-      activityFormContent: '',
-      activityFormHtml: ''
-    })
-    if (this.activityEditorCtx) {
-      this.activityEditorCtx.clear()
-    }
-  },
-  moveActivityRichBlock: function(e) {
-    var idx = e.currentTarget.dataset.idx;
-    var pos = e.currentTarget.dataset.pos;
-    var richContent = this.data.activityRichContent.slice();
-    var block = richContent.splice(idx, 1)[0];
-    if (pos === 'top1') richContent.unshift(block);
-    else if (pos === 'top2') richContent.splice(Math.min(1, richContent.length), 0, block);
-    else if (pos === 'bottom1') richContent.push(block);
-    else if (pos === 'bottom2') richContent.splice(Math.max(0, richContent.length - 1), 0, block);
-    this.setData({ activityRichContent: richContent });
-  },
-  removeActivityRichBlock: function(e) {
-    var idx = e.currentTarget.dataset.idx
-    var richContent = this.data.activityRichContent.slice()
-    var block = richContent[idx]
-    richContent.splice(idx, 1)
-    var formContent = this.data.activityFormContent
-    if ((block.type === 'video' || block.type === 'music') && block.url) {
-      formContent = formContent.replace(block.url, '').replace(/\s{2,}/g, ' ').trim()
-    }
-    this.setData({ activityRichContent: richContent, activityFormContent: formContent })
-    if (this.activityEditorCtx) {
-      this.activityEditorCtx.clear()
-    }
-  },
+  _autoCommitActivityText: activityOps.autoCommitText,
+  toggleActivityBold: activityOps.toggleBold,
+  toggleActivityItalic: activityOps.toggleItalic,
+  activityToggleUnderline: activityOps.toggleUnderline,
+  activityToggleStrike: activityOps.toggleStrike,
+  activityToggleHeader2: activityOps.toggleHeader2,
+  activityToggleHeader3: activityOps.toggleHeader3,
+  setActivityFontSize: activityOps.setFontSize,
+  setActivityFontColor: activityOps.setFontColor,
+  setActivityFontFamily: activityOps.setFontFamily,
+  showActivityFontSizePicker: activityOps.showFontSizePicker,
+  showActivityFontColorPicker: activityOps.showFontColorPicker,
+  showActivityFontFamilyPicker: activityOps.showFontFamilyPicker,
+  addActivityRichTextBlock: activityOps.addRichTextBlock,
+  addActivityRichQuoteBlock: activityOps.addRichQuoteBlock,
+  removeActivityRichBlock: activityOps.removeRichBlock,
   editActivityRichBlock: function(e) {
     var idx = e.currentTarget.dataset.idx
     var block = this.data.activityRichContent[idx]
@@ -2633,7 +2212,28 @@ openModal: function(e) {
       });
       return;
     }
+    // 引用块原地编辑，避免拉进编辑器后丢失 quote 类型
+    if (block.type === 'quote') {
+      var self2 = this
+      wx.showModal({
+        title: '编辑引用',
+        content: block.content || '',
+        editable: true,
+        placeholderText: '输入引用内容',
+        success: function(mr) {
+          if (mr.confirm && mr.content !== undefined) {
+            var rc = self2.data.activityRichContent.slice()
+            rc[idx] = Object.assign({}, block, { content: mr.content })
+            self2.setData({ activityRichContent: rc })
+            wx.showToast({ title: '已更新引用', icon: 'success' })
+          }
+        }
+      })
+      return
+    }
     richContent.splice(idx, 1)
+    // 记录原位置：改完落块时插回原处，而不是沉到文末
+    this._activityEditIdx = idx
     this.setData({
       activityRichContent: richContent,
       activityFormContent: block.html || block.content,
@@ -2704,17 +2304,7 @@ openModal: function(e) {
       }
     })
   },
-  _processActivityImportedTextToTable: function(text) {
-    var tableData = parseTableInput(text)
-    if (!tableData) {
-      wx.showToast({ title: '未识别出表格数据，请确保文件内含有至少两行、每行使用分隔符的分隔内容', icon: 'none' })
-      return
-    }
-    var block = { type: 'table', headers: tableData.headers, rows: tableData.rows, colCount: tableData.colCount, rowCount: tableData.rowCount }
-    var richContent = (this.data.activityRichContent || []).concat([block])
-    this.setData({ activityRichContent: richContent })
-    wx.showToast({ title: '表格导入成功', icon: 'success' })
-  },
+  _processActivityImportedTextToTable: activityOps.processImportedTextToTable,
   showActivityAttachmentDialog: function() {
     var self = this
     wx.chooseMessageFile({
@@ -2738,9 +2328,7 @@ openModal: function(e) {
             size: file.size,
             sizeText: sizeText
           }
-          var richContent = (self.data.activityRichContent || []).concat([block])
-          self.setData({ activityRichContent: richContent })
-          wx.showToast({ title: '附件上传成功', icon: 'success' })
+          self._insertActivityBlock(block, { toast: '附件上传成功' })
         }).catch(function(err) {
           wx.hideLoading()
           wx.showToast({ title: '附件上传失败', icon: 'none' })
@@ -2773,9 +2361,7 @@ openModal: function(e) {
                 var text = (resText.content || '').trim() || '快捷链接'
                 var isVideo = /v\.qq\.com|bilibili\.com|video|youtube/i.test(url)
                 var block = { type: 'link', text: text, url: url, isVideo: isVideo }
-                var richContent = (self.data.activityRichContent || []).concat([block])
-                self.setData({ activityRichContent: richContent })
-                wx.showToast({ title: '超链接已添加', icon: 'success' })
+                self._insertActivityBlock(block, { toast: '超链接已添加' })
               }
             }
           })
@@ -2784,154 +2370,43 @@ openModal: function(e) {
     })
   },
   showActivityDividerDialog: function() {
-    var self = this
-    if (!self.activityEditorCtx) {
-      wx.showToast({ title: '编辑器未就绪', icon: 'none' })
-      return
-    }
-    self.activityEditorCtx.getContents({
-      success: function(res) {
-        var html = res.html
-        var text = res.text.trim()
-        var richContent = self.data.activityRichContent.slice()
-        if (text) {
-          richContent.push({
-            type: 'text',
-            content: text,
-            html: html,
-            style: 'normal',
-            weight: 'normal',
-            size: 28,
-            color: '#ffffff',
-            fontFamily: 'sans-serif'
-          })
-        }
-        richContent.push({ type: 'divider' })
-        self.setData({
-          activityRichContent: richContent,
-          activityFormContent: '',
-          activityFormHtml: '',
-          activityFontStyle: 'normal',
-          activityFontWeight: 'normal',
-          activityFontSize: 28,
-          activityFontColor: '#ffffff',
-          activityFontFamily: 'sans-serif'
-        })
-        self.activityEditorCtx.clear()
-        wx.showToast({ title: '已添加分割线', icon: 'success' })
-      }
-    })
+    // 先落草稿再插分割线，顺序与所见一致
+    this._insertActivityBlock({ type: 'divider' }, { toast: '已添加分割线' })
   },
-  chooseActivityImage: function() {
-    var self = this
-    wx.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'],
-      success: function(res) {
-        var filePath = res.tempFilePaths[0]
-        wx.showLoading({ title: '上传中...' })
-        var ext = filePath.split('.').pop() || 'jpg'
-        wx.cloud.uploadFile({ cloudPath: 'activities/' + Date.now() + '.' + ext, filePath: filePath })
-          .then(function(r) { wx.hideLoading(); self.setData({ activityFormImage: r.fileID }) })
-          .catch(function() { wx.hideLoading(); wx.showToast({ title: '上传失败', icon: 'none' }) })
-      }
-    })
-  },
-  inputActivityImageUrl: function() {
-    var self = this
-    wx.showModal({ title: '输入图片链接', content: '', editable: true, placeholderText: '粘贴图片URL地址',
-      success: function(res) { if (res.confirm && res.content && res.content.trim()) self.setData({ activityFormImage: res.content.trim() }) }
-    })
-  },
-  removeActivityImage: function() { this.setData({ activityFormImage: '' }) },
-  previewActivityImage: function() { if (this.data.activityFormImage) wx.previewImage({ urls: [this.data.activityFormImage] }) },
-  submitActivity: function() {
+          submitActivity: function() {
     var self = this
     if (self.data.activitySubmitting) return
     var title = self.data.activityFormTitle.trim()
     var content = self.data.activityFormContent.trim()
     if (!title) { wx.showToast({ title: '请输入标题', icon: 'none' }); return }
     self.setData({ activitySubmitting: true })
-    var finalContent = content
-    var richContent = []
+    var richContent = (self.data.activityRichContent || []).slice()
     if (content) {
-      richContent = self.data.activityRichContent.concat([{
+      // 编辑中的块插回原位；否则新文字落到文末
+      var draftBlock = {
         type: 'text', content: content, html: self.data.activityFormHtml || '', style: self.data.activityFontStyle,
         weight: self.data.activityFontWeight || 'normal', size: self.data.activityFontSize || 28, color: self.data.activityFontColor || '#ffffff',
         fontFamily: self.data.activityFontFamily || 'sans-serif'
-      }])
-    } else {
-      richContent = self.data.activityRichContent
-    }
-    var htmlParts = []
-    for (var i = 0; i < richContent.length; i++) {
-      var block = richContent[i]
-      if (block.type === 'quote') {
-        htmlParts.push('<blockquote style="border-left:4rpx solid rgba(0,212,255,0.3);padding-left:12rpx;color:rgba(255,255,255,0.7);font-size:26rpx;margin:12rpx 0;">' + block.content + '</blockquote>')
-      } else if (block.type === 'music') {
-        htmlParts.push('<p style="color:#00d4ff;font-size:26rpx;margin:12rpx 0;text-decoration:underline;">🎵 推荐单曲: ' + block.name + ' (' + block.url + ')</p>')
-      } else if (block.type === 'video') {
-        var platformEmoji = block.platform === 'bilibili' ? '📺' : '🎬'
-        var videoTitle = block.name ? block.name + ' - ' : ''
-        htmlParts.push('<p style="color:#ff6b9d;font-size:26rpx;margin:12rpx 0;">' + platformEmoji + ' 视频: ' + videoTitle + '<a href="' + block.url + '" style="color:#ff6b9d;text-decoration:underline;">' + block.url + '</a></p>')
-      } else if (block.type === 'image') {
-        htmlParts.push('<p style="text-align:center;margin:12rpx 0;"><img src="' + block.url + '" style="max-width:100%;border-radius:12rpx;" /></p>')
-      } else if (block.type === 'attachment') {
-        htmlParts.push('<p style="color:#ffab40;font-size:26rpx;margin:12rpx 0;">📎 附件: <a href="' + block.url + '" style="color:#ffab40;text-decoration:underline;">' + block.name + '</a></p>')
-      } else if (block.type === 'divider') {
-        htmlParts.push('<hr style="border:none;border-top:1px dashed rgba(255,255,255,0.15);margin:24rpx 0;" />')
-      } else if (block.type === 'link') {
-        var linkEmoji = block.isVideo ? '📺' : '🔗'
-        htmlParts.push('<p style="color:#00d4ff;font-size:26rpx;margin:12rpx 0;">' + linkEmoji + ' 链接: <a href="' + block.url + '" style="color:#00d4ff;text-decoration:underline;">' + block.text + '</a></p>')
-      } else if (block.type === 'table') {
-        var tableHtml = '<table style="width:100%;border-collapse:collapse;margin:12rpx 0;font-size:24rpx;color:#fff;text-align:center;">'
-        tableHtml += '<thead><tr>'
-        for (var ci = 0; ci < block.headers.length; ci++) {
-          tableHtml += '<th style="padding:12rpx 8rpx;background:rgba(0,200,255,0.1);border:1rpx solid rgba(0,200,255,0.2);font-weight:700;color:#00d4ff;">' + block.headers[ci] + '</th>'
-        }
-        tableHtml += '</tr></thead><tbody>'
-        for (var ri = 0; ri < block.rows.length; ri++) {
-          tableHtml += '<tr style="background:' + (ri % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)') + ';">'
-          var row = block.rows[ri]
-          var maxCols = Math.max(block.headers.length, (row ? row.length : 0))
-          for (var cj = 0; cj < maxCols; cj++) {
-            tableHtml += '<td style="padding:10rpx 8rpx;border:1rpx solid rgba(255,255,255,0.06);">' + (row && row[cj] ? row[cj] : '') + '</td>'
-          }
-          tableHtml += '</tr>'
-        }
-        tableHtml += '</tbody></table>'
-        htmlParts.push(tableHtml)
+      }
+      var editIdx = self._activityEditIdx
+      if (typeof editIdx === 'number' && editIdx >= 0 && editIdx <= richContent.length) {
+        richContent.splice(editIdx, 0, draftBlock)
       } else {
-        if (block.html) {
-          htmlParts.push(block.html)
-        } else {
-          var style = 'font-size:' + block.size + 'rpx;color:' + block.color + ';'
-          if (block.weight === 'bold') style += 'font-weight:bold;'
-          if (block.style === 'italic') style += 'font-style:italic;'
-          if (block.fontFamily && block.fontFamily !== 'sans-serif') style += 'font-family:' + block.fontFamily + ';'
-          var contentWithBreaks = (block.content || '').replace(/\n/g, '<br/>')
-          htmlParts.push('<p style="' + style + '">' + contentWithBreaks + '</p>')
-        }
+        richContent.push(draftBlock)
       }
+      self._activityEditIdx = null
     }
-    finalContent = htmlParts.join('')
-    
-    var coverImage = self.data.activityFormImage || ''
-    if (!coverImage) {
-      for (var i = 0; i < richContent.length; i++) {
-        if (richContent[i].type === 'image' && richContent[i].url) {
-          coverImage = richContent[i].url
-          break
-        } else if ((richContent[i].type === 'video' || richContent[i].type === 'music') && richContent[i].cover) {
-          coverImage = richContent[i].cover
-          break
-        }
-      }
-    }
+    var finalContent = richEditor.buildHtmlFromRichContent(richContent)
 
     var data = {
       title: title, content: finalContent, type: 'event',
       pinned: self.data.activityFormStatus === '置顶',
       start: self.data.activityFormStart, end: self.data.activityFormEnd,
-      image: coverImage, source: self.data.activityFormSource,
+      startDate: self.data.activityFormStart || '',
+      startTime: self.data.activityFormStartTime || '',
+      endDate: self.data.activityFormEnd || '',
+      endTime: self.data.activityFormEndTime || '',
+      source: self.data.activityFormSource,
       richContent: richContent,
       updateTime: db.serverDate()
     }
@@ -2940,7 +2415,8 @@ openModal: function(e) {
       ? db.collection('announcements').doc(self.data.activityEditingItem._id).update({ data: data })
       : (data.createTime = db.serverDate(), data.author = app.globalData.userInfo ? app.globalData.userInfo.nickName : 'Admin', db.collection('announcements').add({ data: data }))
     promise.then(function(res) {
-      self.setData({ activitySubmitting: false, showActivityModal: false, activityEditingItem: null, activityFormImage: '', activityFormHtml: '' });
+      self.setData({ activitySubmitting: false, showActivityModal: false, activityEditingItem: null, activityFormHtml: '' });
+      self._clearActivityDraft()
       wx.showToast({ title: '操作成功', icon: 'success' });
       self.loadAdminActivities();
       self.pushSubscribe('activity', notify.smartTruncate(title, 20), notify.smartTruncate(content, 20));
@@ -3014,52 +2490,14 @@ openModal: function(e) {
       })
     },
   
-  undo: function() {
-    if (this.editorCtx) {
-      this.editorCtx.undo();
-    }
-  },
-  alignLeft: function() {
-    if (this.editorCtx) {
-      this.editorCtx.format('align', 'left');
-      this.setData({ currentAlign: 'left' });
-    }
-  },
-  alignCenter: function() {
-    if (this.editorCtx) {
-      this.editorCtx.format('align', 'center');
-      this.setData({ currentAlign: 'center' });
-    }
-  },
-  alignRight: function() {
-    if (this.editorCtx) {
-      this.editorCtx.format('align', 'right');
-      this.setData({ currentAlign: 'right' });
-    }
-  },
-  activityUndo: function() {
-    if (this.activityEditorCtx) {
-      this.activityEditorCtx.undo();
-    }
-  },
-  activityAlignLeft: function() {
-    if (this.activityEditorCtx) {
-      this.activityEditorCtx.format('align', 'left');
-      this.setData({ activityAlign: 'left' });
-    }
-  },
-  activityAlignCenter: function() {
-    if (this.activityEditorCtx) {
-      this.activityEditorCtx.format('align', 'center');
-      this.setData({ activityAlign: 'center' });
-    }
-  },
-  activityAlignRight: function() {
-    if (this.activityEditorCtx) {
-      this.activityEditorCtx.format('align', 'right');
-      this.setData({ activityAlign: 'right' });
-    }
-  },
+  undo: formOps.undo,
+  alignLeft: formOps.alignLeft,
+  alignCenter: formOps.alignCenter,
+  alignRight: formOps.alignRight,
+  activityUndo: activityOps.undo,
+  activityAlignLeft: activityOps.alignLeft,
+  activityAlignCenter: activityOps.alignCenter,
+  activityAlignRight: activityOps.alignRight,
 
   editMediaCover: function(e) {
     var self = this;
@@ -3135,13 +2573,14 @@ openModal: function(e) {
         if (res.confirm && res.content && res.content.trim()) {
           var url = res.content.trim();
           var richContent = self.data.activityRichContent || [];
+          // 追加到上一个轮播：不动编辑器草稿，避免把轮播拆开
           if (richContent.length > 0 && richContent[richContent.length - 1].type === 'swiper') {
             richContent[richContent.length - 1].urls.push(url);
+            self.setData({ activityRichContent: richContent });
+            wx.showToast({ title: '已追加滚动图', icon: 'success' });
           } else {
-            richContent.push({ type: 'swiper', urls: [url] });
+            self._insertActivityBlock({ type: 'swiper', urls: [url] }, { toast: '已添加滚动图' });
           }
-          self.setData({ activityRichContent: richContent });
-          wx.showToast({ title: '已追加滚动图', icon: 'success' });
         }
       }
     });
@@ -3158,13 +2597,14 @@ openModal: function(e) {
         if (res.confirm && res.content && res.content.trim()) {
           var url = res.content.trim();
           var richContent = self.data.formRichContent || [];
+          // 追加到上一个轮播：不动编辑器草稿，避免把轮播拆开
           if (richContent.length > 0 && richContent[richContent.length - 1].type === 'swiper') {
             richContent[richContent.length - 1].urls.push(url);
+            self.setData({ formRichContent: richContent });
+            wx.showToast({ title: '已追加滚动图', icon: 'success' });
           } else {
-            richContent.push({ type: 'swiper', urls: [url] });
+            self._insertFormBlock({ type: 'swiper', urls: [url] }, { toast: '已添加滚动图' });
           }
-          self.setData({ formRichContent: richContent });
-          wx.showToast({ title: '已添加滚动图', icon: 'success' });
         }
       }
     });
