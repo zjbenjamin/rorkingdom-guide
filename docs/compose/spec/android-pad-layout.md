@@ -1,14 +1,27 @@
 ---
 feature: android-pad-layout
-status: designed
+status: delivered
 updated: 2026-10-12
 branch: feat/android-pad-layout
-commits:
+commits: 8f7ab09..5269828
 ---
 
 # Android Pad 平板排版
 
 ## Report
+
+**What was built** — 安卓 Pad 平板排版：`@media` 改为 class 驱动的 `.layout-pad` / `.layout-wide`，关键尺寸全部用 px 定住，切断 rpx 随屏宽放大。顶栏防逐字竖排、Dock 固定 48px/22px、内容限宽 768/1080px 居中、弹窗居中卡片式（640/720px）、快捷入口 3/4 列、商品网格 2/3 列。14 个页面接入 `padLayoutBehavior`，根节点挂 `{{padLayoutClass}}`。
+
+「我的」页新增 **Pad 模式切换**（自动 / 平板 / 手机）：存 `pad_layout_mode`，Behavior 重算并即时刷新布局 class；四语文案齐全。评审问题已修：feed 字号帽、`wx.getWindowInfo`、弹窗 `width:100% + max-width`、`layout-phone` 兜底、about/redeem 限宽对齐契约。
+
+**Verification** — `node --check` 覆盖 11 个 JS 文件全部 PASS；11 个 wxss 花括号配对 PASS；14/14 页面 class + Behavior 挂接齐全；选择器双前缀扫描为空；残留 `@media (min-width: 768px)` 仅 app.wxss 一处兜底。T2/T5 的真机视觉项无法在无截图环境验证。
+
+**Journey log** —
+1. wxss 转换脚本一度把换行压成单行，括号仍配对；已用按行重写恢复可读性。
+2. 选择器前缀批量替换曾造成 `.layout-pad .page > .layout-pad .container` 双前缀；改为逐段精确替换后清除。
+3. `width: 640px` 批量替换误伤 `max-width: 640px`；已恢复 640/720 上限，`width:100%` 保证窄窗不溢出。
+4. 评审指出 class 化改造带来大量换行噪音（语义等价）；保留 class 驱动方案以支持手动切换。
+5. `layoutClasses()` 手机态现返回 `layout-phone`，兜底 `@media` 不再误伤强制手机模式。
 
 ## [S1] Problem
 
@@ -85,10 +98,10 @@ commits:
 
 ## Tasks
 
-- [ ] T1: 全局平板尺寸帽（app.wxss → `.layout-pad`/`.layout-wide`）— acceptance: layout-pad 时正文 15px、卡片圆角 12px、按钮 40px 不按 rpx 放大；无 class 时与改前一致（covers: S2）
-- [ ] T2: 顶栏防竖排（index 页 repo-header）— acceptance: layout-wide 下「洛手助手 / rorkingdom-guide Public」单行显示，tab 与语言旗同行不逐字换行（covers: S2; depends: T1）
-- [ ] T3: Dock 固定尺寸 — acceptance: layout-pad 时 Dock 格 48px、图标 22px，不遮挡主体内容（covers: S2; depends: T1）
-- [ ] T4: 内容限宽与网格重排 — acceptance: layout-pad 容器 ≤768px、layout-wide ≤1080px 居中；quick-nav 3/4 列；商品网格 2/3 列（covers: S2; depends: T1）
-- [ ] T5: 弹窗与后台表单平板化 — acceptance: 公告弹窗居中 ≤720px，form-editor ≤320px，工具栏 32px 不挤占输入区，控件字号 ≥13px（covers: S2; depends: T1）
-- [ ] T6: Pad 模式切换（我的页）— acceptance: 自动/平板/手机三选一，持久化并即时刷新当前布局 class；四语文案齐全（covers: S2）
-- [ ] T7: 验证与评审 — acceptance: 花括号配对、node --check 通过、14 页均挂 class+Behavior；评审无 critical；文档定稿（covers: S2; depends: T1, T2, T3, T4, T5, T6）
+- [x] T1: 全局平板尺寸帽（app.wxss → `.layout-pad`/`.layout-wide`）— acceptance: layout-pad 时正文 15px、卡片圆角 12px、按钮 40px 不按 rpx 放大；无 class 时与改前一致（covers: S2）
+- [x] T2: 顶栏防竖排（index 页 repo-header）— acceptance: layout-wide 下「洛手助手 / rorkingdom-guide Public」单行显示，tab 与语言旗同行不逐字换行（covers: S2; depends: T1）
+- [x] T3: Dock 固定尺寸 — acceptance: layout-pad 时 Dock 格 48px、图标 22px，不遮挡主体内容（covers: S2; depends: T1）
+- [x] T4: 内容限宽与网格重排 — acceptance: layout-pad 容器 ≤768px、layout-wide ≤1080px 居中；quick-nav 3/4 列；商品网格 2/3 列（covers: S2; depends: T1）
+- [x] T5: 弹窗与后台表单平板化 — acceptance: 公告弹窗居中 ≤720px，form-editor ≤320px，工具栏 32px 不挤占输入区，控件字号 ≥13px（covers: S2; depends: T1）
+- [x] T6: Pad 模式切换（我的页）— acceptance: 自动/平板/手机三选一，持久化并即时刷新当前布局 class；四语文案齐全（covers: S2）
+- [x] T7: 验证与评审 — acceptance: 花括号配对、node --check 通过、14 页均挂 class+Behavior；评审无 critical；文档定稿（covers: S2; depends: T1, T2, T3, T4, T5, T6）
