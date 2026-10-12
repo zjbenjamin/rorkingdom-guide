@@ -41,6 +41,8 @@ button {
   line-height: 1;
   padding-top: 0;
   padding-bottom: 0;
+  /* 裸文字按钮禁止逐字换行 */
+  white-space: nowrap;
 }
 button text {
   line-height: 1.2;

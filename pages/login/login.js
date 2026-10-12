@@ -155,9 +155,9 @@ Page({
     loginLabels: getLoginLabels('zh')
   },
   onPadModeTap: function(e) {
-    var mode = e.currentTarget.dataset.mode
-    if (mode !== 'auto' && mode !== 'pad' && mode !== 'phone') return
-    if (typeof this.setPadMode === 'function') this.setPadMode(mode)
+    // 仅按钮切换布局：关=手机（默认），开=平板
+    var next = (this.data.padMode === 'pad') ? 'phone' : 'pad'
+    if (typeof this.setPadMode === 'function') this.setPadMode(next)
   },
   onLoad: function() {
     var self = this

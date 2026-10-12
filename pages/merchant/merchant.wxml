@@ -519,8 +519,10 @@
           <text style="font-size: 24rpx; color: rgba(255,255,255,0.6); width: 160rpx; flex-shrink: 0; white-space: nowrap;">预设限售数量</text>
           <input class="modal-input mini" type="number" placeholder="留空用商品库预设/不限" value="{{batchLimitCount}}" bindinput="onBatchLimitInput" style="flex: 1;" />
         </view>
-        <button class="modal-cancel" catchtap="closeAddSellingItemModal">取消</button>
-        <button class="modal-save" catchtap="confirmAddSellingItems">确认上架</button>
+        <view class="selling-btn-row">
+          <button class="modal-cancel" catchtap="closeAddSellingItemModal">取消</button>
+          <button class="modal-save" catchtap="confirmAddSellingItems">确认上架</button>
+        </view>
       </view>
     </view>
   </view>

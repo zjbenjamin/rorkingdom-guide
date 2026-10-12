@@ -1,10 +1,10 @@
 var padMode = require('./padMode')
 
-// 在页面根节点注入 layout-pad / layout-wide，并跟随「我的」页里的模式切换
+// 在页面根节点注入 layout-pad / layout-wide；仅跟随「我的」页 Pad 模式按钮切换
 module.exports = Behavior({
   data: {
-    padLayoutClass: '',
-    padMode: 'auto'
+    padLayoutClass: 'layout-phone',
+    padMode: 'phone'
   },
   pageLifetimes: {
     show: function() {
@@ -20,6 +20,7 @@ module.exports = Behavior({
   lifetimes: {
     attached: function() {
       var self = this
+      // 仅用于 pad 模式下重算 layout-wide，不会自动切换布局
       this._padResizeHandler = function() {
         self._applyPadLayout()
       }
@@ -38,7 +39,6 @@ module.exports = Behavior({
       var mode = padMode.getMode()
       var w = 0
       try {
-        // 新 API 优先，兼容旧基础库
         if (typeof wx.getWindowInfo === 'function') {
           w = wx.getWindowInfo().windowWidth
         } else {

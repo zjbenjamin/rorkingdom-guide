@@ -155,16 +155,8 @@
         </view>
         <view class="pad-mode-row">
           <text class="pad-mode-label">{{loginLabels.padModeLabel}}</text>
-          <view class="pad-mode-opts">
-            <view class="pad-mode-opt {{padMode === 'auto' ? 'active' : ''}}" data-mode="auto" bindtap="onPadModeTap">
-              <text>{{loginLabels.padModeAuto}}</text>
-            </view>
-            <view class="pad-mode-opt {{padMode === 'pad' ? 'active' : ''}}" data-mode="pad" bindtap="onPadModeTap">
-              <text>{{loginLabels.padModePad}}</text>
-            </view>
-            <view class="pad-mode-opt {{padMode === 'phone' ? 'active' : ''}}" data-mode="phone" bindtap="onPadModeTap">
-              <text>{{loginLabels.padModePhone}}</text>
-            </view>
+          <view class="pad-mode-toggle {{padMode === 'pad' ? 'on' : ''}}" bindtap="onPadModeTap">
+            <view class="pad-mode-toggle-dot"></view>
           </view>
         </view>
       </view>

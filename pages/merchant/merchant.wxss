@@ -1281,6 +1281,7 @@
  }
 /* 售卖模式切换 *//* 底部按钮 */.modal-footer  {
  display: flex;
+ flex-wrap: wrap;
  gap: 24rpx;
  flex-shrink: 0;
  padding-top: 40rpx;
@@ -1303,6 +1304,8 @@
  align-items: center !important;
  justify-content: center !important;
  line-height: 1 !important;
+ white-space: nowrap !important;
+ min-width: 140rpx !important;
  }
 .modal-cancel:active  {
  background: rgba(255, 255, 255, 0.15) !important;
@@ -1339,6 +1342,8 @@
  align-items: center !important;
  justify-content: center !important;
  line-height: 1 !important;
+ white-space: nowrap !important;
+ min-width: 200rpx !important;
  }
 .modal-save text,
 .modal-cancel text,
