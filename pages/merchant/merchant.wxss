@@ -1302,6 +1302,7 @@
  display: flex !important;
  align-items: center !important;
  justify-content: center !important;
+ line-height: 1 !important;
  }
 .modal-cancel:active  {
  background: rgba(255, 255, 255, 0.15) !important;
@@ -1318,6 +1319,7 @@
   align-items: center !important;
   justify-content: center !important;
   font-weight: 600 !important;
+  line-height: 1 !important;
 }
 .modal-delete-btn:active  {
   background: rgba(255, 71, 87, 0.15) !important;
@@ -1336,7 +1338,18 @@
  display: flex !important;
  align-items: center !important;
  justify-content: center !important;
+ line-height: 1 !important;
  }
+.modal-save text,
+.modal-cancel text,
+.modal-delete-btn text {
+  line-height: 1.2;
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .modal-save:active  {
  transform: translateY(2rpx);
  opacity: 0.9;
