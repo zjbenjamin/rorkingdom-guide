@@ -1,4 +1,4 @@
-<view class="page" style="padding-top: {{safeTop}}px;">
+<view class="page {{padLayoutClass}}" style="padding-top: {{safeTop}}px;">
   <!-- 童话粒子特效 -->
   <view class="fairytale-overlay" wx:if="{{showFairytaleParticles}}">
     <view class="fairytale-particle p1">🧚</view>

@@ -62,7 +62,7 @@ function convertRichCloudUrls(list, callback) {
 }
 
 Page({
-  behaviors: [i18nBehavior],
+  behaviors: [i18nBehavior, require('../../utils/padLayoutBehavior')],
   data: { theme: 'light', activities: [], filtered: [], status: '全部', statuses: ['全部','进行中','置顶'], expandedId: -1, isAdmin: false, showEditModal: false, editingItem: null, editTitle: '', editDesc: '', editStatus: '进行中', editType: '', editRewards: '', editStart: '', editEnd: '', subscribedActivity: false, subscribeCount: 0, currentPlayUrl: '', isPlaying: false, showVideoPlayer: false, videoPlayerUrl: '', videoPlayerName: '', videoPlayerCover: '', videoPlayerOwner: '', videoPlayerDesc: '', richSwiperHeights: {} },
   onShow: function() {
     this._refreshI18n()

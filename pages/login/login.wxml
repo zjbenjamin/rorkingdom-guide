@@ -1,4 +1,4 @@
-<view class="page">
+<view class="page {{padLayoutClass}}">
   <view class="container">
     <view class="login-header">
       <text class="app-name">{{loginLabels.appName}}</text>
@@ -144,6 +144,28 @@
         </view>
         <view class="notify-tip" bindtap="onNotifySetting">
           <text class="notify-tip-text">{{loginLabels.notifySettingTip}}</text>
+        </view>
+      </view>
+
+      <view class="display-section">
+        <view class="notify-title">
+          <text class="notify-title-icon">📐</text>
+          <text class="notify-title-text">{{loginLabels.displayTitle}}</text>
+          <text class="notify-title-hint">{{loginLabels.padModeHint}}</text>
+        </view>
+        <view class="pad-mode-row">
+          <text class="pad-mode-label">{{loginLabels.padModeLabel}}</text>
+          <view class="pad-mode-opts">
+            <view class="pad-mode-opt {{padMode === 'auto' ? 'active' : ''}}" data-mode="auto" bindtap="onPadModeTap">
+              <text>{{loginLabels.padModeAuto}}</text>
+            </view>
+            <view class="pad-mode-opt {{padMode === 'pad' ? 'active' : ''}}" data-mode="pad" bindtap="onPadModeTap">
+              <text>{{loginLabels.padModePad}}</text>
+            </view>
+            <view class="pad-mode-opt {{padMode === 'phone' ? 'active' : ''}}" data-mode="phone" bindtap="onPadModeTap">
+              <text>{{loginLabels.padModePhone}}</text>
+            </view>
+          </view>
         </view>
       </view>
 

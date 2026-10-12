@@ -16,7 +16,7 @@ var defaultChangelog = [
 ]
 
 Page({
-  behaviors: [i18nBehavior],
+  behaviors: [i18nBehavior, require('../../utils/padLayoutBehavior')],
   data: {
     hasUpdate: false,
     updateReady: false,

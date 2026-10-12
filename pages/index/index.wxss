@@ -157,6 +157,7 @@
   border-bottom: 1rpx solid #21262d;
 }
 .feed-title { font-size: 28rpx; font-weight: 700; color: #e6edf3; }
+.layout-pad .feed-title { font-size: 17px; }
 .feed-header-right { display: flex; align-items: center; gap: 16rpx; }
 .feed-count { font-size: 20rpx; color: #8b949e; }
 .feed-sub { font-size: 20rpx; color: #58a6ff; font-weight: 500; }
@@ -197,10 +198,12 @@
   font-size: 26rpx; color: #c9d1d9; font-weight: 600;
   flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+.layout-pad .feed-item-title { font-size: 15px; }
 .feed-item-right {
   display: flex; align-items: center; gap: 12rpx; flex-shrink: 0; margin-left: 12rpx;
 }
 .feed-time { font-size: 20rpx; color: #484f58; }
+.layout-pad .feed-time { font-size: 12px; }
 .feed-arrow {
   font-size: 18rpx; color: #484f58;
   transition: transform 0.2s;
@@ -653,22 +656,114 @@
 .video-player-desc::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 40rpx; background: linear-gradient(transparent, rgba(20,23,42,0.95)); pointer-events: none; border-radius: 0 0 16rpx 16rpx; }
 .video-player-desc-text { font-size: 24rpx; color: rgba(255,255,255,0.55); line-height: 1.8; word-break: break-all; white-space: pre-wrap; padding-bottom: 40rpx; }
 
-/* Pad 竖屏适配 */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .page { max-width: 720px; margin: 0 auto; }
-  .repo-header { max-width: 720px; margin: 0 auto; }
-  .quick-nav { display: grid; grid-template-columns: repeat(3, 1fr); }
-  .feed-section { max-width: 720px; margin: 0 auto 24rpx; }
-  .panel { max-width: 720px; margin-left: auto; margin-right: auto; }
-  .modal-box { max-width: 640px; margin-left: auto; margin-right: auto; }
+/* ===== 平板适配（class 驱动：layout-pad / layout-wide）===== */
+
+.layout-pad.page {
+  max-width: 768px;
+  margin: 0 auto;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+.layout-pad .repo-header {
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 14px 16px 0;
+  box-sizing: border-box;
 }
 
-/* Pad 横屏适配 */
-@media (min-width: 1024px) {
-  .page { max-width: 960px; margin: 0 auto; }
-  .repo-header { max-width: 960px; margin: 0 auto; }
-  .quick-nav { display: grid; grid-template-columns: repeat(3, 1fr); }
-  .feed-section { max-width: 960px; margin: 0 auto 24rpx; }
-  .panel { max-width: 960px; margin-left: auto; margin-right: auto; }
-  .modal-box { max-width: 720px; margin-left: auto; margin-right: auto; }
+/* 顶栏单行：禁止逐字竖排 */
+.layout-pad .repo-header-top {
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin-bottom: 10px;
 }
+.layout-pad .repo-owner,
+.layout-pad .repo-sep {
+  font-size: 15px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.layout-pad .repo-name {
+  font-size: 15px;
+  white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.layout-pad .repo-visibility {
+  font-size: 11px;
+  padding: 2px 10px;
+  margin-left: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* tab 行：图标+文字同行，不换行 */
+.layout-pad .repo-tabs {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 6px;
+  -webkit-overflow-scrolling: touch;
+}
+.layout-pad .repo-tab {
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-size: 13px;
+  padding: 8px 12px;
+  gap: 4px;
+}
+.layout-pad .repo-tab-icon { font-size: 13px; }
+
+/* 语言旗固定右侧，不挤压 tab */
+.layout-pad .repo-lang-bar {
+  margin-left: auto;
+  flex-shrink: 0;
+  gap: 2px;
+  padding-left: 8px;
+}
+.layout-pad .lang-btn { width: 36px; height: 26px; }
+.layout-pad .lang-flag { width: 26px; height: 18px; }
+.layout-pad .lang-sep { font-size: 11px; padding: 0 2px; }
+
+/* 快捷入口 3 列 */
+.layout-pad .quick-nav {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 12px 16px;
+  border-radius: 10px;
+}
+.layout-pad .nav-item { padding: 16px 8px; }
+.layout-pad .nav-emoji { font-size: 28px; }
+.layout-pad .nav-label { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+/* 内容限宽 */
+.layout-pad .feed-section { max-width: 768px; margin: 0 auto 16px; }
+.layout-pad .panel { max-width: 768px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
+
+/* 弹窗居中 */
+.layout-pad .modal-box { max-width: 640px; width: 100%; margin-left: auto; margin-right: auto; border-radius: 12px; box-sizing: border-box; }
+.layout-pad .modal-mask { align-items: center !important; justify-content: center !important; }
+
+/* 横屏 layout-wide */
+.layout-wide.page { max-width: 1080px; margin: 0 auto; }
+.layout-wide .repo-header { max-width: 1080px; margin: 0 auto; padding: 16px 24px 0; }
+
+.layout-wide .repo-header-top { margin-bottom: 8px; }
+.layout-wide .repo-owner,
+.layout-wide .repo-sep { font-size: 16px; }
+.layout-wide .repo-name { font-size: 16px; }
+.layout-wide .repo-tab { font-size: 13px; padding: 8px 14px; }
+
+.layout-wide .quick-nav {
+  grid-template-columns: repeat(4, 1fr);
+  margin: 16px 24px;
+}
+
+.layout-wide .feed-section { max-width: 1080px; margin: 0 auto 16px; }
+.layout-wide .panel { max-width: 1080px; }
+.layout-wide .modal-box { max-width: 720px; width: 100%; }
+
+.layout-wide .feed-item-header { padding: 16px 18px; }
+.layout-wide .feed-content { padding: 0 18px 14px; }
+
+

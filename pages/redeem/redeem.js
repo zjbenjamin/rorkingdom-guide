@@ -10,7 +10,7 @@ function t(key, fallback) {
 }
 
 Page({
-  behaviors: [i18nBehavior],
+  behaviors: [i18nBehavior, require('../../utils/padLayoutBehavior')],
   data: {
     isAdmin: false,
     maintenance: false,

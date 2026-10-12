@@ -393,6 +393,7 @@ function buildContent(contentObj, lang) {
 }
 
 Page({
+  behaviors: [require('../../utils/padLayoutBehavior')],
   data: {
     type: 'privacy',
     pageTitle: '隐私保护指引',

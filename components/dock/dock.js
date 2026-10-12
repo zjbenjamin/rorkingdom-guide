@@ -1,4 +1,8 @@
 Component({
+  options: {
+    // 允许 app.wxss 的 .layout-pad 覆盖 Dock 尺寸（支持手动切换 Pad 模式）
+    styleIsolation: 'apply-shared'
+  },
   properties: {
     current: { type: String, value: '' }
   },

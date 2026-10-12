@@ -202,7 +202,7 @@ function buildNotifyContent(names, maxLen) {
 }
 
 Page({
-  behaviors: [i18nBehavior],
+  behaviors: [i18nBehavior, require('../../utils/padLayoutBehavior')],
   data: {
     adminCollapse: true,
     items: initialItems,

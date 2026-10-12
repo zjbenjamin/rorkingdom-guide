@@ -90,7 +90,13 @@ function getLoginLabels(lang) {
     notice5: pick('notice5', '注销账户将清除云端相关数据'),
     privacyModalTitle: pick('privacyModalTitle', '用户协议与隐私政策'),
     privacyModalDesc1: pick('privacyModalDesc1', '请阅读并同意用户协议和隐私政策'),
-    privacyModalDesc2: pick('privacyModalDesc2', '同意后方可继续使用登录功能')
+    privacyModalDesc2: pick('privacyModalDesc2', '同意后方可继续使用登录功能'),
+    displayTitle: pick('displayTitle', '显示设置'),
+    padModeLabel: pick('padModeLabel', 'Pad 模式'),
+    padModeHint: pick('padModeHint', '平板排版 / 跟随屏幕宽度'),
+    padModeAuto: pick('padModeAuto', '自动'),
+    padModePad: pick('padModePad', '平板'),
+    padModePhone: pick('padModePhone', '手机')
   }
 }
 
@@ -99,7 +105,7 @@ function formatStr(template, obj) {
 }
 
 Page({
-  behaviors: [require('../../utils/i18nBehavior')],
+  behaviors: [require('../../utils/i18nBehavior'), require('../../utils/padLayoutBehavior')],
   data: {
     userInfo: null,
     hasUserInfo: false,
@@ -147,6 +153,11 @@ Page({
     notifyAdding: false,
     currentLang: 'zh',
     loginLabels: getLoginLabels('zh')
+  },
+  onPadModeTap: function(e) {
+    var mode = e.currentTarget.dataset.mode
+    if (mode !== 'auto' && mode !== 'pad' && mode !== 'phone') return
+    if (typeof this.setPadMode === 'function') this.setPadMode(mode)
   },
   onLoad: function() {
     var self = this

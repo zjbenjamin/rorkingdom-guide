@@ -1,6 +1,6 @@
 var i18nBehavior = require('../../utils/i18nBehavior')
 Page({
-  behaviors: [i18nBehavior],
+  behaviors: [i18nBehavior, require('../../utils/padLayoutBehavior')],
   data: {
     loading: true
   },

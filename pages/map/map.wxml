@@ -1,4 +1,4 @@
-<view class="page">
+<view class="page {{padLayoutClass}}">
   <view class="container" wx:if="{{!maintenance}}">
     <!-- 顶部工具栏 -->
     <view class="map-toolbar">

@@ -574,98 +574,186 @@ input::placeholder { color: rgba(255,255,255,0.35); }
   box-sizing: border-box;
 }
 
-/* ===== 平板（iPad）横竖屏与分屏自动适配 ===== */
-@media (min-width: 768px) {
-  .container { max-width: 900px; margin: 0 auto; padding: 40rpx; }
-  .actions { grid-template-columns: repeat(6, 1fr); }
-  .card { padding: 40rpx; }
-  .modal-box { max-width: 700px; margin: 0 auto; }
-}
-
-/* ===== Pad 竖屏适配 (768px - 1023px) ===== */
-@media (min-width: 768px) and (max-width: 1023px) {
-  /* 内容区限宽居中 */
-  .container, .page > .container { max-width: 720px; margin: 0 auto; }
-  
-  /* 卡片间距适中 */
-  .card { padding: 28rpx; margin-bottom: 20rpx; }
-  
-  /* 弹窗限宽 */
-  .modal-box { max-width: 640px; margin: 0 auto; }
-  
-  /* 快捷入口保持 3 列 */
-  .quick-nav { display: grid; grid-template-columns: repeat(3, 1fr); }
-  
-  /* 商品网格保持 2 列 */
-  .item-list { grid-template-columns: repeat(2, 1fr); }
-  .selling-items { grid-template-columns: repeat(2, 1fr); }
-}
-
-/* ===== Pad 横屏专调 (1024px+) ===== */
-@media (min-width: 1024px) {
-  /* 内容区限宽居中，避免文字拉太长 */
-  .container, .page > .container { max-width: 960px; margin: 0 auto; }
-  
-  /* 卡片与间距放大 */
-  .card { padding: 32rpx; margin-bottom: 24rpx; }
-  
-  /* 弹窗限宽 */
-  .modal-box { max-width: 720px; margin: 0 auto; }
-  
-  /* 底部安全区 */
-  .page { padding-bottom: calc(120rpx + env(safe-area-inset-bottom)); }
-}
-
-/* Pad 横屏：首页网格 */
-@media (min-width: 1024px) {
-  .quick-nav { display: grid; grid-template-columns: repeat(3, 1fr); }
-  .feed-item-header { padding: 24rpx 28rpx; }
-  .feed-content { padding: 0 28rpx 20rpx; }
-}
-
-/* Pad 横屏：商人商品网格 2→3 列 */
-@media (min-width: 1024px) {
-  .item-list { grid-template-columns: repeat(3, 1fr); }
-  .selling-items { grid-template-columns: repeat(3, 1fr); }
-}
-
-/* Pad 横屏：捕捉统计 */
-@media (min-width: 1024px) {
-  .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16rpx; }
-}
-
-/* Pad 横屏：活动列表 */
-@media (min-width: 1024px) {
-  .activity-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16rpx; }
-}
-
-/* Pad 横屏：登录页卡片限宽 */
-@media (min-width: 1024px) {
-  .login-card, .user-card, .notify-section, .notice-box { max-width: 720px; margin-left: auto; margin-right: auto; }
-}
-
 /* 轮播图块：完整比例、无裁切 */
 .rich-swiper-block { margin: 16rpx 0; border: none; border-radius: 0; overflow: visible; background: transparent; box-shadow: none; }
 .rich-swiper { width: 100%; background: transparent; }
 .rich-swiper-image { width: 100%; height: auto; display: block; background: transparent; }
 
-/* ===== 平板（iPad）防巨无霸缩放控制 ===== */
-@media (min-width: 768px) {
-  .stitle { font-size: 18px !important; margin-bottom: 12px !important; }
-  .card { padding: 20px !important; margin-bottom: 16px !important; border-radius: 12px !important; }
-  .act-icon { width: 50px !important; height: 50px !important; font-size: 24px !important; border-radius: 12px !important; }
-  .act { font-size: 13px !important; }
-  .sval { font-size: 24px !important; }
-  .slb { font-size: 13px !important; }
-  .foot { font-size: 12px !important; padding: 20px 0 !important; }
-  /* Banner */
-  .banner-title { font-size: 28px !important; }
-  .banner-title-2 { font-size: 28px !important; margin-bottom: 10px !important; }
-  .banner-desc { font-size: 14px !important; }
-  .banner-sub { font-size: 13px !important; }
-  .tag-text { font-size: 12px !important; }
-  .banner-bg { min-height: 200px !important; padding: 20px !important; }
+/* ===== 平板适配：由根节点 class 驱动（layout-pad / layout-wide），支持「我的」页切换 ===== */
+
+/* ── 平板基础尺寸帽 ── */
+.layout-pad {
+  font-size: 15px;
 }
+
+.layout-pad .container,
+.layout-pad.page > .container,
+.page.layout-pad > .container {
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* 排版：正文 15 / 次要 13 / 小字 11–12 / 标题 17 / 大标题 22 */
+.layout-pad .stitle { font-size: 17px !important; margin-bottom: 12px !important; letter-spacing: 0.5px; }
+.layout-pad .foot { font-size: 12px !important; padding: 20px 0 !important; }
+.layout-pad .sval { font-size: 22px !important; }
+.layout-pad .slb { font-size: 13px !important; }
+.layout-pad .announce-title { font-size: 15px !important; }
+.layout-pad .rich-text-block { font-size: 15px !important; }
+.layout-pad .item-name,
+.layout-pad .card-title,
+.layout-pad .card-author { font-size: 15px !important; }
+.layout-pad .card-meta,
+.layout-pad .card-desc,
+.layout-pad .card-time { font-size: 13px !important; }
+
+/* 卡片 */
+.layout-pad .card {
+  padding: 16px !important;
+  margin-bottom: 12px !important;
+  border-radius: 12px !important;
+  box-sizing: border-box;
+}
+
+/* 按钮：高 40–44px（class 级覆盖，压过页内 rpx） */
+.layout-pad button,
+.layout-pad .modal-submit,
+.layout-pad .modal-btn,
+.layout-pad .privacy-btn-cancel,
+.layout-pad .privacy-btn-confirm,
+.layout-pad .submit-btn {
+  min-height: 40px !important;
+  height: 40px !important;
+  font-size: 14px !important;
+  padding: 0 18px !important;
+  box-sizing: border-box;
+}
+
+/* Banner */
+.layout-pad .banner-bg { min-height: 200px !important; padding: 20px !important; box-sizing: border-box; }
+.layout-pad .banner-title { font-size: 22px !important; }
+.layout-pad .banner-title-2 { font-size: 22px !important; margin-bottom: 10px !important; }
+.layout-pad .banner-desc { font-size: 14px !important; }
+.layout-pad .banner-sub { font-size: 13px !important; }
+.layout-pad .tag-text { font-size: 12px !important; }
+
+/* 活动/统计图标 */
+.layout-pad .act-icon { width: 44px !important; height: 44px !important; font-size: 22px !important; border-radius: 12px !important; }
+.layout-pad .act { font-size: 13px !important; }
+
+/* 弹窗：居中卡片，不全屏拉满 */
+.layout-pad .modal-mask {
+  align-items: center !important;
+  justify-content: center !important;
+}
+.layout-pad .modal-box {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  border-radius: 12px !important;
+  box-sizing: border-box;
+}
+.layout-pad .form-editor {
+  height: 220px !important;
+  min-height: 200px !important;
+  max-height: 320px !important;
+}
+.layout-pad .title-input {
+  height: 40px !important;
+  min-height: 40px !important;
+  font-size: 14px !important;
+}
+
+/* 快捷入口：竖屏 3 列 */
+.layout-pad .quick-nav { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; }
+.layout-pad .nav-item { padding: 16px 8px; border-right: 1px solid #21262d; border-bottom: 1px solid #21262d; }
+.layout-pad .nav-item:nth-child(3n) { border-right: none; }
+.layout-pad .nav-item:nth-child(4n) { border-right: 1px solid #21262d; }
+.layout-pad .nav-item:nth-child(n+4) { border-bottom: none; }
+.layout-pad .nav-item:nth-child(n+5) { border-bottom: 1px solid #21262d; }
+.layout-pad .nav-emoji { font-size: 28px; }
+.layout-pad .nav-label { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+/* 商品网格：竖屏 2 列 */
+.layout-pad .item-list { grid-template-columns: repeat(2, 1fr) !important; }
+.layout-pad .selling-items { grid-template-columns: repeat(2, 1fr) !important; }
+
+/* 登录/通知卡片限宽 */
+.layout-pad .login-card,
+.layout-pad .user-card,
+.layout-pad .notify-section,
+.layout-pad .display-section,
+.layout-pad .notice-box {
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+/* ── 平板横屏：限宽放宽到 1080px ── */
+.layout-wide .container,
+.layout-wide.page > .container,
+.page.layout-wide > .container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.layout-wide .card { padding: 20px !important; margin-bottom: 16px !important; }
+
+.layout-wide .modal-box { max-width: 720px !important; width: 100% !important; }
+
+.layout-wide .quick-nav { grid-template-columns: repeat(4, 1fr) !important; }
+.layout-wide .nav-item:nth-child(3n) { border-right: 1px solid #21262d; }
+.layout-wide .nav-item:nth-child(4n) { border-right: none; }
+.layout-wide .nav-item:nth-child(n+5) { border-bottom: none; }
+
+.layout-wide .item-list { grid-template-columns: repeat(3, 1fr) !important; }
+.layout-wide .selling-items { grid-template-columns: repeat(3, 1fr) !important; }
+.layout-wide .activity-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.layout-wide .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+.layout-wide .login-card,
+.layout-wide .user-card,
+.layout-wide .notify-section,
+.layout-wide .display-section,
+.layout-wide .notice-box { max-width: 720px; }
+
+.layout-wide.page,
+.page.layout-wide { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+
+.layout-wide .feed-item-header { padding: 16px 18px; }
+.layout-wide .feed-content { padding: 0 18px 14px; }
+
+/* Dock：固定 px 尺寸（apply-shared，可被 layout-pad 覆盖） */
+.layout-pad .dock {
+  bottom: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+}
+.layout-pad .dock-inner {
+  gap: 12px;
+  padding: 10px 18px;
+  border-radius: 28px;
+}
+.layout-pad .dock-item {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+}
+.layout-pad .dock-icon {
+  font-size: 22px;
+}
+
+
+/* ── 兼容：未挂 Behavior 的页面仍按宽度自动适配 ── */
+@media (min-width: 768px) {
+  .page:not(.layout-phone) {
+    font-size: 15px;
+  }
+}
+
 
 /* ===== 轻量全局过渡（纯 CSS，不加 JS） ===== */
 @keyframes uiFadeUp {

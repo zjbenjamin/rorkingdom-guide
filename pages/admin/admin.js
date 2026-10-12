@@ -49,7 +49,7 @@ var activityOps = editorOps.createRichEditorOps({
 })
 
 Page({
-  behaviors: [i18nBehavior],
+  behaviors: [i18nBehavior, require('../../utils/padLayoutBehavior')],
   data: {
     isAdmin: false,
     loading: true,

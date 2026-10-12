@@ -52,7 +52,7 @@ function formatTimeShort(d) {
   return i18n.formatTimeHMS(d)
 }
 Page({
-  behaviors: [i18nBehavior],
+  behaviors: [i18nBehavior, require('../../utils/padLayoutBehavior')],
   data: {
     buildTime: '', sysVersion: '初始化中...', showLogShareBtn: true,
     safeTop: 88,

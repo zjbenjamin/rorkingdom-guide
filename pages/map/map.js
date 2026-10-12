@@ -6,7 +6,7 @@ var i18n = require('../../utils/i18n')
 var _loadConfigTime = 0
 
 Page({
-  behaviors: [i18nBehavior],
+  behaviors: [i18nBehavior, require('../../utils/padLayoutBehavior')],
   data: {
     isAdmin: false,
     maintenance: false,
