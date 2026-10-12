@@ -3,5 +3,8 @@
     "dock": "/components/dock/dock"
   },
   "navigationBarTitleText": "洛手地图",
-  "disableScroll": true
+  "disableScroll": true,
+  "backgroundColor": "#0a1a2e",
+  "backgroundColorBottom": "#0a1a2e",
+  "backgroundColorTop": "#0a1a2e"
 }

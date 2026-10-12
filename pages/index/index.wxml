@@ -112,13 +112,18 @@
                     <text class="music-name">{{block.name || _l.music}}</text>
                     <text class="music-url">{{block.url}}</text>
                   </view>
+                  <view class="music-eq">
+                    <view></view>
+                    <view></view>
+                    <view></view>
+                  </view>
                   <text class="music-play-btn">{{currentPlayUrl === block.url && isPlaying ? '⏸' : '▶'}}</text>
                 </view>
                 <view wx:elif="{{block.type === 'video' && block.isDirectMp4}}" class="rich-video-inline">
-                  <video class="video-player-video" src="{{block.url}}" controls show-center-play-btn object-fit="contain" style="width:100%; border-radius:6rpx; margin-top:10rpx;" />
+                  <video class="rich-inline-video" src="{{block.url}}" controls show-center-play-btn object-fit="contain" />
                 </view>
                 <view wx:elif="{{block.type === 'video'}}" class="rich-video-block" catchtap="openVideo" data-url="{{block.url}}" data-name="{{block.name || _l.video}}">
-                  <image lazy-load wx:if="{{block.cover}}" src="{{block.cover}}" mode="aspectFill" style="width:96rpx; height:72rpx; border-radius:6rpx; margin-right:20rpx; flex-shrink:0; background:rgba(255,255,255,0.05);" />
+                  <image lazy-load wx:if="{{block.cover}}" class="video-thumb" src="{{block.cover}}" mode="aspectFill" />
                   <text wx:else class="video-icon">🎥</text>
                   <view class="video-info">
                     <text class="video-name">{{block.name || _l.video}}</text>

@@ -97,6 +97,39 @@ function serializeItem(item) {
   return cleanField(item.name) + '|' + (parseInt(item.price, 10) || 0) + '|' + cleanField(item.effect) + '|' + cleanField(item.rarity || '普通') + '|' + cleanField(item.source || '远行商人') + '|' + String(item.image || '').trim() + '|' + cleanField(item.limitCount || '') + '|' + cleanField(item.offlineDate || '') + '|' + cleanField(item.offlineTimeStr || '')
 }
 
+// 四个时段下架点：12:00 / 16:00 / 20:00 / 24:00(23:59)
+var TIME_SLOT_ENDS = ['12:00', '16:00', '20:00', '23:59']
+
+function parseTimeToMinutes(timeStr) {
+  var s = String(timeStr || '').trim()
+  var m = s.match(/^(\d{1,2}):(\d{2})/)
+  if (!m) return -1
+  var h = parseInt(m[1], 10)
+  var mi = parseInt(m[2], 10)
+  if (isNaN(h) || isNaN(mi)) return -1
+  if (h === 24 && mi === 0) return 24 * 60
+  return h * 60 + mi
+}
+
+// 任意下架时间自动归入四个时间段之一（08-12 / 12-16 / 16-20 / 20-24）
+function recognizeTimeSlotIndex(timeStr) {
+  var mins = parseTimeToMinutes(timeStr)
+  if (mins < 0) return -1
+  if (mins <= 12 * 60) return 0
+  if (mins <= 16 * 60) return 1
+  if (mins <= 20 * 60) return 2
+  return 3
+}
+
+function normalizeLimitCount(val) {
+  if (val === undefined || val === null) return ''
+  var s = String(val).trim()
+  if (!s) return ''
+  var n = parseInt(s, 10)
+  if (isNaN(n) || n < 0) return ''
+  return String(n)
+}
+
 function findCatalogImage(name, catalog) {
   if (!name || !catalog) return ''
   for (var i = 0; i < catalog.length; i++) {
@@ -199,12 +232,14 @@ Page({
       effect: '',
       rarity: '普通',
       source: '远行商人',
-      image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/9d/t3udkq5fg8o3je088pcjktersn9wfrt.png/100px-100124.png'
+      image: 'https://patchwiki.biligame.com/images/rocom/thumb/9/9d/t3udkq5fg8o3je088pcjktersn9wfrt.png/100px-100124.png',
+      limitCount: ''
     },
     rarityOptions: ['普通', '稀有', '史诗', '传说'],
     addingItem: false,
     showAddSellingItemModal: false,
     addingSellingItem: false,
+    batchLimitCount: '',
     itemSubStatus: {},
     todayDate: '',
     offlineDate: '',
@@ -312,7 +347,12 @@ Page({
   applyScheduleTime: function(item) {
     if (!item) return item
     var out = Object.assign({}, item)
-    if (out.offlineDate || out._offlineDate) return out
+    if (out.offlineDate || out._offlineDate) {
+      // 已有下架时间时，仍自动识别所属时段
+      var existIdx = recognizeTimeSlotIndex(out.offlineTimeStr || out._offlineTimeStr)
+      out._timeSlotIndex = existIdx
+      return out
+    }
     var name = String(out.name || '').trim()
     if (!name) return out
     var list = this.data.remoteSelling || []
@@ -335,12 +375,11 @@ Page({
     var pad = function(n) { return n < 10 ? '0' + n : '' + n }
     var dateStr = e.getFullYear() + '-' + pad(e.getMonth() + 1) + '-' + pad(e.getDate())
     var timeStr = pad(e.getHours()) + ':' + pad(e.getMinutes())
-    var ends = ['12:00', '16:00', '20:00', '23:59']
     out.offlineDate = dateStr
     out.offlineTimeStr = timeStr
     out._offlineDate = dateStr
     out._offlineTimeStr = timeStr
-    out._timeSlotIndex = ends.indexOf(timeStr)
+    out._timeSlotIndex = recognizeTimeSlotIndex(timeStr)
     return out
   },
   calculateRemoteRound: function() {
@@ -576,10 +615,9 @@ Page({
             }).catch(function(e){ console.error(e) })
           }
         }
-        var ends = ['12:00', '16:00', '20:00', '23:59']
         var tsi = -1
         if (d.offlineDate) {
-          tsi = ends.indexOf(d.offlineTimeStr || '23:59')
+          tsi = recognizeTimeSlotIndex(d.offlineTimeStr || '23:59')
           if (tsi === -1) tsi = 3
         }
 
@@ -679,7 +717,10 @@ Page({
         offlineDate: (parts.length > 7) ? (parts[7] || '').trim() : undefined,
         offlineTimeStr: (parts.length > 8) ? (parts[8] || '').trim() : undefined,
         _offlineDate: (parts.length > 7) ? (parts[7] || '').trim() : undefined,
-        _offlineTimeStr: (parts.length > 8) ? (parts[8] || '').trim() : undefined
+        _offlineTimeStr: (parts.length > 8) ? (parts[8] || '').trim() : undefined,
+        _timeSlotIndex: (parts.length > 7 && (parts[7] || '').trim())
+          ? recognizeTimeSlotIndex((parts[8] || '').trim() || '23:59')
+          : -1
       }))
     }
     return items
@@ -774,11 +815,12 @@ Page({
         available.push(it)
       }
     }
-    this.setData({ 
+    this.setData({
       showAddSellingItemModal: true,
       availableItems: available,
       selectedForSelling: {},
-      selectedCountForModal: 0
+      selectedCountForModal: 0,
+      batchLimitCount: ''
     })
   },
   closeAddSellingItemModal: function() {
@@ -835,9 +877,13 @@ Page({
       }
       
       var itemsToAdd = [];
+      var batchLimit = normalizeLimitCount(self.data.batchLimitCount);
       for (var i = 0; i < (this.data.availableItems || []).length; i++) {
         if (selectedIds.indexOf(String(this.data.availableItems[i].id)) !== -1) {
-          itemsToAdd.push(self.applyScheduleTime(this.data.availableItems[i]));
+          var picked = self.applyScheduleTime(this.data.availableItems[i]);
+          // 商品库预设数量优先，未预设时用本次批量填写的数量
+          if (!picked.limitCount && batchLimit) picked.limitCount = batchLimit;
+          itemsToAdd.push(picked);
         }
       }
       
@@ -877,7 +923,7 @@ Page({
         throw err;
       }).then(function() {
         wx.hideLoading();
-        var nextState = { currentSellingText: text, showAddSellingItemModal: false, selectedForSelling: {}, selectedCountForModal: 0 };
+        var nextState = { currentSellingText: text, showAddSellingItemModal: false, selectedForSelling: {}, selectedCountForModal: 0, batchLimitCount: '' };
         if (updateData.offlineTime === null) {
           nextState.offlineTime = null;
           nextState.offlineDate = '';
@@ -1184,6 +1230,7 @@ Page({
         currentSelling[index]._offlineTimeStr = '23:59';
         currentSelling[index].offlineTimeStr = '23:59';
       }
+      currentSelling[index]._timeSlotIndex = recognizeTimeSlotIndex(currentSelling[index]._offlineTimeStr || '23:59');
       var text = serializeItems(currentSelling);
       this.setData({ currentSelling: currentSelling, currentSellingText: text });
       if(typeof self !== 'undefined') self.syncSellingArrays(currentSelling); else this.syncSellingArrays(currentSelling);
@@ -1194,7 +1241,7 @@ Page({
     var timeStr = e.detail.value;
     var currentSelling = this.data.currentSelling.slice();
     if (currentSelling[index]) {
-      currentSelling[index]._timeSlotIndex = -1; // Unused for custom time
+      currentSelling[index]._timeSlotIndex = recognizeTimeSlotIndex(timeStr);
       currentSelling[index]._offlineTimeStr = timeStr;
       currentSelling[index].offlineTimeStr = timeStr;
       var text = serializeItems(currentSelling);
@@ -1221,10 +1268,9 @@ Page({
   },
   onCurrentTimeSlotChange: function(e) {
     var index = parseInt(e.detail.value);
-    var ends = ['12:00', '16:00', '20:00', '23:59'];
-    this.setData({ 
+    this.setData({
       timeSlotIndex: index,
-      offlineTimeStr: ends[index]
+      offlineTimeStr: TIME_SLOT_ENDS[index] || '23:59'
     });
   },
   clearCurrentOfflineDate: function() {
@@ -1241,8 +1287,7 @@ Page({
     if (!item) return;
     var tsi = -1;
     if (item.offlineDate) {
-      var ends = ['12:00', '16:00', '20:00', '23:59'];
-      tsi = ends.indexOf(item.offlineTimeStr || '23:59');
+      tsi = recognizeTimeSlotIndex(item.offlineTimeStr || '23:59');
       if (tsi === -1) tsi = 3;
     }
     this.setData({
@@ -1312,10 +1357,9 @@ Page({
   },
   onTimeSlotChange: function(e) {
     var index = parseInt(e.detail.value)
-    var ends = ['12:00', '16:00', '20:00', '23:59']
-    this.setData({ 
+    this.setData({
       timeSlotIndex: index,
-      offlineTimeStr: ends[index]
+      offlineTimeStr: TIME_SLOT_ENDS[index] || '23:59'
     })
   },
   onLimitCountInput: function(e) {
@@ -1343,6 +1387,9 @@ Page({
       var text = serializeItems(currentSelling)
       this.setData({ currentSellingText: text }); if(typeof self !== 'undefined') self.syncSellingArrays(currentSelling); else this.syncSellingArrays(currentSelling)
     }
+  },
+  onBatchLimitInput: function(e) {
+    this.setData({ batchLimitCount: e.detail.value })
   },
   chooseSellingItemImage: function(e) {
     var self = this
@@ -1505,7 +1552,8 @@ Page({
         effect: '',
         rarity: '普通',
         source: '远行商人',
-        image: ''
+        image: '',
+        limitCount: ''
       }
     })
   },
@@ -1760,7 +1808,8 @@ Page({
         effect: item.effect,
         rarity: item.rarity,
         source: item.source || '远行商人',
-        image: item.image || ''
+        image: item.image || '',
+        limitCount: item.limitCount || ''
       }
     })
   },
@@ -2021,7 +2070,7 @@ Page({
     var item = this.data.items[index]
     if (!item) return
     this.setData({
-      batchEditItem: { name: item.name, price: String(item.price), effect: item.effect, rarity: item.rarity, source: item.source || '远行商人', image: item.image || '' },
+      batchEditItem: { name: item.name, price: String(item.price), effect: item.effect, rarity: item.rarity, source: item.source || '远行商人', image: item.image || '', limitCount: item.limitCount || '' },
       batchEditIndex: index
     })
   },
@@ -2075,7 +2124,8 @@ Page({
       effect: (item.effect || '').trim(),
       rarity: item.rarity,
       source: (item.source || '远行商人').trim(),
-      image: (item.image || '').trim()
+      image: (item.image || '').trim(),
+      limitCount: normalizeLimitCount(item.limitCount !== undefined ? item.limitCount : items[index].limitCount)
     }
     var customItemsText = serializeItems(items)
     db.collection('page_config').doc('merchant').update({
@@ -2315,7 +2365,8 @@ Page({
       effect: cleanField(rawEffect),
       rarity: cleanField(form.rarity || '普通') || '普通',
       source: cleanField(form.source || '远行商人') || '远行商人',
-      image: rawImage
+      image: rawImage,
+      limitCount: normalizeLimitCount(form.limitCount)
     }, self.data.items)
 
     self.setData({ addingItem: true })
@@ -2330,7 +2381,8 @@ Page({
         effect: item.effect,
         rarity: item.rarity,
         source: item.source,
-        image: item.image
+        image: item.image,
+        limitCount: item.limitCount || ''
       }
       var customItemsText = serializeItems(items)
       db.collection('page_config').doc('merchant').update({
@@ -2360,7 +2412,8 @@ Page({
       effect: item.effect,
       rarity: item.rarity,
       source: item.source,
-      image: item.image
+      image: item.image,
+      limitCount: item.limitCount || ''
     }
     var currentItems = self.data.items || []
     currentItems.unshift(newItemData)

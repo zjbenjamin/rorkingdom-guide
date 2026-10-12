@@ -145,6 +145,50 @@
         <view class="modal-submit" bindtap="saveBallsConfig" style="margin: 40rpx 0; width: 100%; box-sizing: border-box; justify-content:center; {{ballsSubmitting ? 'opacity: 0.5; filter: grayscale(1);' : ''}}">
           <text>{{ballsSubmitting ? _l.submitting : _l.saveToCloud}}</text>
         </view>
+
+        <!-- 异色精灵预设 -->
+        <view class="section-header" style="margin-top: 48rpx;">
+          <text class="section-title">异色精灵预设</text>
+          <view class="add-btn" bindtap="openPetModal"><text>{{_l.addBtnNew}}</text></view>
+        </view>
+
+        <!-- 赛季分类：可编辑名称 / 新增 / 删除 -->
+        <view style="margin: 16rpx 0 24rpx;">
+          <view style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 12rpx;">
+            <text style="font-size:24rpx; color:#aaa;">赛季分类</text>
+            <view class="add-btn" style="padding: 6rpx 20rpx;" bindtap="openSeasonModal"><text>+ 新增赛季</text></view>
+          </view>
+          <view style="display:flex; flex-wrap:wrap; gap:12rpx;">
+            <view wx:for="{{petSeasons}}" wx:key="index"
+              style="display:flex; align-items:center; gap:10rpx; padding:10rpx 18rpx; border-radius:999rpx; background:rgba(0,212,255,0.12); border:1rpx solid rgba(0,212,255,0.35);">
+              <text style="font-size:24rpx; color:#00d4ff;">{{item}}</text>
+              <text catchtap="openSeasonModal" data-item="{{item}}" style="font-size:20rpx; color:#79c0ff; padding:0 4rpx;">✎</text>
+              <text catchtap="deleteSeason" data-item="{{item}}" style="font-size:20rpx; color:#f87171; padding:0 4rpx;">✕</text>
+            </view>
+          </view>
+        </view>
+        <view class="card-item" wx:for="{{shinyPets}}" wx:key="id">
+          <view class="card-top" style="justify-content: space-between;">
+            <view style="display:flex; align-items:center;">
+              <image wx:if="{{item.img}}" src="{{item.img}}" style="width:48rpx; height:48rpx; margin-right:12rpx; border-radius:8rpx;" mode="aspectFill" />
+              <text wx:else style="margin-right:12rpx; font-size: 32rpx;">✨</text>
+              <text style="font-weight:bold;">{{item.name}}</text>
+            </view>
+            <view class="tag tag-update">{{item.season}}</view>
+          </view>
+          <view style="padding: 16rpx 24rpx; background: rgba(0,0,0,0.2); border-radius: 12rpx; margin-bottom: 24rpx;">
+            <view style="font-size:22rpx; color:#aaa; word-break:break-all;" wx:if="{{item.img}}">图: {{item.img}}</view>
+            <view style="font-size:22rpx; color:#666;" wx:else>未设置图片</view>
+          </view>
+          <view class="card-actions">
+            <view class="btn-edit" bindtap="openPetModal" data-item="{{item}}">{{_l.edit}}</view>
+            <view class="btn-delete" bindtap="deletePet" data-id="{{item.id}}">{{_l.delete}}</view>
+          </view>
+        </view>
+        <view class="empty" wx:if="{{shinyPets.length === 0}}"><text class="empty-text">暂无异色精灵，点右上角新增</text></view>
+        <view class="modal-submit" bindtap="saveShinyPets" style="margin: 40rpx 0; width: 100%; box-sizing: border-box; justify-content:center; {{shinyPetSubmitting ? 'opacity: 0.5; filter: grayscale(1);' : ''}}">
+          <text>{{shinyPetSubmitting ? _l.submitting : _l.saveToCloud}}</text>
+        </view>
       </view>
 
       <!-- 订阅管理 -->
@@ -978,6 +1022,60 @@
         <view class="modal-footer">
           <view class="modal-btn cancel" catchtap="closeBallModal">取消</view>
           <view class="modal-btn confirm" catchtap="confirmBallForm">确认</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 异色精灵编辑弹窗 -->
+    <view class="modal-mask" wx:if="{{showPetModal}}" bindtap="closePetModal">
+      <view class="modal-box" catchtap="preventClose">
+        <view class="modal-header">
+          <text class="modal-title">{{editingPet ? '编辑异色精灵' : '新增异色精灵'}}</text>
+          <text class="modal-close" catchtap="closePetModal">✕</text>
+        </view>
+        <scroll-view scroll-y style="max-height: 60vh; padding-right: 12rpx;">
+          <view class="form-group">
+            <text class="form-label">赛季分类</text>
+            <picker range="{{petSeasons}}" value="{{petSeasonIndex}}" bindchange="onPetSeasonChange">
+              <view class="form-input" style="display:flex; align-items:center; justify-content:space-between;">
+                <text>{{petForm.season}}</text>
+                <text style="opacity:0.5;">▾</text>
+              </view>
+            </picker>
+          </view>
+          <view class="form-group">
+            <text class="form-label">精灵名称</text>
+            <input class="form-input" value="{{petForm.name}}" bindinput="onPetFormInput" data-field="name" placeholder="请输入精灵名称" />
+          </view>
+          <view class="form-group">
+            <view style="display:flex; justify-content:space-between; align-items:flex-end;">
+              <text class="form-label">图片URL (可选)</text>
+              <image wx:if="{{petForm.img}}" src="{{petForm.img}}" style="width: 48rpx; height: 48rpx; border-radius: 8rpx; border: 2rpx solid #00d4ff; margin-bottom: 8rpx;" mode="aspectFill" />
+            </view>
+            <input class="form-input" value="{{petForm.img}}" bindinput="onPetFormInput" data-field="img" placeholder="https://... 或 cloud://..." />
+          </view>
+        </scroll-view>
+        <view class="modal-footer">
+          <view class="modal-btn cancel" catchtap="closePetModal">取消</view>
+          <view class="modal-btn confirm" catchtap="confirmPetForm">确认</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 赛季编辑弹窗 -->
+    <view class="modal-mask" wx:if="{{showSeasonModal}}" bindtap="closeSeasonModal">
+      <view class="modal-box" catchtap="preventClose">
+        <view class="modal-header">
+          <text class="modal-title">{{editingSeason ? '重命名赛季' : '新增赛季'}}</text>
+          <text class="modal-close" catchtap="closeSeasonModal">✕</text>
+        </view>
+        <view class="form-group">
+          <text class="form-label">赛季名称</text>
+          <input class="form-input" value="{{seasonFormName}}" bindinput="onSeasonNameInput" placeholder="例如：S5 / 春季赛" />
+        </view>
+        <view class="modal-footer">
+          <view class="modal-btn cancel" catchtap="closeSeasonModal">取消</view>
+          <view class="modal-btn confirm" catchtap="confirmSeasonForm">确认</view>
         </view>
       </view>
     </view>

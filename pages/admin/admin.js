@@ -62,6 +62,17 @@ Page({
         id: '', name: '', isBuy: false, isCraft: false, isSpecial: false, isActivity: false, price: 0, cnyPrice: 0,
               craftMaterials: '', desc: '', source: '', img: '', color: '', icon: ''
       },
+      // 异色精灵预设（捕捉统计目标精灵）
+      shinyPets: [],
+      shinyPetSubmitting: false,
+      showPetModal: false,
+      editingPet: null,
+      petForm: { id: '', name: '', season: 'S1', img: '' },
+      petSeasons: ['S1', 'S2', 'S3', 'S4'],
+      petSeasonIndex: 0,
+      showSeasonModal: false,
+      editingSeason: null,
+      seasonFormName: '',
     announcements: [],
     users: [],
     stats: { totalUsers: 0 },
@@ -248,7 +259,7 @@ Page({
     else if (tab === 'users') this.loadUsers()
     else if (tab === 'stats') this.loadStats()
     else if (tab === 'pages') { this.loadPageConfigs(); this.loadBanner() }
-    else if (tab === 'balls') this.loadBallsConfig()
+    else if (tab === 'balls') { this.loadBallsConfig(); this.loadShinyPets() }
   },
   loadAnnouncements: function() {
     var self = this
@@ -1571,6 +1582,194 @@ openModal: function(e) {
     });
   },
 
+  // ─── 异色精灵预设（捕捉统计目标精灵） ───
+  loadShinyPets: function() {
+    var self = this;
+    if (!db) return;
+    db.collection('site_config').doc('shiny_pets').get().then(function(res) {
+      var list = (res.data && res.data.pets) || [];
+      var seasons = (res.data && res.data.seasons) || ['S1', 'S2', 'S3', 'S4'];
+      self.setData({ shinyPets: list, petSeasons: seasons });
+    }).catch(function() {
+      self.setData({ shinyPets: [], petSeasons: ['S1', 'S2', 'S3', 'S4'] });
+    });
+  },
+  // 赛季分类：新增 / 重命名 / 删除（同时改到引用该赛季的精灵）
+  openSeasonModal: function(e) {
+    var item = (e && e.currentTarget && e.currentTarget.dataset) ? e.currentTarget.dataset.item : null;
+    this.setData({
+      editingSeason: item || null,
+      seasonFormName: item ? String(item) : '',
+      showSeasonModal: true
+    });
+  },
+  closeSeasonModal: function() {
+    this.setData({ showSeasonModal: false });
+  },
+  onSeasonNameInput: function(e) {
+    this.setData({ seasonFormName: e.detail.value });
+  },
+  confirmSeasonForm: function() {
+    var self = this;
+    var name = (self.data.seasonFormName || '').trim();
+    if (!name) { wx.showToast({ title: '请输入赛季名称', icon: 'none' }); return; }
+    var seasons = (self.data.petSeasons || []).slice();
+    var editing = self.data.editingSeason;
+    if (editing) {
+      var oldName = String(editing);
+      if (name !== oldName && seasons.indexOf(name) >= 0) {
+        wx.showToast({ title: '已存在同名赛季', icon: 'none' }); return;
+      }
+      for (var i = 0; i < seasons.length; i++) {
+        if (String(seasons[i]) === oldName) { seasons[i] = name; break; }
+      }
+      // 同步更新引用旧名的精灵
+      var pets = (self.data.shinyPets || []).map(function(p) {
+        if (String(p.season) === oldName) return Object.assign({}, p, { season: name });
+        return p;
+      });
+      self.setData({ petSeasons: seasons, shinyPets: pets, showSeasonModal: false });
+    } else {
+      if (seasons.indexOf(name) >= 0) { wx.showToast({ title: '已存在同名赛季', icon: 'none' }); return; }
+      seasons.push(name);
+      self.setData({ petSeasons: seasons, showSeasonModal: false });
+    }
+    wx.showToast({ title: '请记得保存到云端', icon: 'none' });
+  },
+  deleteSeason: function(e) {
+    var self = this;
+    var name = String(e.currentTarget.dataset.item);
+    var seasons = (self.data.petSeasons || []);
+    if (seasons.length <= 1) { wx.showToast({ title: '至少保留一个赛季', icon: 'none' }); return; }
+    var used = 0;
+    var pets = self.data.shinyPets || [];
+    for (var i = 0; i < pets.length; i++) if (String(pets[i].season) === name) used++;
+    wx.showModal({
+      title: '删除赛季',
+      content: used > 0 ? ('有 ' + used + ' 只精灵使用「' + name + '」，删除后将改为第一个赛季。确定？') : ('确定删除赛季「' + name + '」？'),
+      success: function(res) {
+        if (!res.confirm) return;
+        var next = seasons.filter(function(s) { return String(s) !== name; });
+        var fallback = next[0] || 'S1';
+        var newPets = pets.map(function(p) {
+          if (String(p.season) === name) return Object.assign({}, p, { season: fallback });
+          return p;
+        });
+        self.setData({ petSeasons: next, shinyPets: newPets });
+        wx.showToast({ title: '请记得保存到云端', icon: 'none' });
+      }
+    });
+  },
+  openPetModal: function(e) {
+    var item = (e && e.currentTarget && e.currentTarget.dataset) ? e.currentTarget.dataset.item || null : null;
+    var seasons = this.data.petSeasons && this.data.petSeasons.length ? this.data.petSeasons : ['S1', 'S2', 'S3', 'S4'];
+    if (item) {
+      var sIdx = seasons.indexOf(item.season || seasons[0]);
+      this.setData({
+        editingPet: item,
+        petSeasonIndex: sIdx >= 0 ? sIdx : 0,
+        petForm: {
+          id: item.id || '',
+          name: item.name || '',
+          season: item.season || seasons[0],
+          img: item.img || ''
+        },
+        showPetModal: true
+      });
+    } else {
+      this.setData({
+        editingPet: null,
+        petSeasonIndex: 0,
+        petForm: { id: 'pet_' + Date.now(), name: '', season: seasons[0], img: '' },
+        showPetModal: true
+      });
+    }
+  },
+  closePetModal: function() {
+    this.setData({ showPetModal: false });
+  },
+  onPetFormInput: function(e) {
+    var field = e.currentTarget.dataset.field;
+    this.setData({ ['petForm.' + field]: e.detail.value });
+  },
+  onPetSeasonChange: function(e) {
+    var idx = Number(e.detail.value) || 0;
+    var seasons = this.data.petSeasons || ['S1', 'S2', 'S3', 'S4'];
+    this.setData({ petSeasonIndex: idx, 'petForm.season': seasons[idx] || seasons[0] || 'S1' });
+  },
+  confirmPetForm: function() {
+    var form = this.data.petForm;
+    if (!form.name || !String(form.name).trim()) {
+      wx.showToast({ title: '请输入精灵名称', icon: 'none' });
+      return;
+    }
+    form.name = String(form.name).trim();
+    form.season = form.season || 'S1';
+    form.img = form.img || '';
+    var pets = (this.data.shinyPets || []).slice();
+    if (this.data.editingPet) {
+      var fid = form.id;
+      for (var i = 0; i < pets.length; i++) {
+        if (String(pets[i].id) === String(fid)) {
+          pets[i] = Object.assign({}, pets[i], form);
+          break;
+        }
+      }
+    } else {
+      pets.push(Object.assign({}, form));
+    }
+    this.setData({ shinyPets: pets, showPetModal: false });
+    wx.showToast({ title: '请记得点击保存修改到云端', icon: 'none' });
+  },
+  deletePet: function(e) {
+    var self = this;
+    var id = e.currentTarget.dataset.id;
+    wx.showModal({
+      title: '提示',
+      content: '确定要删除这个异色精灵吗？',
+      success: function(res) {
+        if (res.confirm) {
+          var rid = String(id);
+          var pets = (self.data.shinyPets || []).filter(function(p) { return String(p.id) !== rid; });
+          self.setData({ shinyPets: pets });
+          wx.showToast({ title: '请记得点击保存修改到云端', icon: 'none' });
+        }
+      }
+    });
+  },
+  saveShinyPets: function() {
+    var self = this;
+    if (!db) { wx.showToast({ title: '云环境未就绪', icon: 'none' }); return; }
+    var pets = self.data.shinyPets || [];
+    var seasons = self.data.petSeasons && self.data.petSeasons.length ? self.data.petSeasons : ['S1', 'S2', 'S3', 'S4'];
+    self.setData({ shinyPetSubmitting: true });
+    db.collection('site_config').doc('shiny_pets').set({
+      data: { pets: pets, seasons: seasons, updateTime: db.serverDate() }
+    }).then(function() {
+      wx.setStorageSync('shiny_pets_updated', true);
+      self.setData({ shinyPetSubmitting: false });
+      var bySeason = {};
+      for (var i = 0; i < pets.length; i++) {
+        var s = pets[i].season || '?';
+        bySeason[s] = (bySeason[s] || 0) + 1;
+      }
+      var lines = [];
+      for (var j = 0; j < seasons.length; j++) {
+        lines.push(seasons[j] + ' ' + (bySeason[seasons[j]] || 0));
+      }
+      wx.showModal({
+        title: '已保存到云端',
+        content: '共 ' + pets.length + ' 只异色精灵 · ' + seasons.length + ' 个赛季\n' + lines.join(' · ') + '\n捕捉统计目标精灵将自动同步',
+        showCancel: false,
+        confirmText: '知道了'
+      });
+    }).catch(function(err) {
+      self.setData({ shinyPetSubmitting: false });
+      var msg = (err && (err.errMsg || err.message)) || '未知错误';
+      wx.showModal({ title: '保存失败', content: '未能写入云端：' + msg, showCancel: false });
+    });
+  },
+
   refreshData: function() {
     this.setData({ loading: true })
     var tab = this.data.activeTab
@@ -1580,7 +1779,7 @@ openModal: function(e) {
     else if (tab === 'users') this.loadUsers()
     else if (tab === 'stats') this.loadStats()
     else if (tab === 'pages') this.loadPageConfigs()
-    else if (tab === 'balls') this.loadBallsConfig()
+    else if (tab === 'balls') { this.loadBallsConfig(); this.loadShinyPets() }
   },
   pushSubscribe: function(type, title, content) {
     var pages = {

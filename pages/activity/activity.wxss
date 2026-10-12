@@ -172,11 +172,18 @@
   border-left: 4rpx solid rgba(88,166,255,0.4);
   border-radius: 4rpx;
 }
-.rich-music-block, .rich-video-block, .rich-link-block {
+.rich-link-block {
   margin: 12rpx 0; padding: 16rpx 20rpx;
   background: rgba(255,255,255,0.04);
   border-radius: 8rpx;
   display: flex; align-items: center; gap: 12rpx;
+}
+/* 内联 mp4 播放器 */
+.rich-video-inline { margin: 20rpx 0; }
+.rich-inline-video {
+  width: 100%; height: 380rpx; display: block;
+  border-radius: 16rpx; background: #000; overflow: visible;
+  box-shadow: 0 12rpx 36rpx rgba(0,0,0,0.35), 0 0 0 1rpx rgba(255,255,255,0.08);
 }
 .rich-divider-block { margin: 16rpx 0; }
 .divider-block { margin: 16rpx 0; }

@@ -1,4 +1,7 @@
 {
   "navigationBarTitleText": "大量出没",
-  "usingComponents": {}
+  "usingComponents": {},
+  "backgroundColor": "#010314",
+  "backgroundColorBottom": "#010314",
+  "backgroundColorTop": "#010314"
 }

@@ -55,6 +55,7 @@ Page({
   behaviors: [i18nBehavior],
   data: {
     buildTime: '', sysVersion: '初始化中...', showLogShareBtn: true,
+    safeTop: 88,
     continuePity: false,
     missAnim: false,
     pinnedBallIndex: -1,
@@ -125,12 +126,42 @@ Page({
     adjustRemark: '',
     resultMultiBalls: [],
     checkMultiBalls: [],
+    sessionUsedText: '',
     brushMode: 'single',
     resultMixedPets: [{ name: '' }],
     resultMixedPetNames: [],
     resultTargetPet: '',
     showMoreFields: false,
-    captureStartTime: 0
+    captureStartTime: 0,
+    resultElapsedEdited: false,
+    // 异色精灵预设（后台配置）
+    shinyPets: [],
+    petSeasonFilter: 'all',
+    shinyPetPickerList: [],
+    petSeasons: ['S1', 'S2', 'S3', 'S4'],
+    // 契约球：捕捉成功时选用
+    contractBall: '',
+    contractBallImg: '',
+    contractBallIcon: '',
+    contractBallPicker: [],
+  },
+  // 计时：长时无操作(>30min)重置；未开始则从此刻起表，返回本次已耗秒数
+  _touchCaptureClock: function() {
+    var now = Date.now();
+    var start = this.data.captureStartTime;
+    if (start && now - start > 1800000) {
+      this.setData({ captureStartTime: 0 });
+      start = 0;
+    }
+    if (!start) {
+      start = now;
+      this.setData({ captureStartTime: start });
+    }
+    return Math.floor((now - start) / 1000);
+  },
+  _resetCaptureClock: function() {
+    this._frozenElapsedSec = null;
+    this.setData({ captureStartTime: 0 });
   },
   saveBallsToStorage: function(balls) {
     if (balls) {
@@ -139,9 +170,78 @@ Page({
       }));
     }
   },
+  // 自定义导航：让开微信胶囊（含翻译展开），否则右上角按钮点不到
+  computeSafeTop: function() {
+    var fallback = 88
+    try {
+      var winInfo = wx.getWindowInfo()
+      var statusBarHeight = winInfo.statusBarHeight || 20
+      var menuBtn = wx.getMenuButtonBoundingClientRect()
+      if (menuBtn && menuBtn.bottom) return menuBtn.bottom + 8
+      return statusBarHeight + 48
+    } catch (e) {
+      return fallback
+    }
+  },
   onLoad: function() {
+    this.setData({ safeTop: this.computeSafeTop() })
     this.fetchCloudBalls();
+    this.fetchShinyPets();
     this.preloadBallImages();
+  },
+  // 异色精灵预设：后台配置后同步到目标精灵选择
+  fetchShinyPets: function() {
+    var self = this;
+    if (!wx.cloud) return;
+    wx.cloud.database().collection('site_config').doc('shiny_pets').get().then(function(res) {
+      var pets = (res.data && res.data.pets) || [];
+      var seasons = (res.data && res.data.seasons) || ['S1', 'S2', 'S3', 'S4'];
+      self.setData({ shinyPets: pets, petSeasons: seasons });
+      self.refreshShinyPetPicker();
+    }).catch(function() {
+      // 离线用缓存
+      var cached = wx.getStorageSync('shiny_pets') || [];
+      var cachedSeasons = wx.getStorageSync('pet_seasons') || ['S1', 'S2', 'S3', 'S4'];
+      if (cached.length) {
+        self.setData({ shinyPets: cached, petSeasons: cachedSeasons });
+        self.refreshShinyPetPicker();
+      }
+    });
+  },
+  refreshShinyPetPicker: function() {
+    var pets = this.data.shinyPets || [];
+    var season = this.data.petSeasonFilter || 'all';
+    var list = [];
+    for (var i = 0; i < pets.length; i++) {
+      if (season === 'all' || pets[i].season === season) list.push(pets[i].name);
+    }
+    this.setData({ shinyPetPickerList: list });
+    wx.setStorageSync('shiny_pets', pets);
+    wx.setStorageSync('pet_seasons', this.data.petSeasons || []);
+  },
+  onPetSeasonFilter: function(e) {
+    this.setData({ petSeasonFilter: e.currentTarget.dataset.s || 'all' });
+    this.refreshShinyPetPicker();
+  },
+  // 选中预设：填入名称 + 图片URL；pickTarget 区分单刷目标 / 混刷目标
+  onPickShinyPet: function(e) {
+    var idx = e.currentTarget.dataset.index;
+    var target = e.currentTarget.dataset.target || 'single';
+    var season = this.data.petSeasonFilter || 'all';
+    var pets = this.data.shinyPets || [];
+    var list = [];
+    for (var i = 0; i < pets.length; i++) {
+      if (season === 'all' || pets[i].season === season) list.push(pets[i]);
+    }
+    var pet = list[idx];
+    if (!pet) return;
+    if (target === 'mixed') {
+      this.setData({ resultTargetPet: pet.name });
+    } else {
+      this.setData({ resultPetName: pet.name });
+    }
+    if (pet.img) this.setData({ resultPetImageUrl: pet.img });
+    wx.showToast({ title: '已选择 ' + pet.name, icon: 'none' });
   },
   preloadBallImages: function() {
     var urls = [];
@@ -203,7 +303,7 @@ Page({
     var buyBalls = [];
     var craftBalls = [];
     var cnyBalls = [];
-    // 活动赠：合成区可赠送的球；特殊区活动赠仅可可果球
+    // 活动赠：后台勾了「活动球」的都可免费入库（不限购买/合成/特殊）
     var craftActivityBalls = [];
     var cnyActivityBalls = [];
 
@@ -244,16 +344,12 @@ Page({
       if (cb.isSpecial) cnyBalls.push(cb.name);
       // 合成区活动赠：合成球 + 纯活动球
       if (cb.isCraft || (cb.isActivity && !cb.isSpecial && !cb.isBuy)) {
-        craftActivityBalls.push(cb.name);
+        if (craftActivityBalls.indexOf(cb.name) === -1) craftActivityBalls.push(cb.name);
       }
-      // 特殊区活动赠：仅可可果球
-      if (cb.isSpecial && (cb.isActivity || cb.name === '可可果球')) {
+      // 特殊区「活动 · 赠」：所有勾了「活动球」的 + 兼容旧数据可可果球
+      if (cb.isActivity || cb.name === '可可果球') {
         if (cnyActivityBalls.indexOf(cb.name) === -1) cnyActivityBalls.push(cb.name);
       }
-    }
-    // 特殊区至少保留可可果球占位，避免列表被清空
-    if (cnyBalls.length > 0 && cnyActivityBalls.length === 0) {
-      cnyActivityBalls.push('可可果球');
     }
 
     self.setData({
@@ -275,9 +371,9 @@ Page({
     var d = this.data
     if (d.specialTab === 'buy') return d.buyBalls && d.buyBalls.length ? d.buyBalls : (d.specialBalls || [])
     if (d.specialTab === 'craft') return d.craftBalls
-    // 特殊球：默认全部；「活动赠」仅可可果球
+    // 特殊球：默认全部；「活动 · 赠」= 后台勾了「活动球」的
     return d.inboundMethod === 'activity'
-      ? (d.cnyActivityBalls && d.cnyActivityBalls.length ? d.cnyActivityBalls : ['可可果球'])
+      ? (d.cnyActivityBalls || [])
       : d.cnyBalls
   },
   refreshBallPicker: function() {
@@ -314,6 +410,10 @@ Page({
     if (wx.getStorageSync('balls_config_updated')) {
       wx.removeStorageSync('balls_config_updated');
       this.fetchCloudBalls();
+    }
+    if (wx.getStorageSync('shiny_pets_updated')) {
+      wx.removeStorageSync('shiny_pets_updated');
+      this.fetchShinyPets();
     }
     this.loadHistory()
     this.calcTotalBallUsed()
@@ -386,7 +486,17 @@ Page({
   onResultMultiBallRemainInput: function(e) {
     var idx = e.currentTarget.dataset.index;
     var arr = this.data.resultMultiBalls.slice();
-    arr[idx] = Object.assign({}, arr[idx], { remain: e.detail.value });
+    var item = arr[idx] || {};
+    var remainRaw = e.detail.value;
+    var current = item.currentCount || 0;
+    var usedDisplay = '';
+    if (remainRaw !== '' && remainRaw !== null && remainRaw !== undefined) {
+      var rem = parseInt(remainRaw);
+      if (isNaN(rem) || rem < 0) rem = 0;
+      var used = current - rem;
+      usedDisplay = used > 0 ? used : 0;
+    }
+    arr[idx] = Object.assign({}, item, { remain: remainRaw, usedDisplay: usedDisplay });
     this.setData({ resultMultiBalls: arr });
   },
   onBrushModeSwitch: function(e) {
@@ -444,7 +554,17 @@ Page({
   onCheckMultiBallRemainInput: function(e) {
     var idx = e.currentTarget.dataset.index;
     var arr = this.data.checkMultiBalls.slice();
-    arr[idx] = Object.assign({}, arr[idx], { remain: e.detail.value });
+    var item = arr[idx] || {};
+    var remainRaw = e.detail.value;
+    var current = item.currentCount || 0;
+    var usedDisplay = '';
+    if (remainRaw !== '' && remainRaw !== null && remainRaw !== undefined) {
+      var rem = parseInt(remainRaw);
+      if (isNaN(rem) || rem < 0) rem = 0;
+      var used = current - rem;
+      usedDisplay = used > 0 ? used : 0;
+    }
+    arr[idx] = Object.assign({}, item, { remain: remainRaw, usedDisplay: usedDisplay });
     this.setData({ checkMultiBalls: arr });
   },
   onResult: function(e) {
@@ -457,35 +577,53 @@ Page({
       self.setData({ missAnim: true })
       setTimeout(function() { self.setData({ missAnim: false }) }, 600)
     }
-    // 自适应同步仓库中购买/合成过的球
-    var history = self.data.specialHistory || [];
-    var purchased = {};
-    for (var h = 0; h < history.length; h++) { purchased[history[h].ball] = true; }
+    // 所有有库存的球都可填剩余（不限购买/合成记录，避免漏球）
     var items = [];
     for (var i = 0; i < self.data.balls.length; i++) {
       var b = self.data.balls[i];
-      if (purchased[b.name] && (b.count > 0 || b.freeCount > 0)) {
-        items.push({ name: b.name, remain: '', currentCount: b.count || 0 });
+      if (b.count > 0 || b.freeCount > 0) {
+        items.push({ name: b.name, remain: '', usedDisplay: '', currentCount: b.count || 0, img: b.img || '', icon: b.icon || '' });
       }
     }
-    // 自动计时：从首次点击奇遇到现在
+    // 自动计时：从首次点击奇遇到「点结果这一刻」定格（不含填表时间）
+    var autoTag = i18n.i18n[i18n.getLanguage()].countdownAuto;
+    var hadClock = !!self.data.captureStartTime;
+    var elapsedSec = self._touchCaptureClock();
+    // 之前没起过表（直接点结果）→ 不给自动值，避免显示「0秒(自动)」
     var autoElapsed = '';
-    if (!self.data.captureStartTime) self.setData({ captureStartTime: Date.now() });
-    if (self.data.captureStartTime) {
-      var el = Math.floor((Date.now() - self.data.captureStartTime) / 1000);
-      autoElapsed = i18n.formatDuration(el) + ' ' + i18n.i18n[i18n.getLanguage()].countdownAuto
+    if (hadClock && elapsedSec >= 0) {
+      self._frozenElapsedSec = elapsedSec;
+      autoElapsed = i18n.formatDuration(elapsedSec) + ' ' + autoTag;
+    } else {
+      self._frozenElapsedSec = null;
+    }
+    // 契约球列表：捕捉成功时可选（仓库里有库存的球）
+    var contractPicker = [];
+    for (var ci = 0; ci < self.data.balls.length; ci++) {
+      var cb = self.data.balls[ci];
+      if (cb && cb.name && (cb.count > 0 || cb.freeCount > 0)) {
+        contractPicker.push({ name: cb.name, img: cb.img || '', icon: cb.icon || '⚪' });
+      }
     }
     self.setData({
       showResultBallModal: true,
       resultType: r,
+      sessionUsedText: self._sessionUsedText() || '',
       resultMultiBalls: items,
       resultRemark: '',
       brushMode: 'single',
       resultMixedPets: [{ name: '' }],
       resultMixedPetNames: [],
       resultTargetPet: '',
+      resultPetName: '',
+      resultPetImageUrl: '',
       showMoreFields: false,
-      resultElapsedTime: autoElapsed
+      resultElapsedTime: autoElapsed,
+      resultElapsedEdited: false,
+      contractBall: '',
+      contractBallImg: '',
+      contractBallIcon: '',
+      contractBallPicker: contractPicker
     })
     this.setData({ lastUsedBallImageUrl: '' })
   },
@@ -506,10 +644,24 @@ Page({
     this.setData({ resultPetImageUrl: e.detail.value })
   },
   onResultElapsedTimeInput: function(e) {
-    this.setData({ resultElapsedTime: e.detail.value })
+    this.setData({ resultElapsedTime: e.detail.value, resultElapsedEdited: true })
   },
   onResultRemarkInput: function(e) {
     this.setData({ resultRemark: e.detail.value })
+  },
+  // 契约球：捕捉成功后选用哪只球完成契约
+  onPickContractBall: function(e) {
+    var idx = e.currentTarget.dataset.index;
+    var list = this.data.contractBallPicker || [];
+    var ball = list[idx];
+    if (!ball) return;
+    if (this.data.contractBall === ball.name) {
+      // 再点一次取消
+      this.setData({ contractBall: '', contractBallImg: '', contractBallIcon: '' });
+      return;
+    }
+    this.setData({ contractBall: ball.name, contractBallImg: ball.img || '', contractBallIcon: ball.icon || '⚪' });
+    wx.showToast({ title: '契约球：' + ball.name, icon: 'none' });
   },
   closeResultBallModal: function() {
     this.setData({ showResultBallModal: false })
@@ -548,34 +700,88 @@ Page({
     var balls = self.data.balls.slice();
     var totalUsedCount = 0;
     var usedBallNames = [];
-    
+    var usedBallsDetail = [];
+
     for (var m = 0; m < multi.length; m++) {
       var item = multi[m];
       if (!item.name) continue;
-      // 未输入剩余则跳过（不消耗）
+      // 填剩余数量：消耗 = 原库存 - 剩余；未填则跳过（不消耗）
       var remainVal = item.remain;
-      if (remainVal === '' || remainVal === null) {
+      if (remainVal === '' || remainVal === null || remainVal === undefined) {
         continue;
       }
-      var remainingCount = parseInt(remainVal);
-      if (isNaN(remainingCount) || remainingCount < 0) remainingCount = 0;
-      
+      var remaining = parseInt(remainVal);
+      if (isNaN(remaining) || remaining < 0) remaining = 0;
+
       for (var i = 0; i < balls.length; i++) {
         if (balls[i].name === item.name) {
-          var oldCount = item.currentCount || balls[i].count;
-          var newCount = remainingCount;
-          if (newCount > oldCount) newCount = oldCount;
-          var usedCount = oldCount - newCount;
-          
-          balls[i].count = newCount;
+          var oldCount = (item.currentCount != null && item.currentCount !== '') ? item.currentCount : balls[i].count;
+          // 消耗 = 原库存 - 剩余；剩余更高视为补货，不记消耗
+          var usedCount = oldCount - remaining;
+          if (usedCount < 0) usedCount = 0;
+
+          balls[i].count = remaining;
           totalUsedCount += usedCount;
           if (usedCount > 0) {
             usedBallNames.push(balls[i].name + 'x' + usedCount);
             if(!self._lastUsedBallImg && balls[i].img) self._lastUsedBallImg = balls[i].img;
             var freeConsume = Math.min(usedCount, balls[i].freeCount);
             balls[i].freeCount = Math.max(0, balls[i].freeCount - freeConsume);
+            usedBallsDetail.push({ name: balls[i].name, count: usedCount, freeUsed: freeConsume });
           }
           break;
+        }
+      }
+    }
+
+    // 契约球：额外消耗 1 个（优先扣活动/免费额度）
+    // 若该球已在表中填写剩余，则剩余即最终值，不再重复扣
+    if (self.data.contractBall) {
+      var contractRemainFilled = false;
+      for (var cm = 0; cm < multi.length; cm++) {
+        if (multi[cm].name === self.data.contractBall && multi[cm].remain !== '' && multi[cm].remain !== null && multi[cm].remain !== undefined) {
+          contractRemainFilled = true;
+          break;
+        }
+      }
+      if (!contractRemainFilled) {
+        for (var ci = 0; ci < balls.length; ci++) {
+          if (balls[ci].name === self.data.contractBall) {
+            if (balls[ci].count > 0) {
+              balls[ci].count -= 1;
+              totalUsedCount += 1;
+              var contractFreeUsed = 0;
+              if (balls[ci].freeCount > 0) {
+                balls[ci].freeCount -= 1;
+                contractFreeUsed = 1;
+              }
+              if (!self._lastUsedBallImg && balls[ci].img) self._lastUsedBallImg = balls[ci].img;
+              var contractDetail = null;
+              for (var di = 0; di < usedBallsDetail.length; di++) {
+                if (usedBallsDetail[di].name === balls[ci].name) {
+                  usedBallsDetail[di].count += 1;
+                  usedBallsDetail[di].freeUsed += contractFreeUsed;
+                  contractDetail = usedBallsDetail[di];
+                  break;
+                }
+              }
+              if (!contractDetail) {
+                usedBallsDetail.push({ name: balls[ci].name, count: 1, freeUsed: contractFreeUsed });
+              }
+              var existed = false;
+              for (var ui = 0; ui < usedBallNames.length; ui++) {
+                if (usedBallNames[ui].indexOf(balls[ci].name) === 0) {
+                  var m2 = usedBallNames[ui].match(/x(\d+)$/);
+                  var prev = m2 ? parseInt(m2[1]) : 1;
+                  usedBallNames[ui] = balls[ci].name + 'x' + (prev + 1);
+                  existed = true;
+                  break;
+                }
+              }
+              if (!existed) usedBallNames.push(balls[ci].name + 'x1');
+            }
+            break;
+          }
         }
       }
     }
@@ -589,23 +795,25 @@ Page({
     self.saveBallsToStorage(balls);
     
     var lastUsedStr = usedBallNames.join(', ');
-    // 自动计时：如果用户没有手动修改，则保持自动计算结果
+    // 自动计时：未手改则用「点结果那一刻」定格的耗时；手改则原样保存
     var autoTag = ' ' + i18n.i18n[i18n.getLanguage()].countdownAuto;
-    var resultElapsedAuto = (self.data.resultElapsedTime || '').indexOf(autoTag) >= 0;
-    var resultElapsedTime = self.data.resultElapsedTime || '';
+    var resultElapsedAuto = !self.data.resultElapsedEdited;
+    var resultElapsedTime = (self.data.resultElapsedTime || '').replace(autoTag, '').trim();
     var resultElapsedSec = null;
-    if (!resultElapsedTime || resultElapsedTime.indexOf(autoTag) >= 0) {
-      if (self.data.captureStartTime) {
-        resultElapsedSec = Math.floor((Date.now() - self.data.captureStartTime) / 1000);
+    if (resultElapsedAuto) {
+      if (self._frozenElapsedSec != null) {
+        resultElapsedSec = self._frozenElapsedSec;
         resultElapsedTime = i18n.formatDuration(resultElapsedSec);
-        resultElapsedAuto = true;
+      } else {
+        // 没有定格值（未起表 / 用户清空）→ 不写耗时
+        resultElapsedAuto = false;
+        resultElapsedTime = '';
       }
-    } else if (resultElapsedTime) {
-      var autoTag2 = ' ' + i18n.i18n[i18n.getLanguage()].countdownAuto;
-      resultElapsedTime = resultElapsedTime.replace(autoTag2, '')
-      resultElapsedAuto = false;
     }
     self.setData({ balls: balls, totalBallUsed: totalBallUsed, usedBallTotal: newUsedBallTotal, hasActiveBalls: hasActive, canStartCapture: self.data.wealthSet && hasActive, lastUsedCount: totalUsedCount, lastUsedBallName: lastUsedStr, _resultElapsedTime: resultElapsedTime, _resultElapsedSec: resultElapsedSec, _resultElapsedAuto: resultElapsedAuto, _resultMixedPetNames: resultMixedPetNames, _resultTargetPet: resultTargetPet });
+    self._usedBallsDetail = usedBallsDetail;
+    self._addSessionUsed(usedBallsDetail);
+    self._resultGainVal = gainVal;
     if (gainVal !== 0) {
       var newGains = self.data.totalGains + gainVal
       wx.setStorageSync('total_gains', newGains)
@@ -632,21 +840,28 @@ Page({
   _buildRecord: function(resultType) {
     var self = this;
     var result = resultType || self.data.result;
-    var usedStr = self.data.lastUsedBallName && self.data.lastUsedBallName.length > 2 ? self.data.lastUsedBallName : i18n.t('imgNoBallsUsed');
+    // 展示用整场累计（含盘点段）；撤销用本段消耗
+    var sessionList = self._sessionUsedList();
+    var sessionText = self._sessionUsedText();
+    var usedStr = sessionText || (self.data.lastUsedBallName && self.data.lastUsedBallName.length > 2 ? self.data.lastUsedBallName : i18n.t('imgNoBallsUsed'));
     var record = {
       time: formatTimeShort(), balls: usedStr,
       result: localizeResultText(result, result === 'success' ? '异色捕获成功' : '歪了'),
-      remark: self.data.resultRemark || '', total: 1, cost: 0,
+      remark: self.data.resultRemark || '', total: 1, cost: 0, gain: self._resultGainVal || 0,
       pet: self.data.resultPetName || '', petImageUrl: self.data.resultPetImageUrl || '',
       resultRaw: result,
       elapsedSec: self.data._resultElapsedSec != null ? self.data._resultElapsedSec : null,
       elapsedTimeText: self.data._resultElapsedTime ? i18n.t('clipDuration') + ': ' + self.data._resultElapsedTime : '',
       ballImageUrl: self._lastUsedBallImg || '',
+      contractBall: self.data.contractBall || '',
+      contractBallImg: self.data.contractBallImg || '',
       encounters: self.data.carnivalCount + self.data.luckyBoxCount,
       brushMode: self.data.brushMode || 'single',
       mixedPets: self.data._resultMixedPetNames || '', targetPet: self.data._resultTargetPet || '',
       carnivalCount: self.data.carnivalCount || 0, luckyBoxCount: self.data.luckyBoxCount || 0,
-      pityBefore: self.data.pityCount || 0, elapsedAuto: self.data._resultElapsedAuto || false
+      pityBefore: self.data.pityCount || 0, elapsedAuto: self.data._resultElapsedAuto || false,
+      usedBalls: self._usedBallsDetail || [],
+      sessionUsedBalls: sessionList
     };
     return record;
   },
@@ -662,16 +877,20 @@ Page({
     wx.setStorageSync('success_catches', newSuccessCatches);
     if (self.data._resultElapsedTime) self.setData({ resultElapsedTime: self.data._resultElapsedTime, resultElapsedAuto: self.data._resultElapsedAuto });
     self.setData({ lastUsedBallName: '', lastUsedCount: 0 });
+    self._usedBallsDetail = [];
+    self._resultGainVal = 0;
     var h = [record].concat(self.data.history).slice(0, 20);
     wx.setStorageSync('catch_history', h);
     var isShiny = (result === 'success' || result === 'miss');
     if (isShiny && self.data.autoResetPity) {
-      if (result === 'miss' && self.data.continuePity) {
+      // 自动重置：成功清零；歪了看「继续连抓」，但选了「清除本次捕捉(重新开始)」则强制归零
+      if (result === 'miss' && self.data.continuePity && !isClear) {
         self.updatePity((wx.getStorageSync('pity_count') || 0) + 1);
       } else {
         self.updatePity(0);
       }
     } else if (isShiny && !self.data.autoResetPity) {
+      // 手动重置：成功清零；歪了按用户选择——清除则归零，继续累计则 +1
       if (isClear) {
         self.updatePity(0);
       } else {
@@ -680,23 +899,23 @@ Page({
     } else {
       if (isClear) self.updatePity((wx.getStorageSync('pity_count') || 0) + 1);
     }
-    var usedCount = self.data.lastUsedCount || 0;
-    var newUsedBallTotal = self.data.usedBallTotal + usedCount;
-    wx.setStorageSync('used_ball_total', newUsedBallTotal);
+    // used_ball_total 已在 onResultBallConfirm / onBallCheckConfirm 累加，这里不再重复计
     var updates = {
       totalCatches: newTotalCatches, successCatches: newSuccessCatches,
       totalCosts: newCosts, accumulatedWealth: accumulated,
-      totalWealth: self.data.initialWealth + accumulated, history: h, result: '',
-      usedBallTotal: newUsedBallTotal
+      totalWealth: self.data.initialWealth + accumulated, history: h, result: ''
     };
     if (isClear) {
       wx.removeStorageSync('carnival_count');
       wx.removeStorageSync('lucky_box_count');
+      self._clearSessionUsed();
       updates.carnivalCount = 0;
       updates.luckyBoxCount = 0;
       updates.selectedBall = null;
     }
     self.setData(updates);
+    // 「清除本次捕捉」= 本场结束，计时归零；「继续累计」= 同一场，接着计
+    if (isClear) self._resetCaptureClock();
     self.updateSuccessRate();
     self.updateGemCost();
     wx.showToast({ title: isClear ? '✅ 已记录并清除球数据' : '✅ 记录成功', icon: 'none' });
@@ -708,7 +927,20 @@ Page({
     this._saveRecordCore(this._buildRecord(resultType), true);
   },
   
-    onGenerateImage: function() {
+  // 战报/文案只取真正的捕捉记录，跳过盘点/微调/奇遇
+  _findLastCaptureRecord: function() {
+    var hist = this.data.history || [];
+    for (var i = 0; i < hist.length; i++) {
+      var rec = hist[i];
+      if (!rec) continue;
+      if (rec.resultRaw === 'success' || rec.resultRaw === 'miss') return rec;
+      var rs = rec.result || '';
+      if (rs.indexOf('盘点') >= 0 || rs.indexOf('微调') >= 0 || rs.indexOf('奇遇') >= 0) continue;
+      if (rs.indexOf('成功') >= 0 || rs.indexOf('歪了') >= 0 || rs.indexOf('异色') >= 0) return rec;
+    }
+    return null;
+  },
+  onGenerateImage: function() {
     var self = this;
     wx.showLoading({ title: '生成高阶战报中...' });
     
@@ -726,27 +958,46 @@ Page({
       var width = 400;
       
       // ─── 1. 数据计算 ───
-      var hasHistory = self.data.history && self.data.history.length > 0;
-      var last = null;
-      if (hasHistory) {
-        for (var li = 0; li < self.data.history.length; li++) {
-          if (self.data.history[li].result !== '微调') { last = self.data.history[li]; break; }
-        }
-      }
-      
+      // 战报只取真正的捕捉记录（成功/歪了），跳过盘点/微调/奇遇事件
+      var last = self._findLastCaptureRecord();
+      var hasHistory = !!last;
+
       var allBalls = self.data.balls || [];
-      var specialHist = self.data.specialHistory || [];
-      var acquired = {};
-      for (var sh = 0; sh < specialHist.length; sh++) {
-        var shItem = specialHist[sh];
-        acquired[shItem.ball] = (acquired[shItem.ball] || 0) + shItem.count;
-      }
+      // 消耗球类 = 本场累计（sessionUsedBalls）；旧记录回退本段 usedBalls / xN 文本
+      // 注意：「剩余N」是库存快照不是消耗，绝不能当成已用
       var parsedBalls = [];
-      for (var bi = 0; bi < allBalls.length; bi++) {
-        var totalAcquired = acquired[allBalls[bi].name] || 0;
-        var totalUsed = totalAcquired - (allBalls[bi].count || 0);
-        if (totalUsed > 0) {
-          parsedBalls.push({ name: allBalls[bi].name, count: totalUsed, img: allBalls[bi].img || '' });
+      var noBallsText = i18n.t('imgNoBallsUsed');
+      var ballSource = (last && last.sessionUsedBalls && last.sessionUsedBalls.length) ? last.sessionUsedBalls
+        : (last && last.usedBalls && last.usedBalls.length) ? last.usedBalls : null;
+      if (ballSource) {
+        for (var ubi = 0; ubi < ballSource.length; ubi++) {
+          var ub = ballSource[ubi];
+          if (!ub || !ub.name || !(ub.count > 0)) continue;
+          var ubImg = '';
+          for (var ubj = 0; ubj < allBalls.length; ubj++) {
+            if (allBalls[ubj].name === ub.name) { ubImg = allBalls[ubj].img || ''; break; }
+          }
+          parsedBalls.push({ name: ub.name, count: ub.count, img: ubImg });
+        }
+      } else if (last && last.balls && last.balls !== noBallsText && last.balls !== '未使用球'
+        && last.balls.indexOf('充值') === -1 && last.balls.indexOf('购买') === -1
+        && last.balls.indexOf('🌟') === -1 && last.balls.indexOf('🎁') === -1
+        && last.balls.indexOf('💰') === -1 && last.balls.indexOf('💸') === -1 && last.balls.indexOf('✨') === -1
+        && last.balls.indexOf('[盘点]') === -1 && last.balls.indexOf('剩余') === -1) {
+        var ballParts = last.balls.replace(/^📋\s*/, '').split(', ');
+        for (var bpi = 0; bpi < ballParts.length; bpi++) {
+          var ballStr = ballParts[bpi].trim();
+          if (!ballStr) continue;
+          var bName = '', bCount = 0;
+          // 只认 "name xN" 消耗格式
+          var xMatch = ballStr.match(/^(.+?)\s*x(\d+)/);
+          if (xMatch) { bName = xMatch[1].trim(); bCount = parseInt(xMatch[2]) || 0; }
+          if (!bName || isNaN(bCount) || bCount <= 0) continue;
+          var bImg = '';
+          for (var bj = 0; bj < allBalls.length; bj++) {
+            if (allBalls[bj].name === bName) { bImg = allBalls[bj].img || ''; break; }
+          }
+          parsedBalls.push({ name: bName, count: bCount, img: bImg });
         }
       }
       
@@ -1089,6 +1340,42 @@ Page({
           });
         }
       }
+
+      // 契约球：独立胶囊条，排在精灵图右侧垂直居中（毛玻璃）
+      if (last.contractBall) {
+        var ctLabel = i18n.t('imgContractBall') || '契约球';
+        var ctPadX = 50 + petSize + 18;
+        var ctH = Math.round(64 * imgScale);
+        var ctY = petImgY + Math.round((petSize - ctH) / 2);
+        var ctW = width - ctPadX - 28;
+        // 毛玻璃：半透明浅底 + 浅色描边
+        roundRect(ctPadX, ctY, ctW, ctH, ctH / 2, 'rgba(255,255,255,0.12)', 'rgba(255,255,255,0.28)');
+        var ctBallSize = Math.round(36 * imgScale);
+        var ctIconX = ctPadX + 12;
+        var ctIconY = ctY + (ctH - ctBallSize) / 2;
+        if (last.contractBallImg && last.contractBallImg.length > 5) {
+          loadImg(last.contractBallImg, function(img) {
+            try { ctx.drawImage(img, ctIconX, ctIconY, ctBallSize, ctBallSize); } catch (e) {}
+          });
+        } else {
+          ctx.font = '16px sans-serif';
+          ctx.fillStyle = 'rgba(255,255,255,0.75)';
+          ctx.fillText('🔮', ctIconX + 2, ctIconY + ctBallSize - 8);
+        }
+        var ctTextX = ctIconX + ctBallSize + 10;
+        ctx.font = '10px sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        ctx.fillText(ctLabel, ctTextX, ctY + 22);
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.92)';
+        var ctNameMax = ctPadX + ctW - 14 - ctTextX;
+        var ctName = last.contractBall;
+        while (ctName.length > 1 && ctx.measureText(ctName).width > ctNameMax) {
+          ctName = ctName.slice(0, -1);
+        }
+        if (ctName !== last.contractBall) ctName += '…';
+        ctx.fillText(ctName, ctTextX, ctY + 44);
+      }
       
       // ─── 8. 底部签名 ───
       var dividerY = height - 70;
@@ -1138,25 +1425,42 @@ Page({
     });
   },
   copyToClipboard: function() {
-    var history = this.data.history || [];
-    if (history.length === 0) return;
-    var last = history[0];
+    var last = this._findLastCaptureRecord();
+    if (!last) return;
     let totalEncounters = this.data.carnivalCount + this.data.luckyBoxCount;
-    if (totalEncounters === 0 && history && history.length > 0 && history[0].encounters !== undefined) {
-      totalEncounters = history[0].encounters;
+    if (totalEncounters === 0 && last.encounters !== undefined) {
+      totalEncounters = last.encounters;
     }
-    
+
     var brushLabel = last.brushMode === 'mixed' ? '【' + i18n.t('clipMode') + '】' + i18n.t('imgMixed') + '\n' : '【' + i18n.t('clipMode') + '】' + i18n.t('imgSingle') + '\n';
     var petDisplay = last.brushMode === 'mixed' && last.mixedPets
       ? '【' + i18n.t('clipPet') + '】' + last.mixedPets + '\n'
       : '【' + i18n.t('clipPet') + '】' + (last.pet || i18n.t('imgNotFilled')) + '\n';
-    
+
+    // 消耗展示：优先整场累计，避免把「剩余N」文案当成消耗
+    var costText = '';
+    var src = (last.sessionUsedBalls && last.sessionUsedBalls.length) ? last.sessionUsedBalls
+      : (last.usedBalls && last.usedBalls.length) ? last.usedBalls : null;
+    if (src && src.length) {
+      var parts = [];
+      for (var i = 0; i < src.length; i++) {
+        if (src[i] && src[i].name && src[i].count > 0) parts.push(src[i].name + 'x' + src[i].count);
+      }
+      costText = parts.join(', ');
+    }
+    if (!costText) {
+      var bt = last.balls || '';
+      if (bt.indexOf('剩余') >= 0 || bt.indexOf('[盘点]') >= 0) costText = i18n.t('imgNoBallsUsed');
+      else costText = bt || i18n.t('imgNoBallsUsed');
+    }
+
     var text = i18n.t('clipTitle') + '\n' +
                '【' + i18n.t('clipTime') + '】' + (last.time || last.date || '') + '\n' +
                '【' + i18n.t('clipStatus') + '】' + localizeResultText(last.resultRaw, last.result) + '\n' +
                brushLabel +
                petDisplay +
-               '【' + i18n.t('clipCost') + '】' + (last.balls || i18n.t('imgNoBallsUsed')) + '\n' +
+               '【' + i18n.t('clipCost') + '】' + costText + '\n' +
+               (last.contractBall ? '【' + (i18n.t('imgContractBall') || '契约球') + '】' + last.contractBall + '\n' : '') +
                '【' + i18n.t('clipDuration') + '】' + (localizeElapsed(last) || i18n.t('imgUnknown')) + '\n\n' +
                i18n.t('clipStats') + '\n' +
                '【' + i18n.t('clipTime') + '】' + this.data.buildTime + '\n' +
@@ -1208,6 +1512,67 @@ Page({
     var used = wx.getStorageSync('used_ball_total') || 0
     this.setData({ totalBallUsed: total, usedBallTotal: used })
   },
+  // ─── 场次累计消耗：整场捕捉（含每10次盘点段）的总用量 ───
+  _loadSessionUsed: function() {
+    if (!this._sessionUsedBalls) {
+      this._sessionUsedBalls = wx.getStorageSync('session_used_balls') || {};
+    }
+    return this._sessionUsedBalls;
+  },
+  _addSessionUsed: function(details) {
+    if (!details || !details.length) return;
+    var s = this._loadSessionUsed();
+    for (var i = 0; i < details.length; i++) {
+      var d = details[i];
+      if (!d || !d.name || !(d.count > 0)) continue;
+      if (!s[d.name]) s[d.name] = { name: d.name, count: 0, freeUsed: 0 };
+      s[d.name].count += d.count;
+      s[d.name].freeUsed = (s[d.name].freeUsed || 0) + (d.freeUsed || 0);
+    }
+    wx.setStorageSync('session_used_balls', s);
+  },
+  _subSessionUsed: function(details) {
+    if (!details || !details.length) return;
+    var s = this._loadSessionUsed();
+    for (var i = 0; i < details.length; i++) {
+      var d = details[i];
+      if (!d || !d.name) continue;
+      var cur = s[d.name];
+      if (!cur) continue;
+      cur.count = Math.max(0, cur.count - (d.count || 0));
+      cur.freeUsed = Math.max(0, (cur.freeUsed || 0) - (d.freeUsed || 0));
+      if (cur.count <= 0) delete s[d.name];
+    }
+    wx.setStorageSync('session_used_balls', s);
+  },
+  _clearSessionUsed: function() {
+    this._sessionUsedBalls = {};
+    wx.removeStorageSync('session_used_balls');
+  },
+  _restoreSessionUsed: function(list) {
+    this._sessionUsedBalls = {};
+    if (list && list.length) {
+      for (var i = 0; i < list.length; i++) {
+        var d = list[i];
+        if (!d || !d.name || !(d.count > 0)) continue;
+        this._sessionUsedBalls[d.name] = { name: d.name, count: d.count, freeUsed: d.freeUsed || 0 };
+      }
+    }
+    wx.setStorageSync('session_used_balls', this._sessionUsedBalls);
+  },
+  _sessionUsedList: function() {
+    var s = this._loadSessionUsed();
+    var arr = [];
+    for (var k in s) {
+      if (s[k] && s[k].count > 0) arr.push({ name: s[k].name, count: s[k].count, freeUsed: s[k].freeUsed || 0 });
+    }
+    return arr;
+  },
+  _sessionUsedText: function() {
+    var arr = this._sessionUsedList();
+    if (!arr.length) return '';
+    return arr.map(function(x) { return x.name + 'x' + x.count; }).join(', ');
+  },
   syncUserLevel: function(captureCount) {
     if (!wx.cloud || !app.globalData.userInfo) return
     var db = wx.cloud.database()
@@ -1244,18 +1609,78 @@ Page({
       totalEncounters = history[0].encounters;
     }
           var newHistory = history.slice(1);
-          
+
           var catchCount = last.total || 0;
           var newTotalCatches = Math.max(0, self.data.totalCatches - catchCount);
           var isSuccess = last.resultRaw === 'success' || (last.result && (last.result.indexOf('成功') >= 0 || last.result === '奇遇'));
           var newSuccessCatches = Math.max(0, self.data.successCatches - (isSuccess ? catchCount : 0));
-          
+
+          // 回滚洛克贝：成本按 cost 退，收益按 gain 退（捕获记录的奇遇收益 / 资产微调的增加额）
           var cost = last.cost || 0;
+          var gain = last.gain || 0;
           var newCosts = Math.max(0, self.data.totalCosts - cost);
-          
+          var newGains = self.data.totalGains - gain;
+          var newAccumulated = newGains - newCosts;
+
           var balls = self.data.balls.slice();
           var ballUsedCount = 0;
-          
+          var undoSessionDetails = [];
+
+          // 盘点记录：按 checkDiffs 精准回滚到盘点前库存
+          if (last.result === '盘点' && last.checkDiffs && last.checkDiffs.length) {
+            for (var ci = 0; ci < last.checkDiffs.length; ci++) {
+              var cd = last.checkDiffs[ci];
+              if (!cd || !cd.name) continue;
+              ballUsedCount += cd.count || 0;
+              undoSessionDetails.push({ name: cd.name, count: cd.count || 0, freeUsed: cd.freeUsed || 0 });
+              for (var cj = 0; cj < balls.length; cj++) {
+                if (balls[cj].name === cd.name) {
+                  balls[cj].count = cd.countBefore != null ? cd.countBefore : (balls[cj].count + (cd.count || 0));
+                  if (cd.freeBefore != null) balls[cj].freeCount = cd.freeBefore;
+                  else balls[cj].freeCount = (balls[cj].freeCount || 0) + (cd.freeUsed || 0);
+                  break;
+                }
+              }
+            }
+          } else if (last.usedBalls && last.usedBalls.length) {
+            // 优先用结构化 usedBalls 还原（含免费额度）
+            for (var i = 0; i < last.usedBalls.length; i++) {
+              var ub = last.usedBalls[i];
+              var ubCount = ub.count || 0;
+              var ubFree = ub.freeUsed || 0;
+              if (ubCount <= 0 && ubFree <= 0) continue;
+              ballUsedCount += ubCount;
+              undoSessionDetails.push({ name: ub.name, count: ubCount, freeUsed: ubFree });
+              for (var j = 0; j < balls.length; j++) {
+                if (balls[j].name === ub.name) {
+                  balls[j].count += ubCount;
+                  balls[j].freeCount = (balls[j].freeCount || 0) + ubFree;
+                  break;
+                }
+              }
+            }
+          } else if (last.balls && last.balls !== '未使用球' && last.balls.indexOf('充值') === -1 && last.balls.indexOf('购买') === -1
+            && last.balls.indexOf('🌟') === -1 && last.balls.indexOf('🎁') === -1
+            && last.balls.indexOf('💰') === -1 && last.balls.indexOf('💸') === -1 && last.balls.indexOf('✨') === -1
+            && last.balls.indexOf('[盘点]') === -1) {
+            // 旧记录：从文本还原数量（不含免费额度）；盘点文本格式是「剩余N」不能当已用量回滚
+            var ballParts = last.balls.replace(/^📋\s*/, '').split(', ');
+            for (var i = 0; i < ballParts.length; i++) {
+              var ballStr = ballParts[i].trim();
+              var bName = '', bCount = 0;
+              var xMatch = ballStr.match(/^(.+?)\s*x(\d+)/);
+              if (xMatch) { bName = xMatch[1].trim(); bCount = parseInt(xMatch[2]) || 0; }
+              if (!isNaN(bCount) && bCount > 0) {
+                ballUsedCount += bCount;
+                undoSessionDetails.push({ name: bName, count: bCount, freeUsed: 0 });
+                for (var j = 0; j < balls.length; j++) {
+                  if (balls[j].name === bName) { balls[j].count += bCount; break; }
+                }
+              }
+            }
+          }
+
+          // 回滚奇遇计数
           if (last.balls && last.balls.indexOf('🌟') >= 0) {
             var newCarnival = Math.max(0, self.data.carnivalCount - (last.total || 1));
             wx.setStorageSync('carnival_count', newCarnival);
@@ -1271,31 +1696,33 @@ Page({
             wx.setStorageSync('carnival_count', restoreCarnival);
             wx.setStorageSync('lucky_box_count', restoreLucky);
             self.setData({ carnivalCount: restoreCarnival, luckyBoxCount: restoreLucky });
-          } else if (last.balls && last.balls !== '未使用球' && last.balls.indexOf('充值') === -1 && last.balls.indexOf('购买') === -1) {
-            var ballParts = last.balls.replace(/^\[盘点\]\s*/, '').replace(/^📋\s*/, '').split(', ');
-            for (var i = 0; i < ballParts.length; i++) {
-              var ballStr = ballParts[i].trim();
-              var bName = '', bCount = 0;
-              // 匹配 "name剩余N" 格式
-              var remMatch = ballStr.match(/^(.+?)剩余(\d+)/);
-              if (remMatch) { bName = remMatch[1].trim(); bCount = parseInt(remMatch[2]) || 0; }
-              else {
-                // 匹配 "name xN" 或 "namexN" 格式
-                var xMatch = ballStr.match(/^(.+?)\s*x(\d+)/);
-                if (xMatch) { bName = xMatch[1].trim(); bCount = parseInt(xMatch[2]) || 0; }
-              }
-              if (!isNaN(bCount) && bCount > 0) {
-                ballUsedCount += bCount;
-                for (var j = 0; j < balls.length; j++) {
-                  if (balls[j].name === bName) { balls[j].count += bCount; break; }
+          }
+
+          var newUsedBallTotal = Math.max(0, self.data.usedBallTotal - ballUsedCount);
+          // 库存总数 = 回滚后各球剩余之和（不能用 totalBallUsed - usedCount，盘点回滚方向相反）
+          var newTotalBallUsed = 0;
+          for (var ti = 0; ti < balls.length; ti++) newTotalBallUsed += balls[ti].count;
+
+          // 整场累计：撤销本段后恢复到记录时的累计再减本段
+          if (undoSessionDetails.length) {
+            if (last.sessionUsedBalls && last.sessionUsedBalls.length) {
+              var restored = [];
+              for (var si = 0; si < last.sessionUsedBalls.length; si++) {
+                var su = last.sessionUsedBalls[si];
+                if (!su || !su.name || !(su.count > 0)) continue;
+                var seg = 0;
+                for (var ui = 0; ui < undoSessionDetails.length; ui++) {
+                  if (undoSessionDetails[ui].name === su.name) { seg = undoSessionDetails[ui].count || 0; break; }
                 }
+                var left = su.count - seg;
+                if (left > 0) restored.push({ name: su.name, count: left, freeUsed: Math.max(0, (su.freeUsed || 0)) });
               }
+              self._restoreSessionUsed(restored);
+            } else {
+              self._subSessionUsed(undoSessionDetails);
             }
           }
-          
-          var newUsedBallTotal = Math.max(0, self.data.usedBallTotal - ballUsedCount);
-          var newTotalBallUsed = Math.max(0, self.data.totalBallUsed - ballUsedCount);
-          
+
           // 回退保底进度（用记录中的原始值精准恢复）
           if (last.pityBefore !== undefined) {
             self.updatePity(last.pityBefore);
@@ -1303,33 +1730,36 @@ Page({
             var newPity = Math.max(0, self.data.pityCount - catchCount);
             self.updatePity(newPity);
           }
-          
+
           wx.setStorageSync('catch_history', newHistory);
           wx.setStorageSync('total_catches', newTotalCatches);
           wx.setStorageSync('success_catches', newSuccessCatches);
           wx.setStorageSync('total_costs', newCosts);
+          wx.setStorageSync('total_gains', newGains);
           wx.setStorageSync('used_ball_total', newUsedBallTotal);
-          
+
           self.saveBallsToStorage(balls);
-          
+
           var hasActive = false;
           for (var i = 0; i < balls.length; i++) { if (balls[i].count > 0) { hasActive = true; break; } }
-          
+
           self.setData({
             history: newHistory,
             totalCatches: newTotalCatches,
             successCatches: newSuccessCatches,
             totalCosts: newCosts,
-            accumulatedWealth: self.data.totalGains - newCosts,
-            totalWealth: self.data.initialWealth + (self.data.totalGains - newCosts),
+            totalGains: newGains,
+            accumulatedWealth: newAccumulated,
+            totalWealth: self.data.initialWealth + newAccumulated,
             usedBallTotal: newUsedBallTotal,
             totalBallUsed: newTotalBallUsed,
             balls: balls,
             hasActiveBalls: hasActive,
             canStartCapture: self.data.wealthSet && hasActive
           });
-          
+
           self.updateSuccessRate();
+          self.updateGemCost();
           wx.showToast({ title: '已撤销', icon: 'success' });
         }
       }
@@ -1401,11 +1831,7 @@ Page({
   },
   _recordCarnival: function(isShiny, ballName) {
     var self = this
-    // 长时无操作(>30min)则重置计时
-    if (self.data.captureStartTime && Date.now() - self.data.captureStartTime > 1800000) {
-      self.setData({ captureStartTime: 0 });
-    }
-    if (!self.data.captureStartTime) self.setData({ captureStartTime: Date.now() });
+    self._touchCaptureClock()
     var c = self.data.carnivalCount + 1
     var tc = self.data.totalCatches + 1
     var sc = self.data.successCatches + (isShiny ? 1 : 0)
@@ -1436,7 +1862,7 @@ Page({
           placeholderText: '输入捕捉数量(默认1)',
           success: function(modalRes) {
             if (modalRes.confirm) {
-              if (!self.data.captureStartTime) self.setData({ captureStartTime: Date.now() });
+              self._touchCaptureClock();
               var count = parseInt(modalRes.content) || 1
               var c = self.data.carnivalCount + 1
               var tc = self.data.totalCatches + count
@@ -1461,10 +1887,7 @@ Page({
   
   onAddLuckyBox: function() {
     var self = this
-    if (self.data.captureStartTime && Date.now() - self.data.captureStartTime > 1800000) {
-      self.setData({ captureStartTime: 0 });
-    }
-    if (!self.data.captureStartTime) self.setData({ captureStartTime: Date.now() });
+    self._touchCaptureClock()
     var c = self.data.luckyBoxCount + 1
     var tc = self.data.totalCatches + 1
     var sc = self.data.successCatches + 1
@@ -1492,7 +1915,7 @@ Page({
           placeholderText: '输入捕捉数量(默认1)',
           success: function(modalRes) {
             if (modalRes.confirm) {
-              if (!self.data.captureStartTime) self.setData({ captureStartTime: Date.now() });
+              self._touchCaptureClock();
               var count = parseInt(modalRes.content) || 1
               var c = self.data.luckyBoxCount + 1
               var tc = self.data.totalCatches + count
@@ -1585,7 +2008,10 @@ Page({
         items.push({
           name: ball.name,
           remain: '',
+          usedDisplay: '',
           currentCount: ball.count,
+          img: ball.img || '',
+          icon: ball.icon || '',
           lastRemaining: lastRemaining[ball.name] !== undefined ? lastRemaining[ball.name] : -1
         });
       }
@@ -1605,56 +2031,62 @@ Page({
     var totalDiff = 0;
     var newRecords = [];
     var historyText = [];
-    
+    var checkDiffs = [];
+
     for (var m = 0; m < multi.length; m++) {
         var item = multi[m];
         var bName = item.name;
         if (!bName || item.remain === '' || item.remain === null) continue;
         var remaining = parseInt(item.remain);
         if (isNaN(remaining) || remaining < 0) remaining = 0;
-        
+
         newRecords.push({ time: formatTime(), ball: bName, remaining: remaining });
         historyText.push(bName + '剩余' + remaining);
-        
+
         for (var i = 0; i < balls.length; i++) {
           if (balls[i].name === bName) {
-            var diff = balls[i].count - remaining;
+            var countBefore = balls[i].count;
+            var freeBefore = balls[i].freeCount || 0;
+            var diff = countBefore - remaining;
             if (diff < 0) diff = 0; // 防止输入大于当前库存导致球数虚增
             if (diff > 0) {
               totalDiff += diff;
-              var freeConsume = Math.min(diff, balls[i].freeCount);
-              balls[i].freeCount = Math.max(0, balls[i].freeCount - freeConsume);
+              var freeConsume = Math.min(diff, freeBefore);
+              balls[i].freeCount = Math.max(0, freeBefore - freeConsume);
+              checkDiffs.push({ name: bName, count: diff, freeUsed: freeConsume, countBefore: countBefore, freeBefore: freeBefore });
             }
             balls[i].count = remaining;
             break;
           }
         }
       }
-    
+
     if (historyText.length === 0) {
       wx.showToast({ title: '请选择球类型', icon: 'none' }); return;
     }
-    
+
     var records = self.data.ballCheckRecords.concat(newRecords);
     wx.setStorageSync('ball_check_records', records);
-    
+
     var round = 1;
     var oldHistory = self.data.history || [];
     for (var ri = 0; ri < oldHistory.length; ri++) {
       if (oldHistory[ri].result === '盘点') round++;
     }
-    var historyRecord = { time: formatTimeShort(), balls: '[盘点] ' + historyText.join(', '), result: '盘点', round: round, total: 0, cost: 0, pet: '' };
+    var historyRecord = { time: formatTimeShort(), balls: '[盘点] ' + historyText.join(', '), result: '盘点', round: round, total: 0, cost: 0, pet: '', checkDiffs: checkDiffs };
     var h = [historyRecord].concat(self.data.history).slice(0, 20);
     wx.setStorageSync('catch_history', h);
-    
+
     var totalBallUsed = 0;
     for (var j = 0; j < balls.length; j++) totalBallUsed += balls[j].count;
     var hasActive = false;
     for (var k = 0; k < balls.length; k++) { if (balls[k].count > 0) { hasActive = true; break; } }
-    
+
     var newUsedBallTotal = self.data.usedBallTotal + totalDiff;
     if (totalDiff > 0) wx.setStorageSync('used_ball_total', newUsedBallTotal);
-    
+    // 盘点段的消耗计入整场累计
+    self._addSessionUsed(checkDiffs);
+
     self.setData({
       showBallCheckModal: false,
       ballCheckRecords: records,
@@ -1686,6 +2118,9 @@ Page({
           })
           wx.removeStorageSync('special_history')
           wx.removeStorageSync('used_ball_total')
+          wx.removeStorageSync('ball_check_records')
+          wx.removeStorageSync('session_used_balls')
+          self._sessionUsedBalls = {}
           self.saveBallsToStorage(balls)
           self.setData({
             balls: balls,
@@ -1693,6 +2128,7 @@ Page({
             totalBallUsed: 0,
             usedBallTotal: 0,
             specialHistory: [],
+            ballCheckRecords: [],
             selectedBall: null,
             selectedBallCount: 0, expandedBallIndex: -1,
             ballDecrease: {},
@@ -1706,8 +2142,15 @@ Page({
   preventClose: function() {},
   toggleAutoResetPity: function() {
     var val = !this.data.autoResetPity
-    this.setData({ autoResetPity: val })
-    wx.setStorageSync('auto_reset_pity', val)
+    // 关闭自动重置时，连抓开关一并收起并复位，避免残留状态
+    if (!val && this.data.continuePity) {
+      this.setData({ autoResetPity: false, continuePity: false })
+      wx.setStorageSync('auto_reset_pity', false)
+      wx.setStorageSync('continue_pity', false)
+    } else {
+      this.setData({ autoResetPity: val })
+      wx.setStorageSync('auto_reset_pity', val)
+    }
     wx.showToast({ title: val ? '已开启自动重置' : '已切换手动重置', icon: 'none' })
   },
   toggleContinuePity: function() {
@@ -1765,7 +2208,7 @@ Page({
         ballsText = '✨ 十次奇遇收益 +' + amount;
         remark = '';
       }
-      var record = { time: formatTimeShort(), balls: ballsText + (remark ? '(' + remark + ')' : ''), result: isEncounter10 ? '奇遇' : '微调', total: 0, cost: isAdd ? 0 : amount, pet: '' }
+      var record = { time: formatTimeShort(), balls: ballsText + (remark ? '(' + remark + ')' : ''), result: isEncounter10 ? '奇遇' : '微调', total: 0, cost: isAdd ? 0 : amount, gain: isAdd ? amount : 0, pet: '' }
       var h = [record].concat(self.data.history).slice(0, 20)
       wx.setStorageSync('catch_history', h)
       self.setData({
@@ -1805,7 +2248,8 @@ Page({
           wx.removeStorageSync('initial_wealth')
           wx.removeStorageSync('total_gains')
           wx.removeStorageSync('total_costs')
-          self.setData({ initialWealth: 0, totalGains: 0, totalCosts: 0, accumulatedWealth: 0, totalWealth: 0, wealthSet: false })
+          // 资产清空后必须同步关掉捕捉入口，否则按钮仍可点
+          self.setData({ initialWealth: 0, totalGains: 0, totalCosts: 0, accumulatedWealth: 0, totalWealth: 0, wealthSet: false, canStartCapture: false })
           wx.showToast({title:'已撤销',icon:'success'})
         }
       }
@@ -1896,7 +2340,10 @@ Page({
     var decrease = diff > 0 ? (function() { var d = {}; d[self.data.selectedBall] = diff; return d })() : {}
     var usedInc = diff > 0 ? diff : 0
     var newUsedBallTotal = self.data.usedBallTotal + usedInc
-    if (usedInc > 0) wx.setStorageSync('used_ball_total', newUsedBallTotal)
+    if (usedInc > 0) {
+      wx.setStorageSync('used_ball_total', newUsedBallTotal)
+      self._addSessionUsed([{ name: ball.name, count: usedInc, freeUsed: Math.min(usedInc, oldFree) }])
+    }
     if (cost > 0) {
       wx.setStorageSync('total_costs', newCosts)
       var accumulated = self.data.totalGains - newCosts

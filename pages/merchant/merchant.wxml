@@ -310,6 +310,11 @@
         </view>
 
         <view class="form-group">
+          <text class="form-label">预设限售数量（可选）</text>
+          <input class="modal-input" type="number" placeholder="留空表示不限售，上架时自动带上" value="{{newItem.limitCount}}" bindinput="onNewItemInput" data-field="limitCount" />
+        </view>
+
+        <view class="form-group">
           <text class="form-label">商品图片 (可选)</text>
           <view class="image-upload-box">
             <view class="selling-image-preview large" wx:if="{{newItem.image}}" catchtap="previewItemImage">
@@ -495,7 +500,10 @@
               <view class="item-image-placeholder" wx:else style="width:100%;height:140rpx;margin:0 auto 12rpx auto;"><text class="item-image-placeholder-icon">🎁</text></view>
               <text class="picker-card-name">{{item.name && item.name.indexOf('http') !== 0 ? item.name : '未命名物品'}}</text>
               <text class="picker-card-effect">{{item.effect}}</text>
-              <view class="picker-card-price"><image class="roco-icon sm" src="https://patchwiki.biligame.com/images/nrc/1/10/blxvp7k90uq3p8prz24feerler3yfsi.png" mode="aspectFit" /><text>{{item.price}}</text></view>
+              <view class="picker-card-meta">
+                <view class="picker-card-price"><image class="roco-icon sm" src="https://patchwiki.biligame.com/images/nrc/1/10/blxvp7k90uq3p8prz24feerler3yfsi.png" mode="aspectFit" /><text>{{item.price}}</text></view>
+                <text class="picker-card-limit" wx:if="{{item.limitCount}}">限{{item.limitCount}}</text>
+              </view>
             </view>
           </view>
         </scroll-view>
@@ -507,6 +515,10 @@
         </view>
       </view>
       <view class="modal-footer">
+        <view class="selling-edit-card-actions" style="width: 100%; margin-bottom: 12rpx;" wx:if="{{selectedCountForModal > 0}}">
+          <text style="font-size: 24rpx; color: rgba(255,255,255,0.6); width: 160rpx; flex-shrink: 0; white-space: nowrap;">预设限售数量</text>
+          <input class="modal-input mini" type="number" placeholder="留空用商品库预设/不限" value="{{batchLimitCount}}" bindinput="onBatchLimitInput" style="flex: 1;" />
+        </view>
         <button class="modal-cancel" catchtap="closeAddSellingItemModal">取消</button>
         <button class="modal-save" catchtap="confirmAddSellingItems">确认上架</button>
       </view>
@@ -572,6 +584,10 @@
               <text class="form-label">来源</text>
               <input class="modal-input" value="{{batchEditItem.source}}" bindinput="onBatchInput" data-field="source" />
             </view>
+          </view>
+          <view class="form-group">
+            <text class="form-label">预设限售数量（可选）</text>
+            <input class="modal-input" type="number" placeholder="留空表示不限售" value="{{batchEditItem.limitCount}}" bindinput="onBatchInput" data-field="limitCount" />
           </view>
           <view class="form-group">
             <text class="form-label">商品预览图</text>

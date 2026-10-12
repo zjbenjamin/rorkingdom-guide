@@ -1,1 +1,1 @@
-{ "usingComponents": { "dock": "/components/dock/dock" }, "navigationStyle": "custom" }
+{ "usingComponents": { "dock": "/components/dock/dock" }, "navigationStyle": "custom", "backgroundColor": "#010314", "backgroundColorBottom": "#010314", "backgroundColorTop": "#010314" }

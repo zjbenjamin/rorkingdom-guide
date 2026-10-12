@@ -550,11 +550,18 @@
   border-left: 4rpx solid rgba(88,166,255,0.4);
   border-radius: 4rpx;
 }
-.rich-music-block, .rich-video-block, .rich-link-block {
+.rich-link-block {
   margin: 12rpx 0; padding: 16rpx 20rpx;
   background: rgba(255,255,255,0.04);
   border-radius: 8rpx;
   display: flex; align-items: center; gap: 12rpx;
+}
+/* 内联 mp4 播放器 */
+.rich-video-inline { margin: 20rpx 0; }
+.rich-inline-video {
+  width: 100%; height: 380rpx; display: block;
+  border-radius: 16rpx; background: #000; overflow: visible;
+  box-shadow: 0 12rpx 36rpx rgba(0,0,0,0.35), 0 0 0 1rpx rgba(255,255,255,0.08);
 }
 .rich-divider-block { margin: 16rpx 0; }
 .divider-block { margin: 16rpx 0; }
@@ -626,10 +633,10 @@
 .modal-save[disabled] { opacity: 0.5; background: #21262d !important; }
 
 /* ── Video Player ── */
-.video-player-box { background: #161b22; overflow: visible; max-height: 88vh; box-sizing: border-box; padding-bottom: calc(28rpx + env(safe-area-inset-bottom)); }
+.video-player-box { background: linear-gradient(180deg, #1e2440 0%, #171b30 40%, #14172a 100%); overflow: visible; max-height: 88vh; box-sizing: border-box; padding-bottom: calc(28rpx + env(safe-area-inset-bottom)); }
 .video-player-header { padding: 32rpx 28rpx 0; margin-bottom: 16rpx; display: flex; justify-content: space-between; align-items: center; gap: 16rpx; flex-shrink: 0; }
 .video-player-title {
-  color: #e6edf3;
+  color: #fff;
   font-size: 30rpx;
   font-weight: 700;
   flex: 1;
@@ -640,11 +647,11 @@
   -webkit-overflow-scrolling: touch;
 }
 .video-player-owner { padding: 8rpx 28rpx; margin: 0 28rpx 16rpx; flex-shrink: 0; }
-.video-player-owner-text { font-size: 22rpx; color: #8b949e; }
-.video-player-video { width: calc(100% - 56rpx); margin: 0 28rpx 8rpx; height: 360rpx; display: block; border-radius: 8rpx; background: #000; flex-shrink: 0; overflow: visible; }
-.video-player-desc { padding: 20rpx 28rpx; height: 220rpx; box-sizing: border-box; overflow-y: auto; position: relative; }
-.video-player-desc::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 40rpx; background: linear-gradient(transparent, #161b22); pointer-events: none; }
-.video-player-desc-text { font-size: 24rpx; color: #8b949e; line-height: 1.8; word-break: break-all; white-space: pre-wrap; padding-bottom: 40rpx; }
+.video-player-owner-text { font-size: 22rpx; color: rgba(255,255,255,0.5); }
+.video-player-video { width: calc(100% - 56rpx); margin: 0 28rpx 8rpx; height: 360rpx; display: block; border-radius: 16rpx; background: #000; flex-shrink: 0; overflow: visible; box-shadow: 0 16rpx 48rpx rgba(0,0,0,0.45), 0 0 0 1rpx rgba(255,255,255,0.08); }
+.video-player-desc { margin: 12rpx 28rpx 0; padding: 20rpx 24rpx; height: 220rpx; box-sizing: border-box; overflow-y: auto; position: relative; background: rgba(255,255,255,0.04); border: 1rpx solid rgba(255,255,255,0.07); border-radius: 16rpx; }
+.video-player-desc::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 40rpx; background: linear-gradient(transparent, rgba(20,23,42,0.95)); pointer-events: none; border-radius: 0 0 16rpx 16rpx; }
+.video-player-desc-text { font-size: 24rpx; color: rgba(255,255,255,0.55); line-height: 1.8; word-break: break-all; white-space: pre-wrap; padding-bottom: 40rpx; }
 
 /* Pad 竖屏适配 */
 @media (min-width: 768px) and (max-width: 1023px) {
