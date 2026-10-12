@@ -8,6 +8,7 @@ var i18n = require('../../utils/i18n')
 var todayStr = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0') + '-' + String(new Date().getDate()).padStart(2, '0')
 
 var defaultChangelog = [
+  { version: '2.0.0', date: todayStr, content: '【新增】安卓 Pad 平板排版：顶栏/Dock/弹窗/网格专项适配，比例不再被拉爆\n【新增】我的页 Pad 模式切换：自动 / 平板 / 手机，即时生效并记住选择\n【新增】远行商人商品库支持预设限售数量，上架时自动带上\n【优化】快捷选择上架可批量填写限售数量，商品卡片显示「限N」\n【优化】上架/改期时间自动识别四个时段（08-12 / 12-16 / 16-20 / 20-24）\n【优化】弹窗改为居中卡片，富文本工具栏不再挤占输入区\n【修复】平板下顶栏文字逐字竖排、Dock 图标过大遮挡内容\n更新：版号 2.0.0' },
   { version: '1.9.0', date: todayStr, content: '【新增】远行商人上架商品自动匹配下架日期与时段（按游戏内日程）\n【优化】管理后台编辑器：工具栏按格式/插入分区，块支持上移下移\n【优化】插入图片/音乐/视频前自动落稿，正文顺序与所见一致\n【优化】编辑中的块改完插回原位，不再沉到文末\n【优化】首页远行商人卡片去掉底栏重复倒计时（商品行已有倒计时）\n【新增】公告/活动草稿自动保存，误关弹窗可恢复\n【修复】咕噜球库存为 0 仍显示卡片（仓库列表与盘点/结果弹窗）\n【修复】编辑器残留上次内容、开始/结束时间未保存、旧公告内容重复入块\n【修复】引用块编辑丢类型、删除块误清正在输入的文字\n更新：版号 1.9.0' },
   { version: '1.8.3', date: todayStr, content: '【新增】首页 ROCOKINGDOM 广播站：出没 / 商人上架同步\n【新增】广播站商品图、限售数量、下架倒计时，点开看简介\n【新增】首页头图多图自动轮播（后台页面管理编辑）\n【新增】CNY 按语言换算当地货币，时间按语言国家时区\n【新增】月陨流星雨可选是否异色\n【新增】关于页数据来源官方 Logo\n【优化】全局轻量过渡动画（低内存）\n【优化】远行商人洛克贝图标，生图与仓库展示\n【优化】仓库只显示手动入库的球\n【优化】国际版英日韩用词与国旗图\n【修复】页面状态管理按钮、通知设置可点击\n【修复】广播站空商品误显示、倒计时与商人页同步\n更新：版号 1.8.3' },
   { version: '1.8.2', date: todayStr, content: '【修复】管理后台新增球在捕捉统计中丢失（保存合并云端、库存按名称兜底）\n【修复】球卡片展开高度不齐，简介改为框内滑动\n更新：版号 1.8.2' },
@@ -27,7 +28,7 @@ Page({
     showLogShareBtn: true,
     aboutData: {
       appName: '洛手助手',
-      version: i18n.i18n.zh.version || 'v1.9.0',
+      version: i18n.i18n.zh.version || 'v2.0.0',
       versionNote: i18n.i18n.zh.versionNote || '',
       devName: '浙里本杰明',
       devAvatar: 'https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEYA3JqaA4lW5JDNpmiDiR7kV6jjeMAAW0AAscgAAKo-ElXhfFJA7eEXyo9BA.jpeg',

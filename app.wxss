@@ -37,6 +37,20 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* 微信 button 默认 line-height / 上下 padding 会把文字顶偏 */
+  line-height: 1;
+  padding-top: 0;
+  padding-bottom: 0;
+  /* 裸文字按钮禁止逐字换行 */
+  white-space: nowrap;
+}
+button text {
+  line-height: 1.2;
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 button:active { opacity: 0.8; }
 button::after { border: none !important; }
