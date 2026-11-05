@@ -1858,8 +1858,10 @@ Page({
                 }
               }
             }
-          } else if (last.balls && last.balls !== '未使用球' && last.balls.indexOf('充值') === -1 && last.balls.indexOf('购买') === -1
+          } else if (last.balls && last.balls !== '未使用球' && last.result !== '龙龙骰'
+            && last.balls.indexOf('充值') === -1 && last.balls.indexOf('购买') === -1
             && last.balls.indexOf('🌟') === -1 && last.balls.indexOf('🎁') === -1 && last.balls.indexOf('🎲') === -1
+            && last.balls.indexOf('🔮') === -1 && last.balls.indexOf('🧪') === -1
             && last.balls.indexOf('💰') === -1 && last.balls.indexOf('💸') === -1 && last.balls.indexOf('✨') === -1
             && last.balls.indexOf('[盘点]') === -1) {
             // 旧记录：从文本还原数量（不含免费额度）；盘点文本格式是「剩余N」不能当已用量回滚
@@ -2036,18 +2038,20 @@ Page({
   },
   onAddCarnival: function() {
     var self = this
+    var diceOptions = ['词条骰子', '异色骰子', '奇异骰子', '污染骰子']
     wx.showActionSheet({
-      alertText: '请选择龙龙骰类型（不占保底和奇遇）',
-      itemList: ['词条骰子', '异色骰子'],
+      alertText: '请选择龙龙骰类型（仅异色计入面板，均不占保底/奇遇）',
+      itemList: diceOptions,
       success: function(res) {
-        var diceType = res.tapIndex === 1 ? '异色骰子' : '词条骰子'
+        var diceType = diceOptions[res.tapIndex] || '词条骰子'
         self._recordCarnival(diceType, '')
       }
     })
   },
   _recordCarnival: function(diceType, ballName) {
     var self = this
-    var typeLabel = (diceType === '词条骰子' || diceType === false) ? '词条骰子' : '异色骰子'
+    var validTypes = ['词条骰子', '异色骰子', '奇异骰子', '污染骰子']
+    var typeLabel = validTypes.indexOf(diceType) >= 0 ? diceType : (diceType === false ? '词条骰子' : '异色骰子')
     var isShinyDice = typeLabel === '异色骰子'
     var c = self.data.carnivalCount || 0
     if (isShinyDice) {
@@ -2056,11 +2060,12 @@ Page({
     }
     self.setData({ carnivalCount: c, diceAnim: true })
     setTimeout(function() { self.setData({ diceAnim: false }) }, 750)
-    var icon = isShinyDice ? '🌟' : '🎲'
+    var iconMap = { '词条骰子': '🎲', '异色骰子': '🌟', '奇异骰子': '🔮', '污染骰子': '🧪' }
+    var icon = iconMap[typeLabel] || '🎲'
     var label = icon + ' 龙龙骰·' + typeLabel + (ballName ? '(' + ballName + ')' : '')
     self.addEncounterRecord(label, icon, c, true)
     self.triggerDiceParticles()
-    wx.showToast({ title: label + (isShinyDice ? '（异色龙龙骰+1）' : '（词条不计入面板）'), icon: 'none' })
+    wx.showToast({ title: label + (isShinyDice ? '（异色龙龙骰+1）' : '（不计入面板）'), icon: 'none' })
   },
   onUseDice: function() {
     var self = this
@@ -2096,13 +2101,15 @@ Page({
   },
   onCarnivalLongPress: function() {
     var self = this
+    var diceOptions = ['词条骰子', '异色骰子', '奇异骰子', '污染骰子']
+    var iconMap = { '词条骰子': '🎲', '异色骰子': '🌟', '奇异骰子': '🔮', '污染骰子': '🧪' }
     wx.showActionSheet({
-      alertText: '请选择龙龙骰类型（不占保底和奇遇）',
-      itemList: ['词条骰子', '异色骰子'],
+      alertText: '请选择龙龙骰类型（仅异色计入面板，均不占保底/奇遇）',
+      itemList: diceOptions,
       success: function(typeRes) {
-        var diceType = typeRes.tapIndex === 1 ? '异色骰子' : '词条骰子'
+        var diceType = diceOptions[typeRes.tapIndex] || '词条骰子'
         var isShinyDice = diceType === '异色骰子'
-        var icon = isShinyDice ? '🌟' : '🎲'
+        var icon = iconMap[diceType] || '🎲'
         var ballNames = []
         for (var i = 0; i < self.data.balls.length; i++) {
           ballNames.push(self.data.balls[i].name)
@@ -2133,7 +2140,7 @@ Page({
                   self.addEncounterRecord(label, icon, c, true)
                   self.triggerDiceParticles()
                   self.calcTotalBallUsed()
-                  wx.showToast({ title: label + (isShinyDice ? '（异色龙龙骰+1）' : '（词条不计入面板）'), icon: 'none' })
+                  wx.showToast({ title: label + (isShinyDice ? '（异色龙龙骰+1）' : '（不计入面板）'), icon: 'none' })
                 }
               }
             })
