@@ -3,6 +3,7 @@ var db = null
 var notify = require('../../utils/notify')
 var i18nBehavior = require('../../utils/i18nBehavior')
 var i18n = require('../../utils/i18n')
+var cloudUrl = require('../../utils/cloudUrl')
 
 Page({
   behaviors: [i18nBehavior, require('../../utils/padLayoutBehavior')],
@@ -74,25 +75,49 @@ Page({
       this._countdownTimer = null
     }
   },
-  // 不足24小时的未开始项：距上线 X时X分X秒
+  // 绑定活动日历倒计时：出没中显示剩余倒计时，即将出没显示距开始倒计时
   updateCountdowns: function() {
     var now = Date.now()
-    var list = this.data.upcomingSwarms
-    if (!list || !list.length) return
+    var activeList = this.data.activeSwarms || []
+    var upcomingList = this.data.upcomingSwarms || []
     var changed = false
-    var next = list.map(function(item) {
-      var startTs = item.startTs || 0
-      var text = ''
-      if (startTs && startTs > now && (startTs - now) < 86400000) {
-        text = i18n.formatCountdown(startTs - now, 'countdownOnline', 'countdownEnded') || ''
-      }
-      if (item.countdownText !== text) {
+    var patch = {}
+    if (activeList.length) {
+      var nextActive = activeList.map(function(item) {
+        var endTs = item.endTs || 0
+        var text = ''
+        if (endTs && endTs < 8000000000000000 && endTs > now) {
+          text = i18n.formatCountdown(endTs - now, 'countdownRemain', 'countdownEnded') || ''
+        }
+        if (item.countdownText !== text) {
+          changed = true
+          return Object.assign({}, item, { countdownText: text })
+        }
+        return item
+      })
+      if (changed) patch.activeSwarms = nextActive
+    }
+    var upChanged = false
+    if (upcomingList.length) {
+      var nextUp = upcomingList.map(function(item) {
+        var startTs = item.startTs || 0
+        var text = ''
+        if (startTs && startTs > now) {
+          var prefix = (startTs - now) < 86400000 ? 'countdownOnline' : 'countdownToStart'
+          text = i18n.formatCountdown(startTs - now, prefix, 'countdownEnded') || ''
+        }
+        if (item.countdownText !== text) {
+          upChanged = true
+          return Object.assign({}, item, { countdownText: text })
+        }
+        return item
+      })
+      if (upChanged) {
         changed = true
-        return Object.assign({}, item, { countdownText: text })
+        patch.upcomingSwarms = nextUp
       }
-      return item
-    })
-    if (changed) this.setData({ upcomingSwarms: next })
+    }
+    if (changed) this.setData(patch)
   },
   // 点击精灵卡片展开/收起简介
   toggleDesc: function(e) {
@@ -139,86 +164,203 @@ Page({
       }
     }).catch(function(e) { console.error(e) })
   },
+  _parseCalDay: function(str) {
+    var m = String(str || '').match(/(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/)
+    if (!m) return null
+    return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10))
+  },
+  _matchPresetPet: function(title, pets) {
+    if (!title || !pets || !pets.length) return null
+    var t = String(title).trim()
+    if (!t) return null
+    var tClean = t.replace(/^异色/, '').trim()
+    for (var i = 0; i < pets.length; i++) {
+      var pName = String(pets[i].name || '').trim()
+      if (!pName) continue
+      if (pName === t || pName.replace(/^异色/, '').trim() === tClean) return pets[i]
+    }
+    for (var j = 0; j < pets.length; j++) {
+      var pName2 = String(pets[j].name || '').trim()
+      var pClean2 = pName2.replace(/^异色/, '').trim()
+      if (!pClean2) continue
+      if (tClean.indexOf(pClean2) !== -1 || pClean2.indexOf(tClean) !== -1) return pets[j]
+    }
+    return null
+  },
+  _matchSwarmDoc: function(title, swarmDocs) {
+    if (!title || !swarmDocs || !swarmDocs.length) return null
+    var t = String(title).trim().replace(/^异色/, '').trim()
+    if (!t) return null
+    for (var i = 0; i < swarmDocs.length; i++) {
+      var sName = String(swarmDocs[i].name || '').trim().replace(/^异色/, '').trim()
+      if (!sName) continue
+      if (sName === t || sName.indexOf(t) !== -1 || t.indexOf(sName) !== -1) return swarmDocs[i]
+    }
+    return null
+  },
   loadSwarms: function() {
     var self = this
     if (!db) return
-    db.collection('swarms').orderBy('createTime', 'desc').limit(50).get().then(function(res) {
-      var list = res.data || []
-      var active = []
-      var upcoming = []
+    var pSwarms = db.collection('swarms').orderBy('createTime', 'desc').limit(50).get().catch(function() { return { data: [] } })
+    var pSeasons = db.collection('calendar_seasons').orderBy('start', 'desc').limit(20).get().catch(function() { return { data: [] } })
+    var pPets = db.collection('site_config').doc('shiny_pets').get().catch(function() { return null })
+
+    Promise.all([pSwarms, pSeasons, pPets]).then(function(results) {
+      var swarmDocs = (results[0] && results[0].data) || []
+      var seasons = (results[1] && results[1].data) || []
+      var petRes = results[2]
+      var presetPets = (petRes && petRes.data && petRes.data.pets) ? petRes.data.pets : (wx.getStorageSync('shiny_pets') || [])
+
       var now = new Date()
-      
-      list.forEach(function(item) {
-        // 确保 images 和 forms 字段存在
-        if (!item.images || !Array.isArray(item.images)) {
-          item.images = item.image ? [item.image] : []
-        }
-        if (!item.forms || !Array.isArray(item.forms)) {
-          item.forms = []
-        }
-        // 形态是否异色（仅认「异色」）
-        item.forms = item.forms.map(function(f) {
-          if (typeof f === 'string') {
-            return { label: f, image: '', note: '', isShiny: f.indexOf('异色') >= 0 }
+      var chosenSeason = null
+      var bestSeason = null
+      for (var sIdx = 0; sIdx < seasons.length; sIdx++) {
+        var sd = self._parseCalDay(seasons[sIdx].start)
+        var ed = self._parseCalDay(seasons[sIdx].end)
+        if (!sd || !ed) continue
+        var edLast = new Date(ed.getFullYear(), ed.getMonth(), ed.getDate(), 23, 59, 59)
+        if (now >= sd && now <= edLast) { chosenSeason = seasons[sIdx]; break }
+        var diff = Math.abs(sd - now)
+        if (!bestSeason || diff < bestSeason.diff) bestSeason = { diff: diff, s: seasons[sIdx] }
+      }
+      if (!chosenSeason && bestSeason) chosenSeason = bestSeason.s
+
+      var calSpawnItems = []
+      if (chosenSeason && Array.isArray(chosenSeason.items)) {
+        for (var cIdx = 0; cIdx < chosenSeason.items.length; cIdx++) {
+          var cit = chosenSeason.items[cIdx]
+          if (cit && cit.group === 'spawn' && cit.title && cit.start) {
+            calSpawnItems.push(cit)
           }
-          var label = f.label || ''
-          return {
-            label: label,
-            image: f.image || '',
-            note: f.note || f.desc || '',
-            isShiny: label.indexOf('异色') >= 0
+        }
+      }
+
+      var list = []
+      if (calSpawnItems.length > 0) {
+        // 优先绑定活动日历倒计时里的「大量出没」排期 + 管理后台捕捉预设精灵图
+        for (var k = 0; k < calSpawnItems.length; k++) {
+          var calIt = calSpawnItems[k]
+          var matchedPet = self._matchPresetPet(calIt.title, presetPets)
+          var matchedDoc = self._matchSwarmDoc(calIt.title, swarmDocs)
+          var iconUrls = []
+          if (Array.isArray(calIt.icons) && calIt.icons.length) {
+            iconUrls = calIt.icons.filter(Boolean)
+          } else if (Array.isArray(calIt.images) && calIt.images.length) {
+            iconUrls = calIt.images.filter(Boolean)
+          } else if (calIt.icon) {
+            iconUrls = [calIt.icon]
+          }
+          if (!iconUrls.length && matchedPet) {
+            if (Array.isArray(matchedPet.imgs) && matchedPet.imgs.length) iconUrls = matchedPet.imgs.filter(Boolean)
+            else if (matchedPet.img) iconUrls = [matchedPet.img]
+          }
+          if (!iconUrls.length && matchedDoc) {
+            if (Array.isArray(matchedDoc.images) && matchedDoc.images.length) iconUrls = matchedDoc.images.filter(Boolean)
+            else if (matchedDoc.image) iconUrls = [matchedDoc.image]
+          }
+          var baseObj = matchedDoc ? Object.assign({}, matchedDoc) : {
+            _id: '',
+            id: 'cal_spawn_' + k,
+            location: '大世界',
+            forms: [],
+            desc: ''
+          }
+          baseObj.id = baseObj._id || ('cal_spawn_' + k)
+          baseObj.name = calIt.title
+          baseObj.startDate = calIt.start
+          baseObj.endDate = calIt.end || (chosenSeason && chosenSeason.end) || ''
+          baseObj.startTime = baseObj.startTime || '00:00'
+          baseObj.endTime = baseObj.endTime || '23:59'
+          if (iconUrls.length) {
+            baseObj.image = iconUrls[0]
+            baseObj.images = iconUrls
+          }
+          baseObj.fromCalendar = true
+          list.push(baseObj)
+        }
+      } else {
+        list = swarmDocs.map(function(d) {
+          var copy = Object.assign({}, d)
+          var matchedPet = self._matchPresetPet(copy.name, presetPets)
+          if (matchedPet && !copy.image && matchedPet.img) {
+            copy.image = matchedPet.img
+          }
+          return copy
+        })
+      }
+
+      cloudUrl.convertList(list, ['image', 'images'], function(convertedList) {
+        var finalList = convertedList || list
+        var active = []
+        var upcoming = []
+        var nowMs = now.getTime()
+
+        finalList.forEach(function(item) {
+          if (!item.images || !Array.isArray(item.images) || !item.images.length) {
+            item.images = item.image ? [item.image] : []
+          } else if (item.image && item.images[0] !== item.image) {
+            item.images[0] = item.image
+          }
+          if (!item.forms || !Array.isArray(item.forms)) {
+            item.forms = []
+          }
+          item.forms = item.forms.map(function(f) {
+            if (typeof f === 'string') {
+              return { label: f, image: '', note: '', isShiny: f.indexOf('异色') >= 0 }
+            }
+            var label = f.label || ''
+            return {
+              label: label,
+              image: f.image || '',
+              note: f.note || f.desc || '',
+              isShiny: label.indexOf('异色') >= 0
+            }
+          })
+          var startStr = item.startDate ? item.startDate.replace(/-/g, '/') + ' ' + (item.startTime || '00:00:00') : null
+          var endStr = item.endDate ? item.endDate.replace(/-/g, '/') + ' ' + (item.endTime || '23:59:59') : null
+          var start = startStr ? new Date(startStr) : new Date(0)
+          var end = endStr ? new Date(endStr) : new Date(8640000000000000)
+          item.startTs = start.getTime()
+          item.endTs = end.getTime()
+          item.countdownText = ''
+          item.descExpanded = false
+
+          if (now >= start && now <= end) {
+            item.statusInfo = { statusClass: 'status-active', statusText: i18n.i18n[i18n.getLanguage()].swarmActive || '出没中' }
+            if (item.endTs < 8000000000000000 && item.endTs > nowMs) {
+              item.countdownText = i18n.formatCountdown(item.endTs - nowMs, 'countdownRemain', 'countdownEnded') || ''
+            }
+            active.push(item)
+          } else if (now < start) {
+            item.statusInfo = { statusClass: 'status-upcoming', statusText: i18n.i18n[i18n.getLanguage()].swarmUpcoming || '未开始' }
+            var diff = start.getTime() - nowMs
+            if (diff > 0) {
+              var prefix = diff < 86400000 ? 'countdownOnline' : 'countdownToStart'
+              item.countdownText = i18n.formatCountdown(diff, prefix, 'countdownEnded') || ''
+            }
+            upcoming.push(item)
+          } else {
+            item.statusInfo = { statusClass: 'status-ended', statusText: i18n.i18n[i18n.getLanguage()].countdownEnded || '已结束' }
+            if (self.data.isAdmin) {
+              upcoming.push(item)
+            }
           }
         })
-        // compute status
-        var startStr = item.startDate ? item.startDate.replace(/-/g, '/') + ' ' + (item.startTime || '00:00:00') : null
-        var endStr = item.endDate ? item.endDate.replace(/-/g, '/') + ' ' + (item.endTime || '23:59:59') : null
-        var start = startStr ? new Date(startStr) : new Date(0)
-        var end = endStr ? new Date(endStr) : new Date(8640000000000000)
-        item.startTs = start.getTime()
-        item.endTs = end.getTime()
-        item.countdownText = ''
 
-        if (now >= start && now <= end) {
-          item.statusInfo = { statusClass: 'status-active', statusText: i18n.i18n[i18n.getLanguage()].swarmActive || '出没中' }
-          // 正在出没：简介默认展开
-          item.descExpanded = true
-          active.push(item)
-        } else if (now < start) {
-          item.statusInfo = { statusClass: 'status-upcoming', statusText: i18n.i18n[i18n.getLanguage()].swarmUpcoming || '未开始' }
-          // 不足24小时：距上线 X时X分X秒 + 简介默认展开
-          var diff = start.getTime() - now.getTime()
-          if (diff > 0 && diff < 86400000) {
-            item.countdownText = i18n.formatCountdown(diff, 'countdownOnline', 'countdownEnded') || ''
-            item.descExpanded = true
-          } else {
-            item.descExpanded = false
-          }
-          upcoming.push(item)
-        } else {
-          item.statusInfo = { statusClass: 'status-ended', statusText: i18n.i18n[i18n.getLanguage()].countdownEnded || '已结束' }
-          item.descExpanded = false
-          // We can push to upcoming for admin to see, or a separate ended list.
-          if (self.data.isAdmin) {
-             upcoming.push(item)
-          }
+        function byStart(a, b) {
+          return (a.startTs || 0) - (b.startTs || 0)
         }
-      })
+        active.sort(byStart)
+        upcoming.sort(function(a, b) {
+          var aEnded = a.statusInfo && a.statusInfo.statusClass === 'status-ended'
+          var bEnded = b.statusInfo && b.statusInfo.statusClass === 'status-ended'
+          if (aEnded !== bEnded) return aEnded ? 1 : -1
+          return byStart(a, b)
+        })
 
-      // 按出没时间（开始时间）升序
-      function byStart(a, b) {
-        return (a.startTs || 0) - (b.startTs || 0)
-      }
-      active.sort(byStart)
-      // 即将出没：未开始在前按出没时间升序，已结束（管理员可见）排在最后
-      upcoming.sort(function(a, b) {
-        var aEnded = a.statusInfo && a.statusInfo.statusClass === 'status-ended'
-        var bEnded = b.statusInfo && b.statusInfo.statusClass === 'status-ended'
-        if (aEnded !== bEnded) return aEnded ? 1 : -1
-        return byStart(a, b)
+        self.setData({ activeSwarms: active, upcomingSwarms: upcoming })
+        self._startCountdownTimer()
       })
-
-      self.setData({ activeSwarms: active, upcomingSwarms: upcoming })
-      self._startCountdownTimer()
     }).catch(function(e) { console.error(e) })
   },
   

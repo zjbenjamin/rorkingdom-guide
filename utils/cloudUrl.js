@@ -1,5 +1,5 @@
 function isCloudUrl(url) {
-  return url && url.indexOf('cloud://') === 0
+  return typeof url === 'string' && url.indexOf('cloud://') === 0
 }
 
 function convertList(list, fields, callback) {
@@ -13,10 +13,19 @@ function convertList(list, fields, callback) {
   var map = []
   for (var i = 0; i < result.length; i++) {
     for (var j = 0; j < fields.length; j++) {
-      var val = result[i][fields[j]]
-      if (isCloudUrl(val)) {
-        fileIDs.push(val)
-        map.push({ index: i, field: fields[j], fileID: val })
+      var field = fields[j]
+      var val = result[i][field]
+      if (Array.isArray(val)) {
+        result[i][field] = val.slice()
+        for (var a = 0; a < val.length; a++) {
+          if (isCloudUrl(val[a])) {
+            if (fileIDs.indexOf(val[a]) === -1) fileIDs.push(val[a])
+            map.push({ index: i, field: field, arrIndex: a, fileID: val[a] })
+          }
+        }
+      } else if (isCloudUrl(val)) {
+        if (fileIDs.indexOf(val) === -1) fileIDs.push(val)
+        map.push({ index: i, field: field, arrIndex: -1, fileID: val })
       }
     }
   }
@@ -35,8 +44,13 @@ function convertList(list, fields, callback) {
         }
       }
       for (var m = 0; m < map.length; m++) {
-        if (urlMap[map[m].fileID]) {
-          result[map[m].index][map[m].field] = urlMap[map[m].fileID]
+        var tempUrl = urlMap[map[m].fileID]
+        if (tempUrl) {
+          if (map[m].arrIndex >= 0) {
+            result[map[m].index][map[m].field][map[m].arrIndex] = tempUrl
+          } else {
+            result[map[m].index][map[m].field] = tempUrl
+          }
         }
       }
       callback(result)

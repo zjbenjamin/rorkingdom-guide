@@ -21,6 +21,25 @@
   <view class="capture-overlay" wx:if="{{missAnim}}">
     <image class="miss-anim-badge" src="https://patchwiki.biligame.com/images/rocom/4/4f/20dseynhfc393c6jys1rnwhwwf94xvv.png" mode="aspectFit"></image>
   </view>
+  <!-- 龙龙骰粒子与中心翻转动画 -->
+  <view class="fairytale-overlay" wx:if="{{showDiceParticles}}">
+    <view class="fairytale-particle p1">🎲</view>
+    <view class="fairytale-particle p2">✨</view>
+    <view class="fairytale-particle p3">🎲</view>
+    <view class="fairytale-particle p4">🌟</view>
+    <view class="fairytale-particle p5">🎲</view>
+    <view class="fairytale-particle p6">✨</view>
+    <view class="fairytale-particle p7">🎲</view>
+    <view class="fairytale-particle p8">⭐</view>
+    <view class="fairytale-particle p9">🎲</view>
+    <view class="fairytale-particle p10">✨</view>
+    <view class="fairytale-particle p11">🎲</view>
+    <view class="fairytale-particle p12">🌟</view>
+    <view class="fairytale-glow"></view>
+  </view>
+  <view class="capture-overlay" wx:if="{{diceAnim}}">
+    <view class="dice-anim-badge">🎲</view>
+  </view>
   <view class="container">
     <!-- 异色捕捉主监控屏 -->
      <view class="premium-card monitor-panel tint-blue">
@@ -57,7 +76,7 @@
         <view class="stats-grid">
           <view class="stat-card total">
             <text class="stat-label">{{_l.catchEncounterCount}}</text>
-            <text class="stat-value">{{carnivalCount+luckyBoxCount}}</text>
+            <text class="stat-value">{{luckyBoxCount}}</text>
           </view>
           <view class="stat-card carnival">
             <text class="stat-label">{{_l.catchCarnival}}</text>
@@ -102,17 +121,22 @@
             <text class="btn-text">{{_l.catchLuckyBox}}</text>
           </view>
           <view class="visual-action-btn carnival-btn" bindtap="onAddCarnival" bindlongpress="onCarnivalLongPress">
-            <text class="btn-icon">🎨</text>
+            <text class="btn-icon">🎲</text>
             <text class="btn-text">{{_l.catchCarnival}}</text>
           </view>
           <view class="visual-action-btn capture-btn" bindtap="onResult" bindlongpress="onLongResult" data-r="success">
             <image class="btn-icon-img" src="https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png" mode="aspectFit"></image>
             <text class="btn-text">{{_l.catchSuccessBtn}}</text>
           </view>
-          <view class="visual-action-btn miss-btn" bindtap="onResult" bindlongpress="onLongResult" data-r="miss">
-            <image class="btn-icon-img" src="https://patchwiki.biligame.com/images/rocom/4/4f/20dseynhfc393c6jys1rnwhwwf94xvv.png" mode="aspectFit"></image>
-            <text class="btn-text">{{_l.catchMissBtn}}</text>
+          <view class="visual-action-btn miss-btn" bindtap="onUseDice">
+            <text class="btn-icon">🎲</text>
+            <text class="btn-text">{{_l.catchUseDiceBtn}}</text>
           </view>
+        </view>
+        <view class="help-hint">🎲 {{_l.catchCarnivalHint}}</view>
+        <view wx:if="{{sessionUsedDice}}" style="margin-top: 12rpx; padding: 10rpx 20rpx; border-radius: 12rpx; background: rgba(251, 191, 36, 0.14); border: 1rpx solid rgba(251, 191, 36, 0.45); display: flex; align-items: center; justify-content: center; gap: 10rpx;">
+          <text style="font-size: 24rpx;">🎲</text>
+          <text style="font-size: 22rpx; color: #ffd54f; font-weight: bold;">本次已启用「异色龙龙骰染色」· 不占保底和奇遇 · 生成图将明示</text>
         </view>
       </block>
     </view>
@@ -145,6 +169,14 @@
             <image src="https://r2.image-upload.app/ptImg/yhJkDL2B.png" style="width:48rpx; height:48rpx; margin-right:8rpx;" mode="aspectFit"></image>
             <text class="amount">{{totalWealth}}</text>
           </view>
+        </view>
+      </view>
+
+      <view wx:if="{{wealthSet && lastWealthAdjust}}" style="margin: 0 0 18rpx; padding: 14rpx 20rpx; border-radius: 12rpx; background: rgba(0,0,0,0.22); border: 1rpx solid rgba(255,255,255,0.08); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8rpx; font-size: 22rpx;">
+        <text style="color: #94a3b8;">上次 <text style="color:#e2e8f0; font-weight:bold;">{{lastWealthAdjust.prevWealth}}</text> → 本次 <text style="color:#e2e8f0; font-weight:bold;">{{lastWealthAdjust.newWealth}}</text></text>
+        <view style="display:flex; gap:16rpx;">
+          <text style="color: {{lastWealthAdjust.incVal > 0 ? '#4ade80' : '#64748b'}}; font-weight: bold;">增加 +{{lastWealthAdjust.incVal || 0}}</text>
+          <text style="color: {{lastWealthAdjust.decVal > 0 ? '#f87171' : '#64748b'}}; font-weight: bold;">减少 -{{lastWealthAdjust.decVal || 0}}</text>
         </view>
       </view>
 
@@ -195,6 +227,19 @@
         </view>
       </view>
 
+      <!-- 合成球：若后台配置了合成消耗洛克贝，可选「消耗洛克贝」或「免费合成」 -->
+      <view class="inbound-method-row" wx:if="{{specialTab==='craft'}}">
+        <text class="form-label-mini">合成方式</text>
+        <view class="method-chips">
+          <view class="method-chip {{craftUseRoco?'on':''}}" wx:if="{{selectedCraftCostRoco && selectedCraftPrice > 0}}" bindtap="onToggleCraftUseRoco" data-use="1">
+            消耗洛克贝 ({{selectedCraftPrice}}/个)
+          </view>
+          <view class="method-chip {{!craftUseRoco?'on':''}}" bindtap="onToggleCraftUseRoco" data-use="0">
+            免费合成 · {{_l.catchFreeTag}}
+          </view>
+        </view>
+      </view>
+
       <!-- 获取方式：仅特殊球板块可选「活动 · 赠」 -->
       <view class="inbound-method-row" wx:if="{{specialTab==='cny'}}">
         <text class="form-label-mini">{{_l.catchGetMethod}}</text>
@@ -239,9 +284,9 @@
               <text class="h-name">{{item.ball}}</text>
             </view>
           <text class="h-count">x{{item.count}}</text>
-          <view class="h-cost" wx:if="{{item.cost > 0}}" style="display:flex; align-items:center; gap:4rpx;">
+          <view class="h-cost" wx:if="{{(item.displayCost || item.cost) > 0}}" style="display:flex; align-items:center; gap:4rpx;">
             <image src="https://r2.image-upload.app/ptImg/yhJkDL2B.png" style="width:22rpx; height:22rpx;" mode="aspectFit"></image>
-            <text style="font-size:18rpx; font-weight:700; color:#ffab40;">{{item.cost}}</text>
+            <text style="font-size:18rpx; font-weight:700; color:#ffab40;">{{item.displayCost || item.cost}}</text>
           </view>
           <text class="h-time">{{item.time}}</text>
         </view>
@@ -259,14 +304,14 @@
               <view class="ball-head-text">
                 <text class="ball-name-txt" style="color: {{item.color || '#fff'}};">{{item.name}}</text>
                 <view class="ball-value-tags">
-                  <view class="value-tag roco" wx:if="{{item.price > 0}}">
+                  <view class="value-tag roco" wx:if="{{item.price > 0 || (item.isCraft && item.craftCostRoco && item.craftPrice > 0)}}">
                     <image class="value-icon" src="https://r2.image-upload.app/ptImg/yhJkDL2B.png" mode="aspectFit" />
-                    <text>{{item.price}}</text>
+                    <text>{{item.isCraft && item.craftCostRoco && item.craftPrice > 0 && !item.isBuy ? '合成 ' + item.craftPrice : item.price}}</text>
                   </view>
                   <view class="value-tag cny" wx:if="{{item.cnyPrice > 0}}">
                     <text>{{item.cnyDisplay || item.cnyPrice}}</text>
                   </view>
-                  <view class="value-tag free" wx:if="{{item.price <= 0 && item.cnyPrice <= 0}}">
+                  <view class="value-tag free" wx:if="{{item.price <= 0 && item.cnyPrice <= 0 && !(item.isCraft && item.craftCostRoco && item.craftPrice > 0)}}">
                     <text>{{_l.catchFreeTag}}</text>
                   </view>
                 </view>
@@ -331,6 +376,7 @@
             <text class="log-pet" wx:elif="{{item.pet}}">{{_l.catchTarget}}: {{item.pet}}</text>
             <view class="log-details">
               <text class="log-cost" wx:if="{{item.cost>0}}">{{_l.catchCost}}: 💵{{item.cost}}</text>
+              <text class="log-cost" wx:if="{{item.usedDice}}" style="color:#ffd54f; font-weight:bold;">🎲 异色龙龙骰染色</text>
               <text class="log-cost" wx:if="{{item.contractBall}}" style="color:#d8b4fe;">🔮 {{item.contractBall}}</text>
               <text class="log-time">{{item.time}}</text>
             </view>
@@ -419,6 +465,22 @@
           </view>
         </view>
 
+        <!-- 异色龙龙骰染色：捕捉成功可选/自动同步 -->
+        <view class="result-section" wx:if="{{resultType === 'success'}}">
+          <view class="section-head">
+            <text class="section-icon">🎲</text>
+            <text class="section-title">异色龙龙骰染色</text>
+            <text class="section-title-hint">{{sessionUsedDice ? '已提前扣减 1 颗龙龙骰' : ('当前可用龙龙骰: ' + carnivalCount)}}</text>
+          </view>
+          <view style="display:flex; flex-wrap:wrap; gap:12rpx;">
+            <view catchtap="onToggleResultUsedDice"
+              class="pick-chip {{resultUsedDice ? 'on' : ''}}"
+              style="{{resultUsedDice ? 'background: rgba(251,191,36,0.22); border-color: #fbbf24; color: #ffd54f;' : ''}}">
+              <text>🎲 {{resultUsedDice ? '已启用：异色龙龙骰染色（不占保底和奇遇 · 生成图明示）' : '点击标记：使用异色龙龙骰染色（不占保底和奇遇）'}}</text>
+            </view>
+          </view>
+        </view>
+
         <!-- 契约球：捕捉成功可选 -->
         <view class="result-section" wx:if="{{resultType === 'success' && contractBallPicker.length > 0}}">
           <view class="section-head">
@@ -487,7 +549,6 @@
           </view>
           <!-- 异色精灵预设：赛季筛选 + 点选 -->
           <view class="season-chips" wx:if="{{shinyPets.length > 0}}">
-            <view class="season-chip {{petSeasonFilter==='all'?'on':''}}" bindtap="onPetSeasonFilter" data-s="all">全部</view>
             <view class="season-chip {{petSeasonFilter===item?'on':''}}" wx:for="{{petSeasons}}" wx:key="index" bindtap="onPetSeasonFilter" data-s="{{item}}">{{item}}</view>
           </view>
           <view style="display:flex; flex-wrap:wrap; gap:12rpx; margin-bottom:12rpx;" wx:if="{{shinyPetPickerList.length > 0}}">
@@ -535,7 +596,6 @@
           </view>
           <!-- 异色精灵预设 -->
           <view class="season-chips" wx:if="{{shinyPets.length > 0}}">
-            <view class="season-chip {{petSeasonFilter==='all'?'on':''}}" bindtap="onPetSeasonFilter" data-s="all">全部</view>
             <view class="season-chip {{petSeasonFilter===item?'on':''}}" wx:for="{{petSeasons}}" wx:key="index" bindtap="onPetSeasonFilter" data-s="{{item}}">{{item}}</view>
           </view>
           <view style="display:flex; flex-wrap:wrap; gap:12rpx; margin-bottom:12rpx;" wx:if="{{shinyPetPickerList.length > 0}}">
@@ -597,18 +657,48 @@
       </view>
       <view class="modal-body">
         <view class="check-mode-tabs">
-          <view class="check-mode-tab {{adjustType === 'add' ? 'on' : ''}}" catchtap="onAdjustTypeSwitch" data-type="add">{{_l.catchAddAsset}}</view>
-          <view class="check-mode-tab {{adjustType === 'sub' ? 'on' : ''}}" catchtap="onAdjustTypeSwitch" data-type="sub">{{_l.catchSubAsset}}</view>
+          <view class="check-mode-tab {{adjustType === 'current' ? 'on' : ''}}" catchtap="onAdjustTypeSwitch" data-type="current">现有资产</view>
           <view class="check-mode-tab {{adjustType === 'encounter10' ? 'on' : ''}}" catchtap="onAdjustTypeSwitch" data-type="encounter10">{{_l.catch10Encounters}}</view>
         </view>
-        <view class="form-group">
-          <text class="form-label">{{adjustType === 'encounter10' ? _l.catchEncounterGain : _l.catchAdjustAmount}}</text>
-          <input class="form-input" type="number" placeholder="{{adjustType === 'encounter10' ? _l.catchAdjustAmountPlaceholder10 : _l.catchAdjustAmountPlaceholder}}" value="{{adjustAmount}}" bindinput="onAdjustAmountInput" />
-        </view>
-        <view class="form-group" wx:if="{{adjustType !== 'encounter10'}}">
-          <text class="form-label">{{_l.catchAdjustRemark}}</text>
-          <input class="form-input" placeholder="{{_l.catchAdjustRemarkPlaceholder}}" value="{{adjustRemark}}" bindinput="onAdjustRemarkInput" />
-        </view>
+
+        <block wx:if="{{adjustType === 'current'}}">
+          <view style="display: grid; grid-template-columns: 1fr 1fr; gap: 16rpx; margin-bottom: 24rpx; padding: 20rpx; background: rgba(0,0,0,0.28); border-radius: 16rpx; border: 1rpx solid rgba(255,255,255,0.08);">
+            <view style="display:flex; flex-direction:column; gap:6rpx;">
+              <text style="font-size:22rpx; color:#94a3b8;">上一次洛克贝数值</text>
+              <text style="font-size:30rpx; font-weight:bold; color:#e2e8f0;">{{totalWealth}}</text>
+            </view>
+            <view style="display:flex; flex-direction:column; gap:6rpx;">
+              <text style="font-size:22rpx; color:#94a3b8;">本次输入洛克贝数值</text>
+              <text style="font-size:30rpx; font-weight:bold; color:#00d4ff;">{{adjustAmount !== '' ? adjustInputVal : '待输入'}}</text>
+            </view>
+            <view style="display:flex; flex-direction:column; gap:6rpx; padding-top:12rpx; border-top:1rpx solid rgba(255,255,255,0.06);">
+              <text style="font-size:22rpx; color:#94a3b8;">自动计算增加值</text>
+              <text style="font-size:28rpx; font-weight:bold; color:{{adjustIncreaseVal > 0 ? '#4ade80' : '#64748b'}};">+{{adjustIncreaseVal}}</text>
+            </view>
+            <view style="display:flex; flex-direction:column; gap:6rpx; padding-top:12rpx; border-top:1rpx solid rgba(255,255,255,0.06);">
+              <text style="font-size:22rpx; color:#94a3b8;">自动计算减少值</text>
+              <text style="font-size:28rpx; font-weight:bold; color:{{adjustDecreaseVal > 0 ? '#f87171' : '#64748b'}};">-{{adjustDecreaseVal}}</text>
+            </view>
+          </view>
+          <view wx:if="{{lastWealthAdjust}}" style="margin-bottom: 20rpx; font-size: 22rpx; color: #94a3b8;">
+            上次记录：{{lastWealthAdjust.prevWealth}} → {{lastWealthAdjust.newWealth}}（增加 +{{lastWealthAdjust.incVal || 0}} / 减少 -{{lastWealthAdjust.decVal || 0}}）
+          </view>
+          <view class="form-group">
+            <text class="form-label">本次现有洛克贝</text>
+            <input class="form-input" type="number" placeholder="输入当前现有洛克贝数值" value="{{adjustAmount}}" bindinput="onAdjustAmountInput" />
+          </view>
+          <view class="form-group">
+            <text class="form-label">{{_l.catchAdjustRemark}}</text>
+            <input class="form-input" placeholder="{{_l.catchAdjustRemarkPlaceholder}}" value="{{adjustRemark}}" bindinput="onAdjustRemarkInput" />
+          </view>
+        </block>
+
+        <block wx:else>
+          <view class="form-group">
+            <text class="form-label">{{_l.catchEncounterGain}}</text>
+            <input class="form-input" type="number" placeholder="{{_l.catchAdjustAmountPlaceholder10}}" value="{{adjustAmount}}" bindinput="onAdjustAmountInput" />
+          </view>
+        </block>
       </view>
       <view class="modal-footer">
         <button class="modal-cancel" catchtap="closeWealthAdjustModal">{{_l.catchModalCancel}}</button>

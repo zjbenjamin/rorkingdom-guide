@@ -242,11 +242,83 @@ Page({
       self.setData({ merchantCard: null, swarmItem: null })
       return
     }
-    // ── 大量出没：只取最新一条（进行中优先，否则最近将开的） ──
-    db.collection('swarms').orderBy('createTime', 'desc').limit(50).get()
-      .then(function(res) {
+    // ── 大量出没：优先绑定活动日历倒计时里的大量出没排期 + 捕捉预设精灵图 ──
+    Promise.all([
+      db.collection('swarms').orderBy('createTime', 'desc').limit(50).get().catch(function() { return { data: [] } }),
+      db.collection('calendar_seasons').orderBy('start', 'desc').limit(20).get().catch(function() { return { data: [] } }),
+      db.collection('site_config').doc('shiny_pets').get().catch(function() { return null })
+    ]).then(function(results) {
         var now = Date.now()
-        var rows = res.data || []
+        var swarmDocs = (results[0] && results[0].data) || []
+        var seasons = (results[1] && results[1].data) || []
+        var petRes = results[2]
+        var presetPets = (petRes && petRes.data && petRes.data.pets) ? petRes.data.pets : (wx.getStorageSync('shiny_pets') || [])
+        var parseDay = function(str) {
+          var m = String(str || '').match(/(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/)
+          return m ? new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10)) : null
+        }
+        var matchPet = function(title) {
+          if (!title || !presetPets.length) return null
+          var t = String(title).trim().replace(/^异色/, '').trim()
+          for (var i = 0; i < presetPets.length; i++) {
+            var pn = String(presetPets[i].name || '').trim().replace(/^异色/, '').trim()
+            if (pn && (pn === t || t.indexOf(pn) !== -1 || pn.indexOf(t) !== -1)) return presetPets[i]
+          }
+          return null
+        }
+        var matchDoc = function(title) {
+          if (!title || !swarmDocs.length) return null
+          var t = String(title).trim().replace(/^异色/, '').trim()
+          for (var i = 0; i < swarmDocs.length; i++) {
+            var sn = String(swarmDocs[i].name || '').trim().replace(/^异色/, '').trim()
+            if (sn && (sn === t || t.indexOf(sn) !== -1 || sn.indexOf(t) !== -1)) return swarmDocs[i]
+          }
+          return null
+        }
+        var chosenSeason = null, bestSeason = null, nowDate = new Date()
+        for (var si = 0; si < seasons.length; si++) {
+          var sd = parseDay(seasons[si].start), ed = parseDay(seasons[si].end)
+          if (!sd || !ed) continue
+          var edLast = new Date(ed.getFullYear(), ed.getMonth(), ed.getDate(), 23, 59, 59)
+          if (nowDate >= sd && nowDate <= edLast) { chosenSeason = seasons[si]; break }
+          var diff = Math.abs(sd - nowDate)
+          if (!bestSeason || diff < bestSeason.diff) bestSeason = { diff: diff, s: seasons[si] }
+        }
+        if (!chosenSeason && bestSeason) chosenSeason = bestSeason.s
+        var rows = []
+        if (chosenSeason && Array.isArray(chosenSeason.items)) {
+          for (var ci = 0; ci < chosenSeason.items.length; ci++) {
+            var cit = chosenSeason.items[ci]
+            if (cit && cit.group === 'spawn' && cit.title && cit.start) {
+              var mp = matchPet(cit.title)
+              var md = matchDoc(cit.title)
+              var imgs = (Array.isArray(cit.icons) && cit.icons.length) ? cit.icons.filter(Boolean) : ((Array.isArray(cit.images) && cit.images.length) ? cit.images.filter(Boolean) : (cit.icon ? [cit.icon] : []))
+              if (!imgs.length && mp) {
+                if (Array.isArray(mp.imgs) && mp.imgs.length) imgs = mp.imgs.filter(Boolean)
+                else if (mp.img) imgs = [mp.img]
+              }
+              if (!imgs.length && md) {
+                if (Array.isArray(md.images) && md.images.length) imgs = md.images.filter(Boolean)
+                else if (md.image) imgs = [md.image]
+              }
+              var img = imgs[0] || ''
+              rows.push({
+                _id: (md && md._id) || ('cal_spawn_' + ci),
+                name: cit.title,
+                startDate: cit.start,
+                endDate: cit.end || chosenSeason.end || '',
+                startTime: (md && md.startTime) || '00:00',
+                endTime: (md && md.endTime) || '23:59',
+                image: img,
+                images: imgs,
+                location: (md && md.location) || '大世界',
+                desc: (md && md.desc) || '',
+                forms: (md && md.forms) || []
+              })
+            }
+          }
+        }
+        if (!rows.length) rows = swarmDocs
         var parsed = []
         for (var i = 0; i < rows.length; i++) {
           var s = rows[i]
@@ -887,7 +959,7 @@ Page({
     }
 
     // 检测视频平台类型
-    var isBilibili = /bilibili\.com|b23\.tv/i.test(url) || /BV[a-zA-Z0-9]{10,}/.test(url)
+    var isBilibili = /bilibili\.com|b23\.tv/i.test(url) || /BV[0-9A-Za-z]{10}/i.test(url)
     var isWeibo = /weibo\.(com|cn)/i.test(url)
     var isDouyin = /douyin\.com/i.test(url)
     var isKuaishou = /kuaishou\.com/i.test(url)
@@ -898,6 +970,28 @@ Page({
     // 可以播放或解析的平台
     var isSupported = isBilibili || isWeibo || isDouyin || isKuaishou || isXiaohongshu || isTencent || isYoutube
 
+    // 视频号在微信外无法解析播放，直接给复制链接引导
+    var isWechatChannels = /finder\.video\.qq\.com|channels\.weixin\.qq\.com/i.test(url)
+    if (isWechatChannels) {
+      wx.showModal({
+        title: '视频号视频',
+        content: '视频号内容需在微信中观看，可复制链接到微信中打开。',
+        confirmText: '复制链接',
+        cancelText: '取消',
+        success: function(res) {
+          if (res.confirm) {
+            wx.setClipboardData({
+              data: url,
+              success: function() {
+                wx.showToast({ title: '已复制，去微信中打开', icon: 'none' })
+              }
+            })
+          }
+        }
+      })
+      return
+    }
+
     if (!isSupported) {
       self._openVideoFallback(url, '未支持的平台')
       return
@@ -905,11 +999,12 @@ Page({
 
     wx.showLoading({ title: '解析视频中...' })
     
-    // 构造请求参数，优先提取 B站 bvid 以保证向后兼容，其他平台传整个 url
+    // 构造请求参数：能抽到 BV 号就走 B站 API（与直接填 BV 同路径，比整链抓页更稳）
     var callData = {}
-    var bvMatch = url.match(/BV[a-zA-Z0-9]{10,}/)
+    var compactUrl = String(url || '').replace(/[\s\u200b\ufeff\u00a0\u3000]+/g, '')
+    var bvMatch = compactUrl.match(/BV([0-9A-Za-z]{10})/i)
     if (bvMatch) {
-      callData.bvid = bvMatch[0]
+      callData.bvid = 'BV' + bvMatch[1]
     } else {
       callData.url = url
     }
@@ -934,6 +1029,9 @@ Page({
           })
         } else {
           var errMsg = res.result ? res.result.msg : '解析失败'
+          if (errMsg && /Unexpected token|JSON|position\s*\d|SyntaxError|request was banned|banned/i.test(errMsg)) {
+            errMsg = /banned/i.test(errMsg) ? 'B站风控拦截，请稍后重试' : '接口限流或返回异常'
+          }
           self._openVideoFallback(url, errMsg)
         }
       },

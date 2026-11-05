@@ -10,22 +10,104 @@
         {{subscribedActivity ? _l.activitySubscribed + '(' + subscribeCount + ')' : _l.activitySubscribeBtn}}
       </view>
     </view>
+    <!-- 活动倒计时板块（赛季日历海报） -->
+    <view class="season-board" wx:if="{{seasonBoard}}">
+      <view class="board-frame">
+        <view class="board-head" bindtap="toggleBoard">
+          <view class="board-head-left">
+            <view class="board-cal-icon"><text class="board-cal-glyph">📅</text></view>
+            <text class="board-title">{{_l.countdownTitle}}</text>
+          </view>
+          <view class="board-head-right">
+            <text class="board-season-chip">{{seasonBoard.name}}</text>
+            <text class="board-arrow">{{boardExpanded ? '▲' : '▼'}}</text>
+          </view>
+        </view>
+        <view class="board-panel" wx:if="{{boardExpanded}}">
+          <view class="board-filter-bar" wx:if="{{boardTotalCount > 0}}">
+            <view class="board-filter-tabs">
+              <view class="board-filter-tab {{boardFilter === 'live' ? 'active' : ''}}" catchtap="onBoardFilter" data-filter="live">正在活动期 ({{boardLiveCount}})</view>
+              <view class="board-filter-tab {{boardFilter === 'all' ? 'active' : ''}}" catchtap="onBoardFilter" data-filter="all">全部排期 ({{boardTotalCount}})</view>
+            </view>
+            <text class="board-filter-hint">点击活动条展开倒计时</text>
+          </view>
+          <view class="gantt-wrap">
+            <view class="gantt-inner">
+              <view class="gantt-months">
+                <view class="gantt-month-cell" wx:for="{{ganttMonths}}" wx:key="label" style="left: {{item.left}}%; width: {{item.width}}%;">
+                  <text class="gantt-month-text">{{item.label}}</text>
+                </view>
+              </view>
+              <view class="gantt-grid">
+                <view class="gantt-gridline" wx:for="{{ganttMonths}}" wx:key="label" style="left: {{item.left}}%;"></view>
+              </view>
+              <block wx:for="{{ganttGroups}}" wx:key="key" wx:for-item="grp">
+                <view class="gantt-group-title">
+                  <text class="gantt-group-text {{grp.cls}}">{{grp.label}}</text>
+                </view>
+                <view class="gantt-rows">
+                  <view class="gantt-row-wrap" wx:for="{{grp.bars}}" wx:for-item="bar" wx:key="id">
+                    <view class="gantt-row">
+                      <view class="gantt-bar {{bar.cls}} {{expandedBarId === bar.id ? 'expanded' : ''}}" style="margin-left: {{bar.left}}%; min-width: {{bar.width}}%; max-width: {{100 - bar.left}}%;" catchtap="onTapGanttBar" data-id="{{bar.id}}">
+                        <view class="gantt-bar-icons" wx:if="{{bar.icons && bar.icons.length}}">
+                          <image wx:for="{{bar.icons}}" wx:for-item="bIcon" wx:key="index" class="gantt-bar-icon" src="{{bIcon}}" mode="aspectFill" />
+                        </view>
+                        <image wx:elif="{{bar.icon}}" class="gantt-bar-icon" src="{{bar.icon}}" mode="aspectFill" />
+                        <text class="gantt-bar-label">{{bar.title}} {{bar.dateText}}</text>
+                        <text class="gantt-bar-arrow">{{expandedBarId === bar.id ? '▲' : '▼'}}</text>
+                      </view>
+                    </view>
+                    <view class="cd-card cd-inline cd-{{boardCountdowns[bar.id].state}}" wx:if="{{expandedBarId === bar.id}}">
+                      <view class="cd-left-row">
+                        <view class="cd-icons-group" wx:if="{{bar.icons && bar.icons.length}}">
+                          <image wx:for="{{bar.icons}}" wx:for-item="bIcon" wx:key="index" class="cd-icon" src="{{bIcon}}" mode="aspectFill" catchtap="previewRichImage" data-src="{{bIcon}}" />
+                        </view>
+                        <image wx:elif="{{bar.icon}}" class="cd-icon" src="{{bar.icon}}" mode="aspectFill" catchtap="previewRichImage" data-src="{{bar.icon}}" />
+                        <view class="cd-left">
+                          <text class="cd-title">{{bar.title}}</text>
+                          <text class="cd-dates">{{bar.groupLabel}} · {{bar.dateText}}</text>
+                        </view>
+                      </view>
+                      <text class="cd-badge">{{boardCountdowns[bar.id].text}}</text>
+                    </view>
+                  </view>
+                </view>
+              </block>
+            </view>
+          </view>
+          <text class="board-note">{{_l.countdownNote}}</text>
+        </view>
+      </view>
+    </view>
+
     <view class="tabs">
       <view class="tab {{status===item?'on':''}}" wx:for="{{statuses}}" wx:key="*this" bindtap="onStatus" data-s="{{item}}">{{item}}</view>
     </view>
     <view class="act-list">
-      <view class="act-card headline" wx:for="{{filtered}}" wx:key="id" wx:if="{{item.status==='置顶'}}">
+      <view class="act-card headline" wx:for="{{filtered}}" wx:key="id" wx:if="{{item.pinned || item.status==='置顶'}}">
         <view class="act-header" bindtap="onExpand" data-id="{{item.id}}">
-          
-          <view class="act-badges">
-            <image lazy-load wx:if="{{item.subType === 'collab' && item.collabLogo}}" src="{{item.collabLogo}}" mode="aspectFit" class="collab-logo" style="width:100rpx; height:40rpx; border-radius:4rpx; margin-right:10rpx;" />
-            <view class="badge badge-top" wx:if="{{item.pinned}}">📌 置顶</view>
-            <view class="badge badge-official" wx:if="{{item.subType === 'regular'}}">常规</view>
-            <view class="badge badge-soon" wx:if="{{item.subType === 'season'}}">赛季</view>
-            <view class="badge badge-official" wx:if="{{item.subType === 'collab'}}">联动</view>
+          <view class="act-header-top">
+            <view class="act-badges">
+              <image lazy-load wx:if="{{item.subType === 'collab' && item.collabLogo}}" src="{{item.collabLogo}}" mode="aspectFit" class="collab-logo" style="width:100rpx; height:40rpx; border-radius:4rpx; margin-right:10rpx;" />
+              <view class="badge badge-top" wx:if="{{item.pinned || item.status === '置顶'}}">📌 置顶</view>
+              <view class="badge badge-go" wx:if="{{item.dateStatus === '进行中' && item.hasDate}}">进行中</view>
+              <view class="badge badge-soon" wx:if="{{item.dateStatus === '即将开始'}}">即将开始</view>
+              <view class="badge badge-ended" wx:if="{{item.dateStatus === '已结束'}}">已结束</view>
+              <view class="badge badge-official" wx:if="{{item.subType === 'regular'}}">常规</view>
+              <view class="badge badge-soon" wx:if="{{item.subType === 'season'}}">赛季</view>
+              <view class="badge badge-official" wx:if="{{item.subType === 'collab'}}">联动</view>
+            </view>
+            <text class="act-expand-hint">{{expandedId === item.id ? (_l.clickToCollapse || '收起') + ' ▲' : (_l.clickToExpand || '点击展开全文') + ' ▼'}}</text>
           </view>
-
           <text class="act-title headline-title">{{item.title}}</text>
+          <view class="act-footer" wx:if="{{item.rewards.length > 0 || item.start || item.end}}">
+            <view class="act-rewards" wx:if="{{item.rewards.length > 0}}">
+              <text class="act-reward" wx:for="{{item.rewards}}" wx:for-item="r" wx:key="*this">{{r}}</text>
+            </view>
+            <text class="act-date" wx:if="{{item.start || item.end}}">{{item.start}} {{item.startTime || ''}}~{{item.end}} {{item.endTime || ''}}</text>
+          </view>
+        </view>
+        <view class="act-body" wx:if="{{expandedId === item.id}}">
           <block wx:if="{{item.richContent && item.richContent.length > 0}}">
             <view class="act-rich-content">
               <block wx:for="{{item.richContent}}" wx:for-item="block" wx:for-index="bi" wx:key="bi">
@@ -119,146 +201,144 @@
             </view>
           </block>
           <view class="act-summary" wx:else><rich-text nodes="{{item.desc}}" /></view>
+          <view class="act-source" wx:if="{{item.source}}">{{_l.sourceLabel}}{{item.source}}</view>
         </view>
-        <view class="act-source" wx:if="{{item.source}}">{{_l.sourceLabel}}{{item.source}}</view>
-        <view class="act-footer" wx:if="{{item.rewards.length > 0 || item.start}}">
-          <view class="act-rewards" wx:if="{{item.rewards.length > 0}}">
-            <text class="act-reward" wx:for="{{item.rewards}}" wx:for-item="r" wx:key="*this">{{r}}</text>
-          </view>
-          <text class="act-date" wx:if="{{item.start}}">{{item.start}} {{item.startTime || ''}}~{{item.end}} {{item.endTime || ''}}</text>
-        </view>
-        
-          
       </view>
     </view>
-    <view class="section-title" wx:if="{{status==='全部'}}">
+    <view class="section-title" wx:if="{{hasPinnedInFiltered && hasNormalInFiltered}}">
       <text class="section-line"></text>
       <text class="section-text">{{_l.otherActivities}}</text>
       <text class="section-line"></text>
     </view>
     <view class="act-list">
-      <view class="act-card" wx:for="{{filtered}}" wx:key="id" wx:if="{{item.status!=='置顶'}}">
-        
-        <view class="act-badges">
-          <image lazy-load wx:if="{{item.subType === 'collab' && item.collabLogo}}" src="{{item.collabLogo}}" mode="aspectFit" class="collab-logo" style="width:100rpx; height:40rpx; border-radius:4rpx; margin-right:10rpx;" />
-          <view class="badge badge-go" wx:if="{{item.subType === 'regular'}}">常规</view>
-          <view class="badge badge-soon" wx:if="{{item.subType === 'season'}}">赛季</view>
-          <view class="badge badge-top" wx:if="{{item.subType === 'collab'}}">联动</view>
-
+      <view class="act-card" wx:for="{{filtered}}" wx:key="id" wx:if="{{!item.pinned && item.status!=='置顶'}}">
+        <view class="act-header" bindtap="onExpand" data-id="{{item.id}}">
+          <view class="act-header-top">
+            <view class="act-badges">
+              <image lazy-load wx:if="{{item.subType === 'collab' && item.collabLogo}}" src="{{item.collabLogo}}" mode="aspectFit" class="collab-logo" style="width:100rpx; height:40rpx; border-radius:4rpx; margin-right:10rpx;" />
+              <view class="badge badge-go" wx:if="{{item.dateStatus === '进行中'}}">进行中</view>
+              <view class="badge badge-soon" wx:if="{{item.dateStatus === '即将开始'}}">即将开始</view>
+              <view class="badge badge-ended" wx:if="{{item.dateStatus === '已结束'}}">已结束</view>
+              <view class="badge badge-official" wx:if="{{item.subType === 'regular'}}">常规</view>
+              <view class="badge badge-soon" wx:if="{{item.subType === 'season'}}">赛季</view>
+              <view class="badge badge-top" wx:if="{{item.subType === 'collab'}}">联动</view>
+            </view>
+            <text class="act-expand-hint">{{expandedId === item.id ? (_l.clickToCollapse || '收起') + ' ▲' : (_l.clickToExpand || '点击展开全文') + ' ▼'}}</text>
+          </view>
+          <text class="act-title">{{item.title}}</text>
+          <view class="act-footer" wx:if="{{item.rewards.length > 0 || item.start || item.end}}">
+            <view class="act-rewards" wx:if="{{item.rewards.length > 0}}">
+              <text class="act-reward" wx:for="{{item.rewards}}" wx:for-item="r" wx:key="*this">{{r}}</text>
+            </view>
+            <text class="act-date" wx:if="{{item.start || item.end}}">{{item.start}} {{item.startTime || ''}}~{{item.end}} {{item.endTime || ''}}</text>
+          </view>
         </view>
-        <text class="act-title">{{item.title}}</text>
-        <block wx:if="{{item.richContent && item.richContent.length > 0}}">
-          <view class="act-rich-content">
-            <block wx:for="{{item.richContent}}" wx:for-item="block" wx:for-index="bi" wx:key="bi">
-              <view wx:if="{{block.type === 'music'}}" class="rich-music-block {{item.subType === 'collab' ? 'collab-theme' : ''}} {{currentPlayUrl === block.url && isPlaying ? 'playing' : ''}}" catchtap="playSong" data-url="{{block.url}}" data-name="{{block.name || '推荐单曲'}}" data-cover="{{block.cover || ''}}">
-                <image lazy-load wx:if="{{block.cover}}" class="music-cover" src="{{block.cover}}" mode="aspectFill" />
-                <view class="music-icon {{currentPlayUrl === block.url && isPlaying ? 'rotating' : ''}} {{item.subType === 'collab' && (block.cover || item.image) ? 'collab-icon-box' : ''}}">
-                  <image lazy-load wx:if="{{item.subType === 'collab' && (block.cover || item.image)}}" src="{{block.cover || item.image}}" class="collab-logo-image circle" mode="aspectFill" />
-                  <block wx:else>🎵</block>
-                </view>
-                <view class="music-info">
-                  <text class="music-name">{{block.name || '推荐单曲'}}</text>
-                  <text class="music-url">{{block.url}}</text>
-                </view>
-                <view class="music-eq">
-                  <view></view>
-                  <view></view>
-                  <view></view>
-                </view>
-                <text class="music-play-btn">{{currentPlayUrl === block.url && isPlaying ? '暂停' : '点我听歌'}}</text>
-              </view>
-              <view wx:elif="{{block.type === 'iframe'}}" class="rich-iframe-block">
-                <text class="iframe-icon">🌐</text>
-                <view class="iframe-info">
-                  <text class="iframe-name">{{block.name || '外部网页'}}</text>
-                  <text class="iframe-url">{{block.url}}</text>
-                </view>
-                <view class="iframe-actions">
-                  <view class="iframe-btn open" catchtap="openIframe" data-url="{{block.url}}">打开</view>
-                  <view class="iframe-btn copy" catchtap="copyIframe" data-url="{{block.url}}">复制</view>
-                </view>
-              </view>
-              <view wx:elif="{{block.type === 'quote'}}" class="rich-quote-block">
-                <text class="quote-text">{{block.content}}</text>
-              </view>
-              <view wx:elif="{{block.type === 'swiper'}}" class="rich-swiper-block">
-                <swiper class="rich-swiper" autoplay="true" interval="3000" duration="500" circular="true" style="height: {{richSwiperHeights[item.id + '_' + bi] || 0}}rpx;">
-                  <swiper-item wx:for="{{block.urls}}" wx:for-item="url" wx:for-index="ui" wx:key="ui">
-                    <image lazy-load src="{{url}}" mode="widthFix" class="rich-swiper-image" catchtap="previewRichImage" data-src="{{url}}" bindload="onRichSwiperLoad" data-hkey="{{item.id}}_{{bi}}" />
-                  </swiper-item>
-                </swiper>
-              </view>
-              <view wx:elif="{{block.type === 'video' && block.isDirectMp4}}" class="rich-video-inline {{item.subType === 'collab' ? 'collab-theme' : ''}}">
-                <video class="rich-inline-video" src="{{block.url}}" controls show-center-play-btn object-fit="contain" />
-              </view>
-              <view wx:elif="{{block.type === 'video'}}" class="rich-video-block {{item.subType === 'collab' ? 'collab-theme' : ''}}" catchtap="openVideo" data-url="{{block.url}}" data-name="{{block.name || '视频'}}">
-                <image lazy-load wx:if="{{block.cover && item.subType !== 'collab'}}" class="video-thumb" src="{{block.cover}}" mode="aspectFill" />
-                <view wx:else class="video-icon {{item.subType === 'collab' && (block.cover || item.image) ? 'collab-icon-box' : ''}}">
-                  <image lazy-load wx:if="{{item.subType === 'collab' && (block.cover || item.image)}}" src="{{block.cover || item.image}}" class="collab-logo-image rounded" mode="aspectFill" />
-                  <block wx:else>
-                    <block wx:if="{{block.platform === 'bilibili'}}">📺</block>
-                    <block wx:elif="{{block.platform === 'weibo'}}">🎬</block>
-                    <block wx:elif="{{block.platform === 'douyin'}}">🎵</block>
-                    <block wx:elif="{{block.platform === 'kuaishou'}}">📹</block>
-                    <block wx:elif="{{block.platform === 'tencent'}}">📽️</block>
-                    <block wx:elif="{{block.platform === 'xiaohongshu'}}">📕</block>
-                    <block wx:elif="{{block.platform === 'youtube'}}">🔴</block>
-                    <block wx:else>🎥</block>
-                  </block>
-                </view>
-                <view class="video-info">
-                  <text class="video-name">{{block.name || block.platformName + '视频'}}</text>
-                  <text class="video-platform">{{block.platformName || '在线视频'}}</text>
-                </view>
-                <text class="video-play-btn">▶ 观看</text>
-              </view>
-              <view wx:elif="{{block.type === 'table'}}" class="rich-table-block">
-                <view class="rich-table">
-                  <view class="rich-table-row rich-table-header">
-                    <view class="rich-table-cell" wx:for="{{block.headers}}" wx:key="index">{{item}}</view>
+        <view class="act-body" wx:if="{{expandedId === item.id}}">
+          <block wx:if="{{item.richContent && item.richContent.length > 0}}">
+            <view class="act-rich-content">
+              <block wx:for="{{item.richContent}}" wx:for-item="block" wx:for-index="bi" wx:key="bi">
+                <view wx:if="{{block.type === 'music'}}" class="rich-music-block {{item.subType === 'collab' ? 'collab-theme' : ''}} {{currentPlayUrl === block.url && isPlaying ? 'playing' : ''}}" catchtap="playSong" data-url="{{block.url}}" data-name="{{block.name || '推荐单曲'}}" data-cover="{{block.cover || ''}}">
+                  <image lazy-load wx:if="{{block.cover}}" class="music-cover" src="{{block.cover}}" mode="aspectFill" />
+                  <view class="music-icon {{currentPlayUrl === block.url && isPlaying ? 'rotating' : ''}} {{item.subType === 'collab' && (block.cover || item.image) ? 'collab-icon-box' : ''}}">
+                    <image lazy-load wx:if="{{item.subType === 'collab' && (block.cover || item.image)}}" src="{{block.cover || item.image}}" class="collab-logo-image circle" mode="aspectFill" />
+                    <block wx:else>🎵</block>
                   </view>
-                  <view class="rich-table-row" wx:for="{{block.rows}}" wx:for-item="row" wx:key="index">
-                    <view class="rich-table-cell" wx:for="{{row}}" wx:for-item="cell" wx:key="index">{{cell}}</view>
+                  <view class="music-info">
+                    <text class="music-name">{{block.name || '推荐单曲'}}</text>
+                    <text class="music-url">{{block.url}}</text>
+                  </view>
+                  <view class="music-eq">
+                    <view></view>
+                    <view></view>
+                    <view></view>
+                  </view>
+                  <text class="music-play-btn">{{currentPlayUrl === block.url && isPlaying ? '暂停' : '点我听歌'}}</text>
+                </view>
+                <view wx:elif="{{block.type === 'iframe'}}" class="rich-iframe-block">
+                  <text class="iframe-icon">🌐</text>
+                  <view class="iframe-info">
+                    <text class="iframe-name">{{block.name || '外部网页'}}</text>
+                    <text class="iframe-url">{{block.url}}</text>
+                  </view>
+                  <view class="iframe-actions">
+                    <view class="iframe-btn open" catchtap="openIframe" data-url="{{block.url}}">打开</view>
+                    <view class="iframe-btn copy" catchtap="copyIframe" data-url="{{block.url}}">复制</view>
                   </view>
                 </view>
-              </view>
-              <view wx:elif="{{block.type === 'image'}}" class="rich-image-block" catchtap="previewRichImage" data-src="{{block.url}}">
-                <image lazy-load class="rich-image" src="{{block.url}}" mode="widthFix" />
-              </view>
-              <view wx:elif="{{block.type === 'divider'}}" class="divider-block">
-                <view class="divider-line {{block.style}}"></view>
-              </view>
-              <view wx:elif="{{block.type === 'link' && block.isVideo}}" class="rich-link-block video-link" catchtap="openVideo" data-url="{{block.url}}" data-name="{{block.text}}">
-                <text class="link-icon">📺</text>
-                <text class="link-text">{{block.text}}</text>
-                <text class="link-badge">点击观看</text>
-              </view>
-              <view wx:elif="{{block.type === 'link'}}" class="rich-link-block" catchtap="openLink" data-url="{{block.url}}" data-text="{{block.text}}">
-                <text class="link-icon">🔗</text>
-                <text class="link-text">{{block.text}}</text>
-                <text class="link-badge">点击复制</text>
-              </view>
-              <view wx:elif="{{block.type === 'attachment'}}" class="rich-link-block attachment-link" catchtap="downloadAttachment" data-url="{{block.url}}" data-name="{{block.name}}" data-size="{{block.sizeText}}">
-                <text class="link-icon">📎</text>
-                <text class="link-text">{{block.name}} ({{block.sizeText}})</text>
-                <text class="link-badge">下载预览</text>
-              </view>
-              <view wx:else class="rich-text-block" style="font-size:{{block.size}}rpx;color:{{block.color}};font-weight:{{block.weight || 'normal'}};font-style:{{block.style || 'normal'}};{{block.fontFamily && block.fontFamily !== 'sans-serif' ? 'font-family:' + block.fontFamily + ';' : ''}}">
-                <rich-text nodes="{{block.html || block.content}}" />
-              </view>
-            </block>
-          </view>
-        </block>
-        <view class="act-desc" wx:else><rich-text nodes="{{item.desc}}" /></view>
-        <view class="act-source" wx:if="{{item.source}}">{{_l.sourceLabel}}{{item.source}}</view>
-        <view class="act-footer" wx:if="{{item.rewards.length > 0 || item.start}}">
-          <view class="act-rewards" wx:if="{{item.rewards.length > 0}}">
-            <text class="act-reward" wx:for="{{item.rewards}}" wx:for-item="r" wx:key="*this">{{r}}</text>
-          </view>
-          <text class="act-date" wx:if="{{item.start}}">{{item.start}} {{item.startTime || ''}}~{{item.end}} {{item.endTime || ''}}</text>
+                <view wx:elif="{{block.type === 'quote'}}" class="rich-quote-block">
+                  <text class="quote-text">{{block.content}}</text>
+                </view>
+                <view wx:elif="{{block.type === 'swiper'}}" class="rich-swiper-block">
+                  <swiper class="rich-swiper" autoplay="true" interval="3000" duration="500" circular="true" style="height: {{richSwiperHeights[item.id + '_' + bi] || 0}}rpx;">
+                    <swiper-item wx:for="{{block.urls}}" wx:for-item="url" wx:for-index="ui" wx:key="ui">
+                      <image lazy-load src="{{url}}" mode="widthFix" class="rich-swiper-image" catchtap="previewRichImage" data-src="{{url}}" bindload="onRichSwiperLoad" data-hkey="{{item.id}}_{{bi}}" />
+                    </swiper-item>
+                  </swiper>
+                </view>
+                <view wx:elif="{{block.type === 'video' && block.isDirectMp4}}" class="rich-video-inline {{item.subType === 'collab' ? 'collab-theme' : ''}}">
+                  <video class="rich-inline-video" src="{{block.url}}" controls show-center-play-btn object-fit="contain" />
+                </view>
+                <view wx:elif="{{block.type === 'video'}}" class="rich-video-block {{item.subType === 'collab' ? 'collab-theme' : ''}}" catchtap="openVideo" data-url="{{block.url}}" data-name="{{block.name || '视频'}}">
+                  <image lazy-load wx:if="{{block.cover && item.subType !== 'collab'}}" class="video-thumb" src="{{block.cover}}" mode="aspectFill" />
+                  <view wx:else class="video-icon {{item.subType === 'collab' && (block.cover || item.image) ? 'collab-icon-box' : ''}}">
+                    <image lazy-load wx:if="{{item.subType === 'collab' && (block.cover || item.image)}}" src="{{block.cover || item.image}}" class="collab-logo-image rounded" mode="aspectFill" />
+                    <block wx:else>
+                      <block wx:if="{{block.platform === 'bilibili'}}">📺</block>
+                      <block wx:elif="{{block.platform === 'weibo'}}">🎬</block>
+                      <block wx:elif="{{block.platform === 'douyin'}}">🎵</block>
+                      <block wx:elif="{{block.platform === 'kuaishou'}}">📹</block>
+                      <block wx:elif="{{block.platform === 'tencent'}}">📽️</block>
+                      <block wx:elif="{{block.platform === 'xiaohongshu'}}">📕</block>
+                      <block wx:elif="{{block.platform === 'youtube'}}">🔴</block>
+                      <block wx:else>🎥</block>
+                    </block>
+                  </view>
+                  <view class="video-info">
+                    <text class="video-name">{{block.name || block.platformName + '视频'}}</text>
+                    <text class="video-platform">{{block.platformName || '在线视频'}}</text>
+                  </view>
+                  <text class="video-play-btn">▶ 观看</text>
+                </view>
+                <view wx:elif="{{block.type === 'table'}}" class="rich-table-block">
+                  <view class="rich-table">
+                    <view class="rich-table-row rich-table-header">
+                      <view class="rich-table-cell" wx:for="{{block.headers}}" wx:key="index">{{item}}</view>
+                    </view>
+                    <view class="rich-table-row" wx:for="{{block.rows}}" wx:for-item="row" wx:key="index">
+                      <view class="rich-table-cell" wx:for="{{row}}" wx:for-item="cell" wx:key="index">{{cell}}</view>
+                    </view>
+                  </view>
+                </view>
+                <view wx:elif="{{block.type === 'image'}}" class="rich-image-block" catchtap="previewRichImage" data-src="{{block.url}}">
+                  <image lazy-load class="rich-image" src="{{block.url}}" mode="widthFix" />
+                </view>
+                <view wx:elif="{{block.type === 'divider'}}" class="divider-block">
+                  <view class="divider-line {{block.style}}"></view>
+                </view>
+                <view wx:elif="{{block.type === 'link' && block.isVideo}}" class="rich-link-block video-link" catchtap="openVideo" data-url="{{block.url}}" data-name="{{block.text}}">
+                  <text class="link-icon">📺</text>
+                  <text class="link-text">{{block.text}}</text>
+                  <text class="link-badge">点击观看</text>
+                </view>
+                <view wx:elif="{{block.type === 'link'}}" class="rich-link-block" catchtap="openLink" data-url="{{block.url}}" data-text="{{block.text}}">
+                  <text class="link-icon">🔗</text>
+                  <text class="link-text">{{block.text}}</text>
+                  <text class="link-badge">点击复制</text>
+                </view>
+                <view wx:elif="{{block.type === 'attachment'}}" class="rich-link-block attachment-link" catchtap="downloadAttachment" data-url="{{block.url}}" data-name="{{block.name}}" data-size="{{block.sizeText}}">
+                  <text class="link-icon">📎</text>
+                  <text class="link-text">{{block.name}} ({{block.sizeText}})</text>
+                  <text class="link-badge">下载预览</text>
+                </view>
+                <view wx:else class="rich-text-block" style="font-size:{{block.size}}rpx;color:{{block.color}};font-weight:{{block.weight || 'normal'}};font-style:{{block.style || 'normal'}};{{block.fontFamily && block.fontFamily !== 'sans-serif' ? 'font-family:' + block.fontFamily + ';' : ''}}">
+                  <rich-text nodes="{{block.html || block.content}}" />
+                </view>
+              </block>
+            </view>
+          </block>
+          <view class="act-desc" wx:else><rich-text nodes="{{item.desc}}" /></view>
+          <view class="act-source" wx:if="{{item.source}}">{{_l.sourceLabel}}{{item.source}}</view>
         </view>
-        
-          
       </view>
     </view>
     <view class="empty" wx:if="{{filtered.length===0}}">{{_l.noActivity}}</view>

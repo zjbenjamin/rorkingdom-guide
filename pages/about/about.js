@@ -8,6 +8,8 @@ var i18n = require('../../utils/i18n')
 var todayStr = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0') + '-' + String(new Date().getDate()).padStart(2, '0')
 
 var defaultChangelog = [
+  { version: '2.1.0', date: todayStr, content: '【新增】活动日历「活动倒计时」板块：赛季时间轴 + 活动实时倒计时，仿官方日历海报风\n【新增】管理后台赛季日历：支持「版本周期性活动 / 大量出没 / 命定花种 / 常驻课题」四大分类，命定花种支持添加多组图片URL并同步展示\n【新增】数据联动：活动日历、大量出没、首页广播站与后台捕捉预设绑定，自动匹配精灵多图/图标并按倒计时日期实时同步\n【新增】咕噜球仓库配置：合成球支持可选消耗洛克贝（可填合成洛克贝单价）并同步至捕捉统计页面入库与结算\n【调整】捕捉统计：「月陨星」改为「龙骑士」，「月陨流星雨」改为「龙龙骰」（点击可自选词条骰子/异色骰子，剩余面板仅计入异色龙龙骰，可累计至2026-12-31，不占用保底和奇遇）\n【新增】捕捉统计：「这次歪了」改为「使用龙龙骰」，配备全屏骰子翻转与粒子动效；支持异色龙龙骰染色并在战报生成图中明示剩余龙龙骰数量，与棱镜球等契约球双胶囊自适应防溢出排版\n【优化】捕捉统计：洛克贝资产看板「资产微调」改为「现有资产」，展示上一次与本次输入洛克贝数值并自动计算增加值与减少值\n【优化】后台捕捉预设：异色精灵预设置顶，按赛季分类切换展示，支持精灵置顶、多图URL录入与赛季暂时隐藏\n【优化】活动日历：默认展示「进行中」活动并默认收起卡片，修复时间轴文字显示不全问题\n【新增】视频号链接识别：分享文案自动提取标题与作者，点击引导复制到微信观看\n【优化】更新用户服务协议与隐私保护指引\n更新：版号 2.1.0' },
+  { version: '2.0.1', date: todayStr, content: '【修复】管理员新增/编辑兑换码弹窗错位，输入框叠在列表卡片上\n【修复】兑换码弹窗被底部 Dock 盖住、键盘弹出挡住按钮\n【修复】BV 号无法识别（大小写、空格、分享文案混杂均可解析）\n【优化】粘贴分享文案自动去掉多余文字与空格，抽出干净 BV 号/链接\n【优化】b23.tv 短链跳转后自动识别 BV 号\n更新：版号 2.0.1' },
   { version: '2.0.0', date: todayStr, content: '【新增】安卓 Pad 平板排版：顶栏/Dock/弹窗/网格专项适配，比例不再被拉爆\n【新增】我的页 Pad 模式切换：自动 / 平板 / 手机，即时生效并记住选择\n【新增】远行商人商品库支持预设限售数量，上架时自动带上\n【优化】快捷选择上架可批量填写限售数量，商品卡片显示「限N」\n【优化】上架/改期时间自动识别四个时段（08-12 / 12-16 / 16-20 / 20-24）\n【优化】弹窗改为居中卡片，富文本工具栏不再挤占输入区\n【修复】平板下顶栏文字逐字竖排、Dock 图标过大遮挡内容\n更新：版号 2.0.0' },
   { version: '1.9.0', date: todayStr, content: '【新增】远行商人上架商品自动匹配下架日期与时段（按游戏内日程）\n【优化】管理后台编辑器：工具栏按格式/插入分区，块支持上移下移\n【优化】插入图片/音乐/视频前自动落稿，正文顺序与所见一致\n【优化】编辑中的块改完插回原位，不再沉到文末\n【优化】首页远行商人卡片去掉底栏重复倒计时（商品行已有倒计时）\n【新增】公告/活动草稿自动保存，误关弹窗可恢复\n【修复】咕噜球库存为 0 仍显示卡片（仓库列表与盘点/结果弹窗）\n【修复】编辑器残留上次内容、开始/结束时间未保存、旧公告内容重复入块\n【修复】引用块编辑丢类型、删除块误清正在输入的文字\n更新：版号 1.9.0' },
   { version: '1.8.3', date: todayStr, content: '【新增】首页 ROCOKINGDOM 广播站：出没 / 商人上架同步\n【新增】广播站商品图、限售数量、下架倒计时，点开看简介\n【新增】首页头图多图自动轮播（后台页面管理编辑）\n【新增】CNY 按语言换算当地货币，时间按语言国家时区\n【新增】月陨流星雨可选是否异色\n【新增】关于页数据来源官方 Logo\n【优化】全局轻量过渡动画（低内存）\n【优化】远行商人洛克贝图标，生图与仓库展示\n【优化】仓库只显示手动入库的球\n【优化】国际版英日韩用词与国旗图\n【修复】页面状态管理按钮、通知设置可点击\n【修复】广播站空商品误显示、倒计时与商人页同步\n更新：版号 1.8.3' },
@@ -28,7 +30,7 @@ Page({
     showLogShareBtn: true,
     aboutData: {
       appName: '洛手助手',
-      version: i18n.i18n.zh.version || 'v2.0.0',
+      version: i18n.i18n.zh.version || 'v2.1.0',
       versionNote: i18n.i18n.zh.versionNote || '',
       devName: '浙里本杰明',
       devAvatar: 'https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEYA3JqaA4lW5JDNpmiDiR7kV6jjeMAAW0AAscgAAKo-ElXhfFJA7eEXyo9BA.jpeg',
@@ -79,13 +81,13 @@ Page({
       var line = lines[i].trim()
       if (!line) continue
       var type = 'opt'
-      if (line.indexOf('新增：') === 0 || line.indexOf('+') === 0) {
+      if (line.indexOf('新增：') === 0 || line.indexOf('【新增】') === 0 || line.indexOf('+') === 0) {
         type = 'add'
-      } else if (line.indexOf('下线：') === 0 || line.indexOf('-') === 0) {
+      } else if (line.indexOf('下线：') === 0 || line.indexOf('【下线】') === 0 || line.indexOf('-') === 0) {
         type = 'del'
-      } else if (line.indexOf('优化：') === 0 || line.indexOf('*') === 0) {
+      } else if (line.indexOf('优化：') === 0 || line.indexOf('【优化】') === 0 || line.indexOf('【调整】') === 0 || line.indexOf('*') === 0) {
         type = 'opt'
-      } else if (line.indexOf('修复：') === 0) {
+      } else if (line.indexOf('修复：') === 0 || line.indexOf('【修复】') === 0) {
         type = 'fix'
       }
       result.push({ text: line, type: type })
@@ -111,10 +113,24 @@ Page({
             merged[key] = cloudData[key] !== undefined ? cloudData[key] : defaults[key]
           }
         }
-        // 云端已有 changelogList（含删空）则以云端为准，避免本地默认项被删后又合并回来
+        // 云端已有 changelogList（含删空）则以云端为准；若本地 defaultChangelog 首条为新版本则自动置顶合并
         var changelogList = (cloudData.changelogList !== undefined && cloudData.changelogList !== null)
           ? cloudData.changelogList.slice()
           : defaultChangelog.slice()
+        if (defaultChangelog.length > 0) {
+          var latestDefault = defaultChangelog[0]
+          var existsLatest = false
+          for (var ci = 0; ci < changelogList.length; ci++) {
+            if (changelogList[ci] && changelogList[ci].version === latestDefault.version) {
+              changelogList[ci] = Object.assign({}, changelogList[ci], { content: latestDefault.content })
+              existsLatest = true
+              break
+            }
+          }
+          if (!existsLatest) {
+            changelogList.unshift(Object.assign({}, latestDefault))
+          }
+        }
         for (var i = 0; i < changelogList.length; i++) {
           changelogList[i].lines = self.parseChangelog(changelogList[i].content || '')
         }

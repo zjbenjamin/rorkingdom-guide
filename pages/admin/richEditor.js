@@ -139,37 +139,125 @@ function parseGuessedName(text, url) {
   return '';
 }
 
+function extractBvid(text) {
+  if (!text) return null
+  // 兼容复制粘贴混入的空格/零宽字符；BV 前缀不区分大小写，后缀 10 位大小写敏感
+  var compact = String(text).replace(/[\s\u200b\ufeff\u00a0\u3000]+/g, '')
+  var m = compact.match(/BV([0-9A-Za-z]{10})/i)
+  return m ? ('BV' + m[1]) : null
+}
+
 function parseBilibiliUrl(url) {
   if (!url) return null
-  var bvMatch = url.match(/BV[a-zA-Z0-9]{10,}/)
-  if (bvMatch) return { platform: 'bilibili', platformName: 'B站', id: bvMatch[0], url: 'https://www.bilibili.com/video/' + bvMatch[0] }
-  var avMatch = url.match(/av(\d{6,})/i)
+  // 去掉空白后再识别，兼容分享文案里混入的空格
+  var compact = String(url).replace(/[\s\u200b\ufeff\u00a0\u3000]+/g, '')
+  var bvid = extractBvid(compact)
+  if (bvid) return { platform: 'bilibili', platformName: 'B站', id: bvid, url: 'https://www.bilibili.com/video/' + bvid }
+  var avMatch = compact.match(/av(\d{6,})/i)
   if (avMatch) return { platform: 'bilibili', platformName: 'B站', id: 'av' + avMatch[1], url: 'https://www.bilibili.com/video/av' + avMatch[1] + '/' }
-  var shortMatch = url.match(/b23\.tv\/([a-zA-Z0-9]+)/)
-  if (shortMatch) return { platform: 'bilibili', platformName: 'B站', id: shortMatch[1], url: url }
+  var shortMatch = compact.match(/(?:https?:\/\/)?b23\.tv\/([a-zA-Z0-9]+)/i)
+  if (shortMatch) return { platform: 'bilibili', platformName: 'B站', id: shortMatch[1], url: 'https://b23.tv/' + shortMatch[1] }
+  if (/bilibili\.com/i.test(compact)) return { platform: 'bilibili', platformName: 'B站', id: '', url: /^https?:\/\//i.test(compact) ? compact : ('https://' + compact) }
   return null
 }
 
 function parseWeiboUrl(url) {
   if (!url) return null
-  var fidMatch = url.match(/fid=([0-9:]+)/)
+  var compact = String(url).replace(/[\s\u200b\ufeff\u00a0\u3000]+/g, '')
+  var fidMatch = compact.match(/fid=([0-9:]+)/)
   if (fidMatch) return { platform: 'weibo', platformName: '微博', id: fidMatch[1], url: 'https://video.weibo.com/show?fid=' + fidMatch[1] }
-  var showMatch = url.match(/(?:tv\/show|show)\/([0-9:]+)/)
+  var showMatch = compact.match(/(?:tv\/show|show)\/([0-9:]+)/)
   if (showMatch) return { platform: 'weibo', platformName: '微博', id: showMatch[1], url: 'https://video.weibo.com/show?fid=' + showMatch[1] }
-  
+
   // 解析微博文章 (ttarticle)
-  var articleMatch = url.match(/ttarticle\/p\/show\?id=(\d+)/) || url.match(/weibo\.com\/ttarticle\/p\/show\?id=(\d+)/)
+  var articleMatch = compact.match(/ttarticle\/p\/show\?id=(\d+)/) || compact.match(/weibo\.com\/ttarticle\/p\/show\?id=(\d+)/)
   if (articleMatch) return { platform: 'weibo_article', platformName: '微博文章', id: articleMatch[1], url: 'https://weibo.com/ttarticle/p/show?id=' + articleMatch[1] }
-  
-  if (url.indexOf('weibo.com') > -1 || url.indexOf('weibo.cn') > -1) {
-    return { platform: 'weibo', platformName: '微博', id: '', url: url }
+
+  if (compact.indexOf('weibo.com') > -1 || compact.indexOf('weibo.cn') > -1) {
+    return { platform: 'weibo', platformName: '微博', id: '', url: /^https?:\/\//i.test(compact) ? compact : ('https://' + compact) }
   }
   return null
 }
 
+function parseDouyinUrl(url) {
+  if (!url) return null
+  var compact = String(url).replace(/[\s\u200b\ufeff\u00a0\u3000]+/g, '')
+  // v.douyin.com 短链
+  var shortMatch = compact.match(/(?:https?:\/\/)?v\.douyin\.com\/([A-Za-z0-9]+)/i)
+  if (shortMatch) return { platform: 'douyin', platformName: '抖音', id: shortMatch[1], url: 'https://v.douyin.com/' + shortMatch[1] + '/' }
+  // 完整视频页 /video/123 或 /share/video/123
+  var idMatch = compact.match(/(?:https?:\/\/)?(?:www\.|m\.)?(?:douyin|iesdouyin)\.com\/(?:share\/)?video\/(\d+)/i)
+  if (idMatch) return { platform: 'douyin', platformName: '抖音', id: idMatch[1], url: 'https://www.douyin.com/video/' + idMatch[1] }
+  if (/douyin\.com/i.test(compact)) return { platform: 'douyin', platformName: '抖音', id: '', url: /^https?:\/\//i.test(compact) ? compact : ('https://' + compact) }
+  return null
+}
+
+function parseXiaohongshuUrl(url) {
+  if (!url) return null
+  var compact = String(url).replace(/[\s\u200b\ufeff\u00a0\u3000]+/g, '')
+  // xhslink.com 短链
+  var shortMatch = compact.match(/(?:https?:\/\/)?xhslink\.com\/([A-Za-z0-9\/]+)/i)
+  if (shortMatch) return { platform: 'xiaohongshu', platformName: '小红书', id: shortMatch[1], url: 'https://xhslink.com/' + shortMatch[1] }
+  // 完整笔记页 /explore/xxx 或 /discovery/item/xxx
+  var idMatch = compact.match(/(?:https?:\/\/)?(?:www\.|m\.)?xiaohongshu\.com\/(?:explore\/|discovery\/item\/|user\/profile\/[A-Za-z0-9]+\/)([A-Za-z0-9]+)/i)
+  if (idMatch) return { platform: 'xiaohongshu', platformName: '小红书', id: idMatch[1], url: 'https://www.xiaohongshu.com/explore/' + idMatch[1] }
+  if (/xiaohongshu\.com|xhslink\.com/i.test(compact)) return { platform: 'xiaohongshu', platformName: '小红书', id: '', url: /^https?:\/\//i.test(compact) ? compact : ('https://' + compact) }
+  return null
+}
+
+function parseKuaishouUrl(url) {
+  if (!url) return null
+  var compact = String(url).replace(/[\s\u200b\ufeff\u00a0\u3000]+/g, '')
+  if (/kuaishou\.com|v\.kuaishou\.com/i.test(compact)) {
+    return { platform: 'kuaishou', platformName: '快手', id: '', url: /^https?:\/\//i.test(compact) ? compact : ('https://' + compact) }
+  }
+  return null
+}
+
+// 微信视频号：finder.video.qq.com 分享链接 / channels.weixin.qq.com 页面链接
+function parseWechatChannelsUrl(url) {
+  if (!url) return null
+  var compact = String(url).replace(/\s+/g, '').split(String.fromCharCode(8203)).join('')
+  if (!/finder\.video\.qq\.com|channels\.weixin\.qq\.com/i.test(compact)) return null
+  var id = ''
+  var shareMatch = compact.match(/sfinder_share_id=([A-Za-z0-9_\-]+)/i)
+  var pageMatch = !shareMatch && compact.match(/[?&]id=([A-Za-z0-9_\-]+)/i)
+  if (shareMatch) id = shareMatch[1]
+  else if (pageMatch) id = pageMatch[1]
+  return { platform: 'wechat_channels', platformName: '视频号', id: id, url: /^https?:\/\//i.test(compact) ? compact : ('https://' + compact) }
+}
+
+// 从分享文案提取视频标题与作者（视频号等外部抓不到标题的平台靠这个）
+function extractShareMeta(text) {
+  var meta = { title: '', owner: '' }
+  if (!text) return meta
+  var t = String(text).replace(/\s+/g, ' ').split(String.fromCharCode(8203)).join('').trim()
+  // 作者：xxx的视频号
+  var ownerMatch = t.match(/([^\s「」【】#@\/:：]{1,20}?)的视频号/)
+  if (ownerMatch) meta.owner = ownerMatch[1].replace(/^(分享自|来自|@)/, '').trim()
+  // 标题：「」（视频号分享常用）
+  var m = t.match(/「([^」]{2,80})」/)
+  if (m) {
+    meta.title = m[1].trim()
+  }
+  if (!meta.title) {
+    m = t.match(/#视频号#\s*([^「【\s@:：]{2,60})/)
+    if (m && m[1].indexOf('的视频号') === -1) meta.title = m[1].trim()
+  }
+  if (!meta.title) {
+    m = t.match(/的视频号[:：]\s*([^「【\s@#]{2,60})/)
+    if (m) meta.title = m[1].replace(/[#@]\S+/g, '').trim()
+  }
+  if (meta.title) {
+    meta.title = meta.title.replace(/https?:\/\/\S+/g, '').replace(/\s+/g, ' ').trim()
+    if (meta.title.length > 60) meta.title = meta.title.substring(0, 60)
+  }
+  return meta
+}
+
 function parseVideoUrl(url) {
   if (!url) return null
-  return parseBilibiliUrl(url) || parseWeiboUrl(url) || null
+  return parseBilibiliUrl(url) || parseWeiboUrl(url) || parseDouyinUrl(url) || parseXiaohongshuUrl(url) || parseKuaishouUrl(url) || parseWechatChannelsUrl(url) || null
 }
 
 function parseTableInput(text) {
@@ -210,12 +298,41 @@ function parseTableInput(text) {
 
 function extractCleanURL(text) {
   if (!text) return ''
-  text = text.replace(/[\r\n]+/g, ' ').trim()
-  var urlMatch = text.match(/(https?:\/\/[^\s'"<>）)】\]》《，,。;；!！?？]+)/i)
+  // 清掉零宽字符，换行/制表压成空格，去掉首尾空白
+  text = String(text).replace(/[\u200b\ufeff\u00a0\u3000]/g, '').replace(/[\r\n\t]+/g, ' ').trim()
+  // 再压掉全部空白，便于从「分享文案+链接/号」里抠出有效标识
+  var compact = text.replace(/\s+/g, '')
+  // 优先从分享文案中识别 BV 号（自动丢弃多余分享文字）
+  var bvid = extractBvid(compact)
+  if (bvid) return 'https://www.bilibili.com/video/' + bvid
+  // av 号
+  var avMatch = compact.match(/av(\d{6,})/i)
+  if (avMatch) return 'https://www.bilibili.com/video/av' + avMatch[1]
+  // b23.tv 短链（含无协议）
+  var shortMatch = compact.match(/(?:https?:\/\/)?b23\.tv\/([a-zA-Z0-9]+)/i)
+  if (shortMatch) return 'https://b23.tv/' + shortMatch[1]
+  // 抖音短链 / 视频页
+  var dyShort = compact.match(/(?:https?:\/\/)?v\.douyin\.com\/([A-Za-z0-9]+)/i)
+  if (dyShort) return 'https://v.douyin.com/' + dyShort[1] + '/'
+  var dyVideo = compact.match(/(?:https?:\/\/)?(?:www\.|m\.)?(?:douyin|iesdouyin)\.com\/(?:share\/)?video\/(\d+)/i)
+  if (dyVideo) return 'https://www.douyin.com/video/' + dyVideo[1]
+  // 小红书短链 / 笔记页
+  var xhsShort = compact.match(/(?:https?:\/\/)?xhslink\.com\/([A-Za-z0-9\/]+)/i)
+  if (xhsShort) return 'https://xhslink.com/' + xhsShort[1]
+  var xhsNote = compact.match(/(?:https?:\/\/)?(?:www\.|m\.)?xiaohongshu\.com\/(?:explore|discovery\/item)\/([A-Za-z0-9]+)/i)
+  if (xhsNote) return 'https://www.xiaohongshu.com/explore/' + xhsNote[1]
+  // 完整 URL（优先原文，其次去空格后的文本，兼容链接被插空格）；允许 ?&= 保留查询串
+  var urlMatch = text.match(/(https?:\/\/[^\s'"<>）)】\]》《，,。;；!！？]+)/i) ||
+    compact.match(/(https?:\/\/[^\s'"<>）)】\]》《，,。;；!！？]+)/i)
   if (urlMatch) {
     var url = urlMatch[1]
     url = url.replace(/[,;.!?？)，,】\]》）;:：。、]+$/, '')
     return url
+  }
+  // 无协议的常见站点链接
+  var noProto = compact.match(/((?:www\.|m\.)?(?:bilibili\.com|douyin\.com|xiaohongshu\.com|kuaishou\.com|weibo\.com|finder\.video\.qq\.com|channels\.weixin\.qq\.com)\/[^\s'"<>）)】\]》《，,。;；!！？]+)/i)
+  if (noProto) {
+    return 'https://' + noProto[1].replace(/[,;.!?？)，,】\]》）;:：。、]+$/, '')
   }
   if (/^https?:\/\//i.test(text)) {
     return text.replace(/[,;.!?？)，,】\]》）;:：。、\s]+$/, '')
@@ -238,7 +355,8 @@ function buildHtmlFromRichContent(richContent) {
     } else if (block.type === 'video') {
       var platformEmoji = block.platform === 'bilibili' ? '📺' : '🎬'
       var videoTitle = block.name ? block.name + ' - ' : ''
-      htmlParts.push('<p style="color:#ff6b9d;font-size:26rpx;margin:12rpx 0;">' + platformEmoji + ' 视频: ' + videoTitle + '<a href="' + block.url + '" style="color:#ff6b9d;text-decoration:underline;">' + block.url + '</a></p>')
+      var ownerText = block.owner ? '（' + block.owner + '）' : ''
+      htmlParts.push('<p style="color:#ff6b9d;font-size:26rpx;margin:12rpx 0;">' + platformEmoji + ' 视频: ' + videoTitle + ownerText + '<a href="' + block.url + '" style="color:#ff6b9d;text-decoration:underline;">' + block.url + '</a></p>')
     } else if (block.type === 'image') {
       htmlParts.push('<p style="text-align:center;margin:12rpx 0;"><img src="' + block.url + '" style="max-width:100%;border-radius:12rpx;" /></p>')
     } else if (block.type === 'attachment') {
@@ -287,8 +405,14 @@ module.exports = {
   parseMusicShare: parseMusicShare,
   convertMusicUrl: convertMusicUrl,
   parseGuessedName: parseGuessedName,
+  extractBvid: extractBvid,
   parseBilibiliUrl: parseBilibiliUrl,
   parseWeiboUrl: parseWeiboUrl,
+  parseDouyinUrl: parseDouyinUrl,
+  parseXiaohongshuUrl: parseXiaohongshuUrl,
+  parseKuaishouUrl: parseKuaishouUrl,
+  parseWechatChannelsUrl: parseWechatChannelsUrl,
+  extractShareMeta: extractShareMeta,
   parseVideoUrl: parseVideoUrl,
   parseTableInput: parseTableInput,
   extractCleanURL: extractCleanURL,

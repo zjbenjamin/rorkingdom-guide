@@ -1,4 +1,761 @@
 /* ===== 全局主题 ===== */
+/* ===== 平板字号总帽（自动生成）：rpx 压 px，仅在 .layout-pad 下生效 ===== */
+.layout-pad .action-count { font-size: 10px !important; }
+.layout-pad .admin-hero-sub { font-size: 10px !important; }
+.layout-pad .announce-header-sub { font-size: 10px !important; }
+.layout-pad .announce-tag { font-size: 10px !important; }
+.layout-pad .arrow-new { font-size: 10px !important; }
+.layout-pad .avatar-hint { font-size: 10px !important; }
+.layout-pad .badge { font-size: 10px !important; }
+.layout-pad .badge-text { font-size: 10px !important; }
+.layout-pad .ball-count-display .unit { font-size: 10px !important; }
+.layout-pad .ball-meta-tags .tag { font-size: 10px !important; }
+.layout-pad .ball-picker-arrow { font-size: 10px !important; }
+.layout-pad .ban-tag { font-size: 10px !important; }
+.layout-pad .banner-slogan-sub { font-size: 10px !important; }
+.layout-pad .bcr-last-hint { font-size: 10px !important; }
+.layout-pad .card-image-area .image-remove-btn { font-size: 10px !important; }
+.layout-pad .card-meta { font-size: 10px !important; }
+.layout-pad .card-time { font-size: 10px !important; }
+.layout-pad .card-version { font-size: 10px !important; }
+.layout-pad .char-count { font-size: 10px !important; }
+.layout-pad .collab-theme::after { font-size: 10px !important; }
+.layout-pad .countdown-badge-icon { font-size: 10px !important; }
+.layout-pad .countdown-badge-text { font-size: 10px !important; }
+.layout-pad .desc-bar-arrow { font-size: 10px !important; }
+.layout-pad .desc-bar-icon { font-size: 10px !important; }
+.layout-pad .desc-bar-label { font-size: 10px !important; }
+.layout-pad .desc-text { font-size: 10px !important; }
+.layout-pad .detail-label { font-size: 10px !important; }
+.layout-pad .detail-value { font-size: 10px !important; }
+.layout-pad .editor-char-count { font-size: 10px !important; }
+.layout-pad .feature-desc { font-size: 10px !important; }
+.layout-pad .feed-arrow { font-size: 10px !important; }
+.layout-pad .feed-badge { font-size: 10px !important; }
+.layout-pad .field-hint { font-size: 10px !important; }
+.layout-pad .filter-group-arrow { font-size: 10px !important; }
+.layout-pad .filter-item-count { font-size: 10px !important; }
+.layout-pad .footer-icon { font-size: 10px !important; }
+.layout-pad .footer-text { font-size: 10px !important; }
+.layout-pad .form-cards-hint { font-size: 10px !important; }
+.layout-pad .form-note-label { font-size: 10px !important; }
+.layout-pad .form-tag { font-size: 10px !important; }
+.layout-pad .goods-group-time { font-size: 10px !important; }
+.layout-pad .goods-limit { font-size: 10px !important; }
+.layout-pad .goods-offline { font-size: 10px !important; }
+.layout-pad .goods-time-tag { font-size: 10px !important; }
+.layout-pad .group-header-desc { font-size: 10px !important; }
+.layout-pad .group-label { font-size: 10px !important; }
+.layout-pad .h-time { font-size: 10px !important; }
+.layout-pad .h-type { font-size: 10px !important; }
+.layout-pad .item-badge { font-size: 10px !important; }
+.layout-pad .item-delete-btn { font-size: 10px !important; }
+.layout-pad .item-offline-btn { font-size: 10px !important; }
+.layout-pad .item-source { font-size: 10px !important; }
+.layout-pad .label-icon { font-size: 10px !important; }
+.layout-pad .label-tag { font-size: 10px !important; }
+.layout-pad .lang-sep { font-size: 10px !important; }
+.layout-pad .level-icon { font-size: 10px !important; }
+.layout-pad .level-num { font-size: 10px !important; }
+.layout-pad .level-tag { font-size: 10px !important; }
+.layout-pad .log-badge { font-size: 10px !important; }
+.layout-pad .manual-reset-hint { font-size: 10px !important; }
+.layout-pad .map-coords { font-size: 10px !important; }
+.layout-pad .marker-popup-coord { font-size: 10px !important; }
+.layout-pad .mode-tag { font-size: 10px !important; }
+.layout-pad .mode-text { font-size: 10px !important; }
+.layout-pad .nick-hint { font-size: 10px !important; }
+.layout-pad .notify-na { font-size: 10px !important; }
+.layout-pad .notify-reset { font-size: 10px !important; }
+.layout-pad .notify-title-hint { font-size: 10px !important; }
+.layout-pad .offline-icon { font-size: 10px !important; }
+.layout-pad .offline-text { font-size: 10px !important; }
+.layout-pad .option-desc { font-size: 10px !important; }
+.layout-pad .panel-badge { font-size: 10px !important; }
+.layout-pad .picker-badge { font-size: 10px !important; }
+.layout-pad .picker-card-effect { font-size: 10px !important; }
+.layout-pad .picker-card-limit { font-size: 10px !important; }
+.layout-pad .pin-tag { font-size: 10px !important; }
+.layout-pad .pinned-indicator { font-size: 10px !important; }
+.layout-pad .preview-tag { font-size: 10px !important; }
+.layout-pad .repo-visibility { font-size: 10px !important; }
+.layout-pad .role-tag { font-size: 10px !important; }
+.layout-pad .search-clear { font-size: 10px !important; }
+.layout-pad .section-count { font-size: 10px !important; }
+.layout-pad .section-title-hint { font-size: 10px !important; }
+.layout-pad .sort-btn .picker-arrow { font-size: 10px !important; }
+.layout-pad .stat-pill-label { font-size: 10px !important; }
+.layout-pad .sub-item-new { font-size: 10px !important; }
+.layout-pad .sub-user-status { font-size: 10px !important; }
+.layout-pad .sub-user-time { font-size: 10px !important; }
+.layout-pad .sub-user-type-tag { font-size: 10px !important; }
+.layout-pad .sync-badge { font-size: 10px !important; }
+.layout-pad .table-mini-header-cell { font-size: 10px !important; }
+.layout-pad .time-label { font-size: 10px !important; }
+.layout-pad .time-value .picker-arrow { font-size: 10px !important; }
+.layout-pad .tool-label { font-size: 10px !important; }
+.layout-pad .toolbar-group-label { font-size: 10px !important; }
+.layout-pad .value-tag { font-size: 10px !important; }
+.layout-pad .act-date { font-size: 11px !important; }
+.layout-pad .act-reward { font-size: 11px !important; }
+.layout-pad .action-btn-sm { font-size: 11px !important; }
+.layout-pad .action-edit { font-size: 11px !important; }
+.layout-pad .action-plus { font-size: 11px !important; }
+.layout-pad .admin-control-desc { font-size: 11px !important; }
+.layout-pad .agree-section { font-size: 11px !important; }
+.layout-pad .agree-text-span { font-size: 11px !important; }
+.layout-pad .align-name { font-size: 11px !important; }
+.layout-pad .announce-arrow { font-size: 11px !important; }
+.layout-pad .announce-count { font-size: 11px !important; }
+.layout-pad .announce-source { font-size: 11px !important; }
+.layout-pad .announce-time { font-size: 11px !important; }
+.layout-pad .app-desc { font-size: 11px !important; }
+.layout-pad .ball-check-header text { font-size: 11px !important; }
+.layout-pad .ball-desc-source { font-size: 11px !important; }
+.layout-pad .ball-remain-label { font-size: 11px !important; }
+.layout-pad .banner-edit-text { font-size: 11px !important; }
+.layout-pad .banner-subtitle { font-size: 11px !important; }
+.layout-pad .block-btn { font-size: 11px !important; }
+.layout-pad .btn-delete { font-size: 11px !important; }
+.layout-pad .btn-edit { font-size: 11px !important; }
+.layout-pad .btn-silent .btn-icon { font-size: 11px !important; }
+.layout-pad .capsule-btn.sm { font-size: 11px !important; }
+.layout-pad .changelog-date { font-size: 11px !important; }
+.layout-pad .copy-btn-sm { font-size: 11px !important; }
+.layout-pad .divider-line.star::after { font-size: 11px !important; }
+.layout-pad .feed-auto-delete { font-size: 11px !important; }
+.layout-pad .feed-count { font-size: 11px !important; }
+.layout-pad .feed-source { font-size: 11px !important; }
+.layout-pad .feed-sub { font-size: 11px !important; }
+.layout-pad .feed-time { font-size: 11px !important; }
+.layout-pad .file-import-text { font-size: 11px !important; }
+.layout-pad .filter-group-count { font-size: 11px !important; }
+.layout-pad .filter-item-name { font-size: 11px !important; }
+.layout-pad .foot-text { font-size: 11px !important; }
+.layout-pad .form-card-note { font-size: 11px !important; }
+.layout-pad .form-hint { font-size: 11px !important; }
+.layout-pad .form-hint-text { font-size: 11px !important; }
+.layout-pad .form-label-mini { font-size: 11px !important; }
+.layout-pad .form-note-text { font-size: 11px !important; }
+.layout-pad .goods-effect { font-size: 11px !important; }
+.layout-pad .goods-group-title { font-size: 11px !important; }
+.layout-pad .help-hint { font-size: 11px !important; }
+.layout-pad .image-action-card .action-text.mini { font-size: 11px !important; }
+.layout-pad .inv-label { font-size: 11px !important; }
+.layout-pad .item-count-badge .count-text { font-size: 11px !important; }
+.layout-pad .item-delete { font-size: 11px !important; }
+.layout-pad .item-effect { font-size: 11px !important; }
+.layout-pad .item-label { font-size: 11px !important; }
+.layout-pad .item-limit-badge { font-size: 11px !important; }
+.layout-pad .item-preview-info .item-badge { font-size: 11px !important; }
+.layout-pad .item-sub-icon { font-size: 11px !important; }
+.layout-pad .label-sub { font-size: 11px !important; }
+.layout-pad .label-text { font-size: 11px !important; }
+.layout-pad .list-item-url { font-size: 11px !important; }
+.layout-pad .log-cost { font-size: 11px !important; }
+.layout-pad .log-time { font-size: 11px !important; }
+.layout-pad .marker-popup-region { font-size: 11px !important; }
+.layout-pad .marker-popup-type { font-size: 11px !important; }
+.layout-pad .meta-badge-text { font-size: 11px !important; }
+.layout-pad .method-chip { font-size: 11px !important; }
+.layout-pad .modal-hint { font-size: 11px !important; }
+.layout-pad .nav-label { font-size: 11px !important; }
+.layout-pad .nav-text { font-size: 11px !important; }
+.layout-pad .notify-desc { font-size: 11px !important; }
+.layout-pad .notify-tip-text { font-size: 11px !important; }
+.layout-pad .option-icon { font-size: 11px !important; }
+.layout-pad .panel-count { font-size: 11px !important; }
+.layout-pad .panel-foot-label { font-size: 11px !important; }
+.layout-pad .panel-foot-value { font-size: 11px !important; }
+.layout-pad .preview-badge { font-size: 11px !important; }
+.layout-pad .preview-table-cell { font-size: 11px !important; }
+.layout-pad .repo-tab-icon { font-size: 11px !important; }
+.layout-pad .result-header-sub { font-size: 11px !important; }
+.layout-pad .selling-hint { font-size: 11px !important; }
+.layout-pad .setting-desc { font-size: 11px !important; }
+.layout-pad .skill-meta { font-size: 11px !important; }
+.layout-pad .slb { font-size: 11px !important; }
+.layout-pad .source { font-size: 11px !important; }
+.layout-pad .stat-name { font-size: 11px !important; }
+.layout-pad .sub-desc { font-size: 11px !important; }
+.layout-pad .sub-item-price { font-size: 11px !important; }
+.layout-pad .sub-refresh-btn { font-size: 11px !important; }
+.layout-pad .sub-section-hint { font-size: 11px !important; }
+.layout-pad .sub-test-text { font-size: 11px !important; }
+.layout-pad .sub-user-del { font-size: 11px !important; }
+.layout-pad .swarm-hero-desc { font-size: 11px !important; }
+.layout-pad .swarm-hero-time { font-size: 11px !important; }
+.layout-pad .table-block-info { font-size: 11px !important; }
+.layout-pad .tag { font-size: 11px !important; }
+.layout-pad .tag-text { font-size: 11px !important; }
+.layout-pad .timer-text { font-size: 11px !important; }
+.layout-pad .tip-hint { font-size: 11px !important; }
+.layout-pad .tool-text-btn { font-size: 11px !important; }
+.layout-pad .type-icon { font-size: 11px !important; }
+.layout-pad .type-text { font-size: 11px !important; }
+.layout-pad .unsub-btn { font-size: 11px !important; }
+.layout-pad .user-exp { font-size: 11px !important; }
+.layout-pad .user-title-text { font-size: 11px !important; }
+.layout-pad .version { font-size: 11px !important; }
+.layout-pad .version-note { font-size: 11px !important; }
+.layout-pad .act { font-size: 12px !important; }
+.layout-pad .act-admin-btn { font-size: 12px !important; }
+.layout-pad .action-btn { font-size: 12px !important; }
+.layout-pad .add-btn { font-size: 12px !important; }
+.layout-pad .admin-tab { font-size: 12px !important; }
+.layout-pad .admin-tip-text { font-size: 12px !important; }
+.layout-pad .align-icon { font-size: 12px !important; }
+.layout-pad .announce-close-btn .close-icon { font-size: 12px !important; }
+.layout-pad .ball-desc-rate { font-size: 12px !important; }
+.layout-pad .banner-desc { font-size: 12px !important; }
+.layout-pad .banner-slogan { font-size: 12px !important; }
+.layout-pad .banner-sub { font-size: 12px !important; }
+.layout-pad .bcr-last { font-size: 12px !important; }
+.layout-pad .bcr-stock { font-size: 12px !important; }
+.layout-pad .bold-icon { font-size: 12px !important; }
+.layout-pad .btn-publish .btn-icon { font-size: 12px !important; }
+.layout-pad .btn-silent .btn-text { font-size: 12px !important; }
+.layout-pad .capsule-btn { font-size: 12px !important; }
+.layout-pad .capsule-btn.lg { font-size: 12px !important; }
+.layout-pad .capsule-btn.md { font-size: 12px !important; }
+.layout-pad .changelog-tag { font-size: 12px !important; }
+.layout-pad .check-hint { font-size: 12px !important; }
+.layout-pad .cl-add { font-size: 12px !important; }
+.layout-pad .cl-del { font-size: 12px !important; }
+.layout-pad .cl-fix { font-size: 12px !important; }
+.layout-pad .cl-opt { font-size: 12px !important; }
+.layout-pad .color-name { font-size: 12px !important; }
+.layout-pad .counter-num { font-size: 12px !important; }
+.layout-pad .disclaimer { font-size: 12px !important; }
+.layout-pad .edit-btn { font-size: 12px !important; }
+.layout-pad .empty-notice-btn { font-size: 12px !important; }
+.layout-pad .empty-state .empty-action .action-text { font-size: 12px !important; }
+.layout-pad .expire-bar { font-size: 12px !important; }
+.layout-pad .feature-title { font-size: 12px !important; }
+.layout-pad .feed-empty-btn .btn-text { font-size: 12px !important; }
+.layout-pad .field-label { font-size: 12px !important; }
+.layout-pad .filter-action { font-size: 12px !important; }
+.layout-pad .font-preview { font-size: 12px !important; }
+.layout-pad .foot { font-size: 12px !important; }
+.layout-pad .footer-notify .notify-text { font-size: 12px !important; }
+.layout-pad .form-cards-title { font-size: 12px !important; }
+.layout-pad .form-label-text { font-size: 12px !important; }
+.layout-pad .h-count { font-size: 12px !important; }
+.layout-pad .h-name { font-size: 12px !important; }
+.layout-pad .iframe-btn { font-size: 12px !important; }
+.layout-pad .init-sub { font-size: 12px !important; }
+.layout-pad .input-placeholder { font-size: 12px !important; }
+.layout-pad .italic-icon { font-size: 12px !important; }
+.layout-pad .item-add-text { font-size: 12px !important; }
+.layout-pad .item-count-badge { font-size: 12px !important; }
+.layout-pad .item-preview-info .item-price { font-size: 12px !important; }
+.layout-pad .label-main { font-size: 12px !important; }
+.layout-pad .label-preview-btn { font-size: 12px !important; }
+.layout-pad .link-badge { font-size: 12px !important; }
+.layout-pad .link-preview-text { font-size: 12px !important; }
+.layout-pad .list-add-text { font-size: 12px !important; }
+.layout-pad .log-pet { font-size: 12px !important; }
+.layout-pad .meta-val { font-size: 12px !important; }
+.layout-pad .modal-input.mini { font-size: 12px !important; }
+.layout-pad .mode-icon { font-size: 12px !important; }
+.layout-pad .music-text-info { font-size: 12px !important; }
+.layout-pad .nick-label { font-size: 12px !important; }
+.layout-pad .notice-text { font-size: 12px !important; }
+.layout-pad .notify-text { font-size: 12px !important; }
+.layout-pad .option-name { font-size: 12px !important; }
+.layout-pad .p-subtitle { font-size: 12px !important; }
+.layout-pad .panel-empty-text { font-size: 12px !important; }
+.layout-pad .pet-preview-card .preview-name { font-size: 12px !important; }
+.layout-pad .pick-chip { font-size: 12px !important; }
+.layout-pad .picker-arrow { font-size: 12px !important; }
+.layout-pad .picker-value.mini { font-size: 12px !important; }
+.layout-pad .preview-source { font-size: 12px !important; }
+.layout-pad .profile-role { font-size: 12px !important; }
+.layout-pad .repo-tab { font-size: 12px !important; }
+.layout-pad .rich-table { font-size: 12px !important; }
+.layout-pad .rich-table-cell { font-size: 12px !important; }
+.layout-pad .season-chip { font-size: 12px !important; }
+.layout-pad .section-add-btn { font-size: 12px !important; }
+.layout-pad .selling-items .item-add-text { font-size: 12px !important; }
+.layout-pad .skill-type { font-size: 12px !important; }
+.layout-pad .source-input { font-size: 12px !important; }
+.layout-pad .source-logo-text { font-size: 12px !important; }
+.layout-pad .stat-label { font-size: 12px !important; }
+.layout-pad .stat-pill-num { font-size: 12px !important; }
+.layout-pad .status-text { font-size: 12px !important; }
+.layout-pad .sub-btn { font-size: 12px !important; }
+.layout-pad .sub-tab-p { font-size: 12px !important; }
+.layout-pad .sub-toggle-name { font-size: 12px !important; }
+.layout-pad .subscribe-desc { font-size: 12px !important; }
+.layout-pad .swarm-hero-loc { font-size: 12px !important; }
+.layout-pad .tab-icon { font-size: 12px !important; }
+.layout-pad .tag-icon { font-size: 12px !important; }
+.layout-pad .time-value { font-size: 12px !important; }
+.layout-pad .tip-text { font-size: 12px !important; }
+.layout-pad .title-sub { font-size: 12px !important; }
+.layout-pad .tool-icon { font-size: 12px !important; }
+.layout-pad .type-tag { font-size: 12px !important; }
+.layout-pad .uid-empty { font-size: 12px !important; }
+.layout-pad .uid-label { font-size: 12px !important; }
+.layout-pad .video-platform { font-size: 12px !important; }
+.layout-pad .video-text-info { font-size: 12px !important; }
+.layout-pad .act-desc { font-size: 13px !important; }
+.layout-pad .act-summary { font-size: 13px !important; }
+.layout-pad .action-arrow { font-size: 13px !important; }
+.layout-pad .action-delete { font-size: 13px !important; }
+.layout-pad .action-text { font-size: 13px !important; }
+.layout-pad .add-icon { font-size: 13px !important; }
+.layout-pad .admin-action-btn { font-size: 13px !important; }
+.layout-pad .admin-bar-label { font-size: 13px !important; }
+.layout-pad .admin-bar-text { font-size: 13px !important; }
+.layout-pad .admin-btn { font-size: 13px !important; }
+.layout-pad .admin-icon { font-size: 13px !important; }
+.layout-pad .admin-text { font-size: 13px !important; }
+.layout-pad .admin-tip-icon { font-size: 13px !important; }
+.layout-pad .admin-title { font-size: 13px !important; }
+.layout-pad .ball-picker-text { font-size: 13px !important; }
+.layout-pad .ball-row-del { font-size: 13px !important; }
+.layout-pad .banner-edit-icon { font-size: 13px !important; }
+.layout-pad .banner-input { font-size: 13px !important; }
+.layout-pad .banner-preview.empty { font-size: 13px !important; }
+.layout-pad .bcr-input { font-size: 13px !important; }
+.layout-pad .bcr-name { font-size: 13px !important; }
+.layout-pad .block-image-icon { font-size: 13px !important; }
+.layout-pad .block-quote-icon { font-size: 13px !important; }
+.layout-pad .block-video-icon { font-size: 13px !important; }
+.layout-pad .btn-publish .btn-text { font-size: 13px !important; }
+.layout-pad .card-author { font-size: 13px !important; }
+.layout-pad .check-mode-tab { font-size: 13px !important; }
+.layout-pad .check-mode-tabs.enhanced .check-mode-tab { font-size: 13px !important; }
+.layout-pad .checkbox-icon { font-size: 13px !important; }
+.layout-pad .code-text { font-size: 13px !important; }
+.layout-pad .code-time { font-size: 13px !important; }
+.layout-pad .empty { font-size: 13px !important; }
+.layout-pad .empty-notice-text { font-size: 13px !important; }
+.layout-pad .empty-status { font-size: 13px !important; }
+.layout-pad .feed-empty-text { font-size: 13px !important; }
+.layout-pad .field-input { font-size: 13px !important; }
+.layout-pad .field-picker { font-size: 13px !important; }
+.layout-pad .field-textarea { font-size: 13px !important; }
+.layout-pad .file-import-icon { font-size: 13px !important; }
+.layout-pad .filter-group-icon { font-size: 13px !important; }
+.layout-pad .filter-group-name { font-size: 13px !important; }
+.layout-pad .form-card-label { font-size: 13px !important; }
+.layout-pad .form-label { font-size: 13px !important; }
+.layout-pad .form-mode-btn { font-size: 13px !important; }
+.layout-pad .goods-name { font-size: 13px !important; }
+.layout-pad .goods-price-num { font-size: 13px !important; }
+.layout-pad .group-header-title { font-size: 13px !important; }
+.layout-pad .image-action-card .action-text { font-size: 13px !important; }
+.layout-pad .image-remove { font-size: 13px !important; }
+.layout-pad .image-remove-btn { font-size: 13px !important; }
+.layout-pad .input-prefix-icon { font-size: 13px !important; }
+.layout-pad .item-preview-info .item-name { font-size: 13px !important; }
+.layout-pad .list-add-icon { font-size: 13px !important; }
+.layout-pad .list-item-del { font-size: 13px !important; }
+.layout-pad .list-item-name { font-size: 13px !important; }
+.layout-pad .list-item-text { font-size: 13px !important; }
+.layout-pad .log-ball { font-size: 13px !important; }
+.layout-pad .map-loading-text { font-size: 13px !important; }
+.layout-pad .marker-popup-close { font-size: 13px !important; }
+.layout-pad .news-detail-rich table { font-size: 13px !important; }
+.layout-pad .no-desc { font-size: 13px !important; }
+.layout-pad .notice-title { font-size: 13px !important; }
+.layout-pad .notify-name { font-size: 13px !important; }
+.layout-pad .pad-mode-label { font-size: 13px !important; }
+.layout-pad .picker-card-add { font-size: 13px !important; }
+.layout-pad .picker-card-name { font-size: 13px !important; }
+.layout-pad .picker-inner-new { font-size: 13px !important; }
+.layout-pad .preview-link { font-size: 13px !important; }
+.layout-pad .preview-media-tag { font-size: 13px !important; }
+.layout-pad .privacy-btn-cancel { font-size: 13px !important; }
+.layout-pad .privacy-btn-confirm { font-size: 13px !important; }
+.layout-pad .privacy-modal-desc { font-size: 13px !important; }
+.layout-pad .privacy-modal-link-inline { font-size: 13px !important; }
+.layout-pad .rate-tag { font-size: 13px !important; }
+.layout-pad .refresh-icon { font-size: 13px !important; }
+.layout-pad .repo-name { font-size: 13px !important; }
+.layout-pad .repo-owner { font-size: 13px !important; }
+.layout-pad .repo-sep { font-size: 13px !important; }
+.layout-pad .rich-table-header .rich-table-cell { font-size: 13px !important; }
+.layout-pad .section-empty { font-size: 13px !important; }
+.layout-pad .section-icon { font-size: 13px !important; }
+.layout-pad .section-text { font-size: 13px !important; }
+.layout-pad .section-title-group { font-size: 13px !important; }
+.layout-pad .selling-edit-empty-text { font-size: 13px !important; }
+.layout-pad .selling-empty-text { font-size: 13px !important; }
+.layout-pad .setting-name { font-size: 13px !important; }
+.layout-pad .sub-empty-text { font-size: 13px !important; }
+.layout-pad .sub-item-name { font-size: 13px !important; }
+.layout-pad .sub-user-count { font-size: 13px !important; }
+.layout-pad .switch-label { font-size: 13px !important; }
+.layout-pad .tab { font-size: 13px !important; }
+.layout-pad .table-block-icon { font-size: 13px !important; }
+.layout-pad .tip-desc { font-size: 13px !important; }
+.layout-pad .toolbar-btn { font-size: 13px !important; }
+.layout-pad .video-player-owner-text { font-size: 13px !important; }
+.layout-pad .visual-btn-add-new { font-size: 13px !important; }
+.layout-pad .admin-control-name { font-size: 14px !important; }
+.layout-pad .announce-title { font-size: 14px !important; }
+.layout-pad .ball-name-txt { font-size: 14px !important; }
+.layout-pad .ball-remain-input { font-size: 14px !important; }
+.layout-pad .batch-item-name { font-size: 14px !important; }
+.layout-pad .batch-item-price { font-size: 14px !important; }
+.layout-pad .card-desc { font-size: 14px !important; }
+.layout-pad .code-desc { font-size: 14px !important; }
+.layout-pad .code-label { font-size: 14px !important; }
+.layout-pad .empty-desc { font-size: 14px !important; }
+.layout-pad .feed-item-title { font-size: 14px !important; }
+.layout-pad .feedback-text { font-size: 14px !important; }
+.layout-pad .filter-title { font-size: 14px !important; }
+.layout-pad .form-editor { font-size: 14px !important; }
+.layout-pad .form-input.enhanced { font-size: 14px !important; }
+.layout-pad .form-label-icon { font-size: 14px !important; }
+.layout-pad .glitch-text { font-size: 14px !important; }
+.layout-pad .global-publish-btn { font-size: 14px !important; }
+.layout-pad .group-header-icon { font-size: 14px !important; }
+.layout-pad .item-name { font-size: 14px !important; }
+.layout-pad .item-val { font-size: 14px !important; }
+.layout-pad .link-preview-icon { font-size: 14px !important; }
+.layout-pad .link-text { font-size: 14px !important; }
+.layout-pad .nick-input { font-size: 14px !important; }
+.layout-pad .notify-title-text { font-size: 14px !important; }
+.layout-pad .p-text { font-size: 14px !important; }
+.layout-pad .premium-count-input-new { font-size: 14px !important; }
+.layout-pad .premium-input { font-size: 14px !important; }
+.layout-pad .preview-quote { font-size: 14px !important; }
+.layout-pad .preview-rich-text { font-size: 14px !important; }
+.layout-pad .result-footer .modal-cancel { font-size: 14px !important; }
+.layout-pad .result-header-close { font-size: 14px !important; }
+.layout-pad .rich-quote-block { font-size: 14px !important; }
+.layout-pad .section-title { font-size: 14px !important; }
+.layout-pad .status-emoji { font-size: 14px !important; }
+.layout-pad .sub-section-title { font-size: 14px !important; }
+.layout-pad .sub-title { font-size: 14px !important; }
+.layout-pad .swarm-name { font-size: 14px !important; }
+.layout-pad .video-play-btn { font-size: 14px !important; }
+.layout-pad .video-player-desc-text { font-size: 14px !important; }
+.layout-pad .visual-action-btn .btn-text { font-size: 14px !important; }
+.layout-pad .admin-avatar-icon { font-size: 15px !important; }
+.layout-pad .admin-hero-title { font-size: 15px !important; }
+.layout-pad .admin-panel-icon { font-size: 15px !important; }
+.layout-pad .admin-panel-text { font-size: 15px !important; }
+.layout-pad .announce-header-icon { font-size: 15px !important; }
+.layout-pad .announce-header-title { font-size: 15px !important; }
+.layout-pad .ball-icon-circle { font-size: 15px !important; }
+.layout-pad .broadcast-arrow { font-size: 15px !important; }
+.layout-pad .card-title-center { font-size: 15px !important; }
+.layout-pad .copy-btn { font-size: 15px !important; }
+.layout-pad .countdown-value { font-size: 15px !important; }
+.layout-pad .feed-title { font-size: 15px !important; }
+.layout-pad .feedback-icon { font-size: 15px !important; }
+.layout-pad .form-input { font-size: 15px !important; }
+.layout-pad .form-picker-value { font-size: 15px !important; }
+.layout-pad .form-textarea { font-size: 15px !important; }
+.layout-pad .hourglass-icon { font-size: 15px !important; }
+.layout-pad .iframe-name { font-size: 15px !important; }
+.layout-pad .item-price { font-size: 15px !important; }
+.layout-pad .list-item-icon { font-size: 15px !important; }
+.layout-pad .loading-text { font-size: 15px !important; }
+.layout-pad .maintain-desc { font-size: 15px !important; }
+.layout-pad .marker-popup-name { font-size: 15px !important; }
+.layout-pad .modal-btn { font-size: 15px !important; }
+.layout-pad .modal-cancel { font-size: 15px !important; }
+.layout-pad .modal-delete-btn { font-size: 15px !important; }
+.layout-pad .modal-input { font-size: 15px !important; }
+.layout-pad .modal-save { font-size: 15px !important; }
+.layout-pad .modal-submit { font-size: 15px !important; }
+.layout-pad .modal-textarea { font-size: 15px !important; }
+.layout-pad .music-play-btn { font-size: 15px !important; }
+.layout-pad .no-title { font-size: 15px !important; }
+.layout-pad .notify-title-icon { font-size: 15px !important; }
+.layout-pad .panel-title { font-size: 15px !important; }
+.layout-pad .picker-card-price { font-size: 15px !important; }
+.layout-pad .picker-text { font-size: 15px !important; }
+.layout-pad .picker-value { font-size: 15px !important; }
+.layout-pad .preview-title { font-size: 15px !important; }
+.layout-pad .privacy-modal-title { font-size: 15px !important; }
+.layout-pad .result-save-btn { font-size: 15px !important; }
+.layout-pad .rich-text-block { font-size: 15px !important; }
+.layout-pad .search-icon { font-size: 15px !important; }
+.layout-pad .search-input { font-size: 15px !important; }
+.layout-pad .skill-name { font-size: 15px !important; }
+.layout-pad .sub-icon { font-size: 15px !important; }
+.layout-pad .sub-section-icon { font-size: 15px !important; }
+.layout-pad .submit-btn { font-size: 15px !important; }
+.layout-pad .subscribe-title { font-size: 15px !important; }
+.layout-pad .subtitle { font-size: 15px !important; }
+.layout-pad .tip-title { font-size: 15px !important; }
+.layout-pad .title-input { font-size: 15px !important; }
+.layout-pad .uid-arrow { font-size: 15px !important; }
+.layout-pad .user-name { font-size: 15px !important; }
+.layout-pad .visual-btn-primary { font-size: 15px !important; }
+.layout-pad .act-title { font-size: 16px !important; }
+.layout-pad .code-title { font-size: 16px !important; }
+.layout-pad .music-name { font-size: 16px !important; }
+.layout-pad .p-title { font-size: 16px !important; }
+.layout-pad .preview-feed-title { font-size: 16px !important; }
+.layout-pad .stitle { font-size: 16px !important; }
+.layout-pad .swarm-hero-name { font-size: 16px !important; }
+.layout-pad .uid-value { font-size: 16px !important; }
+.layout-pad .video-name { font-size: 16px !important; }
+.layout-pad .video-player-title { font-size: 16px !important; }
+.layout-pad .result-header-title { font-size: 17px !important; }
+.layout-pad .title-main { font-size: 17px !important; }
+.layout-pad .ball-count-display .num { font-size: 18px !important; }
+.layout-pad .batch-arrow { font-size: 18px !important; }
+.layout-pad .block-iframe-icon { font-size: 18px !important; }
+.layout-pad .block-music-icon { font-size: 18px !important; }
+.layout-pad .code-value { font-size: 18px !important; }
+.layout-pad .empty-text { font-size: 18px !important; }
+.layout-pad .inv-val { font-size: 18px !important; }
+.layout-pad .link-icon { font-size: 18px !important; }
+.layout-pad .nav-emoji { font-size: 18px !important; }
+.layout-pad .notify-icon { font-size: 18px !important; }
+.layout-pad .page-icon { font-size: 18px !important; }
+.layout-pad .placeholder { font-size: 18px !important; }
+.layout-pad .profile-name { font-size: 18px !important; }
+.layout-pad .sub-test-icon { font-size: 18px !important; }
+.layout-pad .sub-toggle-icon { font-size: 18px !important; }
+.layout-pad .visual-action-btn .btn-icon { font-size: 18px !important; }
+.layout-pad .headline-title { font-size: 19px !important; }
+.layout-pad .modal-title { font-size: 19px !important; }
+.layout-pad .action-icon { font-size: 20px !important; }
+.layout-pad .app-name { font-size: 20px !important; }
+.layout-pad .card-title { font-size: 20px !important; }
+.layout-pad .counter-plus { font-size: 20px !important; }
+.layout-pad .feature-emoji { font-size: 20px !important; }
+.layout-pad .maintain-title { font-size: 20px !important; }
+.layout-pad .nav-icon { font-size: 20px !important; }
+.layout-pad .sval { font-size: 20px !important; }
+.layout-pad .p-main-title { font-size: 21px !important; }
+.layout-pad .stat-value { font-size: 21px !important; }
+.layout-pad .amount { font-size: 22px !important; }
+.layout-pad .fairytale-particle { font-size: 22px !important; }
+.layout-pad .form-card-img-empty { font-size: 22px !important; }
+.layout-pad .image-action-card .action-icon { font-size: 22px !important; }
+.layout-pad .modal-close { font-size: 22px !important; }
+.layout-pad .music-icon { font-size: 22px !important; }
+.layout-pad .stat-num { font-size: 22px !important; }
+.layout-pad .title { font-size: 22px !important; }
+.layout-pad .uid-val { font-size: 22px !important; }
+.layout-pad .video-icon { font-size: 22px !important; }
+.layout-pad .act-icon { font-size: 24px !important; }
+.layout-pad .iframe-icon { font-size: 24px !important; }
+.layout-pad .item-image-placeholder-icon { font-size: 24px !important; }
+.layout-pad .avatar-plus { font-size: 26px !important; }
+.layout-pad .expired-watermark { font-size: 26px !important; }
+.layout-pad .feed-empty-icon { font-size: 26px !important; }
+.layout-pad .item-add-icon { font-size: 26px !important; }
+.layout-pad .privacy-modal-icon { font-size: 26px !important; }
+.layout-pad .selling-items .item-add-icon { font-size: 26px !important; }
+.layout-pad .banner-title { font-size: 29px !important; }
+.layout-pad .banner-title-2 { font-size: 29px !important; }
+.layout-pad .empty-icon { font-size: 30px !important; }
+.layout-pad .init-icon { font-size: 30px !important; }
+.layout-pad .maintain-icon { font-size: 30px !important; }
+.layout-pad .no-access-icon { font-size: 30px !important; }
+.layout-pad .tip-icon { font-size: 30px !important; }
+
+/* ===== 平板尺寸帽（自动生成）：width/height 的 rpx 压 px ===== */
+.layout-pad .act-icon { height: 53px !important; width: 53px !important; }
+.layout-pad .action-icon-wrap { height: 24px !important; width: 24px !important; }
+.layout-pad .admin-avatar { height: 31px !important; width: 31px !important; }
+.layout-pad .admin-panel-content { height: 80px !important; }
+.layout-pad .admin-stat-pill { min-width: 29px !important; }
+.layout-pad .agree-section { width: 80px !important; }
+.layout-pad .announce-arrow { width: 13px !important; }
+.layout-pad .announce-close-btn { height: 24px !important; width: 24px !important; }
+.layout-pad .announce-content { height: 80px !important; }
+.layout-pad .announce-header-icon-wrap { height: 31px !important; width: 31px !important; }
+.layout-pad .avatar-ring { height: 66px !important; width: 66px !important; }
+.layout-pad .badge-dot { height: 8px !important; width: 8px !important; }
+.layout-pad .ball-icon-circle { height: 37px !important; width: 37px !important; }
+.layout-pad .ball-picker-field { height: 40px !important; }
+.layout-pad .ball-remain-field { height: 40px !important; }
+.layout-pad .ball-row-del { height: 31px !important; width: 31px !important; }
+.layout-pad .banner-bg { min-height: 80px !important; }
+.layout-pad .banner-deco-1 { height: 80px !important; width: 80px !important; }
+.layout-pad .banner-deco-2 { height: 77px !important; width: 77px !important; }
+.layout-pad .banner-deco-3 { height: 44px !important; width: 44px !important; }
+.layout-pad .banner-glow { height: 80px !important; width: 80px !important; }
+.layout-pad .banner-preview { height: 80px !important; }
+.layout-pad .batch-checkbox { height: 20px !important; width: 20px !important; }
+.layout-pad .bcr-input { height: 33px !important; }
+.layout-pad .bcr-thumb { height: 20px !important; width: 20px !important; }
+.layout-pad .btn-publish { height: 40px !important; }
+.layout-pad .btn-silent { height: 40px !important; }
+.layout-pad .capture-shiny-badge { height: 80px !important; width: 80px !important; }
+.layout-pad .card-avatar { height: 24px !important; width: 24px !important; }
+.layout-pad .card-image-area .image-remove-btn { height: 20px !important; width: 20px !important; }
+.layout-pad .card-image-area .image-upload-box.mini { height: 77px !important; }
+.layout-pad .card-img { height: 77px !important; width: 77px !important; }
+.layout-pad .card-title-center::after { height: 8px !important; width: 22px !important; }
+.layout-pad .card-title-center::before { height: 8px !important; width: 22px !important; }
+.layout-pad .color-dot { height: 13px !important; width: 13px !important; }
+.layout-pad .color-preview { height: 11px !important; width: 11px !important; }
+.layout-pad .content { min-height: 80px !important; }
+.layout-pad .copy-btn { height: 40px !important; }
+.layout-pad .counter-badge { height: 18px !important; min-width: 18px !important; }
+.layout-pad .counter-btn { height: 26px !important; width: 26px !important; }
+.layout-pad .desc-panel.open { height: 80px !important; }
+.layout-pad .desc-scroll { height: 80px !important; }
+.layout-pad .divider-line { height: 8px !important; }
+.layout-pad .divider-line.double { height: 8px !important; }
+.layout-pad .divider-line.gradient { height: 8px !important; }
+.layout-pad .divider-line.star { height: 16px !important; }
+.layout-pad .divider-line.star::before { height: 8px !important; }
+.layout-pad .exp-bar { height: 8px !important; }
+.layout-pad .feed-arrow { width: 13px !important; }
+.layout-pad .field-input { height: 35px !important; }
+.layout-pad .field-picker { height: 35px !important; }
+.layout-pad .field-textarea { height: 80px !important; }
+.layout-pad .filter-item-dot { height: 8px !important; width: 8px !important; }
+.layout-pad .filter-scroll { height: 80px !important; }
+.layout-pad .form-card { height: 77px !important; }
+.layout-pad .form-card-img { height: 62px !important; width: 62px !important; }
+.layout-pad .form-card-img-wrap { height: 62px !important; width: 62px !important; }
+.layout-pad .form-cards-swiper { height: 80px !important; }
+.layout-pad .form-editor { height: 80px !important; min-height: 80px !important; }
+.layout-pad .form-input { height: 42px !important; min-height: 35px !important; }
+.layout-pad .form-picker { min-height: 35px !important; }
+.layout-pad .form-picker-value { height: 40px !important; }
+.layout-pad .form-shiny-badge { height: 18px !important; width: 18px !important; }
+.layout-pad .form-textarea { height: 80px !important; }
+.layout-pad .global-publish-btn { height: 40px !important; }
+.layout-pad .goods-thumb { height: 35px !important; width: 35px !important; }
+.layout-pad .iframe-icon { height: 35px !important; width: 35px !important; }
+.layout-pad .image-action-btn { height: 55px !important; width: 77px !important; }
+.layout-pad .image-action-card { height: 77px !important; }
+.layout-pad .image-action-card.mini { height: 55px !important; }
+.layout-pad .image-block-preview { height: 55px !important; width: 55px !important; }
+.layout-pad .image-preview { height: 80px !important; width: 80px !important; }
+.layout-pad .image-remove { height: 18px !important; width: 18px !important; }
+.layout-pad .image-remove-btn { height: 26px !important; width: 26px !important; }
+.layout-pad .input-prefix-img { height: 18px !important; width: 18px !important; }
+.layout-pad .input-with-icon { height: 42px !important; }
+.layout-pad .insert-btn { min-width: 40px !important; }
+.layout-pad .item-add-card { min-height: 80px !important; }
+.layout-pad .item-card-header { min-height: 20px !important; }
+.layout-pad .item-delete { height: 21px !important; width: 21px !important; }
+.layout-pad .item-delete-btn { height: 20px !important; width: 20px !important; }
+.layout-pad .item-image { height: 66px !important; width: 66px !important; }
+.layout-pad .item-image-placeholder { height: 66px !important; width: 66px !important; }
+.layout-pad .item-offline-btn { height: 20px !important; width: 46px !important; }
+.layout-pad .item-sub-btn { height: 20px !important; width: 20px !important; }
+.layout-pad .lang-btn { height: 22px !important; width: 31px !important; }
+.layout-pad .lang-flag { height: 15px !important; width: 22px !important; }
+.layout-pad .loading-spinner { height: 22px !important; width: 22px !important; }
+.layout-pad .marker-popup-close { height: 26px !important; width: 26px !important; }
+.layout-pad .marker-popup-dot { height: 9px !important; width: 9px !important; }
+.layout-pad .media-live-img.single { height: 80px !important; }
+.layout-pad .media-live-swiper { height: 80px !important; }
+.layout-pad .meta-badge-dot { height: 8px !important; width: 8px !important; }
+.layout-pad .miss-anim-badge { height: 80px !important; width: 80px !important; }
+.layout-pad .modal-box { width: 80px !important; }
+.layout-pad .modal-btn { height: 35px !important; }
+.layout-pad .modal-cancel { height: 40px !important; min-width: 77px !important; }
+.layout-pad .modal-delete-btn { height: 55px !important; }
+.layout-pad .modal-glow-top { height: 8px !important; width: 80px !important; }
+.layout-pad .modal-input { height: 44px !important; min-height: 40px !important; }
+.layout-pad .modal-input.mini { height: 33px !important; min-height: 33px !important; }
+.layout-pad .modal-save { height: 40px !important; min-width: 80px !important; }
+.layout-pad .modal-submit { height: 35px !important; }
+.layout-pad .modal-textarea { height: 80px !important; }
+.layout-pad .modal-textarea.mini { height: 80px !important; }
+.layout-pad .modal-title-line { height: 18px !important; width: 8px !important; }
+.layout-pad .music-cover { height: 57px !important; width: 57px !important; }
+.layout-pad .music-eq { height: 14px !important; }
+.layout-pad .music-eq view { width: 8px !important; }
+.layout-pad .music-icon { height: 53px !important; width: 53px !important; }
+.layout-pad .music-play-btn { height: 36px !important; width: 36px !important; min-width: 36px !important; }
+.layout-pad .nav-item.on::before { height: 8px !important; width: 18px !important; }
+.layout-pad .nick-input { height: 40px !important; }
+.layout-pad .nick-section { width: 80px !important; }
+.layout-pad .no-access-icon { height: 55px !important; width: 55px !important; }
+.layout-pad .notify-pulse { height: 8px !important; width: 8px !important; }
+.layout-pad .option-icon-wrap { height: 22px !important; width: 22px !important; }
+.layout-pad .option-toggle { height: 13px !important; width: 24px !important; }
+.layout-pad .option-toggle .toggle-circle { height: 10px !important; width: 10px !important; }
+.layout-pad .pad-mode-toggle { height: 26px !important; width: 48px !important; }
+.layout-pad .pad-mode-toggle-dot { height: 22px !important; width: 22px !important; }
+.layout-pad .panel-bar { height: 15px !important; width: 8px !important; }
+.layout-pad .pet-preview-card .preview-img { height: 48px !important; width: 48px !important; }
+.layout-pad .pick-chip .chip-img { height: 15px !important; width: 15px !important; }
+.layout-pad .picker-card-add { height: 21px !important; width: 21px !important; }
+.layout-pad .picker-card-effect { height: 28px !important; }
+.layout-pad .picker-card-image { height: 66px !important; width: 66px !important; }
+.layout-pad .picker-inner-new { height: 40px !important; }
+.layout-pad .picker-value { height: 44px !important; }
+.layout-pad .picker-value.mini { height: 33px !important; }
+.layout-pad .pity-track { height: 9px !important; }
+.layout-pad .premium-count-input-new { height: 40px !important; }
+.layout-pad .premium-input { height: 42px !important; }
+.layout-pad .premium-picker-new { height: 40px !important; }
+.layout-pad .preview-divider { height: 8px !important; }
+.layout-pad .preview-swiper { height: 80px !important; }
+.layout-pad .privacy-btn-cancel { height: 42px !important; }
+.layout-pad .privacy-btn-confirm { height: 42px !important; }
+.layout-pad .privacy-container { width: 80px !important; }
+.layout-pad .privacy-modal-box { width: 80px !important; }
+.layout-pad .privacy-modal-box::before { height: 8px !important; }
+.layout-pad .profile-avatar { height: 66px !important; width: 66px !important; }
+.layout-pad .radar-scan { height: 80px !important; width: 80px !important; }
+.layout-pad .refresh-btn { height: 24px !important; width: 24px !important; }
+.layout-pad .result-footer .modal-cancel { height: 48px !important; }
+.layout-pad .result-header-close { height: 31px !important; width: 31px !important; }
+.layout-pad .result-header-icon { height: 40px !important; width: 40px !important; }
+.layout-pad .result-save-btn { height: 48px !important; }
+.layout-pad .result-section > .form-input.enhanced { height: 42px !important; }
+.layout-pad .rich-inline-video { height: 80px !important; }
+.layout-pad .rich-music-block::after { height: 8px !important; }
+.layout-pad .rich-music-block::before { height: 8px !important; }
+.layout-pad .roco-icon { height: 12px !important; width: 12px !important; }
+.layout-pad .roco-icon.sm { height: 11px !important; width: 11px !important; }
+.layout-pad .search-box { height: 40px !important; }
+.layout-pad .search-clear { height: 20px !important; width: 20px !important; }
+.layout-pad .search-input { height: 40px !important; }
+.layout-pad .section-line { height: 8px !important; }
+.layout-pad .selling-edit-empty { height: 80px !important; }
+.layout-pad .selling-image-preview.large { height: 80px !important; }
+.layout-pad .selling-items .item-add-card { min-height: 80px !important; }
+.layout-pad .shiny-badge { height: 24px !important; width: 24px !important; }
+.layout-pad .size-option { height: 31px !important; min-width: 37px !important; }
+.layout-pad .skill-type { height: 33px !important; width: 33px !important; }
+.layout-pad .source-input { height: 33px !important; }
+.layout-pad .source-logo-img { height: 26px !important; width: 80px !important; }
+.layout-pad .sub-btn { min-width: 77px !important; }
+.layout-pad .sub-icon-wrap { height: 35px !important; width: 35px !important; }
+.layout-pad .submit-btn { height: 42px !important; width: 80px !important; }
+.layout-pad .summary-divider { width: 8px !important; }
+.layout-pad .swarm-hero-img { height: 77px !important; width: 77px !important; }
+.layout-pad .swarm-hero-img-wrap { height: 77px !important; width: 77px !important; }
+.layout-pad .swarm-image-wrap { height: 61px !important; width: 61px !important; }
+.layout-pad .sync-dot { height: 8px !important; width: 8px !important; }
+.layout-pad .tag-dot { height: 8px !important; width: 8px !important; }
+.layout-pad .timer-dot { height: 8px !important; width: 8px !important; }
+.layout-pad .title-input { height: 40px !important; }
+.layout-pad .toggle { height: 15px !important; width: 29px !important; }
+.layout-pad .toggle-dot { height: 11px !important; width: 11px !important; }
+.layout-pad .tool-btn { height: 26px !important; min-width: 26px !important; }
+.layout-pad .tool-divider { height: 15px !important; width: 8px !important; }
+.layout-pad .toolbar-btn { height: 40px !important; }
+.layout-pad .user-avatar { height: 48px !important; width: 48px !important; }
+.layout-pad .user-card .avatar-wrap { height: 48px !important; width: 48px !important; }
+.layout-pad .value-icon { height: 11px !important; width: 11px !important; }
+.layout-pad .video-icon { height: 48px !important; width: 74px !important; }
+.layout-pad .video-platform::before { height: 8px !important; width: 8px !important; }
+.layout-pad .video-play-btn { height: 36px !important; width: 36px !important; min-width: 36px !important; }
+.layout-pad .video-player-desc { height: 80px !important; }
+.layout-pad .video-player-desc::after { height: 22px !important; }
+.layout-pad .video-player-video { height: 80px !important; }
+.layout-pad .video-thumb { height: 48px !important; width: 74px !important; }
+.layout-pad .visual-action-btn { min-height: 46px !important; }
+.layout-pad .visual-action-btn .btn-icon-img { height: 22px !important; width: 22px !important; }
+.layout-pad .visual-bars { height: 8px !important; }
+.layout-pad .visual-btn-add-new { height: 40px !important; }
+.layout-pad to { height: 80px !important; }
+
 page { 
   background: #0d1117; 
   min-height: 100vh; 
@@ -56,8 +813,21 @@ button:active { opacity: 0.8; }
 button::after { border: none !important; }
 
 /* 卡片 */
-.card { background: linear-gradient(145deg, rgba(20,25,60,0.9), rgba(15,18,45,0.95)); border: 1rpx solid rgba(0,212,255,0.15); border-radius: 16rpx; padding: 28rpx; margin-bottom: 20rpx; box-shadow: 0 4px 24px rgba(0,212,255,0.08), inset 0 1px 0 rgba(255,255,255,0.05); transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.2s; }
-.card:active { transform: scale(0.98); box-shadow: 0 2px 12px rgba(0,212,255,0.04), inset 0 1px 0 rgba(255,255,255,0.02); }
+.card {
+  background: linear-gradient(145deg, rgba(20,25,60,0.9), rgba(15,18,45,0.95));
+  border: 1rpx solid rgba(0,212,255,0.15);
+  border-radius: 16rpx;
+  padding: 28rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4px 24px rgba(0,212,255,0.08), inset 0 1px 0 rgba(255,255,255,0.05);
+  transform: translateZ(0);
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+}
+.card:active {
+  transform: scale3d(0.978, 0.978, 1);
+  box-shadow: 0 2px 12px rgba(0,212,255,0.04), inset 0 1px 0 rgba(255,255,255,0.02);
+  transition: transform 0.08s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.08s ease;
+}
 
 /* 标题 */
 .stitle { font-size: 30rpx; font-weight: 700; color: #00d4ff; margin-bottom: 20rpx; text-transform: uppercase; letter-spacing: 2rpx; }
@@ -194,47 +964,231 @@ input::placeholder { color: rgba(255,255,255,0.35); }
 .rich-text-block { font-size: 28rpx; color: rgba(255,255,255,0.9); line-height: 1.8; display: block; margin: 16rpx 0; word-break: break-all; white-space: pre-wrap; }
 .rich-quote-block { border-left: 4rpx solid rgba(0,212,255,0.3); padding: 8rpx 16rpx; color: rgba(255,255,255,0.6); font-size: 26rpx; margin: 16rpx 0; background: rgba(0,0,0,0.15); border-radius: 0 12rpx 12rpx 0; }
 
-/* 音乐块 */
-.rich-music-block { box-sizing: border-box; display: flex; align-items: center; background: linear-gradient(135deg, rgba(0,212,255,0.12), rgba(153,69,255,0.08) 55%, rgba(0,212,255,0.05)); border: 1rpx solid rgba(0,212,255,0.28); border-radius: 28rpx; padding: 22rpx 26rpx; margin: 24rpx 0; position: relative; overflow: hidden; box-shadow: 0 12rpx 40rpx rgba(0,0,0,0.28), inset 0 1rpx 0 rgba(255,255,255,0.14); backdrop-filter: blur(20px); transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }
-.rich-music-block::before { content: ''; position: absolute; top: 0; left: 8%; right: 8%; height: 1rpx; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); }
-/* 底部播放进度流光 */
-.rich-music-block::after { content: ''; position: absolute; left: 0; bottom: 0; height: 4rpx; width: 100%; background: linear-gradient(90deg, #00d4ff, #9945ff, #00d4ff); background-size: 200% 100%; opacity: 0; transition: opacity 0.35s; pointer-events: none; }
-.rich-music-block.playing::after { opacity: 0.9; animation: musicProgressFlow 2.4s linear infinite; }
-@keyframes musicProgressFlow { from { background-position: 0% 0; } to { background-position: 200% 0; } }
+/* 音乐块 —— 清爽卡片风 */
+.rich-music-block {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  border-radius: 24rpx;
+  padding: 20rpx 24rpx;
+  margin: 20rpx 0;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
 .rich-music-block:active { transform: scale(0.985); }
+.rich-music-block::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1rpx;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+}
+/* 底部播放进度流光 */
+.rich-music-block::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3rpx;
+  width: 100%;
+  background: linear-gradient(90deg, #5b8def, #9b6dff, #5b8def);
+  background-size: 200% 100%;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.rich-music-block.playing::after { opacity: 0.85; animation: musicProgressFlow 2.4s linear infinite; }
+@keyframes musicProgressFlow { from { background-position: 0% 0; } to { background-position: 200% 0; } }
 
-.music-cover { width: 104rpx; height: 104rpx; border-radius: 50%; margin-right: 24rpx; flex-shrink: 0; box-shadow: 0 0 0 6rpx rgba(0,212,255,0.08), 0 10rpx 28rpx rgba(0,0,0,0.45); animation: musicCoverRotate 14s linear infinite; animation-play-state: paused; border: 4rpx solid rgba(0,212,255,0.35); object-fit: cover; }
+.music-cover {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 20rpx;
+  margin-right: 4rpx;
+  flex-shrink: 0;
+  box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.35);
+  animation: musicCoverRotate 18s linear infinite;
+  animation-play-state: paused;
+  object-fit: cover;
+}
 @keyframes musicCoverRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-.rich-music-block.playing .music-cover { animation-play-state: running; border-color: rgba(153,69,255,0.85); box-shadow: 0 0 0 6rpx rgba(153,69,255,0.12), 0 0 32rpx rgba(153,69,255,0.55); }
-.music-icon { font-size: 40rpx; margin-right: 24rpx; flex-shrink: 0; width: 96rpx; height: 96rpx; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(0,212,255,0.22), rgba(153,69,255,0.16)); border-radius: 50%; box-shadow: inset 0 2rpx 8rpx rgba(255,255,255,0.28), 0 8rpx 20rpx rgba(0,0,0,0.35); }
-.music-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 8rpx; }
-.music-name { font-size: 30rpx; color: #fff; font-weight: 700; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3; text-shadow: 0 2rpx 8rpx rgba(0,0,0,0.5); letter-spacing: 1rpx; }
+.rich-music-block.playing .music-cover { animation-play-state: running; }
+
+.music-icon {
+  font-size: 36rpx;
+  flex-shrink: 0;
+  width: 112rpx;
+  height: 112rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, rgba(91,141,239,0.22), rgba(155,109,255,0.18));
+  border-radius: 20rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.28);
+}
+.music-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 6rpx; }
+.music-name {
+  font-size: 28rpx;
+  color: #fff;
+  font-weight: 600;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  line-height: 1.35;
+}
 .music-url { display: none; }
 /* 播放均衡器动画 */
-.music-eq { display: flex; align-items: flex-end; gap: 5rpx; height: 26rpx; margin-left: 16rpx; flex-shrink: 0; opacity: 0; transition: opacity 0.35s; }
-.music-eq view { width: 6rpx; height: 100%; border-radius: 4rpx; background: linear-gradient(180deg, #00d4ff, #9945ff); transform: scaleY(0.4); transform-origin: bottom; }
+.music-eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 4rpx;
+  height: 24rpx;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.music-eq view {
+  width: 5rpx;
+  height: 100%;
+  border-radius: 3rpx;
+  background: linear-gradient(180deg, #5b8def, #9b6dff);
+  transform: scaleY(0.35);
+  transform-origin: bottom;
+}
 .rich-music-block.playing .music-eq { opacity: 1; }
 .rich-music-block.playing .music-eq view { animation: eqBar 0.9s ease-in-out infinite; }
 .rich-music-block.playing .music-eq view:nth-child(2) { animation-delay: 0.22s; }
 .rich-music-block.playing .music-eq view:nth-child(3) { animation-delay: 0.44s; }
-@keyframes eqBar { 0%, 100% { transform: scaleY(0.4); } 50% { transform: scaleY(1); } }
-.music-play-btn { font-size: 28rpx; color: #fff; min-width: 84rpx; height: 84rpx; padding: 0 22rpx; background: linear-gradient(135deg, #00d4ff, #9945ff); border: none; border-radius: 44rpx; font-weight: 700; flex-shrink: 0; margin-left: 18rpx; box-shadow: 0 8rpx 22rpx rgba(0,212,255,0.4), inset 0 2rpx 4rpx rgba(255,255,255,0.35); display: flex; align-items: center; justify-content: center; white-space: nowrap; transition: all 0.3s; }
-.rich-music-block.playing .music-play-btn { background: linear-gradient(135deg, #9945ff, #ff4757); box-shadow: 0 8rpx 24rpx rgba(153,69,255,0.45), inset 0 2rpx 4rpx rgba(255,255,255,0.35); animation: playBtnPulse 2s ease-in-out infinite; }
-@keyframes playBtnPulse { 0%, 100% { box-shadow: 0 8rpx 24rpx rgba(153,69,255,0.45), inset 0 2rpx 4rpx rgba(255,255,255,0.35); } 50% { box-shadow: 0 8rpx 36rpx rgba(153,69,255,0.7), inset 0 2rpx 4rpx rgba(255,255,255,0.35); } }
+@keyframes eqBar { 0%, 100% { transform: scaleY(0.35); } 50% { transform: scaleY(1); } }
 
-/* 视频块 */
-.rich-video-block { box-sizing: border-box; display: flex; align-items: center; background: linear-gradient(135deg, rgba(255,71,87,0.12), rgba(255,107,129,0.06) 55%, rgba(255,71,87,0.04)); border: 1rpx solid rgba(255,71,87,0.28); border-radius: 28rpx; padding: 22rpx 26rpx; margin: 24rpx 0; position: relative; overflow: hidden; box-shadow: 0 12rpx 40rpx rgba(0,0,0,0.28), inset 0 1rpx 0 rgba(255,255,255,0.14); backdrop-filter: blur(20px); transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }
-.rich-video-block:active { transform: scale(0.97); box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.2); }
-.rich-video-block::before { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent); transform: skewX(-20deg); animation: blockShine 4s cubic-bezier(0.25, 0.8, 0.25, 1) infinite; animation-delay: 1s; }
-.video-thumb { width: 104rpx; height: 76rpx; border-radius: 14rpx; margin-right: 22rpx; flex-shrink: 0; background: rgba(255,255,255,0.06); object-fit: cover; box-shadow: 0 8rpx 20rpx rgba(0,0,0,0.35); border: 1rpx solid rgba(255,255,255,0.1); }
-.video-icon { font-size: 40rpx; margin-right: 24rpx; flex-shrink: 0; width: 96rpx; height: 96rpx; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(255,71,87,0.24), rgba(255,107,129,0.16)); border-radius: 24rpx; box-shadow: inset 0 2rpx 8rpx rgba(255,255,255,0.28), 0 8rpx 20rpx rgba(0,0,0,0.35); }
-.video-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 8rpx; }
-.video-name { font-size: 30rpx; color: #fff; font-weight: 700; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3; text-shadow: 0 2rpx 8rpx rgba(0,0,0,0.5); letter-spacing: 1rpx; }
-.video-platform { font-size: 22rpx; color: rgba(255,255,255,0.65); display: flex; align-items: center; font-weight: 600; letter-spacing: 1rpx; }
-.video-platform::before { content: ''; display: inline-block; width: 12rpx; height: 12rpx; border-radius: 50%; background: #ff4757; margin-right: 12rpx; box-shadow: 0 0 12rpx #ff4757; animation: liveDot 1.8s ease-in-out infinite; }
-@keyframes liveDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
-.video-play-btn { font-size: 26rpx; color: #fff; min-width: 84rpx; height: 84rpx; padding: 0 22rpx; background: linear-gradient(135deg, #ff4757, #ff6b81); border: none; border-radius: 44rpx; font-weight: 700; flex-shrink: 0; margin-left: 18rpx; box-shadow: 0 8rpx 22rpx rgba(255,71,87,0.42), inset 0 2rpx 4rpx rgba(255,255,255,0.35); display: flex; align-items: center; justify-content: center; white-space: nowrap; animation: pulseVideoBtn 2.5s infinite cubic-bezier(0.25, 0.8, 0.25, 1); }
-@keyframes pulseVideoBtn { 0% { box-shadow: 0 0 0 0 rgba(255,71,87,0.5), inset 0 2rpx 4rpx rgba(255,255,255,0.35); } 70% { box-shadow: 0 0 0 16rpx rgba(255,71,87,0), inset 0 2rpx 4rpx rgba(255,255,255,0.35); } 100% { box-shadow: 0 0 0 0 rgba(255,71,87,0), inset 0 2rpx 4rpx rgba(255,255,255,0.35); } }
+.music-play-btn {
+  font-size: 24rpx;
+  color: #fff;
+  width: 72rpx;
+  height: 72rpx;
+  background: rgba(255,255,255,0.1);
+  border: 1rpx solid rgba(255,255,255,0.14);
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  transition: all 0.25s;
+}
+.rich-music-block.playing .music-play-btn {
+  background: linear-gradient(135deg, #5b8def, #9b6dff);
+  border-color: transparent;
+  box-shadow: 0 6rpx 20rpx rgba(91,141,239,0.35);
+}
+
+/* 视频块 —— 清爽卡片风 */
+.rich-video-block {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  border-radius: 24rpx;
+  padding: 20rpx 24rpx;
+  margin: 20rpx 0;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.rich-video-block:active {
+  transform: scale(0.985);
+  background: rgba(255, 255, 255, 0.07);
+}
+.rich-video-block::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1rpx;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+}
+
+.video-thumb {
+  width: 148rpx;
+  height: 96rpx;
+  border-radius: 14rpx;
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.06);
+  object-fit: cover;
+  box-shadow: 0 6rpx 18rpx rgba(0,0,0,0.3);
+  border: 1rpx solid rgba(255,255,255,0.08);
+}
+.video-icon {
+  font-size: 36rpx;
+  flex-shrink: 0;
+  width: 148rpx;
+  height: 96rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, rgba(255,95,109,0.2), rgba(255,95,109,0.08));
+  border-radius: 14rpx;
+  border: 1rpx solid rgba(255,255,255,0.08);
+}
+.video-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 10rpx; }
+.video-name {
+  font-size: 28rpx;
+  color: #fff;
+  font-weight: 600;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  line-height: 1.35;
+}
+.video-platform {
+  font-size: 20rpx;
+  color: rgba(255,255,255,0.55);
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 4rpx 14rpx;
+  background: rgba(255,255,255,0.06);
+  border: 1rpx solid rgba(255,255,255,0.08);
+  border-radius: 999rpx;
+  line-height: 1.4;
+}
+.video-platform::before {
+  content: '';
+  display: inline-block;
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background: #ff5f6d;
+  margin-right: 8rpx;
+}
+.video-play-btn {
+  font-size: 22rpx;
+  color: #fff;
+  width: 72rpx;
+  height: 72rpx;
+  background: rgba(255, 95, 109, 0.92);
+  border: none;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 4rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255, 95, 109, 0.35);
+  transition: transform 0.2s ease;
+}
+.rich-video-block:active .video-play-btn { transform: scale(0.92); }
 
 /* 联动活动特效 - 美化版 */
 .collab-theme {
@@ -311,10 +1265,13 @@ input::placeholder { color: rgba(255,255,255,0.35); }
   box-shadow: 0 12rpx 48rpx rgba(255,105,180,0.3), inset 0 0 40rpx rgba(255,215,0,0.1);
 }
 
-/* 编辑器后台音乐块特殊标记 */
-.music-block-item { border: 1rpx dashed rgba(0,212,255,0.4) !important; background: rgba(0,212,255,0.05) !important; }
-.block-music-icon { font-size: 32rpx; margin-right: 12rpx; color: #00d4ff; }
-.music-text-info { color: #00d4ff !important; font-weight: bold; }
+/* 编辑器后台音乐/视频块标记 */
+.music-block-item { border: 1rpx dashed rgba(91,141,239,0.35) !important; background: rgba(91,141,239,0.06) !important; }
+.block-music-icon { font-size: 28rpx; margin-right: 12rpx; }
+.music-text-info { font-weight: 600; }
+.video-block-item { border-left: 3rpx solid rgba(255,95,109,0.45) !important; }
+.block-video-icon { font-size: 28rpx; margin-right: 12rpx; }
+.video-text-info { font-weight: 600; }
 
 /* 富文本排版块 iframe 网页插件样式 */
 .rich-iframe-block { display: flex; align-items: center; background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(0,230,118,0.05)); border: 1rpx solid rgba(0,212,255,0.2); border-radius: 20rpx; padding: 24rpx; margin: 20rpx 0; box-shadow: 0 4rpx 16rpx rgba(0,212,255,0.06); }
@@ -341,14 +1298,16 @@ input::placeholder { color: rgba(255,255,255,0.35); }
   to { transform: rotate(360deg); }
 }
 .rich-music-block.playing {
-  background: linear-gradient(135deg, rgba(153,69,255,0.25), rgba(0,212,255,0.2));
-  border-color: rgba(153,69,255,0.5);
-  box-shadow: 0 8rpx 32rpx rgba(153,69,255,0.3);
+  background: rgba(91, 141, 239, 0.1);
+  border-color: rgba(91, 141, 239, 0.28);
 }
-.rich-music-block.playing .music-icon { background: rgba(153,69,255,0.2); }
+.rich-music-block.playing .music-icon {
+  background: linear-gradient(145deg, rgba(91,141,239,0.3), rgba(155,109,255,0.24));
+}
 .rich-music-block.playing .music-play-btn {
-  background: linear-gradient(135deg, #9945ff, #ff4757);
-  box-shadow: 0 4rpx 12rpx rgba(153,69,255,0.4);
+  background: linear-gradient(135deg, #5b8def, #9b6dff);
+  border-color: transparent;
+  box-shadow: 0 6rpx 20rpx rgba(91,141,239,0.35);
   color: #fff;
 }
 
@@ -623,6 +1582,47 @@ input::placeholder { color: rgba(255,255,255,0.35); }
 .layout-pad .card-desc,
 .layout-pad .card-time { font-size: 13px !important; }
 
+/* 高频文本统一压到 px，避免 Pad 上 rpx 放大 */
+.layout-pad .feed-count,
+.layout-pad .feed-sub,
+.layout-pad .feed-empty-text,
+.layout-pad .announce-count,
+.layout-pad .announce-source,
+.layout-pad .item-effect,
+.layout-pad .item-limit-badge,
+.layout-pad .goods-group-title,
+.layout-pad .goods-group-time,
+.layout-pad .goods-limit,
+.layout-pad .goods-offline,
+.layout-pad .picker-card-effect,
+.layout-pad .picker-card-limit,
+.layout-pad .sub-item-new,
+.layout-pad .notify-desc,
+.layout-pad .notify-name,
+.layout-pad .stat-name,
+.layout-pad .form-hint,
+.layout-pad .modal-hint { font-size: 12px !important; }
+.layout-pad .feed-badge,
+.layout-pad .item-badge,
+.layout-pad .tag,
+.layout-pad .action-count,
+.layout-pad .version-note { font-size: 11px !important; }
+.layout-pad .item-name,
+.layout-pad .picker-card-name,
+.layout-pad .goods-name,
+.layout-pad .user-name,
+.layout-pad .panel-title,
+.layout-pad .feed-empty-btn .btn-text { font-size: 15px !important; }
+.layout-pad .item-price,
+.layout-pad .picker-card-price,
+.layout-pad .goods-price,
+.layout-pad .stat-num,
+.layout-pad .uid-value,
+.layout-pad .level-num { font-size: 16px !important; }
+.layout-pad .panel-count,
+.layout-pad .panel-badge,
+.layout-pad .feed-count { font-size: 12px !important; }
+
 /* 卡片 */
 .layout-pad .card {
   padding: 16px !important;
@@ -671,7 +1671,7 @@ input::placeholder { color: rgba(255,255,255,0.35); }
   justify-content: center !important;
 }
 .layout-pad .modal-box {
-  max-width: 100% !important;
+  max-width: 640px !important;
   width: 100% !important;
   margin: 0 auto !important;
   border-radius: 12px !important;
@@ -768,6 +1768,69 @@ input::placeholder { color: rgba(255,255,255,0.35); }
   font-size: 22px;
 }
 
+/* ── 平板控件尺寸帽：高度/间距也压 px，避免 rpx 放大 ── */
+.layout-pad .global-publish-btn {
+  height: 44px !important;
+  font-size: 15px !important;
+  border-radius: 10px !important;
+}
+.layout-pad .add-btn { min-height: 32px !important; padding: 6px 14px !important; }
+.layout-pad .sub-test-btn { min-height: 64px !important; padding: 10px 6px !important; }
+.layout-pad .counter-btn { width: 28px !important; height: 28px !important; }
+.layout-pad .notify-counter .counter-plus { font-size: 16px !important; }
+.layout-pad .toggle { width: 44px !important; height: 24px !important; border-radius: 12px !important; }
+.layout-pad .modal-close { width: 32px !important; height: 32px !important; line-height: 32px !important; text-align: center; }
+.layout-pad .avatar-ring { width: 64px !important; height: 64px !important; }
+.layout-pad .user-avatar { width: 52px !important; height: 52px !important; }
+.layout-pad .admin-avatar { width: 40px !important; height: 40px !important; }
+.layout-pad .exp-bar { height: 4px !important; }
+.layout-pad .image-upload-box { padding: 12px !important; }
+
+/* Dock 避让：正文底部留出 Dock 空间 */
+.layout-pad.page,
+.page.layout-pad { padding-bottom: calc(88px + env(safe-area-inset-bottom)) !important; }
+
+/* 标题防断字 */
+.layout-pad .panel-title,
+.layout-pad .section-title,
+.layout-pad .stitle,
+.layout-pad .card-title,
+.layout-pad .modal-title {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+/* ── 平板横屏：双栏利用横向空间 ── */
+.layout-wide .tab-content-pane {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 16px !important;
+}
+.layout-wide .card-item { width: calc(50% - 8px) !important; }
+.layout-wide .stats-grid { grid-template-columns: repeat(4, 1fr) !important; }
+.layout-wide .sub-grid,
+.layout-wide .sub-test-grid { grid-template-columns: repeat(3, 1fr) !important; }
+.layout-wide .feature-grid { display: flex !important; gap: 12px !important; }
+.layout-wide .feature-box { flex: 1 !important; }
+.layout-wide .stat-grid { display: flex !important; gap: 12px !important; }
+.layout-wide .stat-box { flex: 1 !important; }
+.layout-wide .goods-list {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 12px !important;
+}
+.layout-wide .goods-group { width: 100% !important; }
+.layout-wide .notify-item { padding: 12px 0 !important; }
+.layout-wide .action-list {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 10px !important;
+}
+.layout-wide .action-item { margin-bottom: 0 !important; }
+.layout-wide .quick-nav { grid-template-columns: repeat(4, 1fr) !important; }
+.layout-wide .item-list,
+.layout-wide .selling-items { grid-template-columns: repeat(3, 1fr) !important; }
+
 
 /* ── 兼容：未挂 Behavior 的页面仍按宽度自动适配 ── */
 @media (min-width: 768px) {
@@ -777,38 +1840,76 @@ input::placeholder { color: rgba(255,255,255,0.35); }
 }
 
 
-/* ===== 轻量全局过渡（纯 CSS，不加 JS） ===== */
+/* ===== 全局高性能微动画与过渡系统（Apple Spring Easing + GPU 3D 合成） ===== */
 @keyframes uiFadeUp {
-  from { opacity: 0; transform: translateY(8rpx); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12rpx, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
+
 @keyframes uiFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
 @keyframes uiModalUp {
-  from { opacity: 0; transform: translateY(24rpx); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translate3d(0, 26rpx, 0) scale3d(0.975, 0.975, 1);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+  }
 }
 
-/* 列表卡片轻浮入（首次渲染） */
+/* 列表卡片轻浮入（平滑阻尼进场） */
 .feed-item,
 .act-card,
 .broadcast-item,
 .swarm-item-card,
 .ball-item-card,
 .card-item {
-  animation: uiFadeUp 0.22s ease-out both;
+  animation: uiFadeUp 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform: translateZ(0);
 }
 
-/* 弹窗 */
-.modal-mask { animation: uiFadeIn 0.18s ease-out both; }
+/* 渐进瀑布流浮入延迟（首屏前4项如丝般依次呈现，仅占轻量 CSS 延迟） */
+.feed-item:nth-child(1), .card-item:nth-child(1), .act-card:nth-child(1) { animation-delay: 0.02s; }
+.feed-item:nth-child(2), .card-item:nth-child(2), .act-card:nth-child(2) { animation-delay: 0.05s; }
+.feed-item:nth-child(3), .card-item:nth-child(3), .act-card:nth-child(3) { animation-delay: 0.08s; }
+.feed-item:nth-child(4), .card-item:nth-child(4), .act-card:nth-child(4) { animation-delay: 0.11s; }
+
+/* 弹窗与浮层入场（仅 opacity，避免 transform 残留导致内部原生 input/picker 错位） */
+.modal-mask {
+  animation: uiFadeIn 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
 .modal-box,
 .video-player-box {
-  animation: uiModalUp 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: uiFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* 按压反馈：只动 transform/opacity，不增加内存 */
+/* 基础交互元素释放回弹态（松手时带平滑弹性衰减） */
+.nav-item,
+.tab,
+.sub-tab,
+.sub-tab-p,
+.method-chip,
+.feed-item-header,
+.broadcast-goods,
+.list-item,
+.card-item,
+.act {
+  transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.18s ease, border-color 0.18s ease;
+  transform: translateZ(0);
+}
+
+/* 双向跟手触控反馈（按下立即响应 0.08s，零肉眼延迟；比例细腻弹性） */
 .nav-item:active,
 .act:active,
 .tab:active,
@@ -818,20 +1919,9 @@ input::placeholder { color: rgba(255,255,255,0.35); }
 .feed-item-header:active,
 .broadcast-goods:active,
 .list-item:active {
-  opacity: 0.72;
-  transform: scale(0.98);
-  transition: opacity 0.12s ease, transform 0.12s ease;
-}
-
-/* 链接/按钮过渡 */
-.nav-item,
-.tab,
-.sub-tab-p,
-.method-chip,
-.feed-item-header,
-.broadcast-goods {
-  transition: opacity 0.15s ease, transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
-  will-change: auto;
+  opacity: 0.8;
+  transform: scale3d(0.972, 0.972, 1);
+  transition: opacity 0.08s ease, transform 0.08s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* 系统减弱动态时关闭动画，省资源 */
@@ -845,7 +1935,184 @@ input::placeholder { color: rgba(255,255,255,0.35); }
   .card-item,
   .modal-mask,
   .modal-box,
-  .video-player-box {
+  .video-player-box,
+  .liquid-glass-interactive,
+  .liquid-glass-card,
+  .liquid-glass-btn {
     animation: none !important;
+    transition: none !important;
   }
 }
+
+/* ==========================================================================
+   Apple Liquid Glass (流体拟态毛玻璃) 全局设计体系
+   灵感来源: rdev/liquid-glass-react (原生小程序适配版)
+   ========================================================================== */
+
+/* ── 1. 卡片与面板类 (.liquid-glass-card / .liquid-glass-panel) ── */
+.liquid-glass,
+.liquid-glass-card,
+.liquid-glass-panel {
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: 20rpx;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.02) 100%),
+    rgba(18, 22, 36, 0.74);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1rpx solid rgba(255, 255, 255, 0.15);
+  box-shadow:
+    inset 0 1rpx 1rpx 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1rpx 2rpx 0 rgba(0, 0, 0, 0.25),
+    0 12rpx 36rpx rgba(0, 0, 0, 0.32),
+    0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform, backdrop-filter;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease, background 0.2s ease;
+}
+
+/* 顶部流光色散折射高光线 (模拟 feDisplacementMap 边缘色差) */
+.liquid-glass::before,
+.liquid-glass-card::before,
+.liquid-glass-panel::before,
+.liquid-glass-specular::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2rpx;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(140, 210, 255, 0.48) 25%,
+    rgba(215, 170, 255, 0.42) 50%,
+    rgba(140, 255, 220, 0.32) 75%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ── 2. 导航栏 / 浮动条 (.liquid-glass-nav / .liquid-glass-dock) ── */
+.liquid-glass-nav,
+.liquid-glass-dock,
+.liquid-glass-bar {
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: 40rpx;
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 50%, rgba(255, 255, 255, 0.01) 100%),
+    rgba(13, 17, 28, 0.78);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1rpx solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 1rpx 1rpx 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1rpx 1rpx 0 rgba(0, 0, 0, 0.3),
+    0 16rpx 48rpx rgba(0, 0, 0, 0.42);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+.liquid-glass-nav::before,
+.liquid-glass-dock::before,
+.liquid-glass-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2rpx;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(140, 210, 255, 0.5) 25%,
+    rgba(215, 170, 255, 0.45) 50%,
+    rgba(140, 255, 220, 0.35) 75%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ── 3. 全局弹窗与遮罩层 (.liquid-glass-modal / .liquid-glass-mask) ── */
+.liquid-glass-mask {
+  background: rgba(8, 12, 22, 0.65) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+}
+
+.liquid-glass-modal {
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: 28rpx;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.02) 100%),
+    rgba(18, 24, 38, 0.88) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  border: 1rpx solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow:
+    inset 0 1rpx 2rpx 0 rgba(255, 255, 255, 0.5),
+    inset 0 -2rpx 3rpx 0 rgba(0, 0, 0, 0.35),
+    0 24rpx 64rpx rgba(0, 0, 0, 0.6) !important;
+  transform: translateZ(0);
+}
+.liquid-glass-modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2rpx;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(140, 210, 255, 0.55) 25%,
+    rgba(215, 170, 255, 0.5) 50%,
+    rgba(140, 255, 220, 0.4) 75%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ── 4. 按钮与胶囊 (.liquid-glass-btn / .liquid-glass-chip) ── */
+.liquid-glass-btn,
+.liquid-glass-chip {
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: 999rpx;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.05) 100%),
+    rgba(22, 28, 46, 0.7);
+  backdrop-filter: blur(16px) saturate(175%);
+  -webkit-backdrop-filter: blur(16px) saturate(175%);
+  border: 1rpx solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    inset 0 1rpx 1rpx 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1rpx 2rpx 0 rgba(0, 0, 0, 0.25),
+    0 8rpx 20rpx rgba(0, 0, 0, 0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── 5. 流体弹性微交互反馈 (.liquid-glass-interactive) ── */
+.liquid-glass-interactive:active,
+.liquid-glass-card:active,
+.liquid-glass-btn:active {
+  transform: scale(0.976);
+  box-shadow:
+    inset 0 1rpx 2rpx 0 rgba(255, 255, 255, 0.58),
+    inset 0 -1rpx 2rpx 0 rgba(0, 0, 0, 0.35),
+    0 6rpx 18rpx rgba(0, 0, 0, 0.24);
+  transition: transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.1s ease;
+}
+

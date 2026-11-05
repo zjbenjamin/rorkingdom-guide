@@ -17,6 +17,7 @@ var parseWeiboUrl = richEditor.parseWeiboUrl
 var parseVideoUrl = richEditor.parseVideoUrl
 var parseTableInput = richEditor.parseTableInput
 var extractCleanURL = richEditor.extractCleanURL
+var extractShareMeta = richEditor.extractShareMeta
 
 var editorOps = require('./editorOps')
 var formOps = editorOps.createRichEditorOps({
@@ -69,6 +70,13 @@ Page({
       editingPet: null,
       petForm: { id: '', name: '', season: 'S1', img: '' },
       petSeasons: ['S1', 'S2', 'S3', 'S4'],
+      hiddenSeasons: [],
+      hiddenSeasonMap: {},
+      selectedPetSeason: 'S1',
+      petSeasonCounts: {},
+      filteredShinyPets: [],
+      calendarPresetPickerRange: [['S1', 'S2', 'S3', 'S4'], ['（该赛季暂无预设）']],
+      calendarPresetPickerValue: [0, 0],
       petSeasonIndex: 0,
       showSeasonModal: false,
       editingSeason: null,
@@ -108,6 +116,14 @@ Page({
     bannerPreviewUrls: [],
     bannerLoading: false,
     pageConfigs: [],
+    calendarSeasons: [],
+    showCalendarModal: false,
+    calendarEditingId: '',
+    calendarName: '',
+    calendarStart: '',
+    calendarEnd: '',
+    calendarItems: [],
+    calendarGroupNames: ['版本周期性活动', '大量出没', '命定花种', '常驻课题'],
     editorMode: 'simple',
     currentFontSize: 28,
     currentFontColor: '#ffffff',
@@ -219,6 +235,7 @@ Page({
     this.loadStats()
     this.loadBanner()
     this.loadSwarmLocations()
+    this.loadCalendarSeasons()
   },
   loadSwarmLocations: function() {
     var self = this
@@ -258,7 +275,7 @@ Page({
     else if (tab === 'subscribe') this.loadSubscribers()
     else if (tab === 'users') this.loadUsers()
     else if (tab === 'stats') this.loadStats()
-    else if (tab === 'pages') { this.loadPageConfigs(); this.loadBanner() }
+    else if (tab === 'pages') { this.loadPageConfigs(); this.loadBanner(); this.loadCalendarSeasons() }
     else if (tab === 'balls') { this.loadBallsConfig(); this.loadShinyPets() }
   },
   loadAnnouncements: function() {
@@ -267,7 +284,20 @@ Page({
     db.collection('announcements').orderBy('createTime', 'asc').limit(50).get()
       .then(function(res) {
         var list = res.data || []
-        for (var i = 0; i < list.length; i++) list[i].timeStr = self.formatTime(list[i].createTime)
+        for (var i = 0; i < list.length; i++) {
+          list[i].timeStr = self.formatTime(list[i].createTime)
+          // 卡片摘要：始终从正文重算，避免旧 previewText 里残留 HTML 源码
+          var raw = String(list[i].content || '')
+          list[i].previewText = raw
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .substring(0, 120)
+        }
         self.setData({ announcements: list, loading: false })
       })
       .catch(function() { self.setData({ loading: false }) })
@@ -642,6 +672,350 @@ openModal: function(e) {
       showSizePicker: false, showColorPicker: false, showFontFamilyPicker: false
     })
   },
+  // ── 活动倒计时（赛季日历）管理 ──
+  loadCalendarSeasons: function() {
+    var self = this
+    if (!db) return
+    db.collection('calendar_seasons').orderBy('start', 'desc').limit(50).get().then(function(res) {
+      var list = (res.data || []).map(function(s) {
+        var copy = Object.assign({}, s)
+        copy.itemsCount = (s.items || []).length
+        return copy
+      })
+      self.setData({ calendarSeasons: list })
+    }).catch(function() {})
+  },
+  _ensureCalendarPresetPets: function(preferredSeasonName) {
+    if (!this.data.shinyPets || !this.data.shinyPets.length) {
+      this.loadShinyPets()
+      return
+    }
+    var seasons = (this.data.petSeasons && this.data.petSeasons.length) ? this.data.petSeasons : ['S1', 'S2', 'S3', 'S4']
+    var col0 = 0
+    if (preferredSeasonName) {
+      for (var i = 0; i < seasons.length; i++) {
+        if (preferredSeasonName.indexOf(seasons[i]) !== -1 || seasons[i].indexOf(preferredSeasonName) !== -1) {
+          col0 = i
+          break
+        }
+      }
+    }
+    this._syncCalendarPresetPicker(col0, 0)
+  },
+  _syncCalendarPresetPicker: function(col0Idx, col1Idx) {
+    var seasons = (this.data.petSeasons && this.data.petSeasons.length) ? this.data.petSeasons : ['S1', 'S2', 'S3', 'S4']
+    var pets = this.data.shinyPets || []
+    var sIdx = Math.max(0, Math.min(Number(col0Idx) || 0, seasons.length - 1))
+    var curSeason = seasons[sIdx] || seasons[0]
+    var seasonPets = pets.filter(function(p) { return (p.season || seasons[0]) === curSeason })
+    var names = seasonPets.length ? seasonPets.map(function(p) { return p.name }) : ['（该赛季暂无预设）']
+    var pIdx = Math.max(0, Math.min(Number(col1Idx) || 0, names.length - 1))
+    this.setData({
+      calendarPresetPickerRange: [seasons, names],
+      calendarPresetPickerValue: [sIdx, pIdx]
+    })
+  },
+  onCalendarPresetColumnChange: function(e) {
+    if (e.detail.column === 0) {
+      this._syncCalendarPresetPicker(e.detail.value, 0)
+    } else if (e.detail.column === 1) {
+      this.setData({ 'calendarPresetPickerValue[1]': e.detail.value })
+    }
+  },
+  onCalendarPickPresetPet: function(e) {
+    var rowIdx = e.currentTarget.dataset.index
+    var val = e.detail.value || [0, 0]
+    var seasons = (this.data.petSeasons && this.data.petSeasons.length) ? this.data.petSeasons : ['S1', 'S2', 'S3', 'S4']
+    var sIdx = Math.max(0, Math.min(Number(val[0]) || 0, seasons.length - 1))
+    var curSeason = seasons[sIdx] || seasons[0]
+    var seasonPets = (this.data.shinyPets || []).filter(function(p) { return (p.season || seasons[0]) === curSeason })
+    var pet = seasonPets[Number(val[1]) || 0]
+    if (!pet) {
+      wx.showToast({ title: '该赛季暂无可选精灵', icon: 'none' })
+      return
+    }
+    var list = this._calRowsSynced()
+    if (!list[rowIdx]) return
+    var petImgs = (Array.isArray(pet.imgs) && pet.imgs.length)
+      ? pet.imgs.map(function(u) { return String(u || '').trim() }).filter(Boolean)
+      : (pet.img ? [String(pet.img).trim()] : [])
+    var curIcons = Array.isArray(list[rowIdx].icons)
+      ? list[rowIdx].icons.map(function(u) { return String(u || '').trim() }).filter(Boolean)
+      : (list[rowIdx].icon ? [String(list[rowIdx].icon).trim()] : [])
+    var nextIcons = petImgs.length ? petImgs.slice() : (curIcons.length ? curIcons : [''])
+    var isFlowerSeed = String(pet.name || '').indexOf('命定花种') !== -1
+    if (isFlowerSeed && nextIcons.length < 2) {
+      while (nextIcons.length < 2) nextIcons.push('')
+    }
+    list[rowIdx] = Object.assign({}, list[rowIdx], {
+      title: pet.name || '',
+      icon: nextIcons[0] || '',
+      icons: nextIcons,
+      groupIndex: 1
+    })
+    this._calDraft = {}
+    this.setData({ calendarItems: list })
+    wx.showToast({
+      title: '已绑定 [' + curSeason + '] ' + pet.name + (isFlowerSeed ? '（可填多组图片URL）' : ''),
+      icon: 'none'
+    })
+  },
+  addCalendarSeason: function() {
+    this._ensureCalendarPresetPets()
+    this._calDraft = {}
+    this.setData({ showCalendarModal: true, calendarEditingId: '', calendarName: '', calendarStart: '', calendarEnd: '', calendarItems: [] })
+  },
+  editCalendarSeason: function(e) {
+    var id = e.currentTarget.dataset.id
+    var list = this.data.calendarSeasons
+    for (var i = 0; i < list.length; i++) {
+      if (list[i]._id !== id) continue
+      var s = list[i]
+      this._ensureCalendarPresetPets(s.name || '')
+      var rows = (s.items || []).map(function(it) {
+        var gi = it.group === 'spawn' ? 1 : (it.group === 'seed' ? 2 : (it.group === 'quest' ? 3 : 0))
+        var rawIcons = Array.isArray(it.icons) && it.icons.length
+          ? it.icons.slice()
+          : (Array.isArray(it.images) && it.images.length ? it.images.slice() : (it.icon ? [it.icon] : ['']))
+        if (!rawIcons.length) rawIcons = ['']
+        if ((gi === 2 || String(it.title || '').indexOf('命定花种') !== -1) && rawIcons.length < 2) {
+          while (rawIcons.length < 2) rawIcons.push('')
+        }
+        return { title: it.title || '', groupIndex: gi, start: it.start || '', end: it.end || '', icon: rawIcons[0] || '', icons: rawIcons }
+      })
+      this._calDraft = {}
+      this.setData({
+        showCalendarModal: true, calendarEditingId: id,
+        calendarName: s.name || '', calendarStart: s.start || '', calendarEnd: s.end || '',
+        calendarItems: rows
+      })
+      return
+    }
+  },
+  deleteCalendarSeason: function(e) {
+    var self = this
+    var id = e.currentTarget.dataset.id
+    wx.showModal({
+      title: '删除赛季日历',
+      content: '删除后前端倒计时板块将不再显示该赛季，确定删除？',
+      success: function(res) {
+        if (!res.confirm) return
+        db.collection('calendar_seasons').doc(id).remove().then(function() {
+          wx.showToast({ title: '已删除', icon: 'success' })
+          self.loadCalendarSeasons()
+        }).catch(function() { wx.showToast({ title: '删除失败', icon: 'none' }) })
+      }
+    })
+  },
+  closeCalendarModal: function() {
+    this.setData({ showCalendarModal: false })
+  },
+  onCalendarNameInput: function(e) { this.setData({ calendarName: e.detail.value }) },
+  onCalendarStartChange: function(e) { this.setData({ calendarStart: e.detail.value }) },
+  onCalendarEndChange: function(e) { this.setData({ calendarEnd: e.detail.value }) },
+  // 输入草稿缓存：打字不触发整列重渲染，结构性变更/保存前统一合并
+  _calSetDraft: function(i, key, val) {
+    if (!this._calDraft) this._calDraft = {}
+    if (!this._calDraft[i]) this._calDraft[i] = {}
+    this._calDraft[i][key] = val
+  },
+  _calRowsSynced: function() {
+    var list = (this.data.calendarItems || []).slice()
+    var d = this._calDraft || {}
+    for (var i = 0; i < list.length; i++) {
+      var row = Object.assign({}, list[i])
+      var baseIcons = Array.isArray(row.icons) && row.icons.length ? row.icons.slice() : [row.icon || '']
+      if (d[i]) {
+        if (d[i].title !== undefined) row.title = d[i].title
+        if (d[i].icon !== undefined) {
+          row.icon = d[i].icon
+          baseIcons[0] = d[i].icon
+        }
+        if (d[i].iconsMap) {
+          for (var k in d[i].iconsMap) {
+            baseIcons[Number(k)] = d[i].iconsMap[k]
+          }
+        }
+      }
+      row.icons = baseIcons
+      row.icon = baseIcons[0] || ''
+      list[i] = row
+    }
+    return list
+  },
+  addCalendarItemRow: function() {
+    var list = this._calRowsSynced()
+    list.push({ title: '', groupIndex: 0, start: '', end: '', icon: '', icons: [''] })
+    this._calDraft = {}
+    this.setData({ calendarItems: list })
+  },
+  removeCalendarItemRow: function(e) {
+    var list = this._calRowsSynced()
+    list.splice(e.currentTarget.dataset.index, 1)
+    this._calDraft = {}
+    this.setData({ calendarItems: list })
+  },
+  onCalendarItemTitle: function(e) {
+    var idx = e.currentTarget.dataset.index
+    var val = e.detail.value || ''
+    this._calSetDraft(idx, 'title', val)
+    if (val.indexOf('命定花种') !== -1) {
+      var curRow = (this.data.calendarItems || [])[idx]
+      if (curRow && (!curRow.icons || curRow.icons.length < 2)) {
+        var list = this._calRowsSynced()
+        while (list[idx].icons.length < 2) list[idx].icons.push('')
+        this._calDraft = {}
+        this.setData({ calendarItems: list })
+      }
+    }
+  },
+  onCalendarItemIcon: function(e) {
+    this._calSetDraft(e.currentTarget.dataset.index, 'icon', e.detail.value)
+  },
+  onCalendarItemIconInput: function(e) {
+    var rowIdx = e.currentTarget.dataset.index
+    var iconIdx = Number(e.currentTarget.dataset.iconIndex) || 0
+    if (!this._calDraft) this._calDraft = {}
+    if (!this._calDraft[rowIdx]) this._calDraft[rowIdx] = {}
+    if (!this._calDraft[rowIdx].iconsMap) this._calDraft[rowIdx].iconsMap = {}
+    this._calDraft[rowIdx].iconsMap[iconIdx] = e.detail.value
+  },
+  addCalendarItemIcon: function(e) {
+    var rowIdx = e.currentTarget.dataset.index
+    var list = this._calRowsSynced()
+    if (!list[rowIdx]) return
+    var icons = Array.isArray(list[rowIdx].icons) ? list[rowIdx].icons.slice() : [list[rowIdx].icon || '']
+    icons.push('')
+    list[rowIdx] = Object.assign({}, list[rowIdx], { icons: icons, icon: icons[0] || '' })
+    this._calDraft = {}
+    this.setData({ calendarItems: list })
+  },
+  removeCalendarItemIcon: function(e) {
+    var rowIdx = e.currentTarget.dataset.index
+    var iconIdx = Number(e.currentTarget.dataset.iconIndex) || 0
+    var list = this._calRowsSynced()
+    if (!list[rowIdx]) return
+    var icons = Array.isArray(list[rowIdx].icons) ? list[rowIdx].icons.slice() : [list[rowIdx].icon || '']
+    icons.splice(iconIdx, 1)
+    if (!icons.length) icons = ['']
+    list[rowIdx] = Object.assign({}, list[rowIdx], { icons: icons, icon: icons[0] || '' })
+    this._calDraft = {}
+    this.setData({ calendarItems: list })
+  },
+  onCalendarItemGroup: function(e) {
+    var i = e.currentTarget.dataset.index
+    var gi = parseInt(e.detail.value, 10) || 0
+    var list = this._calRowsSynced()
+    var icons = Array.isArray(list[i].icons) && list[i].icons.length ? list[i].icons.slice() : [list[i].icon || '']
+    if (gi === 2 && icons.length < 2) {
+      while (icons.length < 2) icons.push('')
+    }
+    list[i] = Object.assign({}, list[i], { groupIndex: gi, icons: icons, icon: icons[0] || '' })
+    this._calDraft = {}
+    this.setData({ calendarItems: list })
+  },
+  onCalendarItemStart: function(e) {
+    var i = e.currentTarget.dataset.index
+    var list = this._calRowsSynced()
+    list[i] = Object.assign({}, list[i], { start: e.detail.value })
+    this._calDraft = {}
+    this.setData({ calendarItems: list })
+  },
+  onCalendarItemEnd: function(e) {
+    var i = e.currentTarget.dataset.index
+    var list = this._calRowsSynced()
+    list[i] = Object.assign({}, list[i], { end: e.detail.value })
+    this._calDraft = {}
+    this.setData({ calendarItems: list })
+  },
+  saveCalendarSeason: function() {
+    var self = this
+    var name = (this.data.calendarName || '').trim()
+    var start = (this.data.calendarStart || '').trim()
+    var end = (this.data.calendarEnd || '').trim()
+    if (!name) { wx.showToast({ title: '请输入赛季名称', icon: 'none' }); return }
+    if (!start || !end) { wx.showToast({ title: '请选择起止日期', icon: 'none' }); return }
+    if (end < start) { wx.showToast({ title: '结束日期不能早于开始日期', icon: 'none' }); return }
+    var items = []
+    var rows = this._calRowsSynced()
+    var groupKeys = ['version', 'spawn', 'seed', 'quest']
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i]
+      var title = (r.title || '').trim()
+      var itemStart = (r.start || '').trim()
+      var itemEnd = (r.end || '').trim()
+      if (!title && !itemStart && !itemEnd && !(r.icon || '').trim()) continue
+      if (!title) { wx.showToast({ title: '第 ' + (i + 1) + ' 行缺少标题', icon: 'none' }); return }
+      if (!itemStart) { wx.showToast({ title: '「' + title.substring(0, 8) + '」缺少开始日期', icon: 'none' }); return }
+      if (itemEnd && itemEnd < itemStart) { wx.showToast({ title: '「' + title.substring(0, 8) + '」结束早于开始', icon: 'none' }); return }
+      // 截至日期可不填（长期活动，前端显示「x月x日起」）
+      var item = { title: title, group: groupKeys[r.groupIndex] || 'version', start: itemStart }
+      if (itemEnd) item.end = itemEnd
+      var validIcons = []
+      if (Array.isArray(r.icons)) {
+        for (var ii = 0; ii < r.icons.length; ii++) {
+          var u = String(r.icons[ii] || '').trim()
+          if (u && validIcons.indexOf(u) === -1) validIcons.push(u)
+        }
+      } else if ((r.icon || '').trim()) {
+        validIcons.push((r.icon || '').trim())
+      }
+      if (!validIcons.length && self.data.shinyPets && self.data.shinyPets.length) {
+        var tClean = title.replace(/^异色/, '').trim()
+        for (var pi = 0; pi < self.data.shinyPets.length; pi++) {
+          var sp = self.data.shinyPets[pi]
+          var spName = String(sp.name || '').trim().replace(/^异色/, '').trim()
+          if (spName && (spName === tClean || tClean.indexOf(spName) !== -1 || spName.indexOf(tClean) !== -1)) {
+            if (Array.isArray(sp.imgs) && sp.imgs.length) {
+              for (var si = 0; si < sp.imgs.length; si++) {
+                var su = String(sp.imgs[si] || '').trim()
+                if (su && validIcons.indexOf(su) === -1) validIcons.push(su)
+              }
+            } else if (sp.img) {
+              validIcons.push(String(sp.img).trim())
+            }
+            break
+          }
+        }
+      }
+      if (validIcons.length) {
+        item.icon = validIcons[0]
+        item.icons = validIcons
+        item.images = validIcons
+      }
+      items.push(item)
+    }
+    var data = { name: name, start: start, end: end, items: items }
+    var isEdit = !!this.data.calendarEditingId
+    if (!isEdit) data.createTime = Date.now()
+    var doSave = function() {
+      return isEdit
+        ? db.collection('calendar_seasons').doc(self.data.calendarEditingId).update({ data: data })
+        : db.collection('calendar_seasons').add({ data: data })
+    }
+    doSave().then(function() {
+      wx.showToast({ title: '已保存', icon: 'success' })
+      self.setData({ showCalendarModal: false })
+      self.loadCalendarSeasons()
+    }).catch(function(err) {
+      console.error('保存赛季日历失败:', err)
+      // 集合不存在时自动建集合后重试一次（createCollection 已存在会报错，忽略）
+      if (!isEdit && db.createCollection) {
+        db.createCollection('calendar_seasons').catch(function() {}).then(function() {
+          return db.collection('calendar_seasons').add({ data: data })
+        }).then(function() {
+          wx.showToast({ title: '已保存', icon: 'success' })
+          self.setData({ showCalendarModal: false })
+          self.loadCalendarSeasons()
+        }).catch(function(err2) {
+          console.error('重试保存仍失败:', err2)
+          wx.showToast({ title: '保存失败：' + ((err2 && err2.errMsg) || '请在云开发控制台创建 calendar_seasons 集合'), icon: 'none', duration: 2500 })
+        })
+        return
+      }
+      wx.showToast({ title: '保存失败：' + ((err && err.errMsg) || '请检查云数据库'), icon: 'none', duration: 2500 })
+    })
+  },
   preventClose: function() {},
   showMusicDialog: function() {
     var self = this
@@ -748,6 +1122,49 @@ openModal: function(e) {
       }
     })
   },
+  // 自动拉取视频标题（B站等），失败返回空
+  _fetchVideoTitle: function(videoInfo, callback) {
+    if (!videoInfo) { callback(''); return }
+    // 视频号等微信内平台外部抓不到标题，直接用分享文案里提取的
+    if (videoInfo.platform === 'wechat_channels') { callback(videoInfo.shareTitle || ''); return }
+    var callData = {}
+    var bvMatch = String(videoInfo.url || '').match(/BV([0-9A-Za-z]{10})/i)
+    if (bvMatch) {
+      callData.bvid = 'BV' + bvMatch[1]
+    } else if (videoInfo.id && /^BV[0-9A-Za-z]/i.test(String(videoInfo.id))) {
+      callData.bvid = videoInfo.id
+    } else if (videoInfo.url) {
+      callData.url = videoInfo.url
+    } else {
+      callback('')
+      return
+    }
+    if (!wx.cloud || !wx.cloud.callFunction) { callback(''); return }
+    wx.cloud.callFunction({
+      name: 'parseBilibili',
+      data: callData,
+      success: function(res) {
+        var data = res && res.result && res.result.data
+        var t = (data && data.title) ? String(data.title).trim() : ''
+        callback(t || videoInfo.shareTitle || '')
+      },
+      fail: function() { callback(videoInfo.shareTitle || '') }
+    })
+  },
+  // 可选标题弹窗：content 预填自动拉到的标题
+  _promptVideoTitle: function(prefill, onDone) {
+    wx.showModal({
+      title: '视频标题（可选）',
+      content: prefill || '',
+      placeholderText: '输入视频标题，可留空',
+      editable: true,
+      success: function(nameRes) {
+        var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : (prefill || '')
+        onDone(name)
+      },
+      fail: function() { onDone(prefill || '') }
+    })
+  },
   showVideoDialog: function() {
     var self = this
     wx.getClipboardData({
@@ -757,42 +1174,41 @@ openModal: function(e) {
         wx.showModal({
           title: '添加视频',
           content: defaultContent,
-          placeholderText: '粘贴视频链接（支持微博/哔哩哔哩）',
+          placeholderText: '粘贴视频链接或分享文案（B站/微博/抖音/小红书/快手/视频号）',
           editable: true,
           success: function(res) {
             var inputUrl = (res.confirm ? (res.content || defaultContent) : defaultContent).trim()
             if (!inputUrl) return
-            if (!/^https?:\/\//i.test(inputUrl)) {
-              inputUrl = extractCleanURL(inputUrl)
-            }
+            // 自动解析：去掉分享文案/空格，抽出 BV 号或链接
+            var shareMeta = extractShareMeta(inputUrl)
+            inputUrl = extractCleanURL(inputUrl)
             if (!inputUrl) { wx.showToast({ title: '请输入有效链接', icon: 'none' }); return }
             var videoInfo = parseVideoUrl(inputUrl)
+            if (videoInfo) {
+              videoInfo.owner = videoInfo.owner || shareMeta.owner || ''
+              videoInfo.shareTitle = videoInfo.shareTitle || shareMeta.title || ''
+            }
             if (!videoInfo) {
               if (/^https?:\/\//i.test(inputUrl)) {
-                wx.showModal({
-                  title: '视频标题（可选）',
-                  content: '',
-                  placeholderText: '输入视频标题',
-                  editable: true,
-                  success: function(nameRes) {
-                    var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
-                    self._addVideoBlock(self, { platform: 'other', platformName: '其他', url: inputUrl, id: '' }, name)
-                  }
+                var otherInfo = { platform: 'other', platformName: '其他', url: inputUrl, id: '', owner: shareMeta.owner || '', shareTitle: shareMeta.title || '' }
+                wx.showLoading({ title: '获取标题...' })
+                self._fetchVideoTitle(otherInfo, function(title) {
+                  wx.hideLoading()
+                  self._promptVideoTitle(title, function(name) {
+                    self._addVideoBlock(self, otherInfo, name)
+                  })
                 })
               } else {
                 wx.showToast({ title: '未识别视频链接', icon: 'none' })
               }
               return
             }
-            wx.showModal({
-              title: '视频标题（可选）',
-              content: '',
-              placeholderText: '输入视频标题',
-              editable: true,
-              success: function(nameRes) {
-                var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
+            wx.showLoading({ title: '获取标题...' })
+            self._fetchVideoTitle(videoInfo, function(title) {
+              wx.hideLoading()
+              self._promptVideoTitle(title, function(name) {
                 self._addVideoBlock(self, videoInfo, name)
-              }
+              })
             })
           }
         })
@@ -803,14 +1219,8 @@ openModal: function(e) {
     })
   },
   _addVideoBlock: function(self, videoInfo, name) {
-    if (videoInfo.cover === undefined) {
-      self._askForCover(function(cover) {
-        videoInfo.cover = cover;
-        self._addVideoBlock(self, videoInfo, name);
-      });
-      return;
-    }
-    var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name || '', url: videoInfo.url, vid: videoInfo.id, cover: videoInfo.cover }
+    // 公告视频卡片不再强制封面，可稍后用「封面」按钮补充
+    var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name || '', url: videoInfo.url, vid: videoInfo.id, cover: videoInfo.cover || '', owner: videoInfo.owner || '' }
     self._insertFormBlock(block, { stripUrls: [videoInfo.url], toast: '已添加: ' + videoInfo.platformName + '视频' })
   },
   showTableDialog: function() {
@@ -940,6 +1350,48 @@ openModal: function(e) {
     var idx = e.currentTarget.dataset.idx
     var block = this.data.formRichContent[idx]
     var richContent = this.data.formRichContent
+    // 视频卡片二次编辑：改标题 / 改链接（自动重新识别平台）
+    if (block.type === 'video') {
+      var selfV = this
+      wx.showModal({
+        title: '编辑视频标题',
+        content: block.name || '',
+        editable: true,
+        placeholderText: '视频标题（可选）',
+        success: function(r1) {
+          var newName = r1.confirm ? ((r1.content !== undefined && r1.content !== null) ? r1.content.trim() : '') : (block.name || '')
+          wx.showModal({
+            title: '编辑视频链接',
+            content: block.url || '',
+            editable: true,
+            placeholderText: '粘贴视频链接或分享文案',
+            success: function(r2) {
+              var updated = Object.assign({}, block, { name: newName })
+              if (r2.confirm && r2.content && r2.content.trim()) {
+                var raw = r2.content.trim()
+                var meta = extractShareMeta(raw)
+                var cleaned = extractCleanURL(raw)
+                var info = parseVideoUrl(cleaned) || parseVideoUrl(raw)
+                if (info) {
+                  updated.url = info.url
+                  updated.vid = info.id
+                  updated.platform = info.platform
+                  updated.platformName = info.platformName
+                  if (meta.owner) updated.owner = meta.owner
+                } else {
+                  updated.url = cleaned || raw
+                }
+              }
+              var rc = selfV.data.formRichContent.slice()
+              rc[idx] = updated
+              selfV.setData({ formRichContent: rc })
+              wx.showToast({ title: '已更新视频', icon: 'success' })
+            }
+          })
+        }
+      })
+      return
+    }
     if (block.type === 'swiper') {
       var self = this;
       var itemList = [];
@@ -1386,14 +1838,19 @@ openModal: function(e) {
             merged.push(cloudBalls[m]);
           }
         }
-        // 旧数据：特殊球 CNY 曾记在 price，拆到 cnyPrice
+        // 旧数据：特殊球 CNY 曾记在 price，拆到 cnyPrice；补齐合成球消耗洛克贝字段
         for (var n = 0; n < merged.length; n++) {
           var mb = merged[n];
+          var patch = {};
           if (mb.isSpecial && !mb.isBuy && !mb.cnyPrice && mb.price) {
-            merged[n] = Object.assign({}, mb, { cnyPrice: mb.price, price: 0 });
+            patch.cnyPrice = mb.price;
+            patch.price = 0;
           } else if (mb.cnyPrice == null) {
-            merged[n] = Object.assign({}, mb, { cnyPrice: 0 });
+            patch.cnyPrice = 0;
           }
+          patch.craftCostRoco = !!(mb.craftCostRoco || (mb.isCraft && mb.craftPrice > 0));
+          patch.craftPrice = mb.craftPrice != null ? (parseInt(mb.craftPrice, 10) || 0) : (patch.craftCostRoco ? (parseInt(mb.price, 10) || 0) : 0);
+          merged[n] = Object.assign({}, mb, patch);
         }
         self.setData({ ballsConfig: merged });
       } else {
@@ -1416,6 +1873,8 @@ openModal: function(e) {
           cnyPrice = price;
           price = 0;
         }
+        var craftCostRoco = !!(item.craftCostRoco || (item.isCraft && item.craftPrice > 0));
+        var craftPrice = item.craftPrice != null ? (parseInt(item.craftPrice, 10) || 0) : (craftCostRoco ? price : 0);
         this.setData({
           editingBall: item,
           ballForm: {
@@ -1427,7 +1886,9 @@ openModal: function(e) {
             isActivity: item.isActivity || false,
             price: price,
             cnyPrice: cnyPrice,
-              craftMaterials: item.craftMaterials || '',
+            craftCostRoco: craftCostRoco,
+            craftPrice: craftPrice,
+            craftMaterials: item.craftMaterials || '',
             desc: item.desc || item.rate || '',
             source: item.source || '',
             img: item.img || '',
@@ -1448,7 +1909,9 @@ openModal: function(e) {
             isActivity: false,
             price: 0,
             cnyPrice: 0,
-              craftMaterials: '',
+            craftCostRoco: false,
+            craftPrice: 0,
+            craftMaterials: '',
             desc: '',
             source: '',
             img: '',
@@ -1467,7 +1930,7 @@ openModal: function(e) {
       var field = e.currentTarget.dataset.field;
       var val = e.detail.value;
       // 洛克贝为整数；CNY 自由输入（含小数），确认时再解析
-      if (field === 'price') val = parseInt(val) || 0;
+      if (field === 'price' || field === 'craftPrice') val = parseInt(val, 10) || 0;
       this.setData({ ['ballForm.' + field]: val });
     },
     onBallFormSwitch: function(e) {
@@ -1484,7 +1947,12 @@ openModal: function(e) {
       // CNY 与洛克贝各自独立，不做换算
       var cnyRaw = form.cnyPrice;
       form.cnyPrice = (cnyRaw === '' || cnyRaw === null || cnyRaw === undefined) ? 0 : (parseFloat(cnyRaw) || 0);
-      form.price = parseInt(form.price) || 0;
+      form.price = parseInt(form.price, 10) || 0;
+      form.craftCostRoco = !!(form.isCraft && form.craftCostRoco);
+      form.craftPrice = form.craftCostRoco ? (parseInt(form.craftPrice, 10) || 0) : 0;
+      if (form.isCraft && !form.isBuy) {
+        form.price = form.craftCostRoco ? form.craftPrice : 0;
+      }
       var balls = this.data.ballsConfig;
       if (this.data.editingBall) {
         var fid = form.id;
@@ -1583,15 +2051,117 @@ openModal: function(e) {
   },
 
   // ─── 异色精灵预设（捕捉统计目标精灵） ───
+  _syncAdminPetSeasons: function(pets, seasons, preferredSeason, extraData) {
+    var list = Array.isArray(pets) ? pets : (this.data.shinyPets || []);
+    var rawSeasons = (Array.isArray(seasons) && seasons.length) ? seasons.slice() : ((this.data.petSeasons && this.data.petSeasons.length) ? this.data.petSeasons.slice() : ['S1', 'S2', 'S3', 'S4']);
+    var hiddenList = (extraData && Array.isArray(extraData.hiddenSeasons)) ? extraData.hiddenSeasons : (this.data.hiddenSeasons || []);
+    var hiddenMap = {};
+    for (var h = 0; h < hiddenList.length; h++) {
+      hiddenMap[String(hiddenList[h])] = true;
+    }
+    var counts = {};
+    for (var s = 0; s < rawSeasons.length; s++) counts[rawSeasons[s]] = 0;
+    for (var i = 0; i < list.length; i++) {
+      var ps = list[i].season || rawSeasons[0] || 'S1';
+      if (rawSeasons.indexOf(ps) === -1) {
+        rawSeasons.push(ps);
+        counts[ps] = 0;
+      }
+      counts[ps] = (counts[ps] || 0) + 1;
+    }
+    var firstVisibleSeason = '';
+    for (var v = 0; v < rawSeasons.length; v++) {
+      if (!hiddenMap[rawSeasons[v]]) {
+        firstVisibleSeason = rawSeasons[v];
+        break;
+      }
+    }
+    var sel;
+    if (preferredSeason !== undefined) {
+      sel = preferredSeason;
+    } else if (this.data.selectedPetSeason && rawSeasons.indexOf(this.data.selectedPetSeason) >= 0 && !hiddenMap[this.data.selectedPetSeason]) {
+      sel = this.data.selectedPetSeason;
+    } else {
+      sel = firstVisibleSeason || rawSeasons[0] || 'S1';
+    }
+    var filtered = sel ? list.filter(function(p) { return (p.season || rawSeasons[0] || 'S1') === sel; }) : [];
+    filtered.sort(function(a, b) {
+      return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0);
+    });
+    var payload = Object.assign({
+      shinyPets: list,
+      petSeasons: rawSeasons,
+      hiddenSeasons: hiddenList,
+      hiddenSeasonMap: hiddenMap,
+      selectedPetSeason: sel,
+      petSeasonCounts: counts,
+      filteredShinyPets: filtered
+    }, extraData || {});
+    this.setData(payload);
+    this._syncCalendarPresetPicker(rawSeasons.indexOf(sel) >= 0 ? rawSeasons.indexOf(sel) : 0, 0);
+  },
+  onSelectAdminPetSeason: function(e) {
+    var season = e.currentTarget.dataset.season;
+    if (!season) return;
+    var nextSeason = (this.data.selectedPetSeason === season) ? '' : season;
+    this._syncAdminPetSeasons(this.data.shinyPets, this.data.petSeasons, nextSeason);
+  },
+  toggleHideSeason: function(e) {
+    var season = String(e.currentTarget.dataset.item || '');
+    if (!season) return;
+    var hidden = (this.data.hiddenSeasons || []).slice();
+    var idx = hidden.indexOf(season);
+    var nowHidden = false;
+    if (idx >= 0) {
+      hidden.splice(idx, 1);
+      nowHidden = false;
+    } else {
+      hidden.push(season);
+      nowHidden = true;
+    }
+    var seasons = this.data.petSeasons || [];
+    var nextSel = this.data.selectedPetSeason;
+    if (nowHidden && nextSel === season) {
+      nextSel = '';
+      for (var i = 0; i < seasons.length; i++) {
+        if (seasons[i] !== season && hidden.indexOf(seasons[i]) === -1) {
+          nextSel = seasons[i];
+          break;
+        }
+      }
+    } else if (!nowHidden && !nextSel) {
+      nextSel = season;
+    }
+    this._syncAdminPetSeasons(this.data.shinyPets, seasons, nextSel, { hiddenSeasons: hidden });
+    wx.showToast({
+      title: nowHidden ? ('已暂时隐藏「' + season + '」，请记得保存到云端') : ('已恢复显示「' + season + '」，请记得保存到云端'),
+      icon: 'none'
+    });
+  },
+  togglePetPin: function(e) {
+    var id = String(e.currentTarget.dataset.id || '');
+    if (!id) return;
+    var pinnedState = false;
+    var pets = (this.data.shinyPets || []).map(function(p) {
+      if (String(p.id) === id) {
+        pinnedState = !p.pinned;
+        return Object.assign({}, p, { pinned: pinnedState });
+      }
+      return p;
+    });
+    this._syncAdminPetSeasons(pets, this.data.petSeasons, this.data.selectedPetSeason);
+    wx.showToast({ title: pinnedState ? '已置顶，请记得保存到云端' : '已取消置顶，请记得保存到云端', icon: 'none' });
+  },
   loadShinyPets: function() {
     var self = this;
     if (!db) return;
     db.collection('site_config').doc('shiny_pets').get().then(function(res) {
       var list = (res.data && res.data.pets) || [];
       var seasons = (res.data && res.data.seasons) || ['S1', 'S2', 'S3', 'S4'];
-      self.setData({ shinyPets: list, petSeasons: seasons });
+      var hiddenSeasons = (res.data && res.data.hiddenSeasons) || [];
+      self._syncAdminPetSeasons(list, seasons, undefined, { hiddenSeasons: hiddenSeasons });
     }).catch(function() {
-      self.setData({ shinyPets: [], petSeasons: ['S1', 'S2', 'S3', 'S4'] });
+      self._syncAdminPetSeasons([], ['S1', 'S2', 'S3', 'S4'], undefined, { hiddenSeasons: [] });
     });
   },
   // 赛季分类：新增 / 重命名 / 删除（同时改到引用该赛季的精灵）
@@ -1628,11 +2198,13 @@ openModal: function(e) {
         if (String(p.season) === oldName) return Object.assign({}, p, { season: name });
         return p;
       });
-      self.setData({ petSeasons: seasons, shinyPets: pets, showSeasonModal: false });
+      var hidden = (self.data.hiddenSeasons || []).map(function(hs) { return String(hs) === oldName ? name : hs; });
+      var nextSel = (self.data.selectedPetSeason === oldName) ? name : self.data.selectedPetSeason;
+      self._syncAdminPetSeasons(pets, seasons, nextSel, { showSeasonModal: false, hiddenSeasons: hidden });
     } else {
       if (seasons.indexOf(name) >= 0) { wx.showToast({ title: '已存在同名赛季', icon: 'none' }); return; }
       seasons.push(name);
-      self.setData({ petSeasons: seasons, showSeasonModal: false });
+      self._syncAdminPetSeasons(self.data.shinyPets || [], seasons, name, { showSeasonModal: false });
     }
     wx.showToast({ title: '请记得保存到云端', icon: 'none' });
   },
@@ -1655,7 +2227,9 @@ openModal: function(e) {
           if (String(p.season) === name) return Object.assign({}, p, { season: fallback });
           return p;
         });
-        self.setData({ petSeasons: next, shinyPets: newPets });
+        var hidden = (self.data.hiddenSeasons || []).filter(function(hs) { return String(hs) !== name; });
+        var nextSel = (self.data.selectedPetSeason === name) ? fallback : self.data.selectedPetSeason;
+        self._syncAdminPetSeasons(newPets, next, nextSel, { hiddenSeasons: hidden });
         wx.showToast({ title: '请记得保存到云端', icon: 'none' });
       }
     });
@@ -1665,6 +2239,10 @@ openModal: function(e) {
     var seasons = this.data.petSeasons && this.data.petSeasons.length ? this.data.petSeasons : ['S1', 'S2', 'S3', 'S4'];
     if (item) {
       var sIdx = seasons.indexOf(item.season || seasons[0]);
+      var imgs = (Array.isArray(item.imgs) && item.imgs.length) ? item.imgs.slice() : (item.img ? [item.img] : ['']);
+      if (String(item.name || '').indexOf('命定花种') !== -1 && imgs.length < 2) {
+        while (imgs.length < 2) imgs.push('');
+      }
       this.setData({
         editingPet: item,
         petSeasonIndex: sIdx >= 0 ? sIdx : 0,
@@ -1672,15 +2250,18 @@ openModal: function(e) {
           id: item.id || '',
           name: item.name || '',
           season: item.season || seasons[0],
-          img: item.img || ''
+          img: imgs[0] || '',
+          imgs: imgs
         },
         showPetModal: true
       });
     } else {
+      var defSeason = (this.data.selectedPetSeason && seasons.indexOf(this.data.selectedPetSeason) >= 0) ? this.data.selectedPetSeason : seasons[0];
+      var defIdx = seasons.indexOf(defSeason);
       this.setData({
         editingPet: null,
-        petSeasonIndex: 0,
-        petForm: { id: 'pet_' + Date.now(), name: '', season: seasons[0], img: '' },
+        petSeasonIndex: defIdx >= 0 ? defIdx : 0,
+        petForm: { id: 'pet_' + Date.now(), name: '', season: defSeason, img: '', imgs: [''] },
         showPetModal: true
       });
     }
@@ -1690,7 +2271,35 @@ openModal: function(e) {
   },
   onPetFormInput: function(e) {
     var field = e.currentTarget.dataset.field;
-    this.setData({ ['petForm.' + field]: e.detail.value });
+    var val = e.detail.value;
+    var patch = { ['petForm.' + field]: val };
+    if (field === 'name' && String(val || '').indexOf('命定花种') !== -1) {
+      var curImgs = (this.data.petForm && Array.isArray(this.data.petForm.imgs)) ? this.data.petForm.imgs.slice() : [this.data.petForm.img || ''];
+      if (curImgs.length < 2) {
+        while (curImgs.length < 2) curImgs.push('');
+        patch['petForm.imgs'] = curImgs;
+      }
+    }
+    this.setData(patch);
+  },
+  onPetImgItemInput: function(e) {
+    var idx = Number(e.currentTarget.dataset.index) || 0;
+    var val = e.detail.value || '';
+    var imgs = (this.data.petForm && Array.isArray(this.data.petForm.imgs)) ? this.data.petForm.imgs.slice() : [this.data.petForm.img || ''];
+    imgs[idx] = val;
+    this.setData({ 'petForm.imgs': imgs, 'petForm.img': imgs[0] || '' });
+  },
+  addPetImgRow: function() {
+    var imgs = (this.data.petForm && Array.isArray(this.data.petForm.imgs)) ? this.data.petForm.imgs.slice() : [this.data.petForm.img || ''];
+    imgs.push('');
+    this.setData({ 'petForm.imgs': imgs });
+  },
+  removePetImgRow: function(e) {
+    var idx = Number(e.currentTarget.dataset.index) || 0;
+    var imgs = (this.data.petForm && Array.isArray(this.data.petForm.imgs)) ? this.data.petForm.imgs.slice() : [this.data.petForm.img || ''];
+    imgs.splice(idx, 1);
+    if (!imgs.length) imgs = [''];
+    this.setData({ 'petForm.imgs': imgs, 'petForm.img': imgs[0] || '' });
   },
   onPetSeasonChange: function(e) {
     var idx = Number(e.detail.value) || 0;
@@ -1698,14 +2307,24 @@ openModal: function(e) {
     this.setData({ petSeasonIndex: idx, 'petForm.season': seasons[idx] || seasons[0] || 'S1' });
   },
   confirmPetForm: function() {
-    var form = this.data.petForm;
+    var form = Object.assign({}, this.data.petForm);
     if (!form.name || !String(form.name).trim()) {
       wx.showToast({ title: '请输入精灵名称', icon: 'none' });
       return;
     }
     form.name = String(form.name).trim();
     form.season = form.season || 'S1';
-    form.img = form.img || '';
+    var cleanImgs = [];
+    if (Array.isArray(form.imgs)) {
+      for (var m = 0; m < form.imgs.length; m++) {
+        var u = String(form.imgs[m] || '').trim();
+        if (u && cleanImgs.indexOf(u) === -1) cleanImgs.push(u);
+      }
+    } else if (form.img && String(form.img).trim()) {
+      cleanImgs.push(String(form.img).trim());
+    }
+    form.img = cleanImgs[0] || '';
+    form.imgs = cleanImgs;
     var pets = (this.data.shinyPets || []).slice();
     if (this.data.editingPet) {
       var fid = form.id;
@@ -1718,7 +2337,7 @@ openModal: function(e) {
     } else {
       pets.push(Object.assign({}, form));
     }
-    this.setData({ shinyPets: pets, showPetModal: false });
+    this._syncAdminPetSeasons(pets, this.data.petSeasons, form.season, { showPetModal: false });
     wx.showToast({ title: '请记得点击保存修改到云端', icon: 'none' });
   },
   deletePet: function(e) {
@@ -1731,7 +2350,7 @@ openModal: function(e) {
         if (res.confirm) {
           var rid = String(id);
           var pets = (self.data.shinyPets || []).filter(function(p) { return String(p.id) !== rid; });
-          self.setData({ shinyPets: pets });
+          self._syncAdminPetSeasons(pets, self.data.petSeasons, self.data.selectedPetSeason);
           wx.showToast({ title: '请记得点击保存修改到云端', icon: 'none' });
         }
       }
@@ -1742,9 +2361,10 @@ openModal: function(e) {
     if (!db) { wx.showToast({ title: '云环境未就绪', icon: 'none' }); return; }
     var pets = self.data.shinyPets || [];
     var seasons = self.data.petSeasons && self.data.petSeasons.length ? self.data.petSeasons : ['S1', 'S2', 'S3', 'S4'];
+    var hiddenSeasons = self.data.hiddenSeasons || [];
     self.setData({ shinyPetSubmitting: true });
     db.collection('site_config').doc('shiny_pets').set({
-      data: { pets: pets, seasons: seasons, updateTime: db.serverDate() }
+      data: { pets: pets, seasons: seasons, hiddenSeasons: hiddenSeasons, updateTime: db.serverDate() }
     }).then(function() {
       wx.setStorageSync('shiny_pets_updated', true);
       self.setData({ shinyPetSubmitting: false });
@@ -1755,7 +2375,8 @@ openModal: function(e) {
       }
       var lines = [];
       for (var j = 0; j < seasons.length; j++) {
-        lines.push(seasons[j] + ' ' + (bySeason[seasons[j]] || 0));
+        var tag = hiddenSeasons.indexOf(seasons[j]) >= 0 ? '(已隐藏)' : '';
+        lines.push(seasons[j] + tag + ' ' + (bySeason[seasons[j]] || 0));
       }
       wx.showModal({
         title: '已保存到云端',
@@ -1806,9 +2427,19 @@ openModal: function(e) {
   loadAdminActivities: function() {
     var self = this
     var deletedIds = self.data.deletedLocalIds || []
+    var stripHtml = function(raw) {
+      return String(raw || '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/\s+/g, ' ')
+        .trim()
+    }
     var localList = activitiesData.filter(function(item) { return deletedIds.indexOf(item.id) === -1 })
     var localMapped = localList.map(function(item) {
-      return { _id: 'local_' + item.id, localId: item.id, title: item.title, content: item.desc, type: item.type, pinned: item.status === '置顶', start: item.start, end: item.end, image: '', timeStr: '', isCloud: false }
+      return { _id: 'local_' + item.id, localId: item.id, title: item.title, content: item.desc, previewText: stripHtml(item.desc).substring(0, 120), type: item.type, pinned: item.status === '置顶', start: item.start, end: item.end, image: '', timeStr: '', isCloud: false }
     })
     if (!db) { self.setData({ adminActivities: localMapped, loading: false }); return }
     db.collection('announcements').where({ type: 'event' }).orderBy('createTime', 'desc').limit(50).get()
@@ -1818,6 +2449,7 @@ openModal: function(e) {
             _id: item._id,
             title: item.title,
             content: item.content,
+            previewText: stripHtml(item.content).substring(0, 120),
             richContent: item.richContent || [],
             subType: item.subType || '',
             collabLogo: item.collabLogo || '',
@@ -2066,27 +2698,28 @@ openModal: function(e) {
     wx.showModal({
       title: '添加视频',
       content: '',
-      placeholderText: '粘贴视频链接（支持微博/哔哩哔哩）',
+      placeholderText: '粘贴视频链接或分享文案（B站/微博/抖音/小红书/快手/视频号）',
       editable: true,
       success: function(res) {
         if (res.confirm && res.content && res.content.trim()) {
-          var url = extractCleanURL(res.content.trim())
+          var rawShare = res.content.trim()
+          var shareMeta2 = extractShareMeta(rawShare)
+          var url = extractCleanURL(rawShare)
           if (!url) { wx.showToast({ title: '请输入有效链接', icon: 'none' }); return }
           var videoInfo = parseVideoUrl(url)
           if (!videoInfo) {
             wx.showToast({ title: '未识别视频链接', icon: 'none' })
             return
           }
-          wx.showModal({
-            title: '视频标题（可选）',
-            content: '',
-            placeholderText: '输入视频标题',
-            editable: true,
-            success: function(nameRes) {
-              var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
-              var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id }
+          videoInfo.owner = videoInfo.owner || shareMeta2.owner || ''
+          videoInfo.shareTitle = videoInfo.shareTitle || shareMeta2.title || ''
+          wx.showLoading({ title: '获取标题...' })
+          self._fetchVideoTitle(videoInfo, function(title) {
+            wx.hideLoading()
+            self._promptVideoTitle(title, function(name) {
+              var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id, cover: '', owner: videoInfo.owner || '' }
               self._insertFormBlock(block, { stripUrls: [videoInfo.url], toast: '已添加: ' + videoInfo.platformName + '视频' })
-            }
+            })
           })
         }
       }
@@ -2240,48 +2873,47 @@ openModal: function(e) {
         wx.showModal({
           title: '添加视频',
           content: defaultContent,
-          placeholderText: '粘贴视频链接（支持微博/哔哩哔哩）',
+          placeholderText: '粘贴视频链接或分享文案（B站/微博/抖音/小红书/快手/视频号）',
           editable: true,
           success: function(res) {
             var inputUrl = (res.confirm ? (res.content || defaultContent) : defaultContent).trim()
             if (!inputUrl) return
-            if (!/^https?:\/\//i.test(inputUrl)) {
-              inputUrl = extractCleanURL(inputUrl)
-            }
+            // 自动解析：去掉分享文案/空格，抽出 BV 号或链接
+            var shareMeta = extractShareMeta(inputUrl)
+            inputUrl = extractCleanURL(inputUrl)
             if (!inputUrl) { wx.showToast({ title: '请输入有效链接', icon: 'none' }); return }
             var videoInfo = parseVideoUrl(inputUrl)
+            if (videoInfo) {
+              videoInfo.owner = videoInfo.owner || shareMeta.owner || ''
+              videoInfo.shareTitle = videoInfo.shareTitle || shareMeta.title || ''
+            }
             if (!videoInfo) {
               if (/^https?:\/\//i.test(inputUrl)) {
-                wx.showModal({
-                  title: '视频标题（可选）',
-                  content: '',
-                  placeholderText: '输入视频标题',
-                  editable: true,
-                  success: function(nameRes) {
-                    var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
+                var otherInfo = { platform: 'other', platformName: '其他', url: inputUrl, id: '', owner: shareMeta.owner || '', shareTitle: shareMeta.title || '' }
+                wx.showLoading({ title: '获取标题...' })
+                self._fetchVideoTitle(otherInfo, function(title) {
+                  wx.hideLoading()
+                  self._promptVideoTitle(title, function(name) {
                     self._askForCover(function(cover) {
-                      var block = { type: 'video', platform: 'other', platformName: '其他', name: name, url: inputUrl, vid: '', cover: cover }
+                      var block = { type: 'video', platform: 'other', platformName: '其他', name: name, url: inputUrl, vid: '', cover: cover, owner: otherInfo.owner || '' }
                       self._insertActivityBlock(block, { stripUrls: [inputUrl], toast: '已添加视频' })
                     })
-                  }
+                  })
                 })
               } else {
                 wx.showToast({ title: '未识别视频链接', icon: 'none' })
               }
               return
             }
-            wx.showModal({
-              title: '视频标题（可选）',
-              content: '',
-              placeholderText: '输入视频标题',
-              editable: true,
-              success: function(nameRes) {
-                var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
+            wx.showLoading({ title: '获取标题...' })
+            self._fetchVideoTitle(videoInfo, function(title) {
+              wx.hideLoading()
+              self._promptVideoTitle(title, function(name) {
                 self._askForCover(function(cover) {
-                  var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id, cover: cover }
+                  var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id, cover: cover, owner: videoInfo.owner || '' }
                   self._insertActivityBlock(block, { stripUrls: [videoInfo.url], toast: '已添加: ' + videoInfo.platformName + '视频' })
                 })
-              }
+              })
             })
           }
         })
@@ -2290,7 +2922,7 @@ openModal: function(e) {
         wx.showModal({
           title: '添加视频',
           content: '',
-          placeholderText: '粘贴视频链接（支持微博/哔哩哔哩）',
+          placeholderText: '粘贴视频链接或分享文案（B站/微博/抖音/小红书/快手/视频号）',
           editable: true,
           success: function(res) {
             if (res.confirm && res.content && res.content.trim()) {
@@ -2298,19 +2930,16 @@ openModal: function(e) {
               if (!url) { wx.showToast({ title: '请输入有效链接', icon: 'none' }); return }
               var videoInfo = parseVideoUrl(url)
               if (!videoInfo) { wx.showToast({ title: '未识别视频链接', icon: 'none' }); return }
-                  wx.showModal({
-                    title: '视频标题（可选）',
-                    content: '',
-                    placeholderText: '输入视频标题',
-                    editable: true,
-                    success: function(nameRes) {
-                      var name = (nameRes.confirm && nameRes.content) ? nameRes.content.trim() : ''
-                      self._askForCover(function(cover) {
-                        var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id, cover: cover }
-                        self._insertActivityBlock(block, { stripUrls: [videoInfo.url], toast: '已添加: ' + videoInfo.platformName + '视频' })
-                      })
-                    }
+              wx.showLoading({ title: '获取标题...' })
+              self._fetchVideoTitle(videoInfo, function(title) {
+                wx.hideLoading()
+                self._promptVideoTitle(title, function(name) {
+                  self._askForCover(function(cover) {
+                    var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name, url: videoInfo.url, vid: videoInfo.id, cover: cover, owner: videoInfo.owner || '' }
+                    self._insertActivityBlock(block, { stripUrls: [videoInfo.url], toast: '已添加: ' + videoInfo.platformName + '视频' })
                   })
+                })
+              })
             }
           }
         })
@@ -2318,7 +2947,7 @@ openModal: function(e) {
     })
   },
   _addActivityVideoBlock: function(self, videoInfo, name) {
-    var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name || '', url: videoInfo.url, vid: videoInfo.id }
+    var block = { type: 'video', platform: videoInfo.platform, platformName: videoInfo.platformName, name: name || '', url: videoInfo.url, vid: videoInfo.id, owner: videoInfo.owner || '' }
     self._insertActivityBlock(block, { stripUrls: [videoInfo.url], toast: '已添加: ' + videoInfo.platformName + '视频' })
   },
   onActivityTitleInput: function(e) { this.setData({ activityFormTitle: e.detail.value }) },

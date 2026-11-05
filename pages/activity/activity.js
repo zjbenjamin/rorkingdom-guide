@@ -63,7 +63,7 @@ function convertRichCloudUrls(list, callback) {
 
 Page({
   behaviors: [i18nBehavior, require('../../utils/padLayoutBehavior')],
-  data: { theme: 'light', activities: [], filtered: [], status: '全部', statuses: ['全部','进行中','置顶'], expandedId: -1, isAdmin: false, showEditModal: false, editingItem: null, editTitle: '', editDesc: '', editStatus: '进行中', editType: '', editRewards: '', editStart: '', editEnd: '', subscribedActivity: false, subscribeCount: 0, currentPlayUrl: '', isPlaying: false, showVideoPlayer: false, videoPlayerUrl: '', videoPlayerName: '', videoPlayerCover: '', videoPlayerOwner: '', videoPlayerDesc: '', richSwiperHeights: {} },
+  data: { theme: 'light', activities: [], filtered: [], status: '进行中', statuses: ['进行中','全部','置顶'], hasPinnedInFiltered: false, hasNormalInFiltered: false, expandedId: -1, isAdmin: false, showEditModal: false, editingItem: null, editTitle: '', editDesc: '', editStatus: '进行中', editType: '', editRewards: '', editStart: '', editEnd: '', subscribedActivity: false, subscribeCount: 0, currentPlayUrl: '', isPlaying: false, showVideoPlayer: false, videoPlayerUrl: '', videoPlayerName: '', videoPlayerCover: '', videoPlayerOwner: '', videoPlayerDesc: '', richSwiperHeights: {}, seasonBoard: null, boardExpanded: true, boardFilter: 'live', boardLiveCount: 0, boardTotalCount: 0, expandedBarId: '', ganttMonths: [], ganttGroups: [], ganttWidth: 1200, countdownItems: [], boardCountdowns: {} },
   onShow: function() {
     this._refreshI18n()
     this.setData({ theme: app.globalData.theme })
@@ -72,7 +72,7 @@ Page({
     this.setData({ subscribeConfig: subscribeConfig })
     this.checkAdmin()
     this.checkSubscription()
-
+    this.loadSeasonBoard()
   },
   checkAdmin: function() {
     var self = this
@@ -89,8 +89,35 @@ Page({
       self.sortActivities()
     })
   },
+  _parseActivityBoundary: function(dateStr, timeStr, isEnd) {
+    var m = String(dateStr || '').match(/(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/)
+    if (!m) return null
+    var y = parseInt(m[1], 10), mo = parseInt(m[2], 10) - 1, d = parseInt(m[3], 10)
+    var hh = isEnd ? 23 : 0, mm = isEnd ? 59 : 0, ss = isEnd ? 59 : 0
+    var tm = String(timeStr || '').match(/(\d{1,2}):(\d{1,2})/)
+    if (tm) {
+      hh = parseInt(tm[1], 10)
+      mm = parseInt(tm[2], 10)
+      ss = isEnd ? 59 : 0
+    }
+    return new Date(y, mo, d, hh, mm, ss).getTime()
+  },
+  _calcActivityDateStatus: function(start, startTime, end, endTime, nowMs) {
+    var sMs = this._parseActivityBoundary(start, startTime, false)
+    var eMs = this._parseActivityBoundary(end, endTime, true)
+    if (sMs !== null && nowMs < sMs) return '即将开始'
+    if (eMs !== null && nowMs > eMs) return '已结束'
+    return '进行中'
+  },
   sortActivities: function() {
     var self = this
+    var nowMs = Date.now()
+    var baseList = activitiesData.map(function(item) {
+      var copy = Object.assign({}, item)
+      copy.hasDate = !!(copy.start || copy.end)
+      copy.dateStatus = self._calcActivityDateStatus(copy.start, copy.startTime, copy.end, copy.endTime, nowMs)
+      return copy
+    })
     if (db) {
       db.collection('announcements').where({ type: 'event' }).orderBy('createTime', 'desc').limit(50).get()
         .then(function(res) {
@@ -98,6 +125,11 @@ Page({
           var cloudActivities = (res.data || []).map(function(item) {
             var title = (lang !== 'zh' && item['title_' + lang]) ? item['title_' + lang] : item.title
             var desc = (lang !== 'zh' && item['content_' + lang]) ? item['content_' + lang] : item.content
+            var start = item.start || item.startDate || ''
+            var end = item.end || item.endDate || ''
+            var startTime = item.startTime || ''
+            var endTime = item.endTime || ''
+            var dateStatus = self._calcActivityDateStatus(start, startTime, end, endTime, nowMs)
             return {
               id: item._id,
               title: title,
@@ -106,19 +138,21 @@ Page({
               richContent: item.richContent || [],
               subType: item.subType || '',
               collabLogo: item.collabLogo || '',
-              status: item.pinned ? '置顶' : '进行中',
+              status: item.pinned ? '置顶' : dateStatus,
+              dateStatus: dateStatus,
+              hasDate: !!(start || end),
               pinned: !!item.pinned,
               type: item.type || '',
               rewards: item.rewards || [],
-              start: item.start || item.startDate || '',
-              end: item.end || item.endDate || '',
-              startTime: item.startTime || '',
-              endTime: item.endTime || '',
+              start: start,
+              end: end,
+              startTime: startTime,
+              endTime: endTime,
               source: item.source || '',
               isCloud: true
             }
           })
-          var all = activitiesData.concat(cloudActivities)
+          var all = baseList.concat(cloudActivities)
           self.setData({ activities: all })
           self.filterList()
           cloudUrl.convertList(all, ['image', 'collabLogo'], function(converted) {
@@ -129,34 +163,61 @@ Page({
           })
         })
         .catch(function() {
-          self.setData({ activities: activitiesData })
+          self.setData({ activities: baseList })
           self.filterList()
         })
     } else {
-      self.setData({ activities: activitiesData })
+      self.setData({ activities: baseList })
       self.filterList()
     }
   },
   filterList: function() {
     var sorted = this.data.activities.slice()
     sorted.sort(function(a, b) {
-      if (a.status === '置顶' && b.status !== '置顶') return -1
-      if (a.status !== '置顶' && b.status === '置顶') return 1
+      var ap = a.pinned || a.status === '置顶'
+      var bp = b.pinned || b.status === '置顶'
+      if (ap && !bp) return -1
+      if (!ap && bp) return 1
       var statusOrder = { '进行中': 0, '即将开始': 1, '已结束': 2 }
-      var orderA = statusOrder[a.status] !== undefined ? statusOrder[a.status] : 3
-      var orderB = statusOrder[b.status] !== undefined ? statusOrder[b.status] : 3
+      var sa = a.dateStatus || a.status
+      var sb = b.dateStatus || b.status
+      var orderA = statusOrder[sa] !== undefined ? statusOrder[sa] : 3
+      var orderB = statusOrder[sb] !== undefined ? statusOrder[sb] : 3
       if (orderA !== orderB) return orderA - orderB
       if (a.start && b.start) return b.start.localeCompare(a.start)
       return 0
     })
     var s = this.data.status
-    var filtered = s === '全部' ? sorted : []
-    if (s !== '全部') {
+    var filtered = []
+    if (s === '全部') {
+      filtered = sorted
+    } else if (s === '置顶') {
       for (var i = 0; i < sorted.length; i++) {
-        if (sorted[i].status === s) filtered.push(sorted[i])
+        if (sorted[i].pinned || sorted[i].status === '置顶') filtered.push(sorted[i])
+      }
+    } else if (s === '进行中') {
+      var activeWithDate = []
+      var activeAll = []
+      for (var j = 0; j < sorted.length; j++) {
+        var it = sorted[j]
+        var ds = it.dateStatus || (it.status === '置顶' ? '进行中' : it.status)
+        if (ds === '进行中') {
+          activeAll.push(it)
+          if (it.hasDate || !it.pinned) activeWithDate.push(it)
+        }
+      }
+      filtered = activeWithDate.length > 0 ? activeWithDate : activeAll
+    } else {
+      for (var k = 0; k < sorted.length; k++) {
+        if (sorted[k].status === s || sorted[k].dateStatus === s) filtered.push(sorted[k])
       }
     }
-    this.setData({ activities: sorted, filtered: filtered })
+    var hasPinned = false, hasNormal = false
+    for (var m = 0; m < filtered.length; m++) {
+      if (filtered[m].pinned || filtered[m].status === '置顶') hasPinned = true
+      else hasNormal = true
+    }
+    this.setData({ activities: sorted, filtered: filtered, hasPinnedInFiltered: hasPinned, hasNormalInFiltered: hasNormal })
   },
   onStatus: function(e) {
     this.setData({ status: e.currentTarget.dataset.s })
@@ -226,7 +287,8 @@ Page({
             return wx.cloud.callFunction({
               name: 'parseFile',
               data: { fileID: uploadRes.fileID, fileType: ext }
-            }).catch(function(err) { console.error("Cloud call failed", err); })
+            })
+.catch(function(err) { console.error("Cloud call failed", err); })
           }).then(function(parseRes) {
             wx.hideLoading()
             if (parseRes.result && parseRes.result.success) {
@@ -342,7 +404,8 @@ Page({
           }
         },
         fail: function() {}
-      }).catch(function(err) { console.error("Cloud call failed", err); })
+      })
+.catch(function(err) { console.error("Cloud call failed", err); })
     } else {
       self.doSaveSubscription(type, openid)
     }
@@ -444,7 +507,8 @@ Page({
           wx.hideLoading()
           self._playSongFallback(url)
         }
-      }).catch(function(err) { console.error("Cloud call failed", err); })
+      })
+.catch(function(err) { console.error("Cloud call failed", err); })
       return
     }
 
@@ -532,7 +596,7 @@ Page({
     }
 
     // 检测视频平台类型
-    var isBilibili = /bilibili\.com|b23\.tv/i.test(url) || /BV[a-zA-Z0-9]{10,}/.test(url)
+    var isBilibili = /bilibili\.com|b23\.tv/i.test(url) || /BV[0-9A-Za-z]{10}/i.test(url)
     var isWeibo = /weibo\.(com|cn)/i.test(url)
     var isDouyin = /douyin\.com/i.test(url)
     var isKuaishou = /kuaishou\.com/i.test(url)
@@ -543,6 +607,28 @@ Page({
     // 可以播放或解析的平台
     var isSupported = isBilibili || isWeibo || isDouyin || isKuaishou || isXiaohongshu || isTencent || isYoutube
 
+    // 视频号在微信外无法解析播放，直接给复制链接引导
+    var isWechatChannels = /finder\.video\.qq\.com|channels\.weixin\.qq\.com/i.test(url)
+    if (isWechatChannels) {
+      wx.showModal({
+        title: '视频号视频',
+        content: '视频号内容需在微信中观看，可复制链接到微信中打开。',
+        confirmText: '复制链接',
+        cancelText: '取消',
+        success: function(res) {
+          if (res.confirm) {
+            wx.setClipboardData({
+              data: url,
+              success: function() {
+                wx.showToast({ title: '已复制，去微信中打开', icon: 'none' })
+              }
+            })
+          }
+        }
+      })
+      return
+    }
+
     if (!isSupported) {
       self._openVideoFallback(url, '未支持的平台')
       return
@@ -552,9 +638,10 @@ Page({
     
     // 构造请求参数，优先提取 B站 bvid 以保证向后兼容，其他平台传整个 url
     var callData = {}
-    var bvMatch = url.match(/BV[a-zA-Z0-9]{10,}/)
+    var compactUrl = String(url || '').replace(/[\s\u200b\ufeff\u00a0\u3000]+/g, '')
+    var bvMatch = compactUrl.match(/BV([0-9A-Za-z]{10})/i)
     if (bvMatch) {
-      callData.bvid = bvMatch[0]
+      callData.bvid = 'BV' + bvMatch[1]
     } else {
       callData.url = url
     }
@@ -579,6 +666,9 @@ Page({
           })
         } else {
           var errMsg = res.result ? res.result.msg : '解析失败'
+          if (errMsg && /Unexpected token|JSON|position\s*\d|SyntaxError|request was banned|banned/i.test(errMsg)) {
+            errMsg = /banned/i.test(errMsg) ? 'B站风控拦截，请稍后重试' : '接口限流或返回异常'
+          }
           self._openVideoFallback(url, errMsg)
         }
       },
@@ -587,7 +677,8 @@ Page({
         wx.hideLoading()
         self._openVideoFallback(url, '网络解析错误')
       }
-    }).catch(function(err) { console.error("Cloud call failed", err); })
+    })
+.catch(function(err) { console.error("Cloud call failed", err); })
   },
   _openVideoFallback: function(url, reason) {
     var content = '该视频由于版权限制或解析失败，可复制链接观看。'
@@ -691,6 +782,250 @@ Page({
         }
       })
     }
+  },
+  // ── 活动倒计时板块（赛季日历） ──
+  toggleBoard: function() {
+    this.setData({ boardExpanded: !this.data.boardExpanded })
+  },
+  onBoardFilter: function(e) {
+    var f = e.currentTarget.dataset.filter
+    if (!f || f === this.data.boardFilter) return
+    this.setData({ boardFilter: f, expandedBarId: '' })
+    if (this._rawSeason) this._buildBoard(this._rawSeason)
+  },
+  onTapGanttBar: function(e) {
+    var id = e.currentTarget.dataset.id
+    if (!id) return
+    this.setData({ expandedBarId: this.data.expandedBarId === id ? '' : id })
+  },
+  _calMonthLabel: function(y, m) {
+    var lang = i18n.getLanguage()
+    if (lang === 'zh') return ['一','二','三','四','五','六','七','八','九','十','十一','十二'][m] + '月'
+    if (lang === 'ja') return (m + 1) + '月'
+    if (lang === 'ko') return (m + 1) + '월'
+    return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m]
+  },
+  _parseDay: function(str) {
+    var m = String(str || '').match(/(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/)
+    if (!m) return null
+    return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10))
+  },
+  _mdText: function(d) {
+    return (d.getMonth() + 1) + '.' + (d.getDate() < 10 ? '0' : '') + d.getDate()
+  },
+  _matchPresetPet: function(title, pets) {
+    if (!title || !pets || !pets.length) return null
+    var t = String(title).trim()
+    if (!t) return null
+    var tClean = t.replace(/^异色/, '').trim()
+    for (var i = 0; i < pets.length; i++) {
+      var pName = String(pets[i].name || '').trim()
+      if (!pName) continue
+      if (pName === t || pName.replace(/^异色/, '').trim() === tClean) return pets[i]
+    }
+    for (var j = 0; j < pets.length; j++) {
+      var pName2 = String(pets[j].name || '').trim()
+      var pClean2 = pName2.replace(/^异色/, '').trim()
+      if (!pClean2) continue
+      if (tClean.indexOf(pClean2) !== -1 || pClean2.indexOf(tClean) !== -1) return pets[j]
+    }
+    return null
+  },
+  loadSeasonBoard: function() {
+    var self = this
+    if (!db) return
+    var pSeasons = db.collection('calendar_seasons').orderBy('start', 'desc').limit(20).get()
+    var pPets = db.collection('site_config').doc('shiny_pets').get().catch(function() { return null })
+    Promise.all([pSeasons, pPets]).then(function(results) {
+      var res = results[0] || {}
+      var petRes = results[1]
+      var presetPets = (petRes && petRes.data && petRes.data.pets) ? petRes.data.pets : (wx.getStorageSync('shiny_pets') || [])
+      var seasons = res.data || []
+      if (!seasons.length) { self.setData({ seasonBoard: null }); self._stopBoardTimer(); return }
+      var now = new Date()
+      var chosen = null
+      var best = null
+      for (var i = 0; i < seasons.length; i++) {
+        var s = self._parseDay(seasons[i].start)
+        var e = self._parseDay(seasons[i].end)
+        if (!s || !e) continue
+        var eLast = new Date(e.getFullYear(), e.getMonth(), e.getDate(), 23, 59, 59)
+        if (now >= s && now <= eLast) { chosen = seasons[i]; break }
+        var diff = Math.abs(s - now)
+        if (!best || diff < best.diff) best = { diff: diff, s: seasons[i] }
+      }
+      if (!chosen && best) chosen = best.s
+      if (!chosen) { self.setData({ seasonBoard: null }); self._stopBoardTimer(); return }
+      var items = (chosen.items || []).map(function(it) {
+        var copy = Object.assign({}, it)
+        var matched = self._matchPresetPet(copy.title, presetPets)
+        var icons = Array.isArray(copy.icons) && copy.icons.length
+          ? copy.icons.filter(Boolean)
+          : (Array.isArray(copy.images) && copy.images.length ? copy.images.filter(Boolean) : (copy.icon ? [copy.icon] : []))
+        if (!icons.length && matched) {
+          if (Array.isArray(matched.imgs) && matched.imgs.length) icons = matched.imgs.filter(Boolean)
+          else if (matched.img) icons = [matched.img]
+        }
+        copy.icons = icons
+        copy.icon = icons[0] || ''
+        return copy
+      })
+      cloudUrl.convertList(items, ['icon', 'icons'], function(converted) {
+        chosen = Object.assign({}, chosen, { items: converted || items })
+        self._buildBoard(chosen)
+      })
+    }).catch(function() {
+      self.setData({ seasonBoard: null })
+    })
+  },
+  _buildBoard: function(season) {
+    this._rawSeason = season
+    var start = this._parseDay(season.start)
+    var end = this._parseDay(season.end)
+    if (!start || !end || end < start) { this.setData({ seasonBoard: null }); return }
+    var startMs = start.getTime()
+    var endLastMs = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59).getTime()
+    var totalMs = endLastMs - startMs
+    if (totalMs <= 0) totalMs = 86400000
+    var months = []
+    var cur = new Date(start.getFullYear(), start.getMonth(), 1)
+    while (cur <= end) {
+      var mStart = new Date(cur.getFullYear(), cur.getMonth(), 1)
+      var mEnd = new Date(cur.getFullYear(), cur.getMonth() + 1, 0, 23, 59, 59)
+      var lMs = Math.max(mStart.getTime(), startMs)
+      var rMs = Math.min(mEnd.getTime(), endLastMs)
+      if (rMs > lMs) {
+        months.push({
+          label: this._calMonthLabel(cur.getFullYear(), cur.getMonth()),
+          left: (lMs - startMs) / totalMs * 100,
+          width: (rMs - lMs) / totalMs * 100
+        })
+      }
+      cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1)
+    }
+    var dict = i18n.i18n[i18n.getLanguage()] || i18n.i18n.zh
+    var groups = [
+      { key: 'version', cls: 'grp-version', label: dict.groupVersion || '版本周期性活动', bars: [] },
+      { key: 'spawn', cls: 'grp-spawn', label: dict.groupSpawn || '大量出没', bars: [] },
+      { key: 'seed', cls: 'grp-seed', label: dict.groupSeed || '命定花种', bars: [] },
+      { key: 'quest', cls: 'grp-quest', label: dict.groupQuest || '常驻课题', bars: [] }
+    ]
+    var cdItems = []
+    var parsedItems = []
+    var items = season.items || []
+    var now = Date.now()
+    var liveCount = 0
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i]
+      var s = this._parseDay(it.start)
+      if (!s) continue
+      var e = this._parseDay(it.end)
+      if (e && e < s) continue
+      var openEnd = !e
+      var sMs = s.getTime()
+      var eMs = e ? new Date(e.getFullYear(), e.getMonth(), e.getDate(), 23, 59, 59).getTime() : endLastMs
+      var isLive = now >= sMs && (openEnd || now <= eMs)
+      if (isLive) liveCount++
+      parsedItems.push({ it: it, s: s, e: e, openEnd: openEnd, sMs: sMs, eMs: eMs, isLive: isLive, idx: i })
+    }
+    var filterMode = this.data.boardFilter || 'live'
+    var onlyLive = (filterMode === 'live' && liveCount > 0)
+    for (var p = 0; p < parsedItems.length; p++) {
+      var rec = parsedItems[p]
+      var it = rec.it
+      var s = rec.s
+      var e = rec.e
+      var openEnd = rec.openEnd
+      var sMs = rec.sMs
+      var eMs = rec.eMs
+      var dateText = openEnd
+        ? (s.getMonth() + 1) + '月' + (s.getDate() < 10 ? '0' : '') + s.getDate() + '日起'
+        : this._mdText(s) + '-' + this._mdText(e)
+      var gi = it.group === 'spawn' ? 1 : (it.group === 'seed' ? 2 : (it.group === 'quest' ? 3 : 0))
+      var id = 'it' + rec.idx
+      cdItems.push({ id: id, title: it.title || '', dateText: dateText, groupLabel: groups[gi].label, startMs: sMs, endMs: eMs, openEnd: openEnd })
+      if (onlyLive && !rec.isLive) continue
+      var left = Math.max(0, Math.min(100, (sMs - startMs) / totalMs * 100))
+      var width = Math.min(100 - left, Math.max(4, (Math.min(eMs, endLastMs) - sMs) / totalMs * 100))
+      var labelStr = (it.title || '') + ' ' + dateText
+      var cjk = 0, asc = 0
+      for (var c = 0; c < labelStr.length; c++) {
+        if (labelStr.charCodeAt(c) > 255) cjk++
+        else asc++
+      }
+      var barIcons = (Array.isArray(it.icons) && it.icons.length) ? it.icons : (it.icon ? [it.icon] : [])
+      var needRpx = cjk * 26 + asc * 16 + (barIcons.length ? (barIcons.length * 44 + 12) : 0) + 80
+      var needPct = Math.min(100, Math.ceil(needRpx / 520 * 100))
+      var finalWidth = Math.min(100, Math.max(width, needPct))
+      var finalLeft = Math.max(0, Math.min(left, 100 - finalWidth))
+      groups[gi].bars.push({
+        id: id,
+        title: it.title || '',
+        dateText: dateText,
+        groupLabel: groups[gi].label,
+        left: finalLeft,
+        width: finalWidth,
+        icon: barIcons[0] || '',
+        icons: barIcons,
+        cls: 'bar-' + groups[gi].key
+      })
+    }
+    var visibleGroups = groups.filter(function(g) { return g.bars.length > 0 })
+    function stateOf(x) { return now < x.startMs ? 0 : (x.openEnd || now <= x.endMs ? 1 : 2) }
+    cdItems.sort(function(a, b) {
+      var sa = stateOf(a)
+      var sb = stateOf(b)
+      if (sa !== sb) return sa - sb
+      if (sa === 0) return a.startMs - b.startMs
+      if (sa === 1) return a.endMs - b.endMs
+      return b.endMs - a.endMs
+    })
+    this.setData({
+      seasonBoard: { name: season.name || '', start: this._mdText(start), end: this._mdText(end) },
+      boardLiveCount: liveCount,
+      boardTotalCount: parsedItems.length,
+      ganttMonths: months,
+      ganttGroups: visibleGroups,
+      ganttWidth: 640,
+      countdownItems: cdItems
+    })
+    this._startBoardTimer()
+  },
+  _startBoardTimer: function() {
+    var self = this
+    this._stopBoardTimer()
+    this._boardTick()
+    this._boardTimer = setInterval(function() { self._boardTick() }, 1000)
+  },
+  _stopBoardTimer: function() {
+    if (this._boardTimer) { clearInterval(this._boardTimer); this._boardTimer = null }
+  },
+  _boardTick: function() {
+    var items = this.data.countdownItems || []
+    if (!items.length) return
+    var now = Date.now()
+    var dict = i18n.i18n[i18n.getLanguage()] || i18n.i18n.zh
+    var ongoingText = dict.countdownOngoing || '进行中'
+    var map = {}
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i]
+      if (now < it.startMs) {
+        map[it.id] = { state: 'soon', text: i18n.formatCountdown(it.startMs - now, 'countdownToStart', 'countdownEnded') }
+      } else if (it.openEnd) {
+        map[it.id] = { state: 'live', text: ongoingText }
+      } else if (now <= it.endMs) {
+        map[it.id] = { state: 'live', text: i18n.formatCountdown(it.endMs - now, 'countdownRemain', 'countdownEnded') }
+      } else {
+        map[it.id] = { state: 'ended', text: i18n.formatCountdown(-1, 'countdownRemain', 'countdownEnded') }
+      }
+    }
+    this.setData({ boardCountdowns: map })
+  },
+  onHide: function() {
+    this._stopBoardTimer()
+  },
+  onUnload: function() {
+    this._stopBoardTimer()
   },
   onShareAppMessage: function() {
     return { title: '洛手助手 - 活动日历', path: '/pages/activity/activity', imageUrl: '/images/banner.webp' }

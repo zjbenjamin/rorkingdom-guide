@@ -66,11 +66,11 @@
     </view>
   </view>
 
-  <view class="modal-mask" wx:if="{{showAddModal}}" bindtap="closeAddModal">
-    <view class="modal-box" catchtap="">
+  <view class="modal-mask" wx:if="{{showAddModal}}" bindtap="closeAddModal" catchtouchmove="preventClose" style="{{keyboardHeight > 0 ? 'padding-bottom:' + keyboardHeight + 'px;' : ''}}">
+    <view class="modal-box" catchtap="preventClose">
       <view class="modal-title">{{editingId ? _l.redeemEditTitle : _l.redeemAddTitle}}</view>
-      <input class="modal-input" placeholder="{{_l.redeemCodePlaceholder || '输入兑换码'}}" value="{{formCode}}" bindinput="onInputCode" />
-      <input class="modal-input" placeholder="{{_l.redeemRewardLabel || '奖励内容'}}" value="{{formRewards}}" bindinput="onInputRewards" />
+      <input class="modal-input" placeholder="{{_l.redeemCodePlaceholder || '输入兑换码'}}" value="{{formCode}}" bindinput="onInputCode" adjust-position="{{false}}" confirm-type="next" bindkeyboardheightchange="onKeyboardHeight" />
+      <input class="modal-input" placeholder="{{_l.redeemRewardLabel || '奖励内容'}}" value="{{formRewards}}" bindinput="onInputRewards" adjust-position="{{false}}" confirm-type="done" bindkeyboardheightchange="onKeyboardHeight" />
       <view class="form-row">
         <picker mode="date" value="{{formExpireDate}}" bindchange="onExpireDateChange">
           <view class="picker-value">{{formExpireDate || _l.redeemPickDate || '选择日期'}}</view>

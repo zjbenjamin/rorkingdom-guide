@@ -538,6 +538,7 @@
  margin-top: 24rpx;
  gap: 16rpx;
  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+ flex-shrink: 0;
  }
 /* ── Form ── */.form-group  {
  margin-bottom: 20rpx;
@@ -1934,6 +1935,7 @@
  }
   .layout-pad .add-btn  {
  font-size: 13px !important;
+ min-height: 32px !important;
  padding: 6px 14px !important;
  border-radius: 6px !important;
  }
@@ -1945,6 +1947,7 @@
  }
   .layout-pad .btn-edit, .layout-pad .btn-delete, .layout-pad .tag, .layout-pad .pin-tag  {
  font-size: 12px !important;
+ min-height: 26px !important;
  padding: 4px 10px !important;
  border-radius: 4px !important;
  }
@@ -1999,17 +2002,20 @@
   /* 列表两列 */  .layout-pad .tab-content-pane  {
  display: flex !important;
  flex-wrap: wrap !important;
- gap: 16px !important;
+ gap: 20px !important;
+ padding: 4px 2px !important;
  align-items: flex-start !important;
  }
   .layout-pad .section-header, .layout-pad .empty  {
  width: 100% !important;
- margin-bottom: 0 !important;
+ margin-bottom: 8px !important;
  }
   .layout-pad .card-item  {
- width: calc(50% - 8px) !important;
+ width: calc(50% - 10px) !important;
  margin-bottom: 0 !important;
  box-sizing: border-box !important;
+ padding: 16px !important;
+ border-radius: 12px !important;
  }
   .layout-pad .sub-grid, .layout-pad .sub-test-grid  {
  display: grid !important;
@@ -2033,3 +2039,22 @@
   .layout-wide .tab-content-pane  {
  gap: 20px !important;
  }
+/* ── 赛季日历活动行 ── */
+.cal-item-row { background: rgba(0,0,0,0.2); border: 1rpx solid #30363d; border-radius: 8rpx; padding: 12rpx; margin-bottom: 12rpx; }
+.cal-row-top { display: flex; align-items: center; gap: 12rpx; margin-bottom: 10rpx; }
+.cal-title { flex: 1; min-width: 0; }
+.cal-row-del { flex-shrink: 0; color: #ff5050; font-size: 34rpx; padding: 16rpx 24rpx; min-width: 72rpx; text-align: center; box-sizing: border-box; }
+.cal-row-mid { display: flex; gap: 8rpx; margin-bottom: 10rpx; }
+.cal-grp { flex: 1.2; min-width: 0; padding: 18rpx 12rpx; min-height: 0; }
+.cal-date { flex: 1; min-width: 0; padding: 18rpx 12rpx; min-height: 0; }
+.cal-row-mid .picker-text { font-size: 22rpx; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.cal-icon { min-height: 64rpx; padding: 14rpx 12rpx; font-size: 22rpx; }
+.cal-icons-wrap { display: flex; flex-direction: column; gap: 8rpx; margin-top: 4rpx; }
+.cal-icons-head { display: flex; align-items: center; justify-content: space-between; gap: 12rpx; }
+.cal-icons-tip { font-size: 20rpx; color: rgba(255,255,255,0.5); }
+.cal-icon-add { font-size: 22rpx; color: #00d4ff; background: rgba(0,212,255,0.12); border: 1rpx solid rgba(0,212,255,0.3); border-radius: 8rpx; padding: 6rpx 16rpx; flex-shrink: 0; }
+.cal-icon-item { display: flex; align-items: center; gap: 10rpx; }
+.cal-icon-preview { width: 52rpx; height: 52rpx; border-radius: 8rpx; border: 1rpx solid rgba(0,212,255,0.4); background: #0d1117; flex-shrink: 0; }
+.cal-icon-remove { color: #ff5050; font-size: 28rpx; padding: 8rpx 14rpx; flex-shrink: 0; }
+.cal-add-btn { padding: 16rpx 32rpx; font-size: 26rpx; }
+.cal-empty { text-align: center; color: #484f58; font-size: 22rpx; padding: 24rpx 0; }

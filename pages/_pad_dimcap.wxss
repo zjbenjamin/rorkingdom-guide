@@ -1,0 +1,198 @@
+/* ===== 平板尺寸帽（自动生成）：width/height 的 rpx 压 px ===== */
+.layout-pad .act-icon { height: 53px !important; width: 53px !important; }
+.layout-pad .action-icon-wrap { height: 24px !important; width: 24px !important; }
+.layout-pad .admin-avatar { height: 31px !important; width: 31px !important; }
+.layout-pad .admin-panel-content { height: 80px !important; }
+.layout-pad .admin-stat-pill { min-width: 29px !important; }
+.layout-pad .agree-section { width: 80px !important; }
+.layout-pad .announce-arrow { width: 13px !important; }
+.layout-pad .announce-close-btn { height: 24px !important; width: 24px !important; }
+.layout-pad .announce-content { height: 80px !important; }
+.layout-pad .announce-header-icon-wrap { height: 31px !important; width: 31px !important; }
+.layout-pad .avatar-ring { height: 66px !important; width: 66px !important; }
+.layout-pad .badge-dot { height: 8px !important; width: 8px !important; }
+.layout-pad .ball-icon-circle { height: 37px !important; width: 37px !important; }
+.layout-pad .ball-picker-field { height: 40px !important; }
+.layout-pad .ball-remain-field { height: 40px !important; }
+.layout-pad .ball-row-del { height: 31px !important; width: 31px !important; }
+.layout-pad .banner-bg { min-height: 80px !important; }
+.layout-pad .banner-deco-1 { height: 80px !important; width: 80px !important; }
+.layout-pad .banner-deco-2 { height: 77px !important; width: 77px !important; }
+.layout-pad .banner-deco-3 { height: 44px !important; width: 44px !important; }
+.layout-pad .banner-glow { height: 80px !important; width: 80px !important; }
+.layout-pad .banner-preview { height: 80px !important; }
+.layout-pad .batch-checkbox { height: 20px !important; width: 20px !important; }
+.layout-pad .bcr-input { height: 33px !important; }
+.layout-pad .bcr-thumb { height: 20px !important; width: 20px !important; }
+.layout-pad .btn-publish { height: 40px !important; }
+.layout-pad .btn-silent { height: 40px !important; }
+.layout-pad .capture-shiny-badge { height: 80px !important; width: 80px !important; }
+.layout-pad .card-avatar { height: 24px !important; width: 24px !important; }
+.layout-pad .card-image-area .image-remove-btn { height: 20px !important; width: 20px !important; }
+.layout-pad .card-image-area .image-upload-box.mini { height: 77px !important; }
+.layout-pad .card-img { height: 77px !important; width: 77px !important; }
+.layout-pad .card-title-center::after { height: 8px !important; width: 22px !important; }
+.layout-pad .card-title-center::before { height: 8px !important; width: 22px !important; }
+.layout-pad .color-dot { height: 13px !important; width: 13px !important; }
+.layout-pad .color-preview { height: 11px !important; width: 11px !important; }
+.layout-pad .content { min-height: 80px !important; }
+.layout-pad .copy-btn { height: 40px !important; }
+.layout-pad .counter-badge { height: 18px !important; min-width: 18px !important; }
+.layout-pad .counter-btn { height: 26px !important; width: 26px !important; }
+.layout-pad .desc-panel.open { height: 80px !important; }
+.layout-pad .desc-scroll { height: 80px !important; }
+.layout-pad .divider-line { height: 8px !important; }
+.layout-pad .divider-line.double { height: 8px !important; }
+.layout-pad .divider-line.gradient { height: 8px !important; }
+.layout-pad .divider-line.star { height: 16px !important; }
+.layout-pad .divider-line.star::before { height: 8px !important; }
+.layout-pad .exp-bar { height: 8px !important; }
+.layout-pad .feed-arrow { width: 13px !important; }
+.layout-pad .field-input { height: 35px !important; }
+.layout-pad .field-picker { height: 35px !important; }
+.layout-pad .field-textarea { height: 80px !important; }
+.layout-pad .filter-item-dot { height: 8px !important; width: 8px !important; }
+.layout-pad .filter-scroll { height: 80px !important; }
+.layout-pad .form-card { height: 77px !important; }
+.layout-pad .form-card-img { height: 62px !important; width: 62px !important; }
+.layout-pad .form-card-img-wrap { height: 62px !important; width: 62px !important; }
+.layout-pad .form-cards-swiper { height: 80px !important; }
+.layout-pad .form-editor { height: 80px !important; min-height: 80px !important; }
+.layout-pad .form-input { height: 42px !important; min-height: 35px !important; }
+.layout-pad .form-picker { min-height: 35px !important; }
+.layout-pad .form-picker-value { height: 40px !important; }
+.layout-pad .form-shiny-badge { height: 18px !important; width: 18px !important; }
+.layout-pad .form-textarea { height: 80px !important; }
+.layout-pad .global-publish-btn { height: 40px !important; }
+.layout-pad .goods-thumb { height: 35px !important; width: 35px !important; }
+.layout-pad .iframe-icon { height: 35px !important; width: 35px !important; }
+.layout-pad .image-action-btn { height: 55px !important; width: 77px !important; }
+.layout-pad .image-action-card { height: 77px !important; }
+.layout-pad .image-action-card.mini { height: 55px !important; }
+.layout-pad .image-block-preview { height: 55px !important; width: 55px !important; }
+.layout-pad .image-preview { height: 80px !important; width: 80px !important; }
+.layout-pad .image-remove { height: 18px !important; width: 18px !important; }
+.layout-pad .image-remove-btn { height: 26px !important; width: 26px !important; }
+.layout-pad .input-prefix-img { height: 18px !important; width: 18px !important; }
+.layout-pad .input-with-icon { height: 42px !important; }
+.layout-pad .insert-btn { min-width: 40px !important; }
+.layout-pad .item-add-card { min-height: 80px !important; }
+.layout-pad .item-card-header { min-height: 20px !important; }
+.layout-pad .item-delete { height: 21px !important; width: 21px !important; }
+.layout-pad .item-delete-btn { height: 20px !important; width: 20px !important; }
+.layout-pad .item-image { height: 66px !important; width: 66px !important; }
+.layout-pad .item-image-placeholder { height: 66px !important; width: 66px !important; }
+.layout-pad .item-offline-btn { height: 20px !important; width: 46px !important; }
+.layout-pad .item-sub-btn { height: 20px !important; width: 20px !important; }
+.layout-pad .lang-btn { height: 22px !important; width: 31px !important; }
+.layout-pad .lang-flag { height: 15px !important; width: 22px !important; }
+.layout-pad .loading-spinner { height: 22px !important; width: 22px !important; }
+.layout-pad .marker-popup-close { height: 26px !important; width: 26px !important; }
+.layout-pad .marker-popup-dot { height: 9px !important; width: 9px !important; }
+.layout-pad .media-live-img.single { height: 80px !important; }
+.layout-pad .media-live-swiper { height: 80px !important; }
+.layout-pad .meta-badge-dot { height: 8px !important; width: 8px !important; }
+.layout-pad .miss-anim-badge { height: 80px !important; width: 80px !important; }
+.layout-pad .modal-box { width: 80px !important; }
+.layout-pad .modal-btn { height: 35px !important; }
+.layout-pad .modal-cancel { height: 40px !important; min-width: 77px !important; }
+.layout-pad .modal-delete-btn { height: 55px !important; }
+.layout-pad .modal-glow-top { height: 8px !important; width: 80px !important; }
+.layout-pad .modal-input { height: 44px !important; min-height: 40px !important; }
+.layout-pad .modal-input.mini { height: 33px !important; min-height: 33px !important; }
+.layout-pad .modal-save { height: 40px !important; min-width: 80px !important; }
+.layout-pad .modal-submit { height: 35px !important; }
+.layout-pad .modal-textarea { height: 80px !important; }
+.layout-pad .modal-textarea.mini { height: 80px !important; }
+.layout-pad .modal-title-line { height: 18px !important; width: 8px !important; }
+.layout-pad .music-cover { height: 57px !important; width: 57px !important; }
+.layout-pad .music-eq { height: 14px !important; }
+.layout-pad .music-eq view { width: 8px !important; }
+.layout-pad .music-icon { height: 53px !important; width: 53px !important; }
+.layout-pad .music-play-btn { height: 46px !important; min-width: 46px !important; }
+.layout-pad .nav-item.on::before { height: 8px !important; width: 18px !important; }
+.layout-pad .nick-input { height: 40px !important; }
+.layout-pad .nick-section { width: 80px !important; }
+.layout-pad .no-access-icon { height: 55px !important; width: 55px !important; }
+.layout-pad .notify-pulse { height: 8px !important; width: 8px !important; }
+.layout-pad .option-icon-wrap { height: 22px !important; width: 22px !important; }
+.layout-pad .option-toggle { height: 13px !important; width: 24px !important; }
+.layout-pad .option-toggle .toggle-circle { height: 10px !important; width: 10px !important; }
+.layout-pad .pad-mode-toggle { height: 26px !important; width: 48px !important; }
+.layout-pad .pad-mode-toggle-dot { height: 22px !important; width: 22px !important; }
+.layout-pad .panel-bar { height: 15px !important; width: 8px !important; }
+.layout-pad .pet-preview-card .preview-img { height: 48px !important; width: 48px !important; }
+.layout-pad .pick-chip .chip-img { height: 15px !important; width: 15px !important; }
+.layout-pad .picker-card-add { height: 21px !important; width: 21px !important; }
+.layout-pad .picker-card-effect { height: 28px !important; }
+.layout-pad .picker-card-image { height: 66px !important; width: 66px !important; }
+.layout-pad .picker-inner-new { height: 40px !important; }
+.layout-pad .picker-value { height: 44px !important; }
+.layout-pad .picker-value.mini { height: 33px !important; }
+.layout-pad .pity-track { height: 9px !important; }
+.layout-pad .premium-count-input-new { height: 40px !important; }
+.layout-pad .premium-input { height: 42px !important; }
+.layout-pad .premium-picker-new { height: 40px !important; }
+.layout-pad .preview-divider { height: 8px !important; }
+.layout-pad .preview-swiper { height: 80px !important; }
+.layout-pad .privacy-btn-cancel { height: 42px !important; }
+.layout-pad .privacy-btn-confirm { height: 42px !important; }
+.layout-pad .privacy-container { width: 80px !important; }
+.layout-pad .privacy-modal-box { width: 80px !important; }
+.layout-pad .privacy-modal-box::before { height: 8px !important; }
+.layout-pad .profile-avatar { height: 66px !important; width: 66px !important; }
+.layout-pad .radar-scan { height: 80px !important; width: 80px !important; }
+.layout-pad .refresh-btn { height: 24px !important; width: 24px !important; }
+.layout-pad .result-footer .modal-cancel { height: 48px !important; }
+.layout-pad .result-header-close { height: 31px !important; width: 31px !important; }
+.layout-pad .result-header-icon { height: 40px !important; width: 40px !important; }
+.layout-pad .result-save-btn { height: 48px !important; }
+.layout-pad .result-section > .form-input.enhanced { height: 42px !important; }
+.layout-pad .rich-inline-video { height: 80px !important; }
+.layout-pad .rich-music-block::after { height: 8px !important; }
+.layout-pad .rich-music-block::before { height: 8px !important; }
+.layout-pad .roco-icon { height: 12px !important; width: 12px !important; }
+.layout-pad .roco-icon.sm { height: 11px !important; width: 11px !important; }
+.layout-pad .search-box { height: 40px !important; }
+.layout-pad .search-clear { height: 20px !important; width: 20px !important; }
+.layout-pad .search-input { height: 40px !important; }
+.layout-pad .section-line { height: 8px !important; }
+.layout-pad .selling-edit-empty { height: 80px !important; }
+.layout-pad .selling-image-preview.large { height: 80px !important; }
+.layout-pad .selling-items .item-add-card { min-height: 80px !important; }
+.layout-pad .shiny-badge { height: 24px !important; width: 24px !important; }
+.layout-pad .size-option { height: 31px !important; min-width: 37px !important; }
+.layout-pad .skill-type { height: 33px !important; width: 33px !important; }
+.layout-pad .source-input { height: 33px !important; }
+.layout-pad .source-logo-img { height: 26px !important; width: 80px !important; }
+.layout-pad .sub-btn { min-width: 77px !important; }
+.layout-pad .sub-icon-wrap { height: 35px !important; width: 35px !important; }
+.layout-pad .submit-btn { height: 42px !important; width: 80px !important; }
+.layout-pad .summary-divider { width: 8px !important; }
+.layout-pad .swarm-hero-img { height: 77px !important; width: 77px !important; }
+.layout-pad .swarm-hero-img-wrap { height: 77px !important; width: 77px !important; }
+.layout-pad .swarm-image-wrap { height: 61px !important; width: 61px !important; }
+.layout-pad .sync-dot { height: 8px !important; width: 8px !important; }
+.layout-pad .tag-dot { height: 8px !important; width: 8px !important; }
+.layout-pad .timer-dot { height: 8px !important; width: 8px !important; }
+.layout-pad .title-input { height: 40px !important; }
+.layout-pad .toggle { height: 15px !important; width: 29px !important; }
+.layout-pad .toggle-dot { height: 11px !important; width: 11px !important; }
+.layout-pad .tool-btn { height: 26px !important; min-width: 26px !important; }
+.layout-pad .tool-divider { height: 15px !important; width: 8px !important; }
+.layout-pad .toolbar-btn { height: 40px !important; }
+.layout-pad .user-avatar { height: 48px !important; width: 48px !important; }
+.layout-pad .user-card .avatar-wrap { height: 48px !important; width: 48px !important; }
+.layout-pad .value-icon { height: 11px !important; width: 11px !important; }
+.layout-pad .video-icon { height: 53px !important; width: 53px !important; }
+.layout-pad .video-platform::before { height: 8px !important; width: 8px !important; }
+.layout-pad .video-play-btn { height: 46px !important; min-width: 46px !important; }
+.layout-pad .video-player-desc { height: 80px !important; }
+.layout-pad .video-player-desc::after { height: 22px !important; }
+.layout-pad .video-player-video { height: 80px !important; }
+.layout-pad .video-thumb { height: 42px !important; width: 57px !important; }
+.layout-pad .visual-action-btn { min-height: 46px !important; }
+.layout-pad .visual-action-btn .btn-icon-img { height: 22px !important; width: 22px !important; }
+.layout-pad .visual-bars { height: 8px !important; }
+.layout-pad .visual-btn-add-new { height: 40px !important; }
+.layout-pad to { height: 80px !important; }

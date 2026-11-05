@@ -22,6 +22,7 @@ function localizeResultText(raw, resultText) {
   }
   if (raw === 'miss' || s === '歪了') return i18n.t('catchResultMiss')
   if (s.indexOf('盘点') >= 0) return i18n.t('catchResultCheck')
+  if (s.indexOf('龙龙骰') >= 0 || raw === 'use_dice') return '龙龙骰'
   if (s.indexOf('奇遇') >= 0 || raw === 'event') return i18n.t('catchResultEvent')
   if (s.indexOf('微调') >= 0) return i18n.t('imgAdjust')
   return s || i18n.t('imgUnknown')
@@ -92,6 +93,9 @@ Page({
     encounterTab: 'luckybox', carnivalCount: 0, luckyBoxCount: 0,
     specialTab: 'buy', specialBall: '高级咕噜球',
     inboundMethod: 'default',
+    selectedCraftCostRoco: false,
+    selectedCraftPrice: 0,
+    craftUseRoco: false,
     pickerBalls: [],
     specialBalls: ['绝缘球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','奇趣球','补光球','国王球','棱镜球','织梦棱镜球','狂欢棱镜球','淘沙球','童话球'],
     craftBalls: ['国王球','绝缘球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','棱镜球','淘沙球'],
@@ -101,7 +105,7 @@ Page({
     totalBallUsed: 0,
     hasActiveBalls: false,
     ballDecrease: {},
-    showFairytaleParticles: false,
+    showFairytaleParticles: false, showDiceParticles: false, diceAnim: false,
     canStartCapture: false,
     showResultBallModal: false,
     resultType: '',
@@ -121,8 +125,12 @@ Page({
     autoResetPity: false,
     quickRecordMode: false,
     showWealthAdjustModal: false,
-    adjustType: 'add',
+    adjustType: 'current',
     adjustAmount: '',
+    adjustInputVal: 0,
+    adjustIncreaseVal: 0,
+    adjustDecreaseVal: 0,
+    lastWealthAdjust: null,
     adjustRemark: '',
     resultMultiBalls: [],
     checkMultiBalls: [],
@@ -136,7 +144,7 @@ Page({
     resultElapsedEdited: false,
     // 异色精灵预设（后台配置）
     shinyPets: [],
-    petSeasonFilter: 'all',
+    petSeasonFilter: 'S1',
     shinyPetPickerList: [],
     petSeasons: ['S1', 'S2', 'S3', 'S4'],
     // 契约球：捕捉成功时选用
@@ -144,6 +152,9 @@ Page({
     contractBallImg: '',
     contractBallIcon: '',
     contractBallPicker: [],
+    // 异色龙龙骰染色状态
+    sessionUsedDice: false,
+    resultUsedDice: false,
   },
   // 计时：长时无操作(>30min)重置；未开始则从此刻起表，返回本次已耗秒数
   _touchCaptureClock: function() {
@@ -189,14 +200,18 @@ Page({
     this.fetchShinyPets();
     this.preloadBallImages();
   },
-  // 异色精灵预设：后台配置后同步到目标精灵选择
+  // 异色精灵预设：后台配置后同步到目标精灵选择（过滤暂时隐藏的赛季 + 置顶优先）
   fetchShinyPets: function() {
     var self = this;
     if (!wx.cloud) return;
     wx.cloud.database().collection('site_config').doc('shiny_pets').get().then(function(res) {
       var pets = (res.data && res.data.pets) || [];
-      var seasons = (res.data && res.data.seasons) || ['S1', 'S2', 'S3', 'S4'];
-      self.setData({ shinyPets: pets, petSeasons: seasons });
+      var allSeasons = (res.data && res.data.seasons) || ['S1', 'S2', 'S3', 'S4'];
+      var hiddenSeasons = (res.data && res.data.hiddenSeasons) || [];
+      var visibleSeasons = allSeasons.filter(function(s) { return hiddenSeasons.indexOf(s) === -1; });
+      if (!visibleSeasons.length) visibleSeasons = allSeasons;
+      self.setData({ shinyPets: pets, petSeasons: visibleSeasons });
+      wx.setStorageSync('pet_hidden_seasons', hiddenSeasons);
       self.refreshShinyPetPicker();
     }).catch(function() {
       // 离线用缓存
@@ -210,29 +225,43 @@ Page({
   },
   refreshShinyPetPicker: function() {
     var pets = this.data.shinyPets || [];
-    var season = this.data.petSeasonFilter || 'all';
-    var list = [];
-    for (var i = 0; i < pets.length; i++) {
-      if (season === 'all' || pets[i].season === season) list.push(pets[i].name);
+    var seasons = this.data.petSeasons || ['S1', 'S2', 'S3', 'S4'];
+    var season = this.data.petSeasonFilter;
+    if (!season || season === 'all' || seasons.indexOf(season) === -1) {
+      season = seasons[0] || 'S1';
     }
-    this.setData({ shinyPetPickerList: list });
+    var matched = [];
+    for (var i = 0; i < pets.length; i++) {
+      if ((pets[i].season || seasons[0] || 'S1') === season) matched.push(pets[i]);
+    }
+    matched.sort(function(a, b) {
+      return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0);
+    });
+    var list = matched.map(function(p) { return p.name; });
+    this.setData({ petSeasonFilter: season, shinyPetPickerList: list });
     wx.setStorageSync('shiny_pets', pets);
-    wx.setStorageSync('pet_seasons', this.data.petSeasons || []);
+    wx.setStorageSync('pet_seasons', seasons);
   },
   onPetSeasonFilter: function(e) {
-    this.setData({ petSeasonFilter: e.currentTarget.dataset.s || 'all' });
+    var s = e.currentTarget.dataset.s;
+    if (!s) return;
+    this.setData({ petSeasonFilter: s });
     this.refreshShinyPetPicker();
   },
   // 选中预设：填入名称 + 图片URL；pickTarget 区分单刷目标 / 混刷目标
   onPickShinyPet: function(e) {
     var idx = e.currentTarget.dataset.index;
     var target = e.currentTarget.dataset.target || 'single';
-    var season = this.data.petSeasonFilter || 'all';
+    var seasons = this.data.petSeasons || ['S1', 'S2', 'S3', 'S4'];
+    var season = this.data.petSeasonFilter || seasons[0] || 'S1';
     var pets = this.data.shinyPets || [];
     var list = [];
     for (var i = 0; i < pets.length; i++) {
-      if (season === 'all' || pets[i].season === season) list.push(pets[i]);
+      if ((pets[i].season || seasons[0] || 'S1') === season) list.push(pets[i]);
     }
+    list.sort(function(a, b) {
+      return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0);
+    });
     var pet = list[idx];
     if (!pet) return;
     if (target === 'mixed') {
@@ -319,6 +348,11 @@ Page({
         cnyPrice = rocoPrice;
         rocoPrice = 0;
       }
+      var craftCostRoco = !!(cb.craftCostRoco || (cb.isCraft && cb.craftPrice > 0));
+      var craftPrice = cb.craftPrice != null ? (parseInt(cb.craftPrice, 10) || 0) : (craftCostRoco ? (parseInt(cb.price, 10) || 0) : 0);
+      if (cb.isCraft && !cb.isBuy) {
+        rocoPrice = craftCostRoco ? craftPrice : 0;
+      }
       mergedBalls.push({
         id: cb.id,
         name: cb.name,
@@ -329,6 +363,9 @@ Page({
         rate: rateDesc,
         price: rocoPrice,
         cnyPrice: cnyPrice,
+        craftCostRoco: craftCostRoco,
+        craftPrice: craftPrice,
+        craftMaterials: cb.craftMaterials || '',
         // 按当前语言显示当地货币（CNY 自动换算）
         cnyDisplay: cnyPrice > 0 ? i18n.formatCny(cnyPrice) : '',
         img: cb.img || lb.img || '',
@@ -376,14 +413,34 @@ Page({
       ? (d.cnyActivityBalls || [])
       : d.cnyBalls
   },
+  _syncSelectedCraftBall: function(ballName) {
+    var balls = this.data.balls || [];
+    var b = null;
+    for (var i = 0; i < balls.length; i++) {
+      if (balls[i].name === ballName) { b = balls[i]; break; }
+    }
+    var costRoco = !!(b && b.isCraft && b.craftCostRoco);
+    var cPrice = costRoco ? (b.craftPrice || b.price || 0) : 0;
+    this.setData({
+      selectedCraftCostRoco: costRoco,
+      selectedCraftPrice: cPrice,
+      craftUseRoco: !!(costRoco && cPrice > 0)
+    });
+  },
+  onToggleCraftUseRoco: function(e) {
+    var use = e.currentTarget.dataset.use === '1';
+    this.setData({ craftUseRoco: use });
+  },
   refreshBallPicker: function() {
     var list = this.getPickerBalls() || []
     var first = list.length ? list[0] : ''
     var keep = this.data.specialBall
+    var selected = (keep && list.indexOf(keep) >= 0) ? keep : first
     this.setData({
       pickerBalls: list,
-      specialBall: (keep && list.indexOf(keep) >= 0) ? keep : first
+      specialBall: selected
     })
+    this._syncSelectedCraftBall(selected)
   },
   noop: function() {},
   toggleBallDesc: function(e) {
@@ -453,7 +510,7 @@ Page({
     this.updatePity(pity)
           var profitRate = initial > 0 ? ((accumulated / initial) * 100).toFixed(1) : (accumulated > 0 ? '100.0' : '0.0')
       var rate = this.calcSuccessRate()
-    var title = this.calcTitle(rate, carnivalCount + luckyBoxCount, totalCatches)
+    var title = this.calcTitle(rate, luckyBoxCount, totalCatches)
     var rawHistory = (wx.getStorageSync('catch_history')||[]).slice(0,20);
     this.setData({
       history: rawHistory,
@@ -478,7 +535,9 @@ Page({
       autoResetPity: wx.getStorageSync('auto_reset_pity') || false,
       continuePity: wx.getStorageSync('continue_pity') || false,
       quickRecordMode: wx.getStorageSync('quick_record_mode') || false,
-      specialHistory: wx.getStorageSync('special_history') || []
+      specialHistory: wx.getStorageSync('special_history') || [],
+      sessionUsedDice: !!wx.getStorageSync('session_used_dice'),
+      lastWealthAdjust: wx.getStorageSync('last_wealth_adjust') || null
     })
     this.updateGemCost()
   },
@@ -623,7 +682,8 @@ Page({
       contractBall: '',
       contractBallImg: '',
       contractBallIcon: '',
-      contractBallPicker: contractPicker
+      contractBallPicker: contractPicker,
+      resultUsedDice: !!self.data.sessionUsedDice
     })
     this.setData({ lastUsedBallImageUrl: '' })
   },
@@ -662,6 +722,13 @@ Page({
     }
     this.setData({ contractBall: ball.name, contractBallImg: ball.img || '', contractBallIcon: ball.icon || '⚪' });
     wx.showToast({ title: '契约球：' + ball.name, icon: 'none' });
+  },
+  onToggleResultUsedDice: function() {
+    var next = !this.data.resultUsedDice;
+    if (next && !this.data.sessionUsedDice && (this.data.carnivalCount || 0) <= 0) {
+      wx.showToast({ title: '已标记为异色龙龙骰染色', icon: 'none' });
+    }
+    this.setData({ resultUsedDice: next });
   },
   closeResultBallModal: function() {
     this.setData({ showResultBallModal: false })
@@ -810,6 +877,13 @@ Page({
         resultElapsedTime = '';
       }
     }
+    self._diceDeductedInModal = false;
+    if (self.data.resultUsedDice && !self.data.sessionUsedDice && (self.data.carnivalCount || 0) > 0) {
+      var nextDice = self.data.carnivalCount - 1;
+      wx.setStorageSync('carnival_count', nextDice);
+      self.setData({ carnivalCount: nextDice });
+      self._diceDeductedInModal = true;
+    }
     self.setData({ balls: balls, totalBallUsed: totalBallUsed, usedBallTotal: newUsedBallTotal, hasActiveBalls: hasActive, canStartCapture: self.data.wealthSet && hasActive, lastUsedCount: totalUsedCount, lastUsedBallName: lastUsedStr, _resultElapsedTime: resultElapsedTime, _resultElapsedSec: resultElapsedSec, _resultElapsedAuto: resultElapsedAuto, _resultMixedPetNames: resultMixedPetNames, _resultTargetPet: resultTargetPet });
     self._usedBallsDetail = usedBallsDetail;
     self._addSessionUsed(usedBallsDetail);
@@ -844,10 +918,14 @@ Page({
     var sessionList = self._sessionUsedList();
     var sessionText = self._sessionUsedText();
     var usedStr = sessionText || (self.data.lastUsedBallName && self.data.lastUsedBallName.length > 2 ? self.data.lastUsedBallName : i18n.t('imgNoBallsUsed'));
+    var isUsedDice = !!self.data.resultUsedDice;
     var record = {
       time: formatTimeShort(), balls: usedStr,
       result: localizeResultText(result, result === 'success' ? '异色捕获成功' : '歪了'),
-      remark: self.data.resultRemark || '', total: 1, cost: 0, gain: self._resultGainVal || 0,
+      remark: self.data.resultRemark || '',
+      // 异色龙龙骰不占用保底和奇遇
+      total: isUsedDice ? 0 : 1,
+      cost: 0, gain: self._resultGainVal || 0,
       pet: self.data.resultPetName || '', petImageUrl: self.data.resultPetImageUrl || '',
       resultRaw: result,
       elapsedSec: self.data._resultElapsedSec != null ? self.data._resultElapsedSec : null,
@@ -855,20 +933,23 @@ Page({
       ballImageUrl: self._lastUsedBallImg || '',
       contractBall: self.data.contractBall || '',
       contractBallImg: self.data.contractBallImg || '',
-      encounters: self.data.carnivalCount + self.data.luckyBoxCount,
+      encounters: isUsedDice ? 0 : (self.data.luckyBoxCount || 0),
       brushMode: self.data.brushMode || 'single',
       mixedPets: self.data._resultMixedPetNames || '', targetPet: self.data._resultTargetPet || '',
       carnivalCount: self.data.carnivalCount || 0, luckyBoxCount: self.data.luckyBoxCount || 0,
       pityBefore: self.data.pityCount || 0, elapsedAuto: self.data._resultElapsedAuto || false,
       usedBalls: self._usedBallsDetail || [],
-      sessionUsedBalls: sessionList
+      sessionUsedBalls: sessionList,
+      usedDice: isUsedDice,
+      diceDeductedInModal: !!self._diceDeductedInModal
     };
     return record;
   },
   _saveRecordCore: function(record, isClear) {
     var self = this;
     var result = record.resultRaw;
-    var catchCount = record.total;
+    var isUsedDice = !!record.usedDice;
+    var catchCount = isUsedDice ? 0 : (record.total || 0);
     var newTotalCatches = self.data.totalCatches + catchCount;
     var newSuccessCatches = self.data.successCatches + (result === 'success' ? catchCount : 0);
     var newCosts = self.data.totalCosts;
@@ -882,22 +963,25 @@ Page({
     var h = [record].concat(self.data.history).slice(0, 20);
     wx.setStorageSync('catch_history', h);
     var isShiny = (result === 'success' || result === 'miss');
-    if (isShiny && self.data.autoResetPity) {
-      // 自动重置：成功清零；歪了看「继续连抓」，但选了「清除本次捕捉(重新开始)」则强制归零
-      if (result === 'miss' && self.data.continuePity && !isClear) {
-        self.updatePity((wx.getStorageSync('pity_count') || 0) + 1);
+    // 异色龙龙骰不占用保底：启用龙龙骰时不重置也不增加保底进度
+    if (!isUsedDice) {
+      if (isShiny && self.data.autoResetPity) {
+        // 自动重置：成功清零；歪了看「继续连抓」，但选了「清除本次捕捉(重新开始)」则强制归零
+        if (result === 'miss' && self.data.continuePity && !isClear) {
+          self.updatePity((wx.getStorageSync('pity_count') || 0) + 1);
+        } else {
+          self.updatePity(0);
+        }
+      } else if (isShiny && !self.data.autoResetPity) {
+        // 手动重置：成功清零；歪了按用户选择——清除则归零，继续累计则 +1
+        if (isClear) {
+          self.updatePity(0);
+        } else {
+          self.updatePity((wx.getStorageSync('pity_count') || 0) + 1);
+        }
       } else {
-        self.updatePity(0);
+        if (isClear) self.updatePity((wx.getStorageSync('pity_count') || 0) + 1);
       }
-    } else if (isShiny && !self.data.autoResetPity) {
-      // 手动重置：成功清零；歪了按用户选择——清除则归零，继续累计则 +1
-      if (isClear) {
-        self.updatePity(0);
-      } else {
-        self.updatePity((wx.getStorageSync('pity_count') || 0) + 1);
-      }
-    } else {
-      if (isClear) self.updatePity((wx.getStorageSync('pity_count') || 0) + 1);
     }
     // used_ball_total 已在 onResultBallConfirm / onBallCheckConfirm 累加，这里不再重复计
     var updates = {
@@ -906,12 +990,16 @@ Page({
       totalWealth: self.data.initialWealth + accumulated, history: h, result: ''
     };
     if (isClear) {
-      wx.removeStorageSync('carnival_count');
-      wx.removeStorageSync('lucky_box_count');
+      // 异色龙龙骰不占用奇遇：仅非龙龙骰捕获结算时才清空奇遇次数
+      if (!isUsedDice) {
+        wx.removeStorageSync('lucky_box_count');
+        updates.luckyBoxCount = 0;
+      }
+      wx.removeStorageSync('session_used_dice');
       self._clearSessionUsed();
-      updates.carnivalCount = 0;
-      updates.luckyBoxCount = 0;
       updates.selectedBall = null;
+      updates.sessionUsedDice = false;
+      updates.resultUsedDice = false;
     }
     self.setData(updates);
     // 「清除本次捕捉」= 本场结束，计时归零；「继续累计」= 同一场，接着计
@@ -935,7 +1023,7 @@ Page({
       if (!rec) continue;
       if (rec.resultRaw === 'success' || rec.resultRaw === 'miss') return rec;
       var rs = rec.result || '';
-      if (rs.indexOf('盘点') >= 0 || rs.indexOf('微调') >= 0 || rs.indexOf('奇遇') >= 0) continue;
+      if (rs.indexOf('盘点') >= 0 || rs.indexOf('微调') >= 0 || rs.indexOf('奇遇') >= 0 || rs.indexOf('龙龙骰') >= 0) continue;
       if (rs.indexOf('成功') >= 0 || rs.indexOf('歪了') >= 0 || rs.indexOf('异色') >= 0) return rec;
     }
     return null;
@@ -981,7 +1069,7 @@ Page({
         }
       } else if (last && last.balls && last.balls !== noBallsText && last.balls !== '未使用球'
         && last.balls.indexOf('充值') === -1 && last.balls.indexOf('购买') === -1
-        && last.balls.indexOf('🌟') === -1 && last.balls.indexOf('🎁') === -1
+        && last.balls.indexOf('🌟') === -1 && last.balls.indexOf('🎁') === -1 && last.balls.indexOf('🎲') === -1
         && last.balls.indexOf('💰') === -1 && last.balls.indexOf('💸') === -1 && last.balls.indexOf('✨') === -1
         && last.balls.indexOf('[盘点]') === -1 && last.balls.indexOf('剩余') === -1) {
         var ballParts = last.balls.replace(/^📋\s*/, '').split(', ');
@@ -1129,10 +1217,17 @@ Page({
       ctx.fillText(i18n.t('imgGenTime'), 36, 115);
       ctx.fillStyle = '#e6edf3'; ctx.font = '13px sans-serif'; ctx.fillText(self.data.buildTime, 36, 135);
       
-      var totalE = self.data.carnivalCount + self.data.luckyBoxCount;
-      if (totalE === 0 && last && last.encounters !== undefined) totalE = last.encounters;
-      ctx.font = 'bold 13px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillText(i18n.t('imgEncounters'), width/2 + 16, 115);
-      ctx.fillStyle = '#e6edf3'; ctx.font = '13px sans-serif'; ctx.fillText(totalE + ' ' + i18n.t('imgEncounterUnit'), width/2 + 16, 135);
+      var isDiceShiny = !!(last && (last.usedDice || self.data.sessionUsedDice || (self.data.history && self.data.history[0] && self.data.history[0].resultRaw === 'use_dice')));
+      var remainDice = self.data.carnivalCount != null ? self.data.carnivalCount : (last && last.carnivalCount != null ? last.carnivalCount : 0);
+      var totalE = self.data.luckyBoxCount || 0;
+      if (totalE === 0 && last && last.encounters !== undefined && !isDiceShiny) totalE = last.encounters;
+      ctx.font = 'bold 13px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.fillText(isDiceShiny ? '异色龙龙骰' : i18n.t('imgEncounters'), width/2 + 16, 115);
+      if (isDiceShiny) {
+        ctx.fillStyle = '#ffd54f'; ctx.font = 'bold 12px sans-serif'; ctx.fillText('剩余 ' + remainDice + ' 个 · 不占保底', width/2 + 16, 135);
+      } else {
+        ctx.fillStyle = '#e6edf3'; ctx.font = '13px sans-serif'; ctx.fillText(totalE + ' ' + i18n.t('imgEncounterUnit'), width/2 + 16, 135);
+      }
       
       ctx.font = 'bold 13px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillText(i18n.t('imgLuckRating'), 36, 175);
       ctx.fillStyle = '#ffab40'; ctx.font = 'bold 14px sans-serif';
@@ -1167,7 +1262,9 @@ Page({
       
       ctx.fillStyle = '#e6edf3';
       ctx.font = 'bold 16px sans-serif';
-      ctx.fillText(i18n.t('imgLatestRecord'), 36, 280);
+      var latestRecordTitle = i18n.t('imgLatestRecord');
+      ctx.fillText(latestRecordTitle, 36, 280);
+      var latestTitleEndX = 36 + ctx.measureText(latestRecordTitle).width;
       
       var brushMode = last.brushMode || 'single';
       var brushLabel = brushMode === 'mixed' ? i18n.t('imgMixed') : i18n.t('imgSingle');
@@ -1182,6 +1279,20 @@ Page({
         ctx.fillStyle = '#79c0ff';
       }
       ctx.fillText(brushLabel, tagX + 7, 279);
+      if (isDiceShiny) {
+        var diceTagLabel = '🎲 异色龙龙骰 (剩余' + remainDice + ')';
+        ctx.font = 'bold 11px sans-serif';
+        var diceTagW = ctx.measureText(diceTagLabel).width + 14;
+        var diceTagX = tagX - diceTagW - 8;
+        if (diceTagX < latestTitleEndX + 8) {
+          diceTagLabel = '🎲 剩余' + remainDice;
+          diceTagW = ctx.measureText(diceTagLabel).width + 14;
+          diceTagX = tagX - diceTagW - 8;
+        }
+        roundRect(diceTagX, 264, diceTagW, 20, 4, 'rgba(251,191,36,0.16)', 'rgba(251,191,36,0.55)');
+        ctx.fillStyle = '#ffd54f';
+        ctx.fillText(diceTagLabel, diceTagX + 7, 279);
+      }
       ctx.font = '13px sans-serif';
       
       ctx.fillStyle = '#94a3b8';
@@ -1193,14 +1304,23 @@ Page({
       var cleanRes = localizeResultText(last.resultRaw, resText);
       var statusValueX = 36 + statusLabelW + 10;
       ctx.fillText(cleanRes, statusValueX, 320);
+      var statusEndX = statusValueX + ctx.measureText(cleanRes).width;
+      if (isDiceShiny) {
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillStyle = '#ffd54f';
+        var diceInlineText = (brushMode === 'mixed' && last.mixedPets) ? ' · 🎲龙龙骰' : ' · 🎲异色龙龙骰染色';
+        ctx.fillText(diceInlineText, statusEndX + 4, 320);
+        statusEndX += 4 + ctx.measureText(diceInlineText).width;
+        ctx.font = '13px sans-serif';
+      }
       
       if (brushMode === 'mixed' && last.mixedPets) {
         ctx.font = '11px sans-serif';
         ctx.fillStyle = 'rgba(255,255,255,0.4)';
         ctx.textAlign = 'right';
-        var maxW = width - 40 - 80 - 12;
+        var maxW = Math.max(48, width - 40 - statusEndX - 10);
         var mixedText = last.mixedPets;
-        while (ctx.measureText(mixedText).width > maxW && mixedText.length > 3) {
+        while (ctx.measureText(mixedText).width > maxW && mixedText.length > 2) {
           mixedText = mixedText.substring(0, mixedText.length - 1);
         }
         if (mixedText !== last.mixedPets) mixedText += '…';
@@ -1341,31 +1461,93 @@ Page({
         }
       }
 
-      // 契约球：独立胶囊条，排在精灵图右侧垂直居中（毛玻璃）
-      if (last.contractBall) {
+      // 契约球 & 异色龙龙骰染色：独立胶囊条，排在精灵图右侧（毛玻璃）
+      var hasPetImg = !!(last.petImageUrl && last.petImageUrl.length > 5);
+      var rightPadX = hasPetImg ? (50 + petSize + 16) : 36;
+      var rightW = width - rightPadX - 28;
+      if (last.contractBall && isDiceShiny) {
+        var capH = Math.max(46, Math.round(50 * imgScale));
+        var gapY = 8;
+        var totalCapH = capH * 2 + gapY;
+        var topCapY = Math.max(petImgY - 4, petImgY + Math.round((petSize - totalCapH) / 2));
+        var line1Offset = Math.round(capH * 0.38);
+        var line2Offset = Math.round(capH * 0.76);
+        // 1. 契约球胶囊（如棱镜球等）
         var ctLabel = i18n.t('imgContractBall') || '契约球';
-        var ctPadX = 50 + petSize + 18;
-        var ctH = Math.round(64 * imgScale);
-        var ctY = petImgY + Math.round((petSize - ctH) / 2);
-        var ctW = width - ctPadX - 28;
-        // 毛玻璃：半透明浅底 + 浅色描边
-        roundRect(ctPadX, ctY, ctW, ctH, ctH / 2, 'rgba(255,255,255,0.12)', 'rgba(255,255,255,0.28)');
-        var ctBallSize = Math.round(36 * imgScale);
-        var ctIconX = ctPadX + 12;
-        var ctIconY = ctY + (ctH - ctBallSize) / 2;
+        roundRect(rightPadX, topCapY, rightW, capH, capH / 2, 'rgba(255,255,255,0.12)', 'rgba(255,255,255,0.28)');
+        var ctBallSize = Math.max(24, Math.round(28 * imgScale));
+        var ctIconX = rightPadX + 10;
+        var ctIconY = topCapY + Math.round((capH - ctBallSize) / 2);
         if (last.contractBallImg && last.contractBallImg.length > 5) {
-          loadImg(last.contractBallImg, function(img) {
-            try { ctx.drawImage(img, ctIconX, ctIconY, ctBallSize, ctBallSize); } catch (e) {}
-          });
+          loadImg(last.contractBallImg, (function(ix, iy, sz) {
+            return function(img) {
+              try { ctx.drawImage(img, ix, iy, sz, sz); } catch (e) {}
+            };
+          })(ctIconX, ctIconY, ctBallSize));
+        } else {
+          ctx.font = '15px sans-serif';
+          ctx.fillStyle = 'rgba(255,255,255,0.75)';
+          ctx.fillText('🔮', ctIconX + 2, topCapY + Math.round(capH / 2) + 5);
+        }
+        var ctTextX = ctIconX + ctBallSize + 8;
+        var maxCapTextW = rightPadX + rightW - 12 - ctTextX;
+        ctx.font = '10px sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        ctx.fillText(ctLabel, ctTextX, topCapY + line1Offset);
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.92)';
+        var ctName = last.contractBall;
+        while (ctName.length > 1 && ctx.measureText(ctName).width > maxCapTextW) {
+          ctName = ctName.slice(0, -1);
+        }
+        if (ctName !== last.contractBall) ctName += '…';
+        ctx.fillText(ctName, ctTextX, topCapY + line2Offset);
+
+        // 2. 异色龙龙骰染色胶囊
+        var botCapY = topCapY + capH + gapY;
+        roundRect(rightPadX, botCapY, rightW, capH, capH / 2, 'rgba(251,191,36,0.14)', 'rgba(251,191,36,0.48)');
+        ctx.font = '17px sans-serif';
+        ctx.fillStyle = '#ffd54f';
+        ctx.fillText('🎲', ctIconX + 2, botCapY + Math.round(capH / 2) + 6);
+        ctx.font = '10px sans-serif';
+        ctx.fillStyle = 'rgba(255,213,79,0.78)';
+        var diceSubText = '染色方式 · 剩余 ' + remainDice + ' 个';
+        if (ctx.measureText(diceSubText).width > maxCapTextW) {
+          diceSubText = '剩余 ' + remainDice + ' 个';
+        }
+        ctx.fillText(diceSubText, ctTextX, botCapY + line1Offset);
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillStyle = '#ffd54f';
+        var diceMainText = '异色龙龙骰染色';
+        while (diceMainText.length > 1 && ctx.measureText(diceMainText).width > maxCapTextW) {
+          diceMainText = diceMainText.slice(0, -1);
+        }
+        ctx.fillText(diceMainText, ctTextX, botCapY + line2Offset);
+      } else if (last.contractBall) {
+        var ctLabel = i18n.t('imgContractBall') || '契约球';
+        var ctPadX = rightPadX;
+        var ctH = Math.max(54, Math.round(64 * imgScale));
+        var ctY = petImgY + Math.round((petSize - ctH) / 2);
+        var ctW = rightW;
+        roundRect(ctPadX, ctY, ctW, ctH, ctH / 2, 'rgba(255,255,255,0.12)', 'rgba(255,255,255,0.28)');
+        var ctBallSize = Math.max(28, Math.round(36 * imgScale));
+        var ctIconX = ctPadX + 12;
+        var ctIconY = ctY + Math.round((ctH - ctBallSize) / 2);
+        if (last.contractBallImg && last.contractBallImg.length > 5) {
+          loadImg(last.contractBallImg, (function(ix, iy, sz) {
+            return function(img) {
+              try { ctx.drawImage(img, ix, iy, sz, sz); } catch (e) {}
+            };
+          })(ctIconX, ctIconY, ctBallSize));
         } else {
           ctx.font = '16px sans-serif';
           ctx.fillStyle = 'rgba(255,255,255,0.75)';
-          ctx.fillText('🔮', ctIconX + 2, ctIconY + ctBallSize - 8);
+          ctx.fillText('🔮', ctIconX + 2, ctY + Math.round(ctH / 2) + 6);
         }
         var ctTextX = ctIconX + ctBallSize + 10;
         ctx.font = '10px sans-serif';
         ctx.fillStyle = 'rgba(255,255,255,0.55)';
-        ctx.fillText(ctLabel, ctTextX, ctY + 22);
+        ctx.fillText(ctLabel, ctTextX, ctY + Math.round(ctH * 0.36));
         ctx.font = 'bold 13px sans-serif';
         ctx.fillStyle = 'rgba(255,255,255,0.92)';
         var ctNameMax = ctPadX + ctW - 14 - ctTextX;
@@ -1374,7 +1556,22 @@ Page({
           ctName = ctName.slice(0, -1);
         }
         if (ctName !== last.contractBall) ctName += '…';
-        ctx.fillText(ctName, ctTextX, ctY + 44);
+        ctx.fillText(ctName, ctTextX, ctY + Math.round(ctH * 0.72));
+      } else if (isDiceShiny) {
+        var dcH = Math.max(54, Math.round(64 * imgScale));
+        var dcY = petImgY + Math.round((petSize - dcH) / 2);
+        roundRect(rightPadX, dcY, rightW, dcH, dcH / 2, 'rgba(251,191,36,0.14)', 'rgba(251,191,36,0.48)');
+        var dcIconX = rightPadX + 14;
+        ctx.font = '22px sans-serif';
+        ctx.fillStyle = '#ffd54f';
+        ctx.fillText('🎲', dcIconX, dcY + Math.round(dcH / 2) + 8);
+        var dcTextX = dcIconX + 34;
+        ctx.font = '10px sans-serif';
+        ctx.fillStyle = 'rgba(255,213,79,0.75)';
+        ctx.fillText('染色方式 · 剩余 ' + remainDice + ' 个', dcTextX, dcY + Math.round(dcH * 0.36));
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillStyle = '#ffd54f';
+        ctx.fillText('异色龙龙骰染色', dcTextX, dcY + Math.round(dcH * 0.72));
       }
       
       // ─── 8. 底部签名 ───
@@ -1427,8 +1624,8 @@ Page({
   copyToClipboard: function() {
     var last = this._findLastCaptureRecord();
     if (!last) return;
-    let totalEncounters = this.data.carnivalCount + this.data.luckyBoxCount;
-    if (totalEncounters === 0 && last.encounters !== undefined) {
+    let totalEncounters = this.data.luckyBoxCount || 0;
+    if (totalEncounters === 0 && last.encounters !== undefined && !last.usedDice) {
       totalEncounters = last.encounters;
     }
 
@@ -1454,9 +1651,11 @@ Page({
       else costText = bt || i18n.t('imgNoBallsUsed');
     }
 
+    var isDiceClip = !!(last.usedDice || this.data.sessionUsedDice || (this.data.history && this.data.history[0] && this.data.history[0].resultRaw === 'use_dice'));
+    var remainDiceClip = this.data.carnivalCount != null ? this.data.carnivalCount : (last.carnivalCount != null ? last.carnivalCount : 0);
     var text = i18n.t('clipTitle') + '\n' +
                '【' + i18n.t('clipTime') + '】' + (last.time || last.date || '') + '\n' +
-               '【' + i18n.t('clipStatus') + '】' + localizeResultText(last.resultRaw, last.result) + '\n' +
+               '【' + i18n.t('clipStatus') + '】' + localizeResultText(last.resultRaw, last.result) + (isDiceClip ? '（🎲异色龙龙骰染色 · 剩余' + remainDiceClip + '个）' : '') + '\n' +
                brushLabel +
                petDisplay +
                '【' + i18n.t('clipCost') + '】' + costText + '\n' +
@@ -1464,7 +1663,7 @@ Page({
                '【' + i18n.t('clipDuration') + '】' + (localizeElapsed(last) || i18n.t('imgUnknown')) + '\n\n' +
                i18n.t('clipStats') + '\n' +
                '【' + i18n.t('clipTime') + '】' + this.data.buildTime + '\n' +
-               '【' + i18n.t('clipEncounters') + '】' + (this.data.carnivalCount + this.data.luckyBoxCount) + ' ' + i18n.t('imgEncounterUnit') + '\n' +
+               '【' + (isDiceClip ? '异色龙龙骰' : i18n.t('clipEncounters')) + '】' + (isDiceClip ? ('剩余 ' + remainDiceClip + ' 个（不占保底与奇遇）') : (totalEncounters + ' ' + i18n.t('imgEncounterUnit'))) + '\n' +
                '【' + i18n.t('clipLuck') + '】' + stripTitleEmoji(this.data.userTitle || '') + '\n' +
                '【' + i18n.t('clipProfit') + '】' + ((this.data.accumulatedWealth === 0 || this.data.accumulatedWealth === '0') ? i18n.t('imgBreakEven') : ((this.data.accumulatedWealth >= 0 ? '+' : '') + this.data.accumulatedWealth + ' ' + i18n.t('currency')));
                
@@ -1491,7 +1690,7 @@ Page({
     var accumulated = this.data.accumulatedWealth || 0;
     var profitRate = initial > 0 ? ((accumulated / initial) * 100).toFixed(1) : (accumulated > 0 ? '100.0' : '0.0');
     var rate = this.calcSuccessRate();
-    var title = this.calcTitle(rate, this.data.carnivalCount + this.data.luckyBoxCount, this.data.totalCatches);
+    var title = this.calcTitle(rate, this.data.luckyBoxCount, this.data.totalCatches);
     this.setData({ successRate: rate, userTitle: title.name, titleColor: title.color, profitRate: profitRate });
   },
   calcTitle: function(rate, encounters, totalCatches) {
@@ -1604,7 +1803,7 @@ Page({
       success: function(res) {
         if (res.confirm) {
           var last = history[0];
-    let totalEncounters = self.data.carnivalCount + self.data.luckyBoxCount;
+    let totalEncounters = self.data.luckyBoxCount;
     if (totalEncounters === 0 && history && history.length > 0 && history[0].encounters !== undefined) {
       totalEncounters = history[0].encounters;
     }
@@ -1660,7 +1859,7 @@ Page({
               }
             }
           } else if (last.balls && last.balls !== '未使用球' && last.balls.indexOf('充值') === -1 && last.balls.indexOf('购买') === -1
-            && last.balls.indexOf('🌟') === -1 && last.balls.indexOf('🎁') === -1
+            && last.balls.indexOf('🌟') === -1 && last.balls.indexOf('🎁') === -1 && last.balls.indexOf('🎲') === -1
             && last.balls.indexOf('💰') === -1 && last.balls.indexOf('💸') === -1 && last.balls.indexOf('✨') === -1
             && last.balls.indexOf('[盘点]') === -1) {
             // 旧记录：从文本还原数量（不含免费额度）；盘点文本格式是「剩余N」不能当已用量回滚
@@ -1681,21 +1880,36 @@ Page({
           }
 
           // 回滚奇遇计数
-          if (last.balls && last.balls.indexOf('🌟') >= 0) {
-            var newCarnival = Math.max(0, self.data.carnivalCount - (last.total || 1));
-            wx.setStorageSync('carnival_count', newCarnival);
-            self.setData({ carnivalCount: newCarnival });
+          if (last.resultRaw === 'use_dice' || (last.balls && last.balls.indexOf('异色龙龙骰染色') >= 0)) {
+            var restoredDice = self.data.carnivalCount + 1;
+            wx.setStorageSync('carnival_count', restoredDice);
+            wx.removeStorageSync('session_used_dice');
+            self.setData({ carnivalCount: restoredDice, sessionUsedDice: false });
+          } else if (last.usedDice) {
+            if (last.diceDeductedInModal) {
+              var restoredModalDice = self.data.carnivalCount + 1;
+              wx.setStorageSync('carnival_count', restoredModalDice);
+              self.setData({ carnivalCount: restoredModalDice });
+            } else {
+              wx.setStorageSync('session_used_dice', true);
+              self.setData({ sessionUsedDice: true });
+            }
+          } else if (last.resultRaw === 'add_dice' || last.result === '龙龙骰' || (last.balls && last.balls.indexOf('🌟') >= 0)) {
+            // 仅异色龙龙骰计入剩余面板，词条骰子撤销时不扣减
+            if (last.balls && (last.balls.indexOf('异色') >= 0 || last.balls.indexOf('🌟') >= 0)) {
+              var newCarnival = Math.max(0, self.data.carnivalCount - 1);
+              wx.setStorageSync('carnival_count', newCarnival);
+              self.setData({ carnivalCount: newCarnival });
+            }
           } else if (last.balls && last.balls.indexOf('🎁') >= 0) {
             var newLucky = Math.max(0, self.data.luckyBoxCount - (last.total || 1));
             wx.setStorageSync('lucky_box_count', newLucky);
             self.setData({ luckyBoxCount: newLucky });
-          } else if (last.carnivalCount !== undefined || last.luckyBoxCount !== undefined) {
-            // 捕获记录：恢复被 onRecordClear 清掉的奇遇次数
-            var restoreCarnival = last.carnivalCount || 0;
+          } else if (!last.usedDice && (last.carnivalCount !== undefined || last.luckyBoxCount !== undefined)) {
+            // 捕获记录：恢复被 onRecordClear 清掉的奇遇次数（龙龙骰持续累计不回退为旧快照）
             var restoreLucky = last.luckyBoxCount || 0;
-            wx.setStorageSync('carnival_count', restoreCarnival);
             wx.setStorageSync('lucky_box_count', restoreLucky);
-            self.setData({ carnivalCount: restoreCarnival, luckyBoxCount: restoreLucky });
+            self.setData({ luckyBoxCount: restoreLucky });
           }
 
           var newUsedBallTotal = Math.max(0, self.data.usedBallTotal - ballUsedCount);
@@ -1723,12 +1937,14 @@ Page({
             }
           }
 
-          // 回退保底进度（用记录中的原始值精准恢复）
-          if (last.pityBefore !== undefined) {
-            self.updatePity(last.pityBefore);
-          } else {
-            var newPity = Math.max(0, self.data.pityCount - catchCount);
-            self.updatePity(newPity);
+          // 回退保底进度（异色龙龙骰不占保底，撤销时不改动保底进度）
+          if (!last.usedDice && last.resultRaw !== 'use_dice' && last.result !== '龙龙骰') {
+            if (last.pityBefore !== undefined) {
+              self.updatePity(last.pityBefore);
+            } else {
+              var newPity = Math.max(0, self.data.pityCount - catchCount);
+              self.updatePity(newPity);
+            }
           }
 
           wx.setStorageSync('catch_history', newHistory);
@@ -1768,19 +1984,21 @@ Page({
   onClearHistory: function() { var self=this; wx.showModal({ title:'清空', content:'确定清空？', success:function(r){ if(r.confirm){ wx.removeStorageSync('catch_history'); wx.removeStorageSync('total_catches'); wx.removeStorageSync('success_catches'); self.setData({history:[],totalCatches:0,successCatches:0}) } } }) },
   
   onEncounterTab: function(e) { this.setData({ encounterTab: e.currentTarget.dataset.t }) },
-  addEncounterRecord: function(type, icon, count) {
-    var record = { time: formatTimeShort(), balls: type, result: '奇遇', total: 1, icon: icon, count: count, pityBefore: this.data.pityCount || 0 }
+  addEncounterRecord: function(type, icon, count, skipPity) {
+    var record = { time: formatTimeShort(), balls: type, result: skipPity ? '龙龙骰' : '奇遇', resultRaw: skipPity ? 'add_dice' : 'event', total: skipPity ? 0 : 1, icon: icon, count: count, pityBefore: this.data.pityCount || 0 }
     var h = [record].concat(this.data.history).slice(0, 20)
     wx.setStorageSync('catch_history', h)
     this.setData({ history: h })
     
-    var currentPity = wx.getStorageSync('pity_count') || 0
-    var newPity = Math.min(80, currentPity + 1)
-    this.updatePity(newPity)
+    if (!skipPity) {
+      var currentPity = wx.getStorageSync('pity_count') || 0
+      var newPity = Math.min(80, currentPity + 1)
+      this.updatePity(newPity)
+    }
     this.updateSuccessRate()
     
-    var totalEncounters = this.data.carnivalCount + this.data.luckyBoxCount
-    if (totalEncounters > 0 && totalEncounters % 10 === 0) {
+    var totalEncounters = this.data.luckyBoxCount || 0
+    if (!skipPity && totalEncounters > 0 && totalEncounters % 10 === 0) {
       this.triggerFairytaleParticles()
       var self = this
       setTimeout(function() { self.showBallCheckModal() }, 800)
@@ -1818,67 +2036,107 @@ Page({
   },
   onAddCarnival: function() {
     var self = this
-    // 点击可选是否异色
-    wx.showModal({
-      title: '月陨流星雨',
-      content: '本次流星雨是否异色？',
-      confirmText: '异色',
-      cancelText: '非异色',
+    wx.showActionSheet({
+      alertText: '请选择龙龙骰类型（不占保底和奇遇）',
+      itemList: ['词条骰子', '异色骰子'],
       success: function(res) {
-        self._recordCarnival(!!res.confirm, '')
+        var diceType = res.tapIndex === 1 ? '异色骰子' : '词条骰子'
+        self._recordCarnival(diceType, '')
       }
     })
   },
-  _recordCarnival: function(isShiny, ballName) {
+  _recordCarnival: function(diceType, ballName) {
     var self = this
-    self._touchCaptureClock()
-    var c = self.data.carnivalCount + 1
-    var tc = self.data.totalCatches + 1
-    var sc = self.data.successCatches + (isShiny ? 1 : 0)
+    var typeLabel = (diceType === '词条骰子' || diceType === false) ? '词条骰子' : '异色骰子'
+    var isShinyDice = typeLabel === '异色骰子'
+    var c = self.data.carnivalCount || 0
+    if (isShinyDice) {
+      c = c + 1
+      wx.setStorageSync('carnival_count', c)
+    }
+    self.setData({ carnivalCount: c, diceAnim: true })
+    setTimeout(function() { self.setData({ diceAnim: false }) }, 750)
+    var icon = isShinyDice ? '🌟' : '🎲'
+    var label = icon + ' 龙龙骰·' + typeLabel + (ballName ? '(' + ballName + ')' : '')
+    self.addEncounterRecord(label, icon, c, true)
+    self.triggerDiceParticles()
+    wx.showToast({ title: label + (isShinyDice ? '（异色龙龙骰+1）' : '（词条不计入面板）'), icon: 'none' })
+  },
+  onUseDice: function() {
+    var self = this
+    var currentDice = self.data.carnivalCount || 0
+    if (currentDice <= 0) {
+      wx.showToast({ title: '暂无可用龙龙骰', icon: 'none' })
+      return
+    }
+    var c = currentDice - 1
     wx.setStorageSync('carnival_count', c)
-    wx.setStorageSync('total_catches', tc)
-    wx.setStorageSync('success_catches', sc)
-    self.setData({ carnivalCount: c, totalCatches: tc, successCatches: sc, captureAnim: true })
-    setTimeout(function() { self.setData({ captureAnim: false }) }, 600)
-    var label = '🌟 月陨流星雨' + (ballName ? '(' + ballName + ')' : '') + (isShiny ? '(异色)' : '')
-    self.addEncounterRecord(label, '🌟', c)
-    self.triggerFairytaleParticles()
-    wx.showToast({ title: label, icon: 'none' })
+    wx.setStorageSync('session_used_dice', true)
+    var prevHistory = (self.data.history || []).slice()
+    if (prevHistory.length > 0 && prevHistory[0].resultRaw === 'success' && !prevHistory[0].usedDice) {
+      prevHistory[0] = Object.assign({}, prevHistory[0], { usedDice: true, encounters: 0 })
+    }
+    var record = {
+      time: formatTimeShort(),
+      balls: '🎲 异色龙龙骰染色 (剩余' + c + '，不占保底和奇遇)',
+      result: '龙龙骰',
+      resultRaw: 'use_dice',
+      total: 0,
+      icon: '🎲',
+      count: c,
+      pityBefore: self.data.pityCount || 0
+    }
+    var h = [record].concat(prevHistory).slice(0, 20)
+    wx.setStorageSync('catch_history', h)
+    self.setData({ carnivalCount: c, history: h, sessionUsedDice: true, diceAnim: true })
+    setTimeout(function() { self.setData({ diceAnim: false }) }, 750)
+    self.triggerDiceParticles()
+    self.updateSuccessRate()
+    wx.showToast({ title: '🎲 已启用异色龙龙骰染色（不占保底和奇遇，剩余 ' + c + '）', icon: 'none' })
   },
   onCarnivalLongPress: function() {
     var self = this
-    var ballNames = []
-    for (var i = 0; i < self.data.balls.length; i++) {
-      ballNames.push(self.data.balls[i].name)
-    }
     wx.showActionSheet({
-      itemList: ballNames,
-      success: function(res) {
-        var ball = self.data.balls[res.tapIndex]
-        wx.showModal({
-          title: '月陨流星雨',
-          content: '使用 ' + ball.name + ' 触发月陨流星雨',
-          editable: true,
-          placeholderText: '输入捕捉数量(默认1)',
-          success: function(modalRes) {
-            if (modalRes.confirm) {
-              self._touchCaptureClock();
-              var count = parseInt(modalRes.content) || 1
-              var c = self.data.carnivalCount + 1
-              var tc = self.data.totalCatches + count
-              var sc = self.data.successCatches + count
-              wx.setStorageSync('carnival_count', c)
-              wx.setStorageSync('total_catches', tc)
-              wx.setStorageSync('success_catches', sc)
-              var balls = self.data.balls.slice()
-              balls[res.tapIndex].count += count
-              self.saveBallsToStorage(balls)
-              self.setData({ carnivalCount: c, totalCatches: tc, successCatches: sc, balls: balls, captureAnim: true })
-              setTimeout(function() { self.setData({ captureAnim: false }) }, 600)
-              self.addEncounterRecord('🌟 月陨流星雨(' + ball.name + ')', '🌟', c)
-              self.calcTotalBallUsed()
-              wx.showToast({ title: '🌟 月陨流星雨 使用' + ball.name + ' x' + count, icon: 'none' })
-            }
+      alertText: '请选择龙龙骰类型（不占保底和奇遇）',
+      itemList: ['词条骰子', '异色骰子'],
+      success: function(typeRes) {
+        var diceType = typeRes.tapIndex === 1 ? '异色骰子' : '词条骰子'
+        var isShinyDice = diceType === '异色骰子'
+        var icon = isShinyDice ? '🌟' : '🎲'
+        var ballNames = []
+        for (var i = 0; i < self.data.balls.length; i++) {
+          ballNames.push(self.data.balls[i].name)
+        }
+        wx.showActionSheet({
+          itemList: ballNames,
+          success: function(res) {
+            var ball = self.data.balls[res.tapIndex]
+            wx.showModal({
+              title: '龙龙骰·' + diceType,
+              content: '使用 ' + ball.name + ' 获得 ' + diceType + '（不占保底和奇遇）',
+              editable: true,
+              placeholderText: '输入数量(默认1)',
+              success: function(modalRes) {
+                if (modalRes.confirm) {
+                  var count = parseInt(modalRes.content) || 1
+                  var c = self.data.carnivalCount || 0
+                  if (isShinyDice) {
+                    c = c + 1
+                    wx.setStorageSync('carnival_count', c)
+                  }
+                  var balls = self.data.balls.slice()
+                  balls[res.tapIndex].count += count
+                  self.saveBallsToStorage(balls)
+                  self.setData({ carnivalCount: c, balls: balls, diceAnim: true })
+                  setTimeout(function() { self.setData({ diceAnim: false }) }, 750)
+                  var label = icon + ' 龙龙骰·' + diceType + '(' + ball.name + ')'
+                  self.addEncounterRecord(label, icon, c, true)
+                  self.triggerDiceParticles()
+                  self.calcTotalBallUsed()
+                  wx.showToast({ title: label + (isShinyDice ? '（异色龙龙骰+1）' : '（词条不计入面板）'), icon: 'none' })
+                }
+              }
+            })
           }
         })
       }
@@ -1895,8 +2153,8 @@ Page({
     wx.setStorageSync('total_catches', tc)
     wx.setStorageSync('success_catches', sc)
     self.setData({ luckyBoxCount: c, totalCatches: tc, successCatches: sc })
-    self.addEncounterRecord('🎁 月陨星', '🎁', c)
-    wx.showToast({ title: '🎁 月陨星', icon: 'none' })
+    self.addEncounterRecord('🎁 龙骑士', '🎁', c)
+    wx.showToast({ title: '🎁 龙骑士', icon: 'none' })
   },
   onLuckyBoxLongPress: function() {
     var self = this
@@ -1909,8 +2167,8 @@ Page({
       success: function(res) {
         var ball = self.data.balls[res.tapIndex]
         wx.showModal({
-          title: '月陨星',
-          content: '使用 ' + ball.name + ' 触发幸运盒',
+          title: '龙骑士',
+          content: '使用 ' + ball.name + ' 触发龙骑士',
           editable: true,
           placeholderText: '输入捕捉数量(默认1)',
           success: function(modalRes) {
@@ -1927,9 +2185,9 @@ Page({
               balls[res.tapIndex].count += count
               self.saveBallsToStorage(balls)
               self.setData({ luckyBoxCount: c, totalCatches: tc, successCatches: sc, balls: balls })
-              self.addEncounterRecord('🎁 月陨星(' + ball.name + ')', '🎁', c)
+              self.addEncounterRecord('🎁 龙骑士(' + ball.name + ')', '🎁', c)
               self.calcTotalBallUsed()
-              wx.showToast({ title: '🎁 月陨星 使用' + ball.name + ' x' + count, icon: 'none' })
+              wx.showToast({ title: '🎁 龙骑士 使用' + ball.name + ' x' + count, icon: 'none' })
             }
           }
         })
@@ -1939,12 +2197,12 @@ Page({
   onClearEncounter: function() {
     var self = this
     wx.showActionSheet({
-      itemList: ['清除月陨流星雨', '清除月陨星', '清除所有异色统计'],
+      itemList: ['清除龙龙骰', '清除龙骑士', '清除所有异色统计'],
       success: function(res) {
         if (res.tapIndex === 0) {
           wx.showModal({
-            title: '清除月陨流星雨',
-            content: '确定清除月陨流星雨统计？',
+            title: '清除龙龙骰',
+            content: '确定清除龙龙骰统计？',
             success: function(r) {
               if (r.confirm) {
                 wx.removeStorageSync('carnival_count')
@@ -1956,8 +2214,8 @@ Page({
           })
         } else if (res.tapIndex === 1) {
           wx.showModal({
-            title: '清除月陨星',
-            content: '确定清除月陨星统计？',
+            title: '清除龙骑士',
+            content: '确定清除龙骑士统计？',
             success: function(r) {
               if (r.confirm) {
                 wx.removeStorageSync('lucky_box_count')
@@ -1970,7 +2228,7 @@ Page({
         } else if (res.tapIndex === 2) {
           wx.showModal({
             title: '清除所有异色统计',
-            content: '确定清除所有异色统计？包括月陨流星雨和月陨星',
+            content: '确定清除所有异色统计？包括龙龙骰和龙骑士',
             success: function(r) {
               if (r.confirm) {
                 wx.removeStorageSync('carnival_count')
@@ -2106,6 +2364,11 @@ Page({
     self.setData({ showFairytaleParticles: true })
     setTimeout(function() { self.setData({ showFairytaleParticles: false }) }, 4000)
   },
+  triggerDiceParticles: function() {
+    var self = this
+    self.setData({ showDiceParticles: true })
+    setTimeout(function() { self.setData({ showDiceParticles: false }) }, 2600)
+  },
   onResetBalls: function() {
     var self = this
     wx.showModal({
@@ -2166,61 +2429,148 @@ Page({
     wx.showToast({ title: val ? '自动扣费已开启' : '已切换为手动扣费', icon: 'none' })
   },
   openWealthAdjustModal: function(e, typeOverride) {
-    var type = 'add';
+    var type = 'current';
     if (typeOverride && typeof typeOverride === 'string') {
       type = typeOverride;
     } else if (e && e.currentTarget && e.currentTarget.dataset.type) {
       type = e.currentTarget.dataset.type;
     }
-    this.setData({ showWealthAdjustModal: true, adjustType: type, adjustAmount: '', adjustRemark: '' })
+    this.setData({
+      showWealthAdjustModal: true,
+      adjustType: type,
+      adjustAmount: '',
+      adjustInputVal: 0,
+      adjustIncreaseVal: 0,
+      adjustDecreaseVal: 0,
+      adjustRemark: ''
+    })
   },
   closeWealthAdjustModal: function() {
     this.setData({ showWealthAdjustModal: false })
   },
   onAdjustTypeSwitch: function(e) {
-    this.setData({ adjustType: e.currentTarget.dataset.type })
+    this.setData({
+      adjustType: e.currentTarget.dataset.type,
+      adjustAmount: '',
+      adjustInputVal: 0,
+      adjustIncreaseVal: 0,
+      adjustDecreaseVal: 0
+    })
   },
   onAdjustAmountInput: function(e) {
-    this.setData({ adjustAmount: e.detail.value })
+    var raw = e.detail.value;
+    var parsed = parseInt(raw, 10);
+    if (raw === '' || isNaN(parsed) || parsed < 0) {
+      this.setData({
+        adjustAmount: raw,
+        adjustInputVal: 0,
+        adjustIncreaseVal: 0,
+        adjustDecreaseVal: 0
+      });
+      return;
+    }
+    var prevWealth = this.data.totalWealth || 0;
+    var diff = parsed - prevWealth;
+    this.setData({
+      adjustAmount: raw,
+      adjustInputVal: parsed,
+      adjustIncreaseVal: diff > 0 ? diff : 0,
+      adjustDecreaseVal: diff < 0 ? Math.abs(diff) : 0
+    });
   },
   onAdjustRemarkInput: function(e) {
     this.setData({ adjustRemark: e.detail.value })
   },
   onConfirmAdjustWealth: function() {
-      var self = this
-      var amount = parseInt(self.data.adjustAmount)
+    var self = this
+    var isEncounter10 = self.data.adjustType === 'encounter10'
+    if (isEncounter10) {
+      var amount = parseInt(self.data.adjustAmount, 10)
       if (isNaN(amount) || amount <= 0) {
         wx.showToast({ title: '无效金额', icon: 'none' })
         return
       }
-      var isEncounter10 = self.data.adjustType === 'encounter10'
-      var isAdd = self.data.adjustType === 'add' || isEncounter10
-      var adjustVal = isAdd ? amount : -amount
-      var newGains = self.data.totalGains + (isAdd ? amount : 0)
-      var newCosts = self.data.totalCosts + (isAdd ? 0 : amount)
-      wx.setStorageSync('total_gains', newGains)
-      wx.setStorageSync('total_costs', newCosts)
-      var accumulated = newGains - newCosts
-      var remark = self.data.adjustRemark
-      
-      var ballsText = isAdd ? ('💰 增加资产 +' + amount) : '💸 减少资产';
-      if (isEncounter10) {
-        ballsText = '✨ 十次奇遇收益 +' + amount;
-        remark = '';
-      }
-      var record = { time: formatTimeShort(), balls: ballsText + (remark ? '(' + remark + ')' : ''), result: isEncounter10 ? '奇遇' : '微调', total: 0, cost: isAdd ? 0 : amount, gain: isAdd ? amount : 0, pet: '' }
-      var h = [record].concat(self.data.history).slice(0, 20)
-      wx.setStorageSync('catch_history', h)
+      var newGains10 = self.data.totalGains + amount
+      var newCosts10 = self.data.totalCosts
+      wx.setStorageSync('total_gains', newGains10)
+      var accumulated10 = newGains10 - newCosts10
+      var initial10 = self.data.initialWealth || 0
+      var profitRate10 = initial10 > 0 ? ((accumulated10 / initial10) * 100).toFixed(1) : (accumulated10 > 0 ? '100.0' : '0.0')
+      var record10 = { time: formatTimeShort(), balls: '✨ 十次奇遇收益 +' + amount, result: '奇遇', total: 0, cost: 0, gain: amount, pet: '' }
+      var h10 = [record10].concat(self.data.history).slice(0, 20)
+      wx.setStorageSync('catch_history', h10)
       self.setData({
+        showWealthAdjustModal: false,
+        totalGains: newGains10,
+        accumulatedWealth: accumulated10,
+        totalWealth: initial10 + accumulated10,
+        profitRate: profitRate10,
+        history: h10
+      })
+      self.updateGemCost()
+      wx.showToast({ title: '增加 💵' + amount, icon: 'none' })
+      return
+    }
+
+    var newWealthVal = parseInt(self.data.adjustAmount, 10)
+    if (self.data.adjustAmount === '' || isNaN(newWealthVal) || newWealthVal < 0) {
+      wx.showToast({ title: '请输入有效的现有洛克贝数值', icon: 'none' })
+      return
+    }
+    var prevWealth = self.data.totalWealth || 0
+    var diff = newWealthVal - prevWealth
+    if (diff === 0) {
+      wx.showToast({ title: '现有洛克贝与上次一致，无需调整', icon: 'none' })
+      self.setData({ showWealthAdjustModal: false })
+      return
+    }
+    var incVal = diff > 0 ? diff : 0
+    var decVal = diff < 0 ? Math.abs(diff) : 0
+    var newGains = self.data.totalGains + incVal
+    var newCosts = self.data.totalCosts + decVal
+    wx.setStorageSync('total_gains', newGains)
+    wx.setStorageSync('total_costs', newCosts)
+    var accumulated = newGains - newCosts
+    var initial = self.data.initialWealth || 0
+    var profitRate = initial > 0 ? ((accumulated / initial) * 100).toFixed(1) : (accumulated > 0 ? '100.0' : '0.0')
+    var remark = (self.data.adjustRemark || '').trim()
+    var ballsText = incVal > 0
+      ? ('💰 现有资产 ' + prevWealth + '→' + newWealthVal + ' (增加+' + incVal + ')')
+      : ('💸 现有资产 ' + prevWealth + '→' + newWealthVal + ' (减少-' + decVal + ')')
+    var lastAdjust = {
+      prevWealth: prevWealth,
+      newWealth: newWealthVal,
+      incVal: incVal,
+      decVal: decVal,
+      time: formatTimeShort()
+    }
+    wx.setStorageSync('last_wealth_adjust', lastAdjust)
+    var record = {
+      time: formatTimeShort(),
+      balls: ballsText + (remark ? '(' + remark + ')' : ''),
+      result: '微调',
+      total: 0,
+      cost: decVal,
+      gain: incVal,
+      pet: ''
+    }
+    var h = [record].concat(self.data.history).slice(0, 20)
+    wx.setStorageSync('catch_history', h)
+    self.setData({
       showWealthAdjustModal: false,
       totalGains: newGains,
       totalCosts: newCosts,
       accumulatedWealth: accumulated,
-      totalWealth: self.data.initialWealth + accumulated,
+      totalWealth: initial + accumulated,
+      profitRate: profitRate,
+      lastWealthAdjust: lastAdjust,
       history: h
     })
     self.updateGemCost()
-    wx.showToast({ title: (isAdd ? '增加' : '减少') + ' 💵' + amount, icon: 'none' })
+    wx.showToast({
+      title: incVal > 0 ? ('已更新 · 增加 +' + incVal) : ('已更新 · 减少 -' + decVal),
+      icon: 'none'
+    })
   },
   onWealthInput: function(e) { this.setData({ coinInput: e.detail.value }) },
   onSetWealth: function() {
@@ -2248,8 +2598,9 @@ Page({
           wx.removeStorageSync('initial_wealth')
           wx.removeStorageSync('total_gains')
           wx.removeStorageSync('total_costs')
+          wx.removeStorageSync('last_wealth_adjust')
           // 资产清空后必须同步关掉捕捉入口，否则按钮仍可点
-          self.setData({ initialWealth: 0, totalGains: 0, totalCosts: 0, accumulatedWealth: 0, totalWealth: 0, wealthSet: false, canStartCapture: false })
+          self.setData({ initialWealth: 0, totalGains: 0, totalCosts: 0, accumulatedWealth: 0, totalWealth: 0, lastWealthAdjust: null, wealthSet: false, canStartCapture: false })
           wx.showToast({title:'已撤销',icon:'success'})
         }
       }
@@ -2393,7 +2744,9 @@ Page({
   },
   onSpecialBall: function(e) {
     var list = this.data.pickerBalls || this.getPickerBalls() || []
-    this.setData({ specialBall: list[e.detail.value] })
+    var selected = list[e.detail.value]
+    this.setData({ specialBall: selected })
+    this._syncSelectedCraftBall(selected)
   },
   onSpecialCount: function(e) { this.setData({ specialCount: e.detail.value }) },
   onAddSpecial: function() {
@@ -2406,31 +2759,39 @@ Page({
       t = '活动'
     }
     var ballName = self.data.specialBall
-    var ballPrice = 0, ballIcon = '', ballImg = '';
+    var ballPrice = 0, ballCraftCostRoco = false, ballCraftPrice = 0, ballIcon = '', ballImg = '';
     for (var i = 0; i < self.data.balls.length; i++) {
       if (self.data.balls[i].name === ballName) {
-        // 仅购买走洛克贝 price；CNY 的 cnyPrice 不计入洛克贝
         ballPrice = self.data.balls[i].price || 0;
+        ballCraftCostRoco = !!(self.data.balls[i].craftCostRoco);
+        ballCraftPrice = self.data.balls[i].craftPrice || (ballCraftCostRoco ? ballPrice : 0) || 0;
         ballIcon = self.data.balls[i].icon || '';
         ballImg = self.data.balls[i].img || '';
         break;
       }
     }
+    var isPaidCraft = (t === '合成' && self.data.craftUseRoco && ballCraftCostRoco && ballCraftPrice > 0);
     var totalCost = 0;
-    // 活动/合成免费；特殊球 CNY 不计入洛克贝；仅购买可能扣洛克贝
+    var displayCost = 0;
     if (t === '购买' && self.data.quickRecordMode) {
       totalCost = ballPrice * v;
+      displayCost = totalCost;
+    } else if (isPaidCraft) {
+      displayCost = ballCraftPrice * v;
+      if (self.data.quickRecordMode) {
+        totalCost = displayCost;
+      }
     }
     var newCosts = self.data.totalCosts + totalCost
     wx.setStorageSync('total_costs', newCosts)
     var accumulated = self.data.totalGains - newCosts
-    var h = [{type: t, ball: ballName, count: v, cost: totalCost, time: formatTime(), icon: ballIcon, img: ballImg}].concat(self.data.specialHistory).slice(0, 50)
+    var h = [{type: t, ball: ballName, count: v, cost: totalCost, displayCost: displayCost, time: formatTime(), icon: ballIcon, img: ballImg}].concat(self.data.specialHistory).slice(0, 50)
     wx.setStorageSync('special_history', h)
     var balls = self.data.balls.slice()
     for (var i = 0; i < balls.length; i++) {
       if (balls[i].name === ballName) {
         balls[i].count += v
-        if (t === '合成' || t === '活动') balls[i].freeCount += v
+        if ((t === '合成' && !isPaidCraft) || t === '活动') balls[i].freeCount += v
         break
       }
     }

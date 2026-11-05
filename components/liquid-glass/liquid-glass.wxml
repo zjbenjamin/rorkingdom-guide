@@ -1,0 +1,7 @@
+<view 
+  class="liquid-glass-wrapper mode-{{mode}} {{specular ? 'with-specular' : ''}} {{interactive ? 'is-interactive' : ''}} {{customClass}}" 
+  style="{{customStyle}}"
+  bindtap="onTap"
+>
+  <slot></slot>
+</view>

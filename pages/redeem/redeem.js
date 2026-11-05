@@ -17,7 +17,8 @@ Page({
     loading: false,
     codes: [],
     formExpireDate: '',
-    formExpireTime: ''
+    formExpireTime: '',
+    keyboardHeight: 0
   },
   onLoad: function() {
     this._refreshI18n()
@@ -93,7 +94,8 @@ Page({
       formCode: '',
       formRewards: '',
       formExpireDate: '',
-      formExpireTime: ''
+      formExpireTime: '',
+      keyboardHeight: 0
     });
   },
   
@@ -112,12 +114,22 @@ Page({
       formCode: item.code || '',
       formRewards: item.rewards || '',
       formExpireDate: expDate,
-      formExpireTime: expTime
+      formExpireTime: expTime,
+      keyboardHeight: 0
     });
   },
   
   closeAddModal: function() {
-    this.setData({ showAddModal: false });
+    this.setData({ showAddModal: false, keyboardHeight: 0 });
+  },
+
+  preventClose: function() {},
+
+  onKeyboardHeight: function(e) {
+    var h = (e.detail && e.detail.height) || 0;
+    if (h !== this.data.keyboardHeight) {
+      this.setData({ keyboardHeight: h });
+    }
   },
   
   onInputCode: function(e) { this.setData({ formCode: e.detail.value }); },

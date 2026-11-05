@@ -1923,3 +1923,29 @@
  max-width: 720px;
  width: 100%;
  }
+/* 平板字号帽：商品卡与列表文本改 px，避免 rpx 放大 */
+.layout-pad .item-name { font-size: 15px !important; }
+.layout-pad .item-price { font-size: 16px !important; }
+.layout-pad .item-effect { font-size: 12px !important; }
+.layout-pad .item-source { font-size: 11px !important; }
+.layout-pad .item-image,
+.layout-pad .item-image-placeholder { width: 72px !important; height: 72px !important; border-radius: 10px !important; }
+.layout-pad .item-image-placeholder-icon { font-size: 28px !important; }
+.layout-pad .item-badge { font-size: 11px !important; }
+.layout-pad .item-limit-badge { font-size: 11px !important; }
+.layout-pad .roco-icon { width: 16px !important; height: 16px !important; }
+.layout-pad .roco-icon.sm { width: 12px !important; height: 12px !important; }
+.layout-pad .picker-card-name { font-size: 15px !important; }
+.layout-pad .picker-card-effect { font-size: 12px !important; }
+.layout-pad .picker-card-price { font-size: 16px !important; }
+.layout-pad .picker-card-limit { font-size: 11px !important; }
+.layout-pad .picker-card-image { width: 72px !important; height: 72px !important; }
+.layout-pad .batch-item-name { font-size: 15px !important; }
+.layout-pad .batch-item-price { font-size: 15px !important; }
+.layout-pad .modal-title { font-size: 18px !important; }
+.layout-pad .modal-input,
+.layout-pad .picker-value { font-size: 14px !important; min-height: 40px !important; height: auto !important; padding: 10px 12px !important; }
+.layout-pad .modal-textarea { font-size: 14px !important; }
+.layout-pad .form-label { font-size: 13px !important; }
+.layout-pad .admin-btn { font-size: 13px !important; padding: 10px 16px !important; }
+.layout-pad .selling-empty-text { font-size: 13px !important; }

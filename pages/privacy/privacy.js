@@ -3,14 +3,14 @@ var i18n = require('../../utils/i18n')
 var privacyContent = {
   zh: {
     title: '《洛手助手》隐私保护指引',
-    updateDate: '更新日期：2026年9月25日',
-    effectiveDate: '生效日期：2026年9月25日',
+    updateDate: '更新日期：2026年11月5日',
+    effectiveDate: '生效日期：2026年11月5日',
     sections: [
       {
         title: '一、 我们收集的信息',
         items: [
           { highlight: '账户信息', suffix: '：经您主动授权后，获取微信昵称、头像，用于战报水印及社区身份展示。未授权不影响工具核心功能。' },
-          { highlight: '游戏辅助数据', suffix: '：捕宠记录（精灵名称、使用的咕噜球种类及数量、成功/失败状态）、洛克贝资产变动、咕噜球库存、保底进度等，均属于您主动输入的非个人敏感操作数据。' },
+          { highlight: '游戏辅助数据', suffix: '：捕宠记录（精灵名称、使用的咕噜球与契约球种类及数量、成功/失败状态、异色龙龙骰染色及剩余数量）、洛克贝现有资产变动、咕噜球库存与合成消耗、保底进度等，均属于您主动输入的非个人敏感操作数据。' },
           { highlight: '设备存储', suffix: '：上述数据优先存储于您设备的本地缓存中，确保离线可用与极速响应。仅在您使用云端同步功能时，数据经加密后上传至微信云开发（CloudBase）。' }
         ]
       },
@@ -56,15 +56,15 @@ var privacyContent = {
         items: [
           { text: '如您对本隐私政策有任何疑问、意见或建议，可通过以下方式联系开发者：' },
           { text: '• 在小程序"关于"页面提交反馈' },
-          { text: '• 邮箱：rookiehelper@outlook.com' }
+          { text: '• 邮箱：flyzccboard@yeah.net' }
         ]
       }
     ]
   },
   en: {
     title: '「Ben\'s Roco Helper」Privacy Policy',
-    updateDate: 'Last updated: August 5, 2026',
-    effectiveDate: 'Effective date: August 5, 2026',
+    updateDate: 'Last updated: November 5, 2026',
+    effectiveDate: 'Effective date: November 5, 2026',
     sections: [
       {
         title: '1. Information We Collect',
@@ -116,15 +116,15 @@ var privacyContent = {
         items: [
           { text: 'If you have any questions, comments, or suggestions regarding this privacy policy, please contact the developer through:' },
           { text: '• Submit feedback on the "About" page in the app' },
-          { text: '• Email: rookiehelper@outlook.com' }
+          { text: '• Email: flyzccboard@yeah.net' }
         ]
       }
     ]
   },
   ja: {
     title: '「Ben\'s Roco Helper」プライバシーポリシー',
-    updateDate: '更新日：2026年9月25日',
-    effectiveDate: '発効日：2026年9月25日',
+    updateDate: '更新日：2026年11月5日',
+    effectiveDate: '発効日：2026年11月5日',
     sections: [
       {
         title: '1. 収集する情報',
@@ -176,15 +176,15 @@ var privacyContent = {
         items: [
           { text: '本プライバシーポリシーに関するご質問やご意見がございましたら、以下の方法で開発者までご連絡ください：' },
           { text: '• アプリ内の「について」ページからフィードバックを送信' },
-          { text: '• メール：rookiehelper@outlook.com' }
+          { text: '• メール：flyzccboard@yeah.net' }
         ]
       }
     ]
   },
   ko: {
     title: '「Ben\'s Roco Helper」개인정보처리방침',
-    updateDate: '최종 업데이트: 2026년 8월 5일',
-    effectiveDate: '시행일: 2026년 8월 5일',
+    updateDate: '최종 업데이트: 2026년 11월 5일',
+    effectiveDate: '시행일: 2026년 11월 5일',
     sections: [
       {
         title: '1. 수집하는 정보',
@@ -236,7 +236,7 @@ var privacyContent = {
         items: [
           { text: '본 개인정보처리방침에 관한 질문이나 의견이 있으시면 다음 방법으로 개발자에게 연락해 주십시오:' },
           { text: '• 앱 내 "정보" 페이지에서 피드백 제출' },
-          { text: '• 이메일: rookiehelper@outlook.com' }
+          { text: '• 이메일: flyzccboard@yeah.net' }
         ]
       }
     ]
@@ -246,41 +246,41 @@ var privacyContent = {
 var agreementContent = {
   zh: {
     title: '《洛手助手》用户服务协议',
-    updateDate: '更新日期：2026年9月25日',
+    updateDate: '更新日期：2026年11月5日',
     sections: [
       {
         title: '一、 服务条款与性质',
         items: [
-          { highlight: '非官方辅助工具', suffix: '。与《洛克王国》官方运营方无任何商业关联。' },
-          { text: '2. 我们为您提供游戏资料查询、图鉴阅览、捕宠记录、资产统计等辅助功能，致力于提升您的游戏体验。' }
+          { prefix: '1. 本小程序为玩家自制、完全免费的', highlight: '非官方辅助工具', suffix: '。与《洛克王国：世界》官方运营方无任何商业关联。' },
+          { text: '2. 我们为您提供活动倒计时日历（版本周期性活动、大量出没、命定花种、常驻课题）、大量出没监控、远行商人追踪、捕宠与龙龙骰染色战报记录、洛克贝现有资产与咕噜球仓库统计、多平台视频/音乐资讯跳转等辅助功能，致力于提升您的游戏体验。' }
         ]
       },
       {
         title: '二、 用户行为规范',
         items: [
-          { text: '1. 您应当保证在使用本服务时遵守国家法律法规及微信平台规范，不得利用本工具的自定义功能（如备注、命名）传播违规内容。' },
-          { text: '2. 您不得利用任何技术手段（如抓包、反编译）对小程序的云端接口进行恶意攻击或高频刷量，违者将永久封禁服务。' }
+          { text: '1. 您应当保证在使用本服务时遵守国家法律法规及微信平台规范，不得利用本工具的自定义功能（如备注、命名、战报分享）传播违规内容。' },
+          { text: '2. 您不得利用任何技术手段（如抓包、反编译、自动化脚本）对小程序的云端接口进行恶意攻击或高频刷量，违者将永久封禁服务。' }
         ]
       },
       {
         title: '三、 免责声明（重要）',
         items: [
-          { highlight: '数据仅供参考', suffix: '：工具内所有的精灵属性、技能数据、评级算法均源于社区整理，并非官方绝对标准。如遇版本更新存在滞后，敬请谅解。' },
-          { highlight: '玄学与概率', suffix: '：本工具提供的"欧皇评级"、"保底进度"仅作为游戏过程中的娱乐与统计参考，无法直接影响或干预游戏内的真实捕宠概率，对此我们不承担任何"未捕捉成功"的责任。' }
+          { highlight: '数据仅供参考', suffix: '：工具内所有的精灵预设、活动倒计时、大量出没时间、咕噜球配置及评级算法均源于社区整理，并非官方绝对标准。如遇版本更新存在滞后，敬请以游戏内公告为准。' },
+          { highlight: '玄学与概率', suffix: '：本工具提供的"欧皇评级"、"保底进度"、"奇遇与龙龙骰统计"仅作为游戏过程中的娱乐与统计参考，无法直接影响或干预游戏内的真实捕宠及染色概率，对此我们不承担任何"未捕捉成功"的责任。' }
         ]
       },
       {
         title: '四、 知识产权声明',
         items: [
-          { text: '1. 小程序内所使用的《洛克王国》相关素材（精灵图、道具图等）的著作权及知识产权，均归腾讯公司及原版权方所有。' },
-          { text: '2. 小程序特有的界面UI设计、交互排版、代码架构以及原创评级文案等，均属于开发者原创知识产权，未经授权严禁像素级抄袭及商用。' }
+          { text: '1. 小程序内所使用的《洛克王国：世界》相关素材（精灵图、道具图、花种图等）的著作权及知识产权，均归腾讯公司及原版权方所有。' },
+          { text: '2. 小程序特有的界面UI设计、赛季时间轴与战报排版、代码架构以及原创评级文案等，均属于开发者原创知识产权，未经授权严禁像素级抄袭及商用。' }
         ]
       }
     ]
   },
   en: {
     title: '「Ben\'s Roco Helper」Terms of Service',
-    updateDate: 'Last updated: August 5, 2026',
+    updateDate: 'Last updated: November 5, 2026',
     sections: [
       {
         title: '1. Service Nature & Terms',
@@ -314,7 +314,7 @@ var agreementContent = {
   },
   ja: {
     title: '「Ben\'s Roco Helper」利用規約',
-    updateDate: '更新日：2026年9月25日',
+    updateDate: '更新日：2026年11月5日',
     sections: [
       {
         title: '1. サービスの性質と利用条件',
@@ -348,7 +348,7 @@ var agreementContent = {
   },
   ko: {
     title: '「Ben\'s Roco Helper」이용약관',
-    updateDate: '최종 업데이트: 2026년 8월 5일',
+    updateDate: '최종 업데이트: 2026년 11월 5일',
     sections: [
       {
         title: '1. 서비스 성격 및 약관',

@@ -54,6 +54,9 @@
               <text class="badge-dot"></text>
               <text class="badge-text">{{item.statusInfo.statusText}}</text>
             </view>
+            <view class="countdown-badge" wx:if="{{item.countdownText}}">
+              <text class="countdown-badge-text">{{item.countdownText}}</text>
+            </view>
             <view class="admin-item-actions" wx:if="{{isAdmin}}">
               <text class="action-edit" catchtap="openEditModal" data-index="{{index}}" data-source="active">✏️</text>
               <text class="action-delete" catchtap="deleteSwarm" data-index="{{index}}" data-source="active">✕</text>

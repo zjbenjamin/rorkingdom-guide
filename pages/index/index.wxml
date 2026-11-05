@@ -317,9 +317,9 @@
     <text wx:if="{{icp}}">{{icp}}</text>
   </view>
 
-  <!-- Video Player -->
-  <view class="modal-mask" wx:if="{{showVideoPlayer}}" catchtap="closeVideoPlayer" style="z-index:10000;">
-    <view class="modal-box video-player-box" catchtap="preventClose">
+  <!-- Video Player (Liquid Glass 弹窗浮层) -->
+  <view class="modal-mask liquid-glass-mask" wx:if="{{showVideoPlayer}}" catchtap="closeVideoPlayer" style="z-index:10000;">
+    <view class="modal-box video-player-box liquid-glass-modal" catchtap="preventClose">
       <view class="video-player-header">
         <text class="video-player-title">{{videoPlayerName}}</text>
         <text class="modal-close" catchtap="closeVideoPlayer">✕</text>
