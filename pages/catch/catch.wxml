@@ -362,7 +362,7 @@
       <view class="history-log-list">
         <view wx:for="{{history}}" wx:key="index" class="log-item">
           <view class="log-badge {{item.result.indexOf('异色')>=0||item.result.indexOf('成功')>=0?'ok':item.result==='歪了'?'miss':item.result==='盘点'?'check':'other'}}">
-            {{item.result.indexOf('异色')>=0 ? _l.catchResultShiny : item.result.indexOf('成功')>=0 ? _l.catchResultSuccess : item.result==='歪了' ? _l.catchResultMiss : item.result==='盘点' ? _l.catchResultCheck : _l.catchResultEvent}}
+            {{item.result.indexOf('异色')>=0 ? (_l.catchResultShiny + (item.capturedCount > 1 ? 'x' + item.capturedCount : '')) : item.result.indexOf('成功')>=0 ? (_l.catchResultSuccess + (item.capturedCount > 1 ? 'x' + item.capturedCount : '')) : item.result==='歪了' ? _l.catchResultMiss : item.result==='盘点' ? _l.catchResultCheck : _l.catchResultEvent}}
           </view>
           <view class="log-content">
             <view style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4rpx;">
@@ -541,11 +541,12 @@
           </view>
         </view>
 
-        <!-- 单刷：精灵名称 -->
+        <!-- 单刷：精灵名称（支持一轮捕获多只异色） -->
         <view class="result-section" wx:if="{{brushMode === 'single'}}">
           <view class="section-head">
             <text class="section-icon">🐾</text>
             <text class="section-title">{{_l.catchTargetPet}}</text>
+            <text class="section-title-hint" wx:if="{{resultCapturedPets.length > 1}}" style="color:#ffd54f; font-weight:bold;">本轮捕获 {{resultCapturedPets.length}} 只异色</text>
           </view>
           <!-- 异色精灵预设：赛季筛选 + 点选 -->
           <view class="season-chips" wx:if="{{shinyPets.length > 0}}">
@@ -553,18 +554,31 @@
           </view>
           <view style="display:flex; flex-wrap:wrap; gap:12rpx; margin-bottom:12rpx;" wx:if="{{shinyPetPickerList.length > 0}}">
             <view wx:for="{{shinyPetPickerList}}" wx:key="index" catchtap="onPickShinyPet" data-index="{{index}}" data-target="single"
-              class="pick-chip {{resultPetName===item?'on':''}}">
+              class="pick-chip {{(resultCapturedPets[activeCapturedPetIndex] && resultCapturedPets[activeCapturedPetIndex].name===item) || resultPetName===item ? 'on' : ''}}">
               {{item}}
             </view>
           </view>
-          <view class="input-with-icon">
-            <text class="input-prefix-icon">🐾</text>
-            <input class="form-input enhanced" placeholder="{{_l.catchPetNamePlaceholder}}" value="{{resultPetName}}" bindinput="onResultPetNameInput" />
+          <view wx:for="{{resultCapturedPets}}" wx:key="index" catchtap="onFocusCapturedPet" data-index="{{index}}"
+            style="margin-bottom: 12rpx; padding: {{resultCapturedPets.length > 1 ? '14rpx' : '0'}}; border-radius: 14rpx; background: {{resultCapturedPets.length > 1 ? (activeCapturedPetIndex === index ? 'rgba(0,212,255,0.1)' : 'rgba(255,255,255,0.03)') : 'transparent'}}; border: {{resultCapturedPets.length > 1 ? (activeCapturedPetIndex === index ? '1rpx solid rgba(0,212,255,0.45)' : '1rpx solid rgba(255,255,255,0.08)') : 'none'}};">
+            <view wx:if="{{resultCapturedPets.length > 1}}" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8rpx;">
+              <text style="font-size:22rpx; color:{{activeCapturedPetIndex === index ? '#00d4ff' : '#94a3b8'}}; font-weight:bold;">🌟 第 {{index + 1}} 只异色 {{activeCapturedPetIndex === index ? '（点击上方预设可填入此项）' : ''}}</text>
+              <view class="ball-row-del" catchtap="onRemoveCapturedPet" data-index="{{index}}">✕</view>
+            </view>
+            <view class="input-with-icon">
+              <text class="input-prefix-icon">🐾</text>
+              <input class="form-input enhanced" placeholder="{{_l.catchPetNamePlaceholder}}" value="{{item.name}}" bindfocus="onFocusCapturedPet" bindinput="onCapturedPetNameInput" data-index="{{index}}" />
+            </view>
+            <view wx:if="{{resultCapturedPets.length > 1}}" style="margin-top:8rpx;">
+              <input class="form-input enhanced" placeholder="图片链接 https://...（选预设自动带入）" value="{{item.img}}" bindfocus="onFocusCapturedPet" bindinput="onCapturedPetImgInput" data-index="{{index}}" />
+            </view>
+            <view wx:if="{{item.img}}" class="pet-preview-card" style="margin-top:8rpx;">
+              <image class="preview-img" src="{{item.img}}" mode="aspectFill" />
+              <text class="preview-name">{{item.name || ('第' + (index + 1) + '只异色')}}</text>
+            </view>
           </view>
-          <!-- 选中目标精灵后直接预览 -->
-          <view wx:if="{{resultPetImageUrl}}" class="pet-preview-card">
-            <image class="preview-img" src="{{resultPetImageUrl}}" mode="aspectFill" />
-            <text class="preview-name">{{resultPetName || _l.catchTargetPet}}</text>
+          <view class="section-add-btn" wx:if="{{resultType === 'success'}}" catchtap="onAddCapturedPet">
+            <text class="add-icon">+</text>
+            <text>添加本轮捕获异色（一轮多只）</text>
           </view>
         </view>
 
@@ -587,12 +601,12 @@
           </view>
         </view>
 
-        <!-- 混刷结果目标 -->
+        <!-- 混刷结果目标（支持一轮捕获多只异色） -->
         <view class="result-section" wx:if="{{brushMode === 'mixed'}}">
           <view class="section-head">
             <text class="section-icon">{{resultType === 'success' ? '🌟' : '💫'}}</text>
             <text class="section-title">{{resultType === 'success' ? _l.catchShinyTarget : _l.catchMissTarget}}</text>
-            <text class="section-title-hint">{{_l.catchTargetHintPre}}{{resultType === 'success' ? _l.catchTargetHintMid : _l.catchResultMiss}}{{_l.catchTargetHintPost}}</text>
+            <text class="section-title-hint">{{resultCapturedPets.length > 1 ? ('本轮捕获 ' + resultCapturedPets.length + ' 只异色') : (_l.catchTargetHintPre + (resultType === 'success' ? _l.catchTargetHintMid : _l.catchResultMiss) + _l.catchTargetHintPost)}}</text>
           </view>
           <!-- 异色精灵预设 -->
           <view class="season-chips" wx:if="{{shinyPets.length > 0}}">
@@ -600,23 +614,36 @@
           </view>
           <view style="display:flex; flex-wrap:wrap; gap:12rpx; margin-bottom:12rpx;" wx:if="{{shinyPetPickerList.length > 0}}">
             <view wx:for="{{shinyPetPickerList}}" wx:key="index" catchtap="onPickShinyPet" data-index="{{index}}" data-target="mixed"
-              class="pick-chip {{resultTargetPet===item?'on':''}}">
+              class="pick-chip {{(resultCapturedPets[activeCapturedPetIndex] && resultCapturedPets[activeCapturedPetIndex].name===item) || resultTargetPet===item ? 'on' : ''}}">
               {{item}}
             </view>
           </view>
-          <view class="input-with-icon">
-            <text class="input-prefix-icon">🐾</text>
-            <input class="form-input enhanced" placeholder="{{_l.catchPetNamePlaceholder}}" value="{{resultTargetPet}}" bindinput="onTargetPetInput" />
+          <view wx:for="{{resultCapturedPets}}" wx:key="index" catchtap="onFocusCapturedPet" data-index="{{index}}"
+            style="margin-bottom: 12rpx; padding: {{resultCapturedPets.length > 1 ? '14rpx' : '0'}}; border-radius: 14rpx; background: {{resultCapturedPets.length > 1 ? (activeCapturedPetIndex === index ? 'rgba(0,212,255,0.1)' : 'rgba(255,255,255,0.03)') : 'transparent'}}; border: {{resultCapturedPets.length > 1 ? (activeCapturedPetIndex === index ? '1rpx solid rgba(0,212,255,0.45)' : '1rpx solid rgba(255,255,255,0.08)') : 'none'}};">
+            <view wx:if="{{resultCapturedPets.length > 1}}" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8rpx;">
+              <text style="font-size:22rpx; color:{{activeCapturedPetIndex === index ? '#00d4ff' : '#94a3b8'}}; font-weight:bold;">🌟 第 {{index + 1}} 只异色 {{activeCapturedPetIndex === index ? '（点击上方预设可填入此项）' : ''}}</text>
+              <view class="ball-row-del" catchtap="onRemoveCapturedPet" data-index="{{index}}">✕</view>
+            </view>
+            <view class="input-with-icon">
+              <text class="input-prefix-icon">🐾</text>
+              <input class="form-input enhanced" placeholder="{{_l.catchPetNamePlaceholder}}" value="{{item.name}}" bindfocus="onFocusCapturedPet" bindinput="onCapturedPetNameInput" data-index="{{index}}" />
+            </view>
+            <view wx:if="{{resultCapturedPets.length > 1}}" style="margin-top:8rpx;">
+              <input class="form-input enhanced" placeholder="图片链接 https://...（选预设自动带入）" value="{{item.img}}" bindfocus="onFocusCapturedPet" bindinput="onCapturedPetImgInput" data-index="{{index}}" />
+            </view>
+            <view wx:if="{{item.img}}" class="pet-preview-card" style="margin-top:8rpx;">
+              <image class="preview-img" src="{{item.img}}" mode="aspectFill" />
+              <text class="preview-name">{{item.name || ('第' + (index + 1) + '只异色')}}</text>
+            </view>
           </view>
-          <!-- 选中目标精灵后直接预览 -->
-          <view wx:if="{{resultPetImageUrl}}" class="pet-preview-card">
-            <image class="preview-img" src="{{resultPetImageUrl}}" mode="aspectFill" />
-            <text class="preview-name">{{resultTargetPet || _l.catchShinyTarget}}</text>
+          <view class="section-add-btn" wx:if="{{resultType === 'success'}}" catchtap="onAddCapturedPet">
+            <text class="add-icon">+</text>
+            <text>添加本轮捕获异色（一轮多只）</text>
           </view>
         </view>
 
-        <!-- 精灵图片链接 -->
-        <view class="result-section">
+        <!-- 精灵图片链接（单只时显示，多只已在各自卡片内独立配置） -->
+        <view class="result-section" wx:if="{{resultCapturedPets.length <= 1}}">
           <view class="section-head">
             <text class="section-icon">🖼️</text>
             <text class="section-title">{{_l.catchPetImgUrl}}</text>

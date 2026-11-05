@@ -143,6 +143,8 @@ Page({
     resultMixedPets: [{ name: '' }],
     resultMixedPetNames: [],
     resultTargetPet: '',
+    resultCapturedPets: [{ name: '', img: '' }],
+    activeCapturedPetIndex: 0,
     showMoreFields: false,
     captureStartTime: 0,
     resultElapsedEdited: false,
@@ -268,13 +270,20 @@ Page({
     });
     var pet = list[idx];
     if (!pet) return;
-    if (target === 'mixed') {
-      this.setData({ resultTargetPet: pet.name });
-    } else {
-      this.setData({ resultPetName: pet.name });
+    var capList = (this.data.resultCapturedPets || [{ name: '', img: '' }]).slice();
+    var actIdx = this.data.activeCapturedPetIndex || 0;
+    if (actIdx < 0 || actIdx >= capList.length) actIdx = capList.length - 1;
+    capList[actIdx] = { name: pet.name, img: pet.img || capList[actIdx].img || '' };
+    var updates = { resultCapturedPets: capList, activeCapturedPetIndex: actIdx };
+    if (actIdx === 0) {
+      if (target === 'mixed') updates.resultTargetPet = pet.name;
+      else updates.resultPetName = pet.name;
+      if (pet.img) updates.resultPetImageUrl = pet.img;
     }
-    if (pet.img) this.setData({ resultPetImageUrl: pet.img });
-    wx.showToast({ title: '已选择 ' + pet.name, icon: 'none' });
+    if (target === 'mixed' && !this.data.resultTargetPet) updates.resultTargetPet = capList[0].name;
+    if (target !== 'mixed' && !this.data.resultPetName) updates.resultPetName = capList[0].name;
+    this.setData(updates);
+    wx.showToast({ title: (capList.length > 1 ? ('第' + (actIdx + 1) + '只: ') : '已选择 ') + pet.name, icon: 'none' });
   },
   preloadBallImages: function() {
     var urls = [];
@@ -680,6 +689,8 @@ Page({
       resultTargetPet: '',
       resultPetName: '',
       resultPetImageUrl: '',
+      resultCapturedPets: [{ name: '', img: '' }],
+      activeCapturedPetIndex: 0,
       showMoreFields: false,
       resultElapsedTime: autoElapsed,
       resultElapsedEdited: false,
@@ -702,10 +713,65 @@ Page({
     this.setData({ resultGainInput: e.detail.value })
   },
   onResultPetNameInput: function(e) {
-    this.setData({ resultPetName: e.detail.value })
+    var val = e.detail.value;
+    var capList = (this.data.resultCapturedPets || [{ name: '', img: '' }]).slice();
+    capList[0] = Object.assign({}, capList[0] || {}, { name: val });
+    this.setData({ resultPetName: val, resultCapturedPets: capList });
   },
   onResultPetImageUrlInput: function(e) {
-    this.setData({ resultPetImageUrl: e.detail.value })
+    var val = e.detail.value;
+    var capList = (this.data.resultCapturedPets || [{ name: '', img: '' }]).slice();
+    capList[0] = Object.assign({}, capList[0] || {}, { img: val });
+    this.setData({ resultPetImageUrl: val, resultCapturedPets: capList });
+  },
+  onFocusCapturedPet: function(e) {
+    var idx = Number(e.currentTarget.dataset.index) || 0;
+    if (idx !== this.data.activeCapturedPetIndex) {
+      this.setData({ activeCapturedPetIndex: idx });
+    }
+  },
+  onCapturedPetNameInput: function(e) {
+    var idx = Number(e.currentTarget.dataset.index) || 0;
+    var val = e.detail.value;
+    var capList = (this.data.resultCapturedPets || [{ name: '', img: '' }]).slice();
+    if (!capList[idx]) capList[idx] = { name: '', img: '' };
+    capList[idx] = Object.assign({}, capList[idx], { name: val });
+    var updates = { resultCapturedPets: capList, activeCapturedPetIndex: idx };
+    if (idx === 0) {
+      if (this.data.brushMode === 'mixed') updates.resultTargetPet = val;
+      else updates.resultPetName = val;
+    }
+    this.setData(updates);
+  },
+  onCapturedPetImgInput: function(e) {
+    var idx = Number(e.currentTarget.dataset.index) || 0;
+    var val = e.detail.value;
+    var capList = (this.data.resultCapturedPets || [{ name: '', img: '' }]).slice();
+    if (!capList[idx]) capList[idx] = { name: '', img: '' };
+    capList[idx] = Object.assign({}, capList[idx], { img: val });
+    var updates = { resultCapturedPets: capList, activeCapturedPetIndex: idx };
+    if (idx === 0) updates.resultPetImageUrl = val;
+    this.setData(updates);
+  },
+  onAddCapturedPet: function() {
+    var capList = (this.data.resultCapturedPets || [{ name: '', img: '' }]).slice();
+    capList.push({ name: '', img: '' });
+    this.setData({ resultCapturedPets: capList, activeCapturedPetIndex: capList.length - 1 });
+  },
+  onRemoveCapturedPet: function(e) {
+    var idx = Number(e.currentTarget.dataset.index) || 0;
+    var capList = (this.data.resultCapturedPets || []).slice();
+    if (capList.length <= 1) return;
+    capList.splice(idx, 1);
+    var first = capList[0] || { name: '', img: '' };
+    var updates = {
+      resultCapturedPets: capList,
+      activeCapturedPetIndex: Math.max(0, Math.min(this.data.activeCapturedPetIndex || 0, capList.length - 1)),
+      resultPetImageUrl: first.img || ''
+    };
+    if (this.data.brushMode === 'mixed') updates.resultTargetPet = first.name || '';
+    else updates.resultPetName = first.name || '';
+    this.setData(updates);
   },
   onResultElapsedTimeInput: function(e) {
     this.setData({ resultElapsedTime: e.detail.value, resultElapsedEdited: true })
@@ -758,13 +824,46 @@ Page({
       resultMixedPetNames = mixedNames.join(', ');
     }
     
-    // 结果目标精灵: 单刷= petName, 混刷= picker选择
-    var resultTargetPet = '';
-    if (self.data.brushMode === 'mixed') {
-      resultTargetPet = self.data.resultTargetPet || '';
-    } else {
-      resultTargetPet = self.data.resultPetName || '';
+    // 收集本轮捕获的多只异色精灵
+    var rawCapPets = self.data.resultCapturedPets || [];
+    var validCapturedPets = [];
+    for (var cpi = 0; cpi < rawCapPets.length; cpi++) {
+      var cpItem = rawCapPets[cpi] || {};
+      var cpName = (cpItem.name || '').trim();
+      var cpImg = (cpItem.img || '').trim();
+      if (cpName || cpImg) {
+        validCapturedPets.push({ name: cpName, img: cpImg });
+      }
     }
+    var fallbackSingleName = (self.data.brushMode === 'mixed' ? self.data.resultTargetPet : self.data.resultPetName) || '';
+    var fallbackSingleImg = self.data.resultPetImageUrl || '';
+    if (validCapturedPets.length === 0 && (fallbackSingleName || fallbackSingleImg)) {
+      validCapturedPets.push({ name: fallbackSingleName, img: fallbackSingleImg });
+    }
+    var capturedCount = Math.max(1, validCapturedPets.length);
+    // 汇总名称（同名合并为 xN，不同名用顿号连接）
+    var nameCounts = {};
+    var nameOrder = [];
+    for (var nci = 0; nci < validCapturedPets.length; nci++) {
+      var nm = validCapturedPets[nci].name || '异色精灵';
+      if (!nameCounts[nm]) {
+        nameCounts[nm] = 0;
+        nameOrder.push(nm);
+      }
+      nameCounts[nm]++;
+    }
+    var combinedPetName = nameOrder.map(function(nm) {
+      return nameCounts[nm] > 1 ? (nm + 'x' + nameCounts[nm]) : nm;
+    }).join('、');
+    var firstPetImg = '';
+    for (var fpi = 0; fpi < validCapturedPets.length; fpi++) {
+      if (validCapturedPets[fpi].img) { firstPetImg = validCapturedPets[fpi].img; break; }
+    }
+    var resultTargetPet = combinedPetName || fallbackSingleName;
+    self._resultCapturedPets = validCapturedPets;
+    self._resultCapturedCount = capturedCount;
+    self._resultCombinedPetName = resultTargetPet;
+    self._resultFirstPetImg = firstPetImg || fallbackSingleImg;
     
     self.setData({ showResultBallModal: false, result: r, resultGainInput: '' });
     
@@ -923,14 +1022,19 @@ Page({
     var sessionText = self._sessionUsedText();
     var usedStr = sessionText || (self.data.lastUsedBallName && self.data.lastUsedBallName.length > 2 ? self.data.lastUsedBallName : i18n.t('imgNoBallsUsed'));
     var isUsedDice = !!self.data.resultUsedDice;
+    var capCount = (result === 'success' && self._resultCapturedCount > 1) ? self._resultCapturedCount : 1;
+    var finalPetName = self._resultCombinedPetName || self.data.resultPetName || '';
+    var finalPetImg = self._resultFirstPetImg || self.data.resultPetImageUrl || '';
     var record = {
       time: formatTimeShort(), balls: usedStr,
       result: localizeResultText(result, result === 'success' ? '异色捕获成功' : '歪了'),
       remark: self.data.resultRemark || '',
-      // 异色龙龙骰不占用保底和奇遇
-      total: isUsedDice ? 0 : 1,
+      // 异色龙龙骰不占用保底和奇遇；多只异色按实际捕获只数计入
+      total: isUsedDice ? 0 : capCount,
+      capturedCount: capCount,
+      capturedPets: self._resultCapturedPets || [],
       cost: 0, gain: self._resultGainVal || 0,
-      pet: self.data.resultPetName || '', petImageUrl: self.data.resultPetImageUrl || '',
+      pet: finalPetName, petImageUrl: finalPetImg,
       resultRaw: result,
       elapsedSec: self.data._resultElapsedSec != null ? self.data._resultElapsedSec : null,
       elapsedTimeText: self.data._resultElapsedTime ? i18n.t('clipDuration') + ': ' + self.data._resultElapsedTime : '',
@@ -939,7 +1043,7 @@ Page({
       contractBallImg: self.data.contractBallImg || '',
       encounters: isUsedDice ? 0 : (self.data.luckyBoxCount || 0),
       brushMode: self.data.brushMode || 'single',
-      mixedPets: self.data._resultMixedPetNames || '', targetPet: self.data._resultTargetPet || '',
+      mixedPets: self.data._resultMixedPetNames || '', targetPet: self.data._resultTargetPet || finalPetName,
       carnivalCount: self.data.carnivalCount || 0, luckyBoxCount: self.data.luckyBoxCount || 0,
       pityBefore: self.data.pityCount || 0, elapsedAuto: self.data._resultElapsedAuto || false,
       usedBalls: self._usedBallsDetail || [],
@@ -1365,6 +1469,9 @@ Page({
       var resText = last.result || i18n.t('imgUnknown');
       ctx.fillStyle = last.resultRaw === 'success' ? '#4ade80' : (last.resultRaw === 'miss' ? '#f87171' : '#ffffff');
       var cleanRes = localizeResultText(last.resultRaw, resText);
+      if (last.capturedCount && last.capturedCount > 1) {
+        cleanRes += ' (一轮' + last.capturedCount + '只)';
+      }
       var statusValueX = 36 + statusLabelW + 10;
       ctx.fillText(cleanRes, statusValueX, 320);
       var statusEndX = statusValueX + ctx.measureText(cleanRes).width;
@@ -1417,7 +1524,17 @@ Page({
       var resultPet = last.targetPet || last.pet || '';
       if (resultPet) {
         ctx.fillStyle = (last.resultRaw === 'success' ? '#4ade80' : (last.resultRaw === 'miss' ? '#f87171' : '#ffffff'));
-        ctx.fillText(resultPet, 106, petNameY);
+        var maxPetW = localizeElapsed(last) ? (width / 2 - 4 - 106 - 8) : (width - 40 - 106);
+        var drawPet = resultPet;
+        if (ctx.measureText(drawPet).width > maxPetW) {
+          ctx.font = '12px sans-serif';
+          while (drawPet.length > 2 && ctx.measureText(drawPet + '…').width > maxPetW) {
+            drawPet = drawPet.slice(0, -1);
+          }
+          if (drawPet !== resultPet) drawPet += '…';
+        }
+        ctx.fillText(drawPet, 106, petNameY);
+        ctx.font = '14px sans-serif';
       } else {
         ctx.fillStyle = '#ffffff';
         ctx.fillText(i18n.t('imgNotFilled'), 106, petNameY);
@@ -1532,22 +1649,56 @@ Page({
       var petImgY = (parsedBalls.length === 0 ? (ballSectionY + 35) : (ballSectionY + ballGridHeight + 40)) + diceSectionHeight;
       var petSize = Math.round(110 * imgScale);
       var badgeSize = Math.round(28 * imgScale);
-      if (last.petImageUrl && last.petImageUrl.length > 5) {
-        loadImg(last.petImageUrl, function(img) {
+      var petImgList = [];
+      if (last.capturedPets && last.capturedPets.length > 0) {
+        for (var pii = 0; pii < last.capturedPets.length; pii++) {
+          var pUrl = (last.capturedPets[pii] && last.capturedPets[pii].img) || '';
+          if (pUrl && pUrl.length > 5) petImgList.push(pUrl);
+        }
+      }
+      if (petImgList.length === 0 && last.petImageUrl && last.petImageUrl.length > 5) {
+        petImgList.push(last.petImageUrl);
+      }
+      var badgeUrl = last.resultRaw === 'miss'
+        ? 'https://patchwiki.biligame.com/images/rocom/4/4f/20dseynhfc393c6jys1rnwhwwf94xvv.png'
+        : 'https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png';
+      if (petImgList.length === 1) {
+        loadImg(petImgList[0], function(img) {
           ctx.drawImage(img, 50, petImgY, petSize, petSize);
         });
         if (last.resultRaw === 'miss' || last.resultRaw === 'success') {
-          var badgeUrl = last.resultRaw === 'miss'
-            ? 'https://patchwiki.biligame.com/images/rocom/4/4f/20dseynhfc393c6jys1rnwhwwf94xvv.png'
-            : 'https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png';
           loadImg(badgeUrl, function(img) {
             ctx.drawImage(img, 50 + petSize - badgeSize + 8, petImgY - 8, badgeSize, badgeSize);
           });
         }
+      } else if (petImgList.length > 1) {
+        var showImgs = petImgList.slice(0, 4);
+        var subSize = showImgs.length === 2 ? Math.round(58 * imgScale) : Math.round(50 * imgScale);
+        var subBadge = Math.round(18 * imgScale);
+        for (var si = 0; si < showImgs.length; si++) {
+          var sCol = si % 2;
+          var sRow = Math.floor(si / 2);
+          var sx = 38 + sCol * (subSize + 8);
+          var sy = showImgs.length <= 2
+            ? (petImgY + Math.round((petSize - subSize) / 2))
+            : (petImgY + sRow * (subSize + 8));
+          loadImg(showImgs[si], (function(dx, dy, dSize) {
+            return function(img) {
+              try { ctx.drawImage(img, dx, dy, dSize, dSize); } catch (e) {}
+            };
+          })(sx, sy, subSize));
+          if (last.resultRaw === 'miss' || last.resultRaw === 'success') {
+            loadImg(badgeUrl, (function(dx, dy, dSize, bSize) {
+              return function(img) {
+                try { ctx.drawImage(img, dx + dSize - bSize + 4, dy - 4, bSize, bSize); } catch (e) {}
+              };
+            })(sx, sy, subSize, subBadge));
+          }
+        }
       }
 
       // 契约球 & 异色龙龙骰染色：独立胶囊条，排在精灵图右侧（毛玻璃）
-      var hasPetImg = !!(last.petImageUrl && last.petImageUrl.length > 5);
+      var hasPetImg = petImgList.length > 0;
       var rightPadX = hasPetImg ? (50 + petSize + 16) : 36;
       var rightW = width - rightPadX - 28;
       if (last.contractBall && isDiceShiny) {
@@ -1742,7 +1893,7 @@ Page({
     var remainDiceClip = this.data.carnivalCount != null ? this.data.carnivalCount : (last.carnivalCount != null ? last.carnivalCount : 0);
     var text = i18n.t('clipTitle') + '\n' +
                '【' + i18n.t('clipTime') + '】' + (last.time || last.date || '') + '\n' +
-               '【' + i18n.t('clipStatus') + '】' + localizeResultText(last.resultRaw, last.result) + (isDiceClip ? '（🎲异色龙龙骰染色 · 剩余' + remainDiceClip + '个）' : '') + '\n' +
+               '【' + i18n.t('clipStatus') + '】' + localizeResultText(last.resultRaw, last.result) + (last.capturedCount > 1 ? ('（一轮' + last.capturedCount + '只）') : '') + (isDiceClip ? '（🎲异色龙龙骰染色 · 剩余' + remainDiceClip + '个）' : '') + '\n' +
                brushLabel +
                petDisplay +
                '【' + i18n.t('clipCost') + '】' + costText + '\n' +
