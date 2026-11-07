@@ -53,10 +53,20 @@ function formatTimeShort(d) {
   return i18n.formatTimeHMS(d)
 }
 var DICE_ICONS = {
-  '龙龙骰': 'https://img.remit.ee/i/AincnIOhIo24',
-  '异色龙龙骰': 'https://img.remit.ee/i/bpUFDBGUtlOi',
-  '奇异龙龙骰': 'https://img.remit.ee/i/gtBOE570SHS4',
-  '污染龙龙骰': 'https://img.remit.ee/i/VWTgWa0JFPeC'
+  '龙龙骰': '/images/dice/dice_normal.png',
+  '异色龙龙骰': '/images/dice/dice_shiny.png',
+  '奇异龙龙骰': '/images/dice/dice_strange.png',
+  '污染龙龙骰': '/images/dice/dice_polluted.png'
+};
+var DICE_REMOTE_ICONS = {
+  '/images/dice/dice_normal.png': 'https://img.remit.ee/i/AincnIOhIo24',
+  '/images/dice/dice_shiny.png': 'https://img.remit.ee/i/bpUFDBGUtlOi',
+  '/images/dice/dice_strange.png': 'https://img.remit.ee/i/gtBOE570SHS4',
+  '/images/dice/dice_polluted.png': 'https://img.remit.ee/i/VWTgWa0JFPeC',
+  'https://img.remit.ee/i/AincnIOhIo24': '/images/dice/dice_normal.png',
+  'https://img.remit.ee/i/bpUFDBGUtlOi': '/images/dice/dice_shiny.png',
+  'https://img.remit.ee/i/gtBOE570SHS4': '/images/dice/dice_strange.png',
+  'https://img.remit.ee/i/VWTgWa0JFPeC': '/images/dice/dice_polluted.png'
 };
 function getTodayDateKey(d) {
   if (!d) d = new Date()
@@ -116,14 +126,14 @@ Page({
     hasActiveBalls: false,
     ballDecrease: {},
     showFairytaleParticles: false, showDiceParticles: false, diceAnim: false,
-    diceAnimImg: 'https://img.remit.ee/i/bpUFDBGUtlOi',
+    diceAnimImg: '/images/dice/dice_shiny.png',
     showDicePickerModal: false,
     dicePickerMode: 'tap',
     dicePickerOptions: [
-      { type: '龙龙骰', img: 'https://img.remit.ee/i/AincnIOhIo24', desc: '词条重铸 · 不占保底/奇遇', tag: '仅计今日获骰', color: '#79c0ff', tagBg: 'rgba(121,192,255,0.16)', borderColor: 'rgba(121,192,255,0.35)', todayCount: 0 },
-      { type: '异色龙龙骰', img: 'https://img.remit.ee/i/bpUFDBGUtlOi', desc: '异色染色 · 累计面板 +1', tag: '面板 +1', color: '#ffd54f', tagBg: 'rgba(255,213,79,0.2)', borderColor: 'rgba(255,213,79,0.5)', todayCount: 0 },
-      { type: '奇异龙龙骰', img: 'https://img.remit.ee/i/gtBOE570SHS4', desc: '奇异形态 · 不占保底/奇遇', tag: '仅计今日获骰', color: '#d2a8ff', tagBg: 'rgba(210,168,255,0.16)', borderColor: 'rgba(210,168,255,0.35)', todayCount: 0 },
-      { type: '污染龙龙骰', img: 'https://img.remit.ee/i/VWTgWa0JFPeC', desc: '污染形态 · 不占保底/奇遇', tag: '仅计今日获骰', color: '#4ade80', tagBg: 'rgba(74,222,128,0.16)', borderColor: 'rgba(74,222,128,0.35)', todayCount: 0 }
+      { type: '龙龙骰', img: '/images/dice/dice_normal.png', desc: '词条重铸 · 不占保底/奇遇', tag: '计入战报获骰', color: '#79c0ff', tagBg: 'rgba(121,192,255,0.16)', borderColor: 'rgba(121,192,255,0.35)', todayCount: 0 },
+      { type: '异色龙龙骰', img: '/images/dice/dice_shiny.png', desc: '异色染色 · 累计面板 +1', tag: '面板 +1', color: '#ffd54f', tagBg: 'rgba(255,213,79,0.2)', borderColor: 'rgba(255,213,79,0.5)', todayCount: 0 },
+      { type: '奇异龙龙骰', img: '/images/dice/dice_strange.png', desc: '奇异形态 · 不占保底/奇遇', tag: '计入战报获骰', color: '#d2a8ff', tagBg: 'rgba(210,168,255,0.16)', borderColor: 'rgba(210,168,255,0.35)', todayCount: 0 },
+      { type: '污染龙龙骰', img: '/images/dice/dice_polluted.png', desc: '污染形态 · 不占保底/奇遇', tag: '计入战报获骰', color: '#4ade80', tagBg: 'rgba(74,222,128,0.16)', borderColor: 'rgba(74,222,128,0.35)', todayCount: 0 }
     ],
     canStartCapture: false,
     showResultBallModal: false,
@@ -1422,35 +1432,86 @@ Page({
       
       var imgLoadCount = 0;
       var imgTotalCount = 0;
+      var dlSeq = 0;
       var loadImg = function(url, onLoad) {
         if (!url) return;
         imgTotalCount++;
-        var tryDraw = function(path) {
+        // 若传入的是 remit.ee 龙龙骰链接，优先映射为包内本地 PNG，避免无后缀 octet-stream 变成 .bin 导致真机 Canvas 无法解码
+        if (DICE_REMOTE_ICONS[url] && url.indexOf('http') === 0) {
+          url = DICE_REMOTE_ICONS[url];
+        }
+        var downloadAsPngAndDraw = function(remoteUrl) {
+          if (!remoteUrl || remoteUrl.indexOf('http') !== 0) {
+            imgLoadCount++;
+            return;
+          }
+          var hasExt = /\.(png|jpe?g|webp|gif)(\?.*)?$/i.test(remoteUrl);
+          var dlOpts = {
+            url: remoteUrl,
+            success: function(res) {
+              var p = (res && (res.filePath || res.tempFilePath)) || '';
+              if ((res.statusCode === 200 || p) && p) {
+                var img3 = canvas.createImage();
+                img3.onload = function() { onLoad(img3); imgLoadCount++; };
+                img3.onerror = function() { imgLoadCount++; };
+                img3.src = p;
+              } else {
+                imgLoadCount++;
+              }
+            },
+            fail: function() { imgLoadCount++; }
+          };
+          if (!hasExt && wx.env && wx.env.USER_DATA_PATH) {
+            dlOpts.filePath = wx.env.USER_DATA_PATH + '/canvas_dl_' + Date.now() + '_' + (++dlSeq) + '.png';
+          }
+          wx.downloadFile(dlOpts);
+        };
+        var tryDraw = function(path, fallbackRemoteUrl) {
           var img = canvas.createImage();
           img.onload = function() { onLoad(img); imgLoadCount++; };
           img.onerror = function() {
-            // 直接加载失败，尝试 getImageInfo 转格式
+            // 直接加载失败，尝试 getImageInfo 转格式（必须先绑 onload 再设 src）
             wx.getImageInfo({ src: path, success: function(info) {
-              var img2 = canvas.createImage(); img2.src = info.path;
+              var img2 = canvas.createImage();
               img2.onload = function() { onLoad(img2); imgLoadCount++; };
-              img2.onerror = function() { imgLoadCount++; };
-            }, fail: function() { imgLoadCount++; }});
+              img2.onerror = function() {
+                if (fallbackRemoteUrl) downloadAsPngAndDraw(fallbackRemoteUrl);
+                else imgLoadCount++;
+              };
+              var resolvedPath = (info && info.path) ? info.path : path;
+              if (resolvedPath.indexOf('http') !== 0 && resolvedPath.indexOf('wxfile://') !== 0 && resolvedPath.indexOf('/') !== 0) {
+                resolvedPath = '/' + resolvedPath;
+              }
+              img2.src = resolvedPath;
+            }, fail: function() {
+              if (fallbackRemoteUrl) downloadAsPngAndDraw(fallbackRemoteUrl);
+              else imgLoadCount++;
+            }});
           };
           img.src = path;
         };
         if (url.indexOf('cloud://') === 0) {
           wx.cloud.getTempFileURL({ fileList: [url], success: function(res) {
             if (res.fileList && res.fileList[0] && res.fileList[0].tempFileURL) {
-              tryDraw(res.fileList[0].tempFileURL);
+              tryDraw(res.fileList[0].tempFileURL, '');
             } else { imgLoadCount++; }
           }, fail: function() { imgLoadCount++; }});
         } else if (url.indexOf('http') === 0) {
-          wx.downloadFile({ url: url, success: function(res) {
-            if (res.statusCode === 200) { tryDraw(res.tempFilePath); }
-            else { imgLoadCount++; }
-          }, fail: function() { imgLoadCount++; }});
+          var hasImgExt = /\.(png|jpe?g|webp|gif)(\?.*)?$/i.test(url);
+          if (!hasImgExt) {
+            downloadAsPngAndDraw(url);
+          } else {
+            wx.downloadFile({ url: url, success: function(res) {
+              if (res.statusCode === 200) { tryDraw(res.tempFilePath, ''); }
+              else { imgLoadCount++; }
+            }, fail: function() { imgLoadCount++; }});
+          }
         } else {
-          tryDraw(url);
+          // 本地包内路径（如 /images/dice/dice_shiny.png）：微任务延迟确保背景与边框先绘制完成，不遮挡图标
+          var remoteFallback = DICE_REMOTE_ICONS[url] || '';
+          setTimeout(function() {
+            tryDraw(url, remoteFallback);
+          }, 0);
         }
       };
       
@@ -2493,8 +2554,7 @@ Page({
     }
   },
   _openDicePicker: function(mode) {
-    var stats = this._getDailyDiceStats()
-    var counts = (stats && stats.counts) || {}
+    var counts = this._getAllObtainedDiceCounts() || {}
     var opts = (this.data.dicePickerOptions || []).map(function(o) {
       return Object.assign({}, o, { todayCount: counts[o.type] || 0 })
     })
