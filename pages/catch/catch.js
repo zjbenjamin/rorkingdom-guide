@@ -63,12 +63,12 @@ var DICE_REMOTE_ICONS = {
   '/images/dice/dice_shiny.png': 'https://img.remit.ee/i/bpUFDBGUtlOi',
   '/images/dice/dice_strange.png': 'https://img.remit.ee/i/gtBOE570SHS4',
   '/images/dice/dice_polluted.png': 'https://img.remit.ee/i/VWTgWa0JFPeC',
-  '/images/dice/s5_logo.png': 'https://img.remit.ee/i/ZQZBWvDqP4rG',
+  '/images/dice/s5_logo.png': 'https://img.remit.ee/i/WX0FEAjMVvvY',
   'https://img.remit.ee/i/AincnIOhIo24': '/images/dice/dice_normal.png',
   'https://img.remit.ee/i/bpUFDBGUtlOi': '/images/dice/dice_shiny.png',
   'https://img.remit.ee/i/gtBOE570SHS4': '/images/dice/dice_strange.png',
   'https://img.remit.ee/i/VWTgWa0JFPeC': '/images/dice/dice_polluted.png',
-  'https://img.remit.ee/i/ZQZBWvDqP4rG': '/images/dice/s5_logo.png'
+  'https://img.remit.ee/i/WX0FEAjMVvvY': '/images/dice/s5_logo.png'
 };
 function getTodayDateKey(d) {
   if (!d) d = new Date()
@@ -1564,7 +1564,7 @@ Page({
       // 图标与S5赛季LOGO随字号缩放，长短标题都不歪
       var iconSize = Math.max(20, Math.round(titleFontSize * 28 / 24));
       var s5LogoH = Math.max(28, Math.round(titleFontSize * 38 / 24));
-      var s5LogoW = Math.round(s5LogoH * 319 / 172);
+      var s5LogoW = Math.round(s5LogoH * 726 / 404);
       var gap = 10;
       var maxTitleW = Math.max(40, width - 24 - iconSize - s5LogoW - gap * 2);
       ctx.font = 'bold ' + titleFontSize + 'px sans-serif';
@@ -1575,7 +1575,7 @@ Page({
         titleW = ctx.measureText(titleText).width;
         iconSize = Math.max(18, Math.round(titleFontSize * 28 / 24));
         s5LogoH = Math.max(26, Math.round(titleFontSize * 38 / 24));
-        s5LogoW = Math.round(s5LogoH * 319 / 172);
+        s5LogoW = Math.round(s5LogoH * 726 / 404);
       }
       // 异色标 + 标题文字 + S5赛季透明LOGO 作为一组水平居中，垂直中心同为 y=48
       var groupW = iconSize + gap + titleW + gap + s5LogoW;
