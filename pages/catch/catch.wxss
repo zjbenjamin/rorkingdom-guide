@@ -2030,3 +2030,71 @@
  max-width: 720px;
  width: 100%;
  }
+
+.particle-dice-img {
+  width: 48rpx;
+  height: 48rpx;
+  display: block;
+  filter: drop-shadow(0 0 12rpx rgba(251, 191, 36, 0.75));
+}
+.dice-anim-img {
+  width: 280rpx;
+  height: 280rpx;
+  animation: diceRollPop 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  filter: drop-shadow(0 0 56rpx rgba(251, 191, 36, 0.9));
+}
+.dice-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18rpx;
+  padding-bottom: 12rpx;
+}
+.dice-picker-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2rpx solid rgba(255, 255, 255, 0.14);
+  border-radius: 22rpx;
+  padding: 24rpx 18rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10rpx;
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+.dice-picker-card:active {
+  transform: scale(0.96);
+  background: rgba(255, 255, 255, 0.12);
+}
+.dice-picker-icon {
+  width: 96rpx;
+  height: 96rpx;
+  filter: drop-shadow(0 6rpx 16rpx rgba(0, 0, 0, 0.4));
+}
+.dice-picker-name {
+  font-size: 28rpx;
+  font-weight: 800;
+}
+.dice-picker-desc {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.55);
+  text-align: center;
+}
+.dice-picker-foot {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6rpx;
+  padding-top: 10rpx;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.08);
+}
+.dice-picker-tag {
+  font-size: 19rpx;
+  font-weight: 700;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+}
+.dice-picker-today {
+  font-size: 20rpx;
+  color: #e2e8f0;
+  font-weight: 600;
+}

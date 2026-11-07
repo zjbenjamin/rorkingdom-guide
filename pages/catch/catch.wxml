@@ -23,22 +23,22 @@
   </view>
   <!-- 龙龙骰粒子与中心翻转动画 -->
   <view class="fairytale-overlay" wx:if="{{showDiceParticles}}">
-    <view class="fairytale-particle p1">🎲</view>
+    <view class="fairytale-particle p1"><image class="particle-dice-img" src="https://img.remit.ee/i/bpUFDBGUtlOi" mode="aspectFit" /></view>
     <view class="fairytale-particle p2">✨</view>
-    <view class="fairytale-particle p3">🎲</view>
+    <view class="fairytale-particle p3"><image class="particle-dice-img" src="https://img.remit.ee/i/AincnIOhIo24" mode="aspectFit" /></view>
     <view class="fairytale-particle p4">🌟</view>
-    <view class="fairytale-particle p5">🎲</view>
+    <view class="fairytale-particle p5"><image class="particle-dice-img" src="https://img.remit.ee/i/gtBOE570SHS4" mode="aspectFit" /></view>
     <view class="fairytale-particle p6">✨</view>
-    <view class="fairytale-particle p7">🎲</view>
+    <view class="fairytale-particle p7"><image class="particle-dice-img" src="https://img.remit.ee/i/VWTgWa0JFPeC" mode="aspectFit" /></view>
     <view class="fairytale-particle p8">⭐</view>
-    <view class="fairytale-particle p9">🎲</view>
+    <view class="fairytale-particle p9"><image class="particle-dice-img" src="https://img.remit.ee/i/bpUFDBGUtlOi" mode="aspectFit" /></view>
     <view class="fairytale-particle p10">✨</view>
-    <view class="fairytale-particle p11">🎲</view>
+    <view class="fairytale-particle p11"><image class="particle-dice-img" src="https://img.remit.ee/i/AincnIOhIo24" mode="aspectFit" /></view>
     <view class="fairytale-particle p12">🌟</view>
     <view class="fairytale-glow"></view>
   </view>
   <view class="capture-overlay" wx:if="{{diceAnim}}">
-    <view class="dice-anim-badge">🎲</view>
+    <image class="dice-anim-img" src="{{diceAnimImg || 'https://img.remit.ee/i/bpUFDBGUtlOi'}}" mode="aspectFit"></image>
   </view>
   <view class="container">
     <!-- 异色捕捉主监控屏 -->
@@ -79,8 +79,14 @@
             <text class="stat-value">{{luckyBoxCount}}</text>
           </view>
           <view class="stat-card carnival">
-            <text class="stat-label">{{_l.catchCarnival}}</text>
-            <text class="stat-value">{{carnivalCount}}</text>
+            <view style="display:flex; align-items:center; justify-content:center; gap:6rpx;">
+              <image src="https://img.remit.ee/i/bpUFDBGUtlOi" style="width:28rpx; height:28rpx; flex-shrink:0;" mode="aspectFit"></image>
+              <text class="stat-label">{{_l.catchCarnival}}</text>
+            </view>
+            <view style="display:flex; align-items:center; justify-content:center; gap:8rpx;">
+              <image src="https://img.remit.ee/i/bpUFDBGUtlOi" style="width:38rpx; height:38rpx; flex-shrink:0;" mode="aspectFit"></image>
+              <text class="stat-value">{{carnivalCount}}</text>
+            </view>
           </view>
           <view class="stat-card lucky">
             <text class="stat-label">{{_l.catchLuckyBox}}</text>
@@ -121,7 +127,7 @@
             <text class="btn-text">{{_l.catchLuckyBox}}</text>
           </view>
           <view class="visual-action-btn carnival-btn" bindtap="onAddCarnival" bindlongpress="onCarnivalLongPress">
-            <text class="btn-icon">🎲</text>
+            <image class="btn-icon-img" src="https://img.remit.ee/i/AincnIOhIo24" mode="aspectFit"></image>
             <text class="btn-text">{{_l.catchCarnival}}</text>
           </view>
           <view class="visual-action-btn capture-btn" bindtap="onResult" bindlongpress="onLongResult" data-r="success">
@@ -129,13 +135,16 @@
             <text class="btn-text">{{_l.catchSuccessBtn}}</text>
           </view>
           <view class="visual-action-btn miss-btn" bindtap="onUseDice">
-            <text class="btn-icon">🎲</text>
+            <image class="btn-icon-img" src="https://img.remit.ee/i/bpUFDBGUtlOi" mode="aspectFit"></image>
             <text class="btn-text">{{_l.catchUseDiceBtn}}</text>
           </view>
         </view>
-        <view class="help-hint">🎲 {{_l.catchCarnivalHint}}</view>
+        <view class="help-hint" style="display:flex; align-items:center; justify-content:center; gap:8rpx;">
+          <image src="https://img.remit.ee/i/bpUFDBGUtlOi" style="width:26rpx; height:26rpx; flex-shrink:0;" mode="aspectFit"></image>
+          <text>{{_l.catchCarnivalHint}}</text>
+        </view>
         <view wx:if="{{sessionUsedDice}}" style="margin-top: 12rpx; padding: 10rpx 20rpx; border-radius: 12rpx; background: rgba(251, 191, 36, 0.14); border: 1rpx solid rgba(251, 191, 36, 0.45); display: flex; align-items: center; justify-content: center; gap: 10rpx;">
-          <text style="font-size: 24rpx;">🎲</text>
+          <image src="https://img.remit.ee/i/bpUFDBGUtlOi" style="width: 30rpx; height: 30rpx; flex-shrink: 0;" mode="aspectFit"></image>
           <text style="font-size: 22rpx; color: #ffd54f; font-weight: bold;">本次已启用「异色龙龙骰染色」· 不占保底和奇遇 · 生成图将明示</text>
         </view>
       </block>
@@ -367,7 +376,7 @@
           <view class="log-content">
             <view style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4rpx;">
               <view style="display:flex; align-items:center; gap:8rpx;">
-                <image wx:if="{{item.ballImg}}" src="{{item.ballImg}}" style="width: 32rpx; height: 32rpx; border-radius: 50%; background:rgba(255,255,255,0.1);" mode="aspectFill"></image>
+                <image wx:if="{{item.ballImg}}" src="{{item.ballImg}}" style="width: 36rpx; height: 36rpx; border-radius: 8rpx; flex-shrink: 0;" mode="aspectFit"></image>
                 <text wx:elif="{{item.ballIcon}}" style="font-size: 32rpx; margin-right: 8rpx;">{{item.ballIcon}}</text>
                 <text class="log-ball">{{item.balls}}</text>
               </view>
@@ -376,7 +385,10 @@
             <text class="log-pet" wx:elif="{{item.pet}}">{{_l.catchTarget}}: {{item.pet}}</text>
             <view class="log-details">
               <text class="log-cost" wx:if="{{item.cost>0}}">{{_l.catchCost}}: 💵{{item.cost}}</text>
-              <text class="log-cost" wx:if="{{item.usedDice}}" style="color:#ffd54f; font-weight:bold;">🎲 异色龙龙骰染色</text>
+              <view class="log-cost" wx:if="{{item.usedDice}}" style="display:inline-flex; align-items:center; gap:6rpx; color:#ffd54f; font-weight:bold;">
+                <image src="https://img.remit.ee/i/bpUFDBGUtlOi" style="width:24rpx; height:24rpx; flex-shrink:0;" mode="aspectFit"></image>
+                <text>异色龙龙骰染色</text>
+              </view>
               <text class="log-cost" wx:if="{{item.contractBall}}" style="color:#d8b4fe;">🔮 {{item.contractBall}}</text>
               <text class="log-time">{{item.time}}</text>
             </view>
@@ -468,15 +480,16 @@
         <!-- 异色龙龙骰染色：捕捉成功可选/自动同步 -->
         <view class="result-section" wx:if="{{resultType === 'success'}}">
           <view class="section-head">
-            <text class="section-icon">🎲</text>
+            <image class="section-icon" src="https://img.remit.ee/i/bpUFDBGUtlOi" mode="aspectFit" style="width:30rpx; height:30rpx; flex-shrink:0;"></image>
             <text class="section-title">异色龙龙骰染色</text>
-            <text class="section-title-hint">{{sessionUsedDice ? '已提前扣减 1 颗龙龙骰' : ('当前可用龙龙骰: ' + carnivalCount)}}</text>
+            <text class="section-title-hint">{{sessionUsedDice ? '已提前扣减 1 颗异色龙龙骰' : ('当前可用异色龙龙骰: ' + carnivalCount)}}</text>
           </view>
           <view style="display:flex; flex-wrap:wrap; gap:12rpx;">
             <view catchtap="onToggleResultUsedDice"
               class="pick-chip {{resultUsedDice ? 'on' : ''}}"
-              style="{{resultUsedDice ? 'background: rgba(251,191,36,0.22); border-color: #fbbf24; color: #ffd54f;' : ''}}">
-              <text>🎲 {{resultUsedDice ? '已启用：异色龙龙骰染色（不占保底和奇遇 · 生成图明示）' : '点击标记：使用异色龙龙骰染色（不占保底和奇遇）'}}</text>
+              style="display:inline-flex; align-items:center; gap:8rpx; {{resultUsedDice ? 'background: rgba(251,191,36,0.22); border-color: #fbbf24; color: #ffd54f;' : ''}}">
+              <image src="https://img.remit.ee/i/bpUFDBGUtlOi" style="width:28rpx; height:28rpx; flex-shrink:0;" mode="aspectFit"></image>
+              <text>{{resultUsedDice ? '已启用：异色龙龙骰染色（不占保底和奇遇 · 生成图明示）' : '点击标记：使用异色龙龙骰染色（不占保底和奇遇）'}}</text>
             </view>
           </view>
         </view>
@@ -730,6 +743,33 @@
       <view class="modal-footer">
         <button class="modal-cancel" catchtap="closeWealthAdjustModal">{{_l.catchModalCancel}}</button>
         <button class="modal-save" catchtap="onConfirmAdjustWealth">{{_l.catchConfirmAdjust}}</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 龙龙骰类型选择弹窗（带四类官方图标与今日统计） -->
+  <view class="modal-mask" wx:if="{{showDicePickerModal}}" bindtap="closeDicePickerModal">
+    <view class="modal-box dice-picker-modal" catchtap="preventClose">
+      <view class="modal-header">
+        <view style="display:flex; align-items:center; gap:12rpx;">
+          <image src="https://img.remit.ee/i/bpUFDBGUtlOi" style="width:42rpx; height:42rpx;" mode="aspectFit"></image>
+          <text class="modal-title">选择获得龙龙骰类型</text>
+        </view>
+        <text class="modal-close" catchtap="closeDicePickerModal">✕</text>
+      </view>
+      <view class="modal-body">
+        <view class="check-hint" style="margin-bottom:20rpx;">仅「异色龙龙骰」计入剩余面板，四类均计入战报「当日获骰」且不占保底与奇遇</view>
+        <view class="dice-picker-grid">
+          <view class="dice-picker-card" wx:for="{{dicePickerOptions}}" wx:key="type" catchtap="onSelectDiceType" data-type="{{item.type}}" style="border-color: {{item.borderColor}};">
+            <image class="dice-picker-icon" src="{{item.img}}" mode="aspectFit"></image>
+            <text class="dice-picker-name" style="color: {{item.color}};">{{item.type}}</text>
+            <text class="dice-picker-desc">{{item.desc}}</text>
+            <view class="dice-picker-foot">
+              <text class="dice-picker-tag" style="color: {{item.color}}; background: {{item.tagBg}};">{{item.tag}}</text>
+              <text class="dice-picker-today">今日 +{{item.todayCount || 0}}</text>
+            </view>
+          </view>
+        </view>
       </view>
     </view>
   </view>

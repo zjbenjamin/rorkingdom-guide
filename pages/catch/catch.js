@@ -52,6 +52,12 @@ function formatTimeShort(d) {
   if (!d) d = new Date()
   return i18n.formatTimeHMS(d)
 }
+var DICE_ICONS = {
+  '龙龙骰': 'https://img.remit.ee/i/AincnIOhIo24',
+  '异色龙龙骰': 'https://img.remit.ee/i/bpUFDBGUtlOi',
+  '奇异龙龙骰': 'https://img.remit.ee/i/gtBOE570SHS4',
+  '污染龙龙骰': 'https://img.remit.ee/i/VWTgWa0JFPeC'
+};
 function getTodayDateKey(d) {
   if (!d) d = new Date()
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
@@ -110,6 +116,15 @@ Page({
     hasActiveBalls: false,
     ballDecrease: {},
     showFairytaleParticles: false, showDiceParticles: false, diceAnim: false,
+    diceAnimImg: 'https://img.remit.ee/i/bpUFDBGUtlOi',
+    showDicePickerModal: false,
+    dicePickerMode: 'tap',
+    dicePickerOptions: [
+      { type: '龙龙骰', img: 'https://img.remit.ee/i/AincnIOhIo24', desc: '词条重铸 · 不占保底/奇遇', tag: '仅计今日获骰', color: '#79c0ff', tagBg: 'rgba(121,192,255,0.16)', borderColor: 'rgba(121,192,255,0.35)', todayCount: 0 },
+      { type: '异色龙龙骰', img: 'https://img.remit.ee/i/bpUFDBGUtlOi', desc: '异色染色 · 累计面板 +1', tag: '面板 +1', color: '#ffd54f', tagBg: 'rgba(255,213,79,0.2)', borderColor: 'rgba(255,213,79,0.5)', todayCount: 0 },
+      { type: '奇异龙龙骰', img: 'https://img.remit.ee/i/gtBOE570SHS4', desc: '奇异形态 · 不占保底/奇遇', tag: '仅计今日获骰', color: '#d2a8ff', tagBg: 'rgba(210,168,255,0.16)', borderColor: 'rgba(210,168,255,0.35)', todayCount: 0 },
+      { type: '污染龙龙骰', img: 'https://img.remit.ee/i/VWTgWa0JFPeC', desc: '污染形态 · 不占保底/奇遇', tag: '仅计今日获骰', color: '#4ade80', tagBg: 'rgba(74,222,128,0.16)', borderColor: 'rgba(74,222,128,0.35)', todayCount: 0 }
+    ],
     canStartCapture: false,
     showResultBallModal: false,
     resultType: '',
@@ -286,7 +301,12 @@ Page({
     wx.showToast({ title: (capList.length > 1 ? ('第' + (actIdx + 1) + '只: ') : '已选择 ') + pet.name, icon: 'none' });
   },
   preloadBallImages: function() {
-    var urls = [];
+    var urls = [
+      'https://img.remit.ee/i/AincnIOhIo24',
+      'https://img.remit.ee/i/bpUFDBGUtlOi',
+      'https://img.remit.ee/i/gtBOE570SHS4',
+      'https://img.remit.ee/i/VWTgWa0JFPeC'
+    ];
     var balls = this.data.balls || [];
     for (var i = 0; i < balls.length; i++) {
       if (balls[i].img && balls[i].img.indexOf('http') === 0) urls.push(balls[i].img);
@@ -524,7 +544,15 @@ Page({
           var profitRate = initial > 0 ? ((accumulated / initial) * 100).toFixed(1) : (accumulated > 0 ? '100.0' : '0.0')
       var rate = this.calcSuccessRate()
     var title = this.calcTitle(rate, luckyBoxCount, totalCatches)
-    var rawHistory = (wx.getStorageSync('catch_history')||[]).slice(0,20);
+    var self = this;
+    var rawHistory = (wx.getStorageSync('catch_history')||[]).slice(0,20).map(function(rec) {
+      if (!rec) return rec;
+      if (!rec.ballImg && (rec.resultRaw === 'add_dice' || rec.resultRaw === 'use_dice' || rec.result === '龙龙骰')) {
+        var dt = rec.resultRaw === 'use_dice' ? '异色龙龙骰' : self._normalizeDiceType(rec.diceType || rec.balls || '');
+        rec.ballImg = DICE_ICONS[dt] || DICE_ICONS['异色龙龙骰'];
+      }
+      return rec;
+    });
     this.setData({
       history: rawHistory,
       initialWealth: initial,
@@ -1176,17 +1204,17 @@ Page({
     var stats = this._getDailyDiceStats();
     var counts = (stats && stats.counts) || {};
     var order = [
-      { type: '异色龙龙骰', icon: '🌟', color: '#ffd54f' },
-      { type: '龙龙骰', icon: '🎲', color: '#79c0ff' },
-      { type: '奇异龙龙骰', icon: '🔮', color: '#d2a8ff' },
-      { type: '污染龙龙骰', icon: '🧪', color: '#4ade80' }
+      { type: '异色龙龙骰', icon: '🌟', img: DICE_ICONS['异色龙龙骰'], color: '#ffd54f' },
+      { type: '龙龙骰', icon: '🎲', img: DICE_ICONS['龙龙骰'], color: '#79c0ff' },
+      { type: '奇异龙龙骰', icon: '🔮', img: DICE_ICONS['奇异龙龙骰'], color: '#d2a8ff' },
+      { type: '污染龙龙骰', icon: '🧪', img: DICE_ICONS['污染龙龙骰'], color: '#4ade80' }
     ];
     var list = [];
     for (var i = 0; i < order.length; i++) {
       var item = order[i];
       var cnt = counts[item.type] || 0;
       if (cnt > 0) {
-        list.push({ type: item.type, count: cnt, icon: item.icon, color: item.color, text: item.icon + '获得' + item.type + cnt + '个' });
+        list.push({ type: item.type, count: cnt, icon: item.icon, img: item.img, color: item.color, text: item.icon + '获得' + item.type + cnt + '个' });
       }
     }
     return list;
@@ -1401,10 +1429,16 @@ Page({
       var totalE = self.data.luckyBoxCount || 0;
       if (totalE === 0 && last && last.encounters !== undefined && !isDiceShiny) totalE = last.encounters;
       ctx.font = 'bold 13px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.4)';
-      ctx.fillText(isDiceShiny ? '异色龙龙骰' : i18n.t('imgEncounters'), width/2 + 16, 115);
       if (isDiceShiny) {
+        loadImg(DICE_ICONS['异色龙龙骰'], function(img) {
+          if (img) {
+            try { ctx.drawImage(img, width/2 + 16, 102, 15, 15); } catch (e) {}
+          }
+        });
+        ctx.fillText('异色龙龙骰', width/2 + 35, 115);
         ctx.fillStyle = '#ffd54f'; ctx.font = 'bold 12px sans-serif'; ctx.fillText('剩余 ' + remainDice + ' 个 · 不占保底', width/2 + 16, 135);
       } else {
+        ctx.fillText(i18n.t('imgEncounters'), width/2 + 16, 115);
         ctx.fillStyle = '#e6edf3'; ctx.font = '13px sans-serif'; ctx.fillText(totalE + ' ' + i18n.t('imgEncounterUnit'), width/2 + 16, 135);
       }
       
@@ -1652,13 +1686,24 @@ Page({
           var dRow = Math.floor(di / 2);
           var dx = 106 + dCol * dColW;
           var dy = diceRowBaseY + 14 + dRow * 22;
-          var dText = dItem.icon + '获得' + dItem.type + ' ' + dItem.count + '个';
+          var dIconSz = 16;
+          if (dItem.img) {
+            loadImg(dItem.img, (function(ix, iy, sz) {
+              return function(img) {
+                if (img) {
+                  try { ctx.drawImage(img, ix, iy - sz + 3, sz, sz); } catch (e) {}
+                }
+              };
+            })(dx, dy, dIconSz));
+          }
+          var dTextX = dx + (dItem.img ? (dIconSz + 4) : 0);
+          var dText = (dItem.img ? '' : dItem.icon) + '获得' + dItem.type + ' ' + dItem.count + '个';
           ctx.font = 'bold 12px sans-serif';
-          if (ctx.measureText(dText).width > dColW - 4) {
+          if (ctx.measureText(dText).width > dColW - (dItem.img ? (dIconSz + 6) : 4)) {
             ctx.font = 'bold 11px sans-serif';
           }
           ctx.fillStyle = dItem.color || '#ffd54f';
-          ctx.fillText(dText, dx, dy);
+          ctx.fillText(dText, dTextX, dy);
         }
       }
       
@@ -1758,9 +1803,14 @@ Page({
         // 2. 异色龙龙骰染色胶囊
         var botCapY = topCapY + capH + gapY;
         roundRect(rightPadX, botCapY, rightW, capH, capH / 2, 'rgba(251,191,36,0.14)', 'rgba(251,191,36,0.48)');
-        ctx.font = '17px sans-serif';
-        ctx.fillStyle = '#ffd54f';
-        ctx.fillText('🎲', ctIconX + 2, botCapY + Math.round(capH / 2) + 6);
+        var botIconY = botCapY + Math.round((capH - ctBallSize) / 2);
+        loadImg(DICE_ICONS['异色龙龙骰'], (function(ix, iy, sz) {
+          return function(img) {
+            if (img) {
+              try { ctx.drawImage(img, ix, iy, sz, sz); } catch (e) {}
+            }
+          };
+        })(ctIconX, botIconY, ctBallSize));
         ctx.font = '10px sans-serif';
         ctx.fillStyle = 'rgba(255,213,79,0.78)';
         var diceSubText = '染色方式 · 剩余 ' + remainDice + ' 个';
@@ -1813,11 +1863,17 @@ Page({
         var dcH = Math.max(54, Math.round(64 * imgScale));
         var dcY = petImgY + Math.round((petSize - dcH) / 2);
         roundRect(rightPadX, dcY, rightW, dcH, dcH / 2, 'rgba(251,191,36,0.14)', 'rgba(251,191,36,0.48)');
-        var dcIconX = rightPadX + 14;
-        ctx.font = '22px sans-serif';
-        ctx.fillStyle = '#ffd54f';
-        ctx.fillText('🎲', dcIconX, dcY + Math.round(dcH / 2) + 8);
-        var dcTextX = dcIconX + 34;
+        var dcIconSz = Math.max(28, Math.round(34 * imgScale));
+        var dcIconX = rightPadX + 12;
+        var dcIconY = dcY + Math.round((dcH - dcIconSz) / 2);
+        loadImg(DICE_ICONS['异色龙龙骰'], (function(ix, iy, sz) {
+          return function(img) {
+            if (img) {
+              try { ctx.drawImage(img, ix, iy, sz, sz); } catch (e) {}
+            }
+          };
+        })(dcIconX, dcIconY, dcIconSz));
+        var dcTextX = dcIconX + dcIconSz + 10;
         ctx.font = '10px sans-serif';
         ctx.fillStyle = 'rgba(255,213,79,0.75)';
         ctx.fillText('染色方式 · 剩余 ' + remainDice + ' 个', dcTextX, dcY + Math.round(dcH * 0.36));
@@ -2243,8 +2299,8 @@ Page({
   onClearHistory: function() { var self=this; wx.showModal({ title:'清空', content:'确定清空？', success:function(r){ if(r.confirm){ wx.removeStorageSync('catch_history'); wx.removeStorageSync('total_catches'); wx.removeStorageSync('success_catches'); self.setData({history:[],totalCatches:0,successCatches:0}) } } }) },
   
   onEncounterTab: function(e) { this.setData({ encounterTab: e.currentTarget.dataset.t }) },
-  addEncounterRecord: function(type, icon, count, skipPity, diceType) {
-    var record = { time: formatTimeShort(), dateKey: getTodayDateKey(), balls: type, result: skipPity ? '龙龙骰' : '奇遇', resultRaw: skipPity ? 'add_dice' : 'event', diceType: diceType || '', total: skipPity ? 0 : 1, icon: icon, count: count, pityBefore: this.data.pityCount || 0 }
+  addEncounterRecord: function(type, icon, count, skipPity, diceType, ballImg) {
+    var record = { time: formatTimeShort(), dateKey: getTodayDateKey(), balls: type, result: skipPity ? '龙龙骰' : '奇遇', resultRaw: skipPity ? 'add_dice' : 'event', diceType: diceType || '', ballImg: ballImg || (skipPity && diceType ? DICE_ICONS[diceType] : ''), total: skipPity ? 0 : 1, icon: icon, count: count, pityBefore: this.data.pityCount || 0 }
     var h = [record].concat(this.data.history).slice(0, 20)
     wx.setStorageSync('catch_history', h)
     this.setData({ history: h })
@@ -2293,17 +2349,30 @@ Page({
       doReset();
     }
   },
-  onAddCarnival: function() {
-    var self = this
-    var diceOptions = ['龙龙骰', '异色龙龙骰', '奇异龙龙骰', '污染龙龙骰']
-    wx.showActionSheet({
-      alertText: '请选择龙龙骰类型（仅异色龙龙骰计入面板，均不占保底/奇遇）',
-      itemList: diceOptions,
-      success: function(res) {
-        var diceType = diceOptions[res.tapIndex] || '龙龙骰'
-        self._recordCarnival(diceType, '')
-      }
+  _openDicePicker: function(mode) {
+    var stats = this._getDailyDiceStats()
+    var counts = (stats && stats.counts) || {}
+    var opts = (this.data.dicePickerOptions || []).map(function(o) {
+      return Object.assign({}, o, { todayCount: counts[o.type] || 0 })
     })
+    this.setData({ showDicePickerModal: true, dicePickerMode: mode || 'tap', dicePickerOptions: opts })
+  },
+  closeDicePickerModal: function() {
+    this.setData({ showDicePickerModal: false })
+  },
+  onSelectDiceType: function(e) {
+    var self = this
+    var diceType = e.currentTarget.dataset.type || '龙龙骰'
+    var mode = self.data.dicePickerMode || 'tap'
+    self.setData({ showDicePickerModal: false })
+    if (mode === 'longpress') {
+      self._openCarnivalBallSheet(diceType)
+    } else {
+      self._recordCarnival(diceType, '')
+    }
+  },
+  onAddCarnival: function() {
+    this._openDicePicker('tap')
   },
   _recordCarnival: function(diceType, ballName) {
     var self = this
@@ -2314,21 +2383,22 @@ Page({
       c = c + 1
       wx.setStorageSync('carnival_count', c)
     }
-    self.setData({ carnivalCount: c, diceAnim: true })
+    var diceImg = DICE_ICONS[typeLabel] || DICE_ICONS['龙龙骰']
+    self.setData({ carnivalCount: c, diceAnim: true, diceAnimImg: diceImg })
     setTimeout(function() { self.setData({ diceAnim: false }) }, 750)
     var iconMap = { '龙龙骰': '🎲', '异色龙龙骰': '🌟', '奇异龙龙骰': '🔮', '污染龙龙骰': '🧪' }
     var icon = iconMap[typeLabel] || '🎲'
     self._incDailyDice(typeLabel, 1)
-    var label = icon + ' ' + typeLabel + (ballName ? '(' + ballName + ')' : '')
-    self.addEncounterRecord(label, icon, c, true, typeLabel)
+    var label = typeLabel + (ballName ? '(' + ballName + ')' : '')
+    self.addEncounterRecord(label, icon, c, true, typeLabel, diceImg)
     self.triggerDiceParticles()
-    wx.showToast({ title: label + (isShinyDice ? '（异色龙龙骰+1）' : '（不计入面板）'), icon: 'none' })
+    wx.showToast({ title: icon + ' ' + label + (isShinyDice ? '（异色龙龙骰+1）' : '（不计入面板）'), icon: 'none' })
   },
   onUseDice: function() {
     var self = this
     var currentDice = self.data.carnivalCount || 0
     if (currentDice <= 0) {
-      wx.showToast({ title: '暂无可用龙龙骰', icon: 'none' })
+      wx.showToast({ title: '暂无可用异色龙龙骰', icon: 'none' })
       return
     }
     var c = currentDice - 1
@@ -2338,11 +2408,13 @@ Page({
     if (prevHistory.length > 0 && prevHistory[0].resultRaw === 'success' && !prevHistory[0].usedDice) {
       prevHistory[0] = Object.assign({}, prevHistory[0], { usedDice: true, encounters: 0 })
     }
+    var shinyDiceImg = DICE_ICONS['异色龙龙骰']
     var record = {
       time: formatTimeShort(),
-      balls: '🎲 异色龙龙骰染色 (剩余' + c + '，不占保底和奇遇)',
+      balls: '异色龙龙骰染色 (剩余' + c + '，不占保底和奇遇)',
       result: '龙龙骰',
       resultRaw: 'use_dice',
+      ballImg: shinyDiceImg,
       total: 0,
       icon: '🎲',
       count: c,
@@ -2350,58 +2422,54 @@ Page({
     }
     var h = [record].concat(prevHistory).slice(0, 20)
     wx.setStorageSync('catch_history', h)
-    self.setData({ carnivalCount: c, history: h, sessionUsedDice: true, diceAnim: true })
+    self.setData({ carnivalCount: c, history: h, sessionUsedDice: true, diceAnim: true, diceAnimImg: shinyDiceImg })
     setTimeout(function() { self.setData({ diceAnim: false }) }, 750)
     self.triggerDiceParticles()
     self.updateSuccessRate()
     wx.showToast({ title: '🎲 已启用异色龙龙骰染色（不占保底和奇遇，剩余 ' + c + '）', icon: 'none' })
   },
   onCarnivalLongPress: function() {
+    this._openDicePicker('longpress')
+  },
+  _openCarnivalBallSheet: function(diceType) {
     var self = this
-    var diceOptions = ['龙龙骰', '异色龙龙骰', '奇异龙龙骰', '污染龙龙骰']
     var iconMap = { '龙龙骰': '🎲', '异色龙龙骰': '🌟', '奇异龙龙骰': '🔮', '污染龙龙骰': '🧪' }
+    var isShinyDice = diceType === '异色龙龙骰'
+    var icon = iconMap[diceType] || '🎲'
+    var diceImg = DICE_ICONS[diceType] || DICE_ICONS['龙龙骰']
+    var ballNames = []
+    for (var i = 0; i < self.data.balls.length; i++) {
+      ballNames.push(self.data.balls[i].name)
+    }
     wx.showActionSheet({
-      alertText: '请选择龙龙骰类型（仅异色龙龙骰计入面板，均不占保底/奇遇）',
-      itemList: diceOptions,
-      success: function(typeRes) {
-        var diceType = diceOptions[typeRes.tapIndex] || '龙龙骰'
-        var isShinyDice = diceType === '异色龙龙骰'
-        var icon = iconMap[diceType] || '🎲'
-        var ballNames = []
-        for (var i = 0; i < self.data.balls.length; i++) {
-          ballNames.push(self.data.balls[i].name)
-        }
-        wx.showActionSheet({
-          itemList: ballNames,
-          success: function(res) {
-            var ball = self.data.balls[res.tapIndex]
-            wx.showModal({
-              title: diceType,
-              content: '使用 ' + ball.name + ' 获得 ' + diceType + '（不占保底和奇遇）',
-              editable: true,
-              placeholderText: '输入数量(默认1)',
-              success: function(modalRes) {
-                if (modalRes.confirm) {
-                  var count = parseInt(modalRes.content) || 1
-                  var c = self.data.carnivalCount || 0
-                  if (isShinyDice) {
-                    c = c + 1
-                    wx.setStorageSync('carnival_count', c)
-                  }
-                  var balls = self.data.balls.slice()
-                  balls[res.tapIndex].count += count
-                  self.saveBallsToStorage(balls)
-                  self.setData({ carnivalCount: c, balls: balls, diceAnim: true })
-                  setTimeout(function() { self.setData({ diceAnim: false }) }, 750)
-                  self._incDailyDice(diceType, 1)
-                  var label = icon + ' ' + diceType + '(' + ball.name + ')'
-                  self.addEncounterRecord(label, icon, c, true, diceType)
-                  self.triggerDiceParticles()
-                  self.calcTotalBallUsed()
-                  wx.showToast({ title: label + (isShinyDice ? '（异色龙龙骰+1）' : '（不计入面板）'), icon: 'none' })
-                }
+      itemList: ballNames,
+      success: function(res) {
+        var ball = self.data.balls[res.tapIndex]
+        wx.showModal({
+          title: diceType,
+          content: '使用 ' + ball.name + ' 获得 ' + diceType + '（不占保底和奇遇）',
+          editable: true,
+          placeholderText: '输入数量(默认1)',
+          success: function(modalRes) {
+            if (modalRes.confirm) {
+              var count = parseInt(modalRes.content) || 1
+              var c = self.data.carnivalCount || 0
+              if (isShinyDice) {
+                c = c + 1
+                wx.setStorageSync('carnival_count', c)
               }
-            })
+              var balls = self.data.balls.slice()
+              balls[res.tapIndex].count += count
+              self.saveBallsToStorage(balls)
+              self.setData({ carnivalCount: c, balls: balls, diceAnim: true, diceAnimImg: diceImg })
+              setTimeout(function() { self.setData({ diceAnim: false }) }, 750)
+              self._incDailyDice(diceType, 1)
+              var label = diceType + '(' + ball.name + ')'
+              self.addEncounterRecord(label, icon, c, true, diceType, diceImg)
+              self.triggerDiceParticles()
+              self.calcTotalBallUsed()
+              wx.showToast({ title: icon + ' ' + label + (isShinyDice ? '（异色龙龙骰+1）' : '（不计入面板）'), icon: 'none' })
+            }
           }
         })
       }
