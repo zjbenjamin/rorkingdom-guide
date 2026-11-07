@@ -96,7 +96,7 @@ function convertRichCloudUrls(list, callback) {
 
 Page({
   behaviors: [i18nBehavior, require('../../utils/padLayoutBehavior')],
-  data: { theme: 'light', activities: [], filtered: [], status: '进行中', statuses: ['进行中','全部','置顶'], hasPinnedInFiltered: false, hasNormalInFiltered: false, expandedId: -1, collapsedMap: {}, isAdmin: false, showEditModal: false, editingItem: null, editTitle: '', editDesc: '', editStatus: '进行中', editType: '', editRewards: '', editStart: '', editEnd: '', subscribedActivity: false, subscribeCount: 0, currentPlayUrl: '', isPlaying: false, showVideoPlayer: false, videoPlayerUrl: '', videoPlayerName: '', videoPlayerCover: '', videoPlayerOwner: '', videoPlayerDesc: '', richSwiperHeights: {}, seasonBoard: null, boardExpanded: true, boardFilter: 'live', boardLiveCount: 0, boardTotalCount: 0, expandedBarId: '', ganttMonths: [], ganttGroups: [], ganttWidth: 1200, countdownItems: [], boardCountdowns: {} },
+  data: { theme: 'light', activities: [], filtered: [], status: '进行中', statuses: ['进行中','全部','置顶'], hasPinnedInFiltered: false, hasNormalInFiltered: false, expandedId: -1, collapsedMap: {}, isAdmin: false, showEditModal: false, editingItem: null, editTitle: '', editDesc: '', editStatus: '进行中', editType: '', editRewards: '', editStart: '', editEnd: '', subscribedActivity: false, subscribeCount: 0, currentPlayUrl: '', isPlaying: false, showVideoPlayer: false, videoPlayerUrl: '', videoPlayerName: '', videoPlayerCover: '', videoPlayerOwner: '', videoPlayerDesc: '', richSwiperHeights: {}, seasonLogoUrl: 'https://img.remit.ee/i/WX0FEAjMVvvY', seasonBoard: null, boardExpanded: true, boardFilter: 'live', boardLiveCount: 0, boardTotalCount: 0, expandedBarId: '', ganttMonths: [], ganttGroups: [], ganttWidth: 1200, countdownItems: [], boardCountdowns: {} },
   onShow: function() {
     this._refreshI18n()
     this.setData({ theme: app.globalData.theme })
@@ -105,7 +105,25 @@ Page({
     this.setData({ subscribeConfig: subscribeConfig })
     this.checkAdmin()
     this.checkSubscription()
+    this.loadSeasonLogo()
     this.loadSeasonBoard()
+  },
+  loadSeasonLogo: function() {
+    var self = this
+    var defaultLogo = 'https://img.remit.ee/i/WX0FEAjMVvvY'
+    var cached = wx.getStorageSync('season_logo_url')
+    if (cached && cached !== 'https://img.remit.ee/i/ZQZBWvDqP4rG') {
+      self.setData({ seasonLogoUrl: cached })
+    }
+    if (!db) return
+    db.collection('site_config').doc('season_logo').get().then(function(res) {
+      var u = (res.data && res.data.url) ? String(res.data.url).trim() : ''
+      if (u === 'https://img.remit.ee/i/ZQZBWvDqP4rG') u = defaultLogo
+      if (u) {
+        wx.setStorageSync('season_logo_url', u)
+        self.setData({ seasonLogoUrl: u })
+      }
+    }).catch(function() {})
   },
   checkAdmin: function() {
     var self = this

@@ -117,6 +117,8 @@ Page({
     bannerCurrentSeason: '全部',
     bannerPreviewUrls: [],
     bannerLoading: false,
+    seasonLogoInput: 'https://img.remit.ee/i/WX0FEAjMVvvY',
+    seasonLogoSaving: false,
     pageConfigs: [],
     calendarSeasons: [],
     showCalendarModal: false,
@@ -236,6 +238,7 @@ Page({
     this.loadAnnouncements()
     this.loadStats()
     this.loadBanner()
+    this.loadSeasonLogoConfig()
     this.loadSwarmLocations()
     this.loadCalendarSeasons()
   },
@@ -321,6 +324,70 @@ Page({
       bannerPreviewUrls: previewUrls
     })
   },
+  loadSeasonLogoConfig: function() {
+    var self = this
+    var defaultLogo = 'https://img.remit.ee/i/WX0FEAjMVvvY'
+    if (!db) return
+    db.collection('site_config').doc('season_logo').get()
+      .then(function(res) {
+        var u = (res.data && res.data.url) ? String(res.data.url).trim() : defaultLogo
+        if (u === 'https://img.remit.ee/i/ZQZBWvDqP4rG') u = defaultLogo
+        self.setData({ seasonLogoInput: u || defaultLogo })
+      })
+      .catch(function() {
+        self.setData({ seasonLogoInput: defaultLogo })
+      })
+  },
+  onSeasonLogoInput: function(e) {
+    this.setData({ seasonLogoInput: e.detail.value })
+  },
+  uploadSeasonLogoImage: function() {
+    var self = this
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
+      success: function(res) {
+        var file = res.tempFiles && res.tempFiles[0]
+        if (!file) return
+        wx.showLoading({ title: '上传中...' })
+        var ext = (file.tempFilePath.match(/\.\w+$/) || ['.png'])[0]
+        var cloudPath = 'season_logo/logo_' + Date.now() + ext
+        wx.cloud.uploadFile({
+          cloudPath: cloudPath,
+          filePath: file.tempFilePath,
+          success: function(upRes) {
+            wx.hideLoading()
+            if (upRes.fileID) {
+              self.setData({ seasonLogoInput: upRes.fileID })
+              wx.showToast({ title: '已上传，请点保存', icon: 'success' })
+            }
+          },
+          fail: function() {
+            wx.hideLoading()
+            wx.showToast({ title: '上传失败', icon: 'none' })
+          }
+        })
+      }
+    })
+  },
+  saveSeasonLogo: function() {
+    var self = this
+    if (self.data.seasonLogoSaving || !db) return
+    var u = String(self.data.seasonLogoInput || '').trim() || 'https://img.remit.ee/i/WX0FEAjMVvvY'
+    self.setData({ seasonLogoSaving: true })
+    db.collection('site_config').doc('season_logo').set({
+      data: { url: u, updateTime: db.serverDate() }
+    }).then(function() {
+      wx.setStorageSync('season_logo_url', u)
+      self.setData({ seasonLogoSaving: false, seasonLogoInput: u })
+      wx.showToast({ title: '赛季LOGO已同步保存', icon: 'success' })
+    }).catch(function(err) {
+      self.setData({ seasonLogoSaving: false })
+      wx.showToast({ title: '保存失败：' + ((err && err.errMsg) || '请重试'), icon: 'none' })
+    })
+  },
   loadBanner: function() {
     var self = this
     if (!db) return
@@ -346,7 +413,7 @@ Page({
     else if (tab === 'subscribe') this.loadSubscribers()
     else if (tab === 'users') this.loadUsers()
     else if (tab === 'stats') this.loadStats()
-    else if (tab === 'pages') { this.loadPageConfigs(); this.loadBanner(); this.loadCalendarSeasons() }
+    else if (tab === 'pages') { this.loadPageConfigs(); this.loadBanner(); this.loadSeasonLogoConfig(); this.loadCalendarSeasons() }
     else if (tab === 'balls') { this.loadBallsConfig(); this.loadShinyPets() }
   },
   loadAnnouncements: function() {

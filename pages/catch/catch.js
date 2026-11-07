@@ -63,12 +63,12 @@ var DICE_REMOTE_ICONS = {
   '/images/dice/dice_shiny.png': 'https://img.remit.ee/i/bpUFDBGUtlOi',
   '/images/dice/dice_strange.png': 'https://img.remit.ee/i/gtBOE570SHS4',
   '/images/dice/dice_polluted.png': 'https://img.remit.ee/i/VWTgWa0JFPeC',
-  '/images/dice/s5_logo.png': 'https://img.remit.ee/i/WX0FEAjMVvvY',
+  '/images/dice/s5_logo_v2.png': 'https://img.remit.ee/i/WX0FEAjMVvvY',
   'https://img.remit.ee/i/AincnIOhIo24': '/images/dice/dice_normal.png',
   'https://img.remit.ee/i/bpUFDBGUtlOi': '/images/dice/dice_shiny.png',
   'https://img.remit.ee/i/gtBOE570SHS4': '/images/dice/dice_strange.png',
   'https://img.remit.ee/i/VWTgWa0JFPeC': '/images/dice/dice_polluted.png',
-  'https://img.remit.ee/i/WX0FEAjMVvvY': '/images/dice/s5_logo.png'
+  'https://img.remit.ee/i/WX0FEAjMVvvY': '/images/dice/s5_logo_v2.png'
 };
 function getTodayDateKey(d) {
   if (!d) d = new Date()
@@ -188,6 +188,7 @@ Page({
     // 异色龙龙骰染色状态
     sessionUsedDice: false,
     resultUsedDice: false,
+    seasonLogoUrl: 'https://img.remit.ee/i/WX0FEAjMVvvY',
   },
   // 计时：长时无操作(>30min)重置；未开始则从此刻起表，返回本次已耗秒数
   _touchCaptureClock: function() {
@@ -231,7 +232,25 @@ Page({
     this.setData({ safeTop: this.computeSafeTop() })
     this.fetchCloudBalls();
     this.fetchShinyPets();
+    this.fetchSeasonLogo();
     this.preloadBallImages();
+  },
+  fetchSeasonLogo: function() {
+    var self = this;
+    var defaultLogo = 'https://img.remit.ee/i/WX0FEAjMVvvY';
+    var cached = wx.getStorageSync('season_logo_url');
+    if (cached && cached !== 'https://img.remit.ee/i/ZQZBWvDqP4rG') {
+      self.setData({ seasonLogoUrl: cached });
+    }
+    if (!wx.cloud) return;
+    wx.cloud.database().collection('site_config').doc('season_logo').get().then(function(res) {
+      var u = (res.data && res.data.url) ? String(res.data.url).trim() : '';
+      if (u === 'https://img.remit.ee/i/ZQZBWvDqP4rG') u = defaultLogo;
+      if (u) {
+        wx.setStorageSync('season_logo_url', u);
+        self.setData({ seasonLogoUrl: u });
+      }
+    }).catch(function() {});
   },
   // 异色精灵预设：后台配置后同步到目标精灵选择（过滤暂时隐藏的赛季 + 置顶优先）
   fetchShinyPets: function() {
@@ -498,6 +517,7 @@ Page({
   },
   onShow: function() {
     this._refreshI18n()
+    this.fetchSeasonLogo()
     var n = new Date()
     this.setData({
       buildTime: formatTime(n)
@@ -1592,7 +1612,9 @@ Page({
           try { ctx.drawImage(img, iconX, titleMidY - iconSize / 2, iconSize, iconSize); } catch (e) {}
         }
       });
-      loadImg('/images/dice/s5_logo.png', function(img) {
+      var s5LogoSrc = self.data.seasonLogoUrl || '/images/dice/s5_logo_v2.png';
+      if (s5LogoSrc === 'https://img.remit.ee/i/ZQZBWvDqP4rG') s5LogoSrc = '/images/dice/s5_logo_v2.png';
+      loadImg(s5LogoSrc, function(img) {
         if (img) {
           try { ctx.drawImage(img, s5LogoX, titleMidY - s5LogoH / 2, s5LogoW, s5LogoH); } catch (e) {}
         }
