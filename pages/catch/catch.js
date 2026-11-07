@@ -65,12 +65,14 @@ var DICE_REMOTE_ICONS = {
   '/images/dice/dice_polluted.png': 'https://img.remit.ee/i/VWTgWa0JFPeC',
   '/images/dice/s5_logo_v2.png': 'https://img.remit.ee/i/WX0FEAjMVvvY',
   '/images/dice/ball_puzzle.png': 'https://img.remit.ee/i/G1bkPBZ3t7gm',
+  '/images/dice/ball_treasure.png': 'https://img.remit.ee/i/2z4PPd8MU0K0',
   'https://img.remit.ee/i/AincnIOhIo24': '/images/dice/dice_normal.png',
   'https://img.remit.ee/i/bpUFDBGUtlOi': '/images/dice/dice_shiny.png',
   'https://img.remit.ee/i/gtBOE570SHS4': '/images/dice/dice_strange.png',
   'https://img.remit.ee/i/VWTgWa0JFPeC': '/images/dice/dice_polluted.png',
   'https://img.remit.ee/i/WX0FEAjMVvvY': '/images/dice/s5_logo_v2.png',
-  'https://img.remit.ee/i/G1bkPBZ3t7gm': '/images/dice/ball_puzzle.png'
+  'https://img.remit.ee/i/G1bkPBZ3t7gm': '/images/dice/ball_puzzle.png',
+  'https://img.remit.ee/i/2z4PPd8MU0K0': '/images/dice/ball_treasure.png'
 };
 function getTodayDateKey(d) {
   if (!d) d = new Date()
@@ -107,7 +109,8 @@ Page({
       {id:16,name:'调温球',color:'#f97316',icon:'🌡️',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
       {id:17,name:'淘沙球',color:'#d4a017',icon:'🏖️',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
       {id:18,name:'童话球',color:'#f472b6',icon:'🧚',count:0,freeCount:0,rate:'童话系+70%',price:800,img:'https://img.remit.ee/api/file/CAACAgUAAyEGAASHRsPbAAEYB8ZqaEBixsb7T3jYYu7SRMZ1uJv9MgAC2yUAAqj4SVcLsuCtMJ10xj0E.webp'},
-      {id:19,name:'拼图球',color:'#f59e0b',icon:'🧩',count:0,freeCount:0,rate:'提升对应属性捕捉概率',price:3000,img:'https://img.remit.ee/i/G1bkPBZ3t7gm'}
+      {id:19,name:'拼图球',color:'#f59e0b',icon:'🧩',count:0,freeCount:0,rate:'提升对应属性捕捉概率',price:3000,img:'https://img.remit.ee/i/G1bkPBZ3t7gm'},
+      {id:20,name:'宝匣棱镜球',color:'#fbbf24',icon:'💎',count:0,freeCount:0,rate:'100%捕捉，必定了不起，完美无瑕，赛季专属炫彩粒子',price:800,img:'https://img.remit.ee/i/2z4PPd8MU0K0'}
     ],
     selectedBall: null, selectedBallCount: 0, expandedBallIndex: -1,
     totalCatches: 0, successCatches: 0, successRate: 0, pityCount: 0, pityHint: '基础概率', history: [], result: '',
@@ -445,7 +448,7 @@ Page({
         craftMaterials: cb.craftMaterials || '',
         // 按当前语言显示当地货币（CNY 自动换算）
         cnyDisplay: cnyPrice > 0 ? i18n.formatCny(cnyPrice) : '',
-        img: (String(cb.name || '').indexOf('拼图') !== -1) ? 'https://img.remit.ee/i/G1bkPBZ3t7gm' : (cb.img || lb.img || ''),
+        img: (String(cb.name || '').indexOf('拼图') !== -1) ? 'https://img.remit.ee/i/G1bkPBZ3t7gm' : ((String(cb.name || '').indexOf('宝匣') !== -1) ? 'https://img.remit.ee/i/2z4PPd8MU0K0' : (cb.img || lb.img || '')),
         source: cb.source || '',
         isBuy: !!cb.isBuy,
         isCraft: !!cb.isCraft,
@@ -1402,6 +1405,18 @@ Page({
       var hasHistory = !!last;
 
       var allBalls = self.data.balls || [];
+      var resolveBallCanvasImg = function(ballName, fallbackImg) {
+        var nm = String(ballName || '').trim();
+        if (nm.indexOf('拼图') !== -1) return '/images/dice/ball_puzzle.png';
+        if (nm.indexOf('宝匣') !== -1) return '/images/dice/ball_treasure.png';
+        for (var bi = 0; bi < allBalls.length; bi++) {
+          if (allBalls[bi].name === nm && allBalls[bi].img) {
+            return DICE_REMOTE_ICONS[allBalls[bi].img] || allBalls[bi].img;
+          }
+        }
+        if (fallbackImg && DICE_REMOTE_ICONS[fallbackImg]) return DICE_REMOTE_ICONS[fallbackImg];
+        return fallbackImg || '';
+      };
       // 消耗球类 = 本场累计（sessionUsedBalls）；旧记录回退本段 usedBalls / xN 文本
       // 注意：「剩余N」是库存快照不是消耗，绝不能当成已用
       var parsedBalls = [];
@@ -1412,10 +1427,7 @@ Page({
         for (var ubi = 0; ubi < ballSource.length; ubi++) {
           var ub = ballSource[ubi];
           if (!ub || !ub.name || !(ub.count > 0)) continue;
-          var ubImg = '';
-          for (var ubj = 0; ubj < allBalls.length; ubj++) {
-            if (allBalls[ubj].name === ub.name) { ubImg = allBalls[ubj].img || ''; break; }
-          }
+          var ubImg = resolveBallCanvasImg(ub.name, ub.img || '');
           parsedBalls.push({ name: ub.name, count: ub.count, img: ubImg });
         }
       } else if (last && last.balls && last.balls !== noBallsText && last.balls !== '未使用球'
@@ -1432,10 +1444,7 @@ Page({
           var xMatch = ballStr.match(/^(.+?)\s*x(\d+)/);
           if (xMatch) { bName = xMatch[1].trim(); bCount = parseInt(xMatch[2]) || 0; }
           if (!bName || isNaN(bCount) || bCount <= 0) continue;
-          var bImg = '';
-          for (var bj = 0; bj < allBalls.length; bj++) {
-            if (allBalls[bj].name === bName) { bImg = allBalls[bj].img || ''; break; }
-          }
+          var bImg = resolveBallCanvasImg(bName, '');
           parsedBalls.push({ name: bName, count: bCount, img: bImg });
         }
       }
@@ -1987,8 +1996,9 @@ Page({
         var ctBallSize = Math.max(24, Math.round(28 * imgScale));
         var ctIconX = rightPadX + 10;
         var ctIconY = topCapY + Math.round((capH - ctBallSize) / 2);
-        if (last.contractBallImg && last.contractBallImg.length > 5) {
-          loadImg(last.contractBallImg, (function(ix, iy, sz) {
+        var resolvedCtImg1 = resolveBallCanvasImg(last.contractBall, last.contractBallImg);
+        if (resolvedCtImg1 && resolvedCtImg1.length > 5) {
+          loadImg(resolvedCtImg1, (function(ix, iy, sz) {
             return function(img) {
               try { ctx.drawImage(img, ix, iy, sz, sz); } catch (e) {}
             };
@@ -2047,8 +2057,9 @@ Page({
         var ctBallSize = Math.max(28, Math.round(36 * imgScale));
         var ctIconX = ctPadX + 12;
         var ctIconY = ctY + Math.round((ctH - ctBallSize) / 2);
-        if (last.contractBallImg && last.contractBallImg.length > 5) {
-          loadImg(last.contractBallImg, (function(ix, iy, sz) {
+        var resolvedCtImg2 = resolveBallCanvasImg(last.contractBall, last.contractBallImg);
+        if (resolvedCtImg2 && resolvedCtImg2.length > 5) {
+          loadImg(resolvedCtImg2, (function(ix, iy, sz) {
             return function(img) {
               try { ctx.drawImage(img, ix, iy, sz, sz); } catch (e) {}
             };

@@ -2065,7 +2065,8 @@ openModal: function(e) {
       {id:16,name:'调温球',color:'#f97316',icon:'🌡️',count:0,freeCount:0,desc:'提升对应属性50%捕捉概率',price:3000},
       {id:17,name:'淘沙球',color:'#d4a017',icon:'🏖️',count:0,freeCount:0,desc:'提升对应属性50%捕捉概率',price:3000},
       {id:18,name:'童话球',color:'#f472b6',icon:'🧚',count:0,freeCount:0,desc:'童话系+70%',price:800,img:'https://img.remit.ee/api/file/CAACAgUAAyEGAASHRsPbAAEYB8ZqaEBixsb7T3jYYu7SRMZ1uJv9MgAC2yUAAqj4SVcLsuCtMJ10xj0E.webp'},
-      {id:19,name:'拼图球',color:'#f59e0b',icon:'🧩',count:0,freeCount:0,desc:'提升对应属性捕捉概率',price:3000,img:'https://img.remit.ee/i/G1bkPBZ3t7gm'}
+      {id:19,name:'拼图球',color:'#f59e0b',icon:'🧩',count:0,freeCount:0,desc:'提升对应属性捕捉概率',price:3000,img:'https://img.remit.ee/i/G1bkPBZ3t7gm'},
+      {id:20,name:'宝匣棱镜球',color:'#fbbf24',icon:'💎',count:0,freeCount:0,desc:'100%捕捉，必定了不起，完美无瑕，赛季专属炫彩粒子',price:800,img:'https://img.remit.ee/i/2z4PPd8MU0K0'}
     ];
     db.collection('site_config').doc('ball_images').get().then(res => {
       if(res.data && res.data.balls) {
@@ -2107,6 +2108,10 @@ openModal: function(e) {
           }
           if (String(mb.name || '').indexOf('拼图') !== -1 && mb.img !== 'https://img.remit.ee/i/G1bkPBZ3t7gm') {
             patch.img = 'https://img.remit.ee/i/G1bkPBZ3t7gm';
+            needAutoSyncPuzzle = true;
+          }
+          if (String(mb.name || '').indexOf('宝匣') !== -1 && mb.img !== 'https://img.remit.ee/i/2z4PPd8MU0K0') {
+            patch.img = 'https://img.remit.ee/i/2z4PPd8MU0K0';
             needAutoSyncPuzzle = true;
           }
           patch.craftCostRoco = !!(mb.craftCostRoco || (mb.isCraft && mb.craftPrice > 0));
