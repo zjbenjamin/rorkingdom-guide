@@ -63,10 +63,12 @@ var DICE_REMOTE_ICONS = {
   '/images/dice/dice_shiny.png': 'https://img.remit.ee/i/bpUFDBGUtlOi',
   '/images/dice/dice_strange.png': 'https://img.remit.ee/i/gtBOE570SHS4',
   '/images/dice/dice_polluted.png': 'https://img.remit.ee/i/VWTgWa0JFPeC',
+  '/images/dice/s5_logo.png': 'https://img.remit.ee/i/ZQZBWvDqP4rG',
   'https://img.remit.ee/i/AincnIOhIo24': '/images/dice/dice_normal.png',
   'https://img.remit.ee/i/bpUFDBGUtlOi': '/images/dice/dice_shiny.png',
   'https://img.remit.ee/i/gtBOE570SHS4': '/images/dice/dice_strange.png',
-  'https://img.remit.ee/i/VWTgWa0JFPeC': '/images/dice/dice_polluted.png'
+  'https://img.remit.ee/i/VWTgWa0JFPeC': '/images/dice/dice_polluted.png',
+  'https://img.remit.ee/i/ZQZBWvDqP4rG': '/images/dice/s5_logo.png'
 };
 function getTodayDateKey(d) {
   if (!d) d = new Date()
@@ -1553,16 +1555,18 @@ Page({
       ctx.fillStyle = orb;
       ctx.fillRect(0, 0, width, height);
       
-      // ─── 4. 标题 + 异色标（各语言整组居中、垂直对齐）───
+      // ─── 4. 标题 + 异色标 + S5赛季透明LOGO（各语言整组居中、垂直对齐）───
       ctx.fillStyle = '#00d4ff';
       var titleText = i18n.t('imgTitle');
       ctx.font = 'bold 24px sans-serif';
       var titleW = ctx.measureText(titleText).width;
-      var titleFontSize = titleW > width * 0.8 ? Math.floor(24 * width * 0.8 / titleW) : 24;
-      // 图标随字号缩放，长短标题都不歪
+      var titleFontSize = titleW > width * 0.62 ? Math.floor(24 * width * 0.62 / titleW) : 24;
+      // 图标与S5赛季LOGO随字号缩放，长短标题都不歪
       var iconSize = Math.max(20, Math.round(titleFontSize * 28 / 24));
-      var gap = 12;
-      var maxTitleW = Math.max(40, width - 24 - iconSize - gap);
+      var s5LogoH = Math.max(28, Math.round(titleFontSize * 38 / 24));
+      var s5LogoW = Math.round(s5LogoH * 319 / 172);
+      var gap = 10;
+      var maxTitleW = Math.max(40, width - 24 - iconSize - s5LogoW - gap * 2);
       ctx.font = 'bold ' + titleFontSize + 'px sans-serif';
       titleW = ctx.measureText(titleText).width;
       if (titleW > maxTitleW) {
@@ -1570,18 +1574,27 @@ Page({
         ctx.font = 'bold ' + titleFontSize + 'px sans-serif';
         titleW = ctx.measureText(titleText).width;
         iconSize = Math.max(18, Math.round(titleFontSize * 28 / 24));
+        s5LogoH = Math.max(26, Math.round(titleFontSize * 38 / 24));
+        s5LogoW = Math.round(s5LogoH * 319 / 172);
       }
-      // 图标 + 文字作为一组水平居中，垂直中心同为 y=50
-      var groupW = iconSize + gap + titleW;
+      // 异色标 + 标题文字 + S5赛季透明LOGO 作为一组水平居中，垂直中心同为 y=48
+      var groupW = iconSize + gap + titleW + gap + s5LogoW;
       var iconX = Math.max(8, (width - groupW) / 2);
-      var titleMidY = 50;
+      var titleX = iconX + iconSize + gap;
+      var s5LogoX = titleX + titleW + gap;
+      var titleMidY = 48;
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'left';
-      ctx.fillText(titleText, iconX + iconSize + gap, titleMidY);
+      ctx.fillText(titleText, titleX, titleMidY);
       ctx.textBaseline = 'alphabetic';
       loadImg('https://patchwiki.biligame.com/images/rocom/2/2e/buxc6y4s0r7d8ix03zzkahnk4h8urtv.png', function(img) {
         if (img) {
           try { ctx.drawImage(img, iconX, titleMidY - iconSize / 2, iconSize, iconSize); } catch (e) {}
+        }
+      });
+      loadImg('/images/dice/s5_logo.png', function(img) {
+        if (img) {
+          try { ctx.drawImage(img, s5LogoX, titleMidY - s5LogoH / 2, s5LogoW, s5LogoH); } catch (e) {}
         }
       });
       
