@@ -97,7 +97,7 @@
               <view class="badge badge-soon" wx:if="{{item.subType === 'season'}}">赛季</view>
               <view class="badge badge-official" wx:if="{{item.subType === 'collab'}}">联动</view>
             </view>
-            <text class="act-expand-hint">{{expandedId === item.id ? (_l.clickToCollapse || '收起') + ' ▲' : (_l.clickToExpand || '点击展开全文') + ' ▼'}}</text>
+            <text class="act-expand-hint">{{!collapsedMap[item.id] ? (_l.clickToCollapse || '收起') + ' ▲' : (_l.clickToExpand || '点击展开全文') + ' ▼'}}</text>
           </view>
           <text class="act-title headline-title">{{item.title}}</text>
           <view class="act-footer" wx:if="{{item.rewards.length > 0 || item.start || item.end}}">
@@ -107,7 +107,7 @@
             <text class="act-date" wx:if="{{item.start || item.end}}">{{item.start}} {{item.startTime || ''}}~{{item.end}} {{item.endTime || ''}}</text>
           </view>
         </view>
-        <view class="act-body" wx:if="{{expandedId === item.id}}">
+        <view class="act-body" wx:if="{{!collapsedMap[item.id]}}">
           <block wx:if="{{item.richContent && item.richContent.length > 0}}">
             <view class="act-rich-content">
               <block wx:for="{{item.richContent}}" wx:for-item="block" wx:for-index="bi" wx:key="bi">
@@ -223,7 +223,7 @@
               <view class="badge badge-soon" wx:if="{{item.subType === 'season'}}">赛季</view>
               <view class="badge badge-top" wx:if="{{item.subType === 'collab'}}">联动</view>
             </view>
-            <text class="act-expand-hint">{{expandedId === item.id ? (_l.clickToCollapse || '收起') + ' ▲' : (_l.clickToExpand || '点击展开全文') + ' ▼'}}</text>
+            <text class="act-expand-hint">{{!collapsedMap[item.id] ? (_l.clickToCollapse || '收起') + ' ▲' : (_l.clickToExpand || '点击展开全文') + ' ▼'}}</text>
           </view>
           <text class="act-title">{{item.title}}</text>
           <view class="act-footer" wx:if="{{item.rewards.length > 0 || item.start || item.end}}">
@@ -233,7 +233,7 @@
             <text class="act-date" wx:if="{{item.start || item.end}}">{{item.start}} {{item.startTime || ''}}~{{item.end}} {{item.endTime || ''}}</text>
           </view>
         </view>
-        <view class="act-body" wx:if="{{expandedId === item.id}}">
+        <view class="act-body" wx:if="{{!collapsedMap[item.id]}}">
           <block wx:if="{{item.richContent && item.richContent.length > 0}}">
             <view class="act-rich-content">
               <block wx:for="{{item.richContent}}" wx:for-item="block" wx:for-index="bi" wx:key="bi">

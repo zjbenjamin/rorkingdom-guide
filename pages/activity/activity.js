@@ -96,7 +96,7 @@ function convertRichCloudUrls(list, callback) {
 
 Page({
   behaviors: [i18nBehavior, require('../../utils/padLayoutBehavior')],
-  data: { theme: 'light', activities: [], filtered: [], status: '进行中', statuses: ['进行中','全部','置顶'], hasPinnedInFiltered: false, hasNormalInFiltered: false, expandedId: -1, isAdmin: false, showEditModal: false, editingItem: null, editTitle: '', editDesc: '', editStatus: '进行中', editType: '', editRewards: '', editStart: '', editEnd: '', subscribedActivity: false, subscribeCount: 0, currentPlayUrl: '', isPlaying: false, showVideoPlayer: false, videoPlayerUrl: '', videoPlayerName: '', videoPlayerCover: '', videoPlayerOwner: '', videoPlayerDesc: '', richSwiperHeights: {}, seasonBoard: null, boardExpanded: true, boardFilter: 'live', boardLiveCount: 0, boardTotalCount: 0, expandedBarId: '', ganttMonths: [], ganttGroups: [], ganttWidth: 1200, countdownItems: [], boardCountdowns: {} },
+  data: { theme: 'light', activities: [], filtered: [], status: '进行中', statuses: ['进行中','全部','置顶'], hasPinnedInFiltered: false, hasNormalInFiltered: false, expandedId: -1, collapsedMap: {}, isAdmin: false, showEditModal: false, editingItem: null, editTitle: '', editDesc: '', editStatus: '进行中', editType: '', editRewards: '', editStart: '', editEnd: '', subscribedActivity: false, subscribeCount: 0, currentPlayUrl: '', isPlaying: false, showVideoPlayer: false, videoPlayerUrl: '', videoPlayerName: '', videoPlayerCover: '', videoPlayerOwner: '', videoPlayerDesc: '', richSwiperHeights: {}, seasonBoard: null, boardExpanded: true, boardFilter: 'live', boardLiveCount: 0, boardTotalCount: 0, expandedBarId: '', ganttMonths: [], ganttGroups: [], ganttWidth: 1200, countdownItems: [], boardCountdowns: {} },
   onShow: function() {
     this._refreshI18n()
     this.setData({ theme: app.globalData.theme })
@@ -258,7 +258,9 @@ Page({
   },
   onExpand: function(e) {
     var id = e.currentTarget.dataset.id
-    this.setData({ expandedId: this.data.expandedId === id ? -1 : id })
+    var map = Object.assign({}, this.data.collapsedMap || {})
+    map[id] = !map[id]
+    this.setData({ collapsedMap: map })
   },
   onAddActivity: function() {
     this.setData({ showEditModal: true, editingItem: null, editTitle: '', editDesc: '', editStatus: '进行中', editType: '活动', editRewards: '', editStart: '', editEnd: '', })
