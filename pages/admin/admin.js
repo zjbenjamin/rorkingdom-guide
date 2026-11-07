@@ -112,7 +112,9 @@ Page({
     showLogShareBtn: true,
     bannerUrl: '',
     bannerInput: '',
-    bannerItems: [''],
+    bannerItems: [{ url: '', season: '通用', pinned: false, hidden: false }],
+    bannerSeasons: ['通用', 'S1', 'S2', 'S3', 'S4', 'S5'],
+    bannerCurrentSeason: '全部',
     bannerPreviewUrls: [],
     bannerLoading: false,
     pageConfigs: [],
@@ -248,18 +250,87 @@ Page({
       })
       .catch(function() {})
   },
+  _normalizeBannerItems: function(rawItems, fallbackUrls, defaultSeason) {
+    var list = []
+    if (Array.isArray(rawItems) && rawItems.length) {
+      for (var i = 0; i < rawItems.length; i++) {
+        var it = rawItems[i]
+        if (typeof it === 'string') {
+          var s = it.trim()
+          if (s && s !== 'none') list.push({ url: s, season: defaultSeason || '通用', pinned: false, hidden: false })
+        } else if (it && typeof it === 'object') {
+          var u = String(it.url || '').trim()
+          list.push({
+            url: u === 'none' ? '' : u,
+            season: it.season || defaultSeason || '通用',
+            pinned: !!it.pinned,
+            hidden: !!it.hidden
+          })
+        }
+      }
+    } else if (Array.isArray(fallbackUrls) && fallbackUrls.length) {
+      for (var j = 0; j < fallbackUrls.length; j++) {
+        var fu = String(fallbackUrls[j] || '').trim()
+        if (fu && fu !== 'none') {
+          list.push({ url: fu, season: defaultSeason || '通用', pinned: false, hidden: false })
+        }
+      }
+    }
+    if (!list.length) {
+      list.push({ url: '', season: (defaultSeason && defaultSeason !== '全部') ? defaultSeason : '通用', pinned: false, hidden: false })
+    }
+    return list
+  },
+  _computeActiveBannerUrls: function(items, currentSeason) {
+    var cur = currentSeason || '全部'
+    var valid = (items || []).filter(function(it) {
+      if (!it || !it.url || !String(it.url).trim() || it.url === 'none') return false
+      if (it.hidden) return false
+      if (cur !== '全部') {
+        var s = it.season || '通用'
+        if (s !== cur && s !== '通用') return false
+      }
+      return true
+    })
+    var pinnedList = []
+    var normalList = []
+    for (var i = 0; i < valid.length; i++) {
+      var u = String(valid[i].url).trim()
+      if (valid[i].pinned) pinnedList.push(u)
+      else normalList.push(u)
+    }
+    return pinnedList.concat(normalList)
+  },
+  _syncBannerPreview: function(items, currentSeason, seasons) {
+    var curSeason = currentSeason !== undefined ? currentSeason : (this.data.bannerCurrentSeason || '全部')
+    var baseSeasons = (Array.isArray(seasons) && seasons.length) ? seasons.slice() : ((this.data.bannerSeasons && this.data.bannerSeasons.length) ? this.data.bannerSeasons.slice() : ['通用', 'S1', 'S2', 'S3', 'S4', 'S5'])
+    if (baseSeasons.indexOf('通用') === -1) baseSeasons.unshift('通用')
+    var petSeasons = this.data.petSeasons || []
+    for (var p = 0; p < petSeasons.length; p++) {
+      if (petSeasons[p] && baseSeasons.indexOf(petSeasons[p]) === -1) baseSeasons.push(petSeasons[p])
+    }
+    for (var i = 0; i < (items || []).length; i++) {
+      var isea = items[i] && items[i].season
+      if (isea && baseSeasons.indexOf(isea) === -1) baseSeasons.push(isea)
+    }
+    var previewUrls = this._computeActiveBannerUrls(items, curSeason)
+    this.setData({
+      bannerItems: items,
+      bannerCurrentSeason: curSeason,
+      bannerSeasons: baseSeasons,
+      bannerPreviewUrls: previewUrls
+    })
+  },
   loadBanner: function() {
     var self = this
     if (!db) return
     db.collection('site_config').doc('banner').get()
       .then(function(res) {
         var d = res.data || {}
+        var curSeason = d.currentSeason || '全部'
         var urls = d.urls && d.urls.length ? d.urls : (d.url && d.url !== 'none' ? [d.url] : [])
-        urls = urls.map(function(s) { return (s || '').trim() }).filter(function(s) { return s && s !== 'none' })
-        self.setData({
-          bannerItems: urls.length ? urls : [''],
-          bannerPreviewUrls: urls
-        })
+        var items = self._normalizeBannerItems(d.items, urls, curSeason !== '全部' ? curSeason : '通用')
+        self._syncBannerPreview(items, curSeason, d.seasons)
       })
       .catch(function(e) { console.error(e) })
   },
@@ -340,25 +411,90 @@ Page({
   toggleBannerModal: function() {
     this.setData({ showBannerModal: !this.data.showBannerModal })
   },
+  selectBannerCurrentSeason: function(e) {
+    var season = e.currentTarget.dataset.season || '全部'
+    this._syncBannerPreview(this.data.bannerItems || [], season, this.data.bannerSeasons)
+  },
+  addBannerSeason: function() {
+    var self = this
+    wx.showModal({
+      title: '新增头图赛季',
+      content: '',
+      editable: true,
+      placeholderText: '例如：S5 / S6 / 庆典季',
+      success: function(res) {
+        if (res.confirm && res.content) {
+          var name = res.content.trim()
+          if (!name) return
+          var seasons = (self.data.bannerSeasons || []).slice()
+          if (seasons.indexOf(name) === -1) seasons.push(name)
+          self._syncBannerPreview(self.data.bannerItems || [], name, seasons)
+          wx.showToast({ title: '已切换到 ' + name, icon: 'none' })
+        }
+      }
+    })
+  },
   addBannerItem: function() {
     var list = (this.data.bannerItems || []).slice()
-    list.push('')
-    this.setData({ bannerItems: list })
+    var defSeason = (this.data.bannerCurrentSeason && this.data.bannerCurrentSeason !== '全部') ? this.data.bannerCurrentSeason : '通用'
+    list.push({ url: '', season: defSeason, pinned: false, hidden: false })
+    this._syncBannerPreview(list)
   },
   removeBannerItem: function(e) {
     var idx = e.currentTarget.dataset.index
     var list = (this.data.bannerItems || []).slice()
     list.splice(idx, 1)
-    if (!list.length) list = ['']
-    var urls = list.map(function(s) { return (s || '').trim() }).filter(Boolean)
-    this.setData({ bannerItems: list, bannerPreviewUrls: urls })
+    if (!list.length) {
+      var defSeason = (this.data.bannerCurrentSeason && this.data.bannerCurrentSeason !== '全部') ? this.data.bannerCurrentSeason : '通用'
+      list = [{ url: '', season: defSeason, pinned: false, hidden: false }]
+    }
+    this._syncBannerPreview(list)
   },
   onBannerItemInput: function(e) {
     var idx = e.currentTarget.dataset.index
     var list = (this.data.bannerItems || []).slice()
-    list[idx] = e.detail.value
-    var urls = list.map(function(s) { return (s || '').trim() }).filter(Boolean)
-    this.setData({ bannerItems: list, bannerPreviewUrls: urls })
+    var oldItem = list[idx]
+    if (!oldItem || typeof oldItem !== 'object') {
+      oldItem = { url: '', season: '通用', pinned: false, hidden: false }
+    }
+    list[idx] = Object.assign({}, oldItem, { url: e.detail.value })
+    this._syncBannerPreview(list)
+  },
+  onBannerItemSeasonChange: function(e) {
+    var idx = e.currentTarget.dataset.index
+    var sIdx = Number(e.detail.value) || 0
+    var seasons = this.data.bannerSeasons || ['通用', 'S1', 'S2', 'S3', 'S4', 'S5']
+    var picked = seasons[sIdx] || '通用'
+    var list = (this.data.bannerItems || []).slice()
+    if (!list[idx] || typeof list[idx] !== 'object') return
+    list[idx] = Object.assign({}, list[idx], { season: picked })
+    this._syncBannerPreview(list)
+  },
+  toggleBannerItemPin: function(e) {
+    var idx = e.currentTarget.dataset.index
+    var list = (this.data.bannerItems || []).slice()
+    if (!list[idx] || typeof list[idx] !== 'object') return
+    var nextPinned = !list[idx].pinned
+    list[idx] = Object.assign({}, list[idx], { pinned: nextPinned })
+    // 置顶项排到列表顶部，直观易管
+    var pinnedPart = []
+    var normalPart = []
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] && list[i].pinned) pinnedPart.push(list[i])
+      else normalPart.push(list[i])
+    }
+    var sorted = pinnedPart.concat(normalPart)
+    this._syncBannerPreview(sorted)
+    wx.showToast({ title: nextPinned ? '📌 已置顶（保存后生效）' : '已取消置顶', icon: 'none' })
+  },
+  toggleBannerItemHide: function(e) {
+    var idx = e.currentTarget.dataset.index
+    var list = (this.data.bannerItems || []).slice()
+    if (!list[idx] || typeof list[idx] !== 'object') return
+    var nextHidden = !list[idx].hidden
+    list[idx] = Object.assign({}, list[idx], { hidden: nextHidden })
+    this._syncBannerPreview(list)
+    wx.showToast({ title: nextHidden ? '🙈 已隐藏（不展示在首页）' : '👁 已恢复展示', icon: 'none' })
   },
   onBannerInput: function(e) {
     var val = e.detail.value || ''
@@ -368,23 +504,39 @@ Page({
   saveBanner: function() {
     var self = this
     if (self.data.bannerLoading) return
-    var urls = (self.data.bannerItems || [])
-      .map(function(s) { return (s || '').trim() })
-      .filter(function(s) { return s })
-    if (!urls.length) {
-      wx.showToast({ title: '请至少添加一张图片', icon: 'none' })
+    var rawItems = (self.data.bannerItems || []).filter(function(it) {
+      return it && it.url && String(it.url).trim() && String(it.url).trim() !== 'none'
+    }).map(function(it) {
+      return {
+        url: String(it.url).trim(),
+        season: it.season || '通用',
+        pinned: !!it.pinned,
+        hidden: !!it.hidden
+      }
+    })
+    if (!rawItems.length) {
+      wx.showToast({ title: '请至少填写一张头图URL', icon: 'none' })
       return
     }
+    // 排序：置顶排前面
+    var pinnedItems = rawItems.filter(function(it) { return it.pinned })
+    var normalItems = rawItems.filter(function(it) { return !it.pinned })
+    var finalItems = pinnedItems.concat(normalItems)
+    var curSeason = self.data.bannerCurrentSeason || '全部'
+    var activeUrls = self._computeActiveBannerUrls(finalItems, curSeason)
     self.setData({ bannerLoading: true })
     var payload = {
-      url: urls[0],
-      urls: urls,
+      url: activeUrls[0] || 'none',
+      urls: activeUrls,
+      items: finalItems,
+      currentSeason: curSeason,
+      seasons: self.data.bannerSeasons || ['通用', 'S1', 'S2', 'S3', 'S4', 'S5'],
       updateTime: db.serverDate()
     }
     db.collection('site_config').doc('banner').set({ data: payload })
       .then(function() {
-        self.setData({ bannerLoading: false, bannerPreviewUrls: urls })
-        wx.showToast({ title: '头图已保存（' + urls.length + ' 张）', icon: 'success' })
+        self.setData({ bannerLoading: false, bannerItems: finalItems, bannerPreviewUrls: activeUrls })
+        wx.showToast({ title: '头图已保存（生效 ' + activeUrls.length + ' 张）', icon: 'success' })
       })
       .catch(function(err) {
         self.setData({ bannerLoading: false })

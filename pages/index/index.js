@@ -507,10 +507,28 @@ Page({
     db.collection('site_config').doc('banner').get()
       .then(function(res) {
         var d = res.data || {}
-        var raw = d.urls && d.urls.length ? d.urls : (d.url && d.url !== 'none' ? [d.url] : [])
-        raw = raw.map(function(s) { return (s || '').trim() }).filter(function(s) {
-          return s && s !== 'none' && s.indexOf('example.com') === -1
-        })
+        var raw = []
+        if (Array.isArray(d.items) && d.items.length) {
+          var curSeason = d.currentSeason || '全部'
+          var validItems = d.items.filter(function(it) {
+            if (!it || !it.url || it.hidden) return false
+            var u = String(it.url).trim()
+            if (!u || u === 'none' || u.indexOf('example.com') !== -1) return false
+            if (curSeason !== '全部') {
+              var s = it.season || '通用'
+              if (s !== curSeason && s !== '通用') return false
+            }
+            return true
+          })
+          var pinnedUrls = validItems.filter(function(it) { return it.pinned }).map(function(it) { return String(it.url).trim() })
+          var normalUrls = validItems.filter(function(it) { return !it.pinned }).map(function(it) { return String(it.url).trim() })
+          raw = pinnedUrls.concat(normalUrls)
+        } else {
+          raw = d.urls && d.urls.length ? d.urls : (d.url && d.url !== 'none' ? [d.url] : [])
+          raw = raw.map(function(s) { return (s || '').trim() }).filter(function(s) {
+            return s && s !== 'none' && s.indexOf('example.com') === -1
+          })
+        }
         // cloud:// 转临时链接
         var cloudIds = raw.filter(function(s) { return s.indexOf('cloud://') === 0 })
         var httpUrls = raw.filter(function(s) { return s.indexOf('cloud://') !== 0 })

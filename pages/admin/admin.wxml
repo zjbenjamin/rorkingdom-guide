@@ -325,36 +325,88 @@
           </view>
         </view>
 
-        <!-- 首页头图（多图轮播） -->
+        <!-- 首页头图（多图轮播 · 支持置顶 / 选择当前赛季 / 隐藏） -->
         <view class="section-header" style="margin-top: 32rpx;">
           <text class="section-title">首页头图</text>
-          <view class="add-btn" bindtap="addBannerItem"><text>+ 添加图片</text></view>
+          <view style="display:flex; gap:12rpx; align-items:center;">
+            <view class="add-btn" style="padding: 8rpx 20rpx;" bindtap="addBannerSeason"><text>+ 赛季</text></view>
+            <view class="add-btn" bindtap="addBannerItem"><text>+ 添加图片</text></view>
+          </view>
         </view>
         <view class="card-item">
-          <view class="banner-preview" wx:if="{{bannerPreviewUrls.length > 0}}" style="width: 100%; height: 220rpx; border-radius: 12rpx; overflow: hidden; margin-bottom: 16rpx; border: 1rpx solid #30363d; background: #0d1117;">
+          <!-- 当前生效赛季选择 -->
+          <view style="margin-bottom: 20rpx;">
+            <view style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 10rpx;">
+              <text style="font-size:22rpx; color:#94a3b8;">当前首页展示赛季（点击切换 · 置顶图片优先轮播）</text>
+              <text style="font-size:20rpx; color:#00d4ff;">生效中：{{bannerCurrentSeason}}（{{bannerPreviewUrls.length}}张）</text>
+            </view>
+            <view style="display:flex; flex-wrap:wrap; gap:10rpx;">
+              <view bindtap="selectBannerCurrentSeason" data-season="全部"
+                style="padding:8rpx 22rpx; border-radius:999rpx; font-size:22rpx; font-weight:{{bannerCurrentSeason === '全部' ? 'bold' : 'normal'}}; color:{{bannerCurrentSeason === '全部' ? '#00d4ff' : '#cbd5e1'}}; background:{{bannerCurrentSeason === '全部' ? 'rgba(0,212,255,0.22)' : 'rgba(255,255,255,0.05)'}}; border:1rpx solid {{bannerCurrentSeason === '全部' ? '#00d4ff' : 'rgba(255,255,255,0.14)'}};">
+                全部赛季
+              </view>
+              <view wx:for="{{bannerSeasons}}" wx:key="*this" bindtap="selectBannerCurrentSeason" data-season="{{item}}"
+                style="padding:8rpx 22rpx; border-radius:999rpx; font-size:22rpx; font-weight:{{bannerCurrentSeason === item ? 'bold' : 'normal'}}; color:{{bannerCurrentSeason === item ? '#00d4ff' : '#cbd5e1'}}; background:{{bannerCurrentSeason === item ? 'rgba(0,212,255,0.22)' : 'rgba(255,255,255,0.05)'}}; border:1rpx solid {{bannerCurrentSeason === item ? '#00d4ff' : 'rgba(255,255,255,0.14)'}};">
+                {{item}}
+              </view>
+            </view>
+          </view>
+
+          <!-- 生效头图实时预览 -->
+          <view class="banner-preview" wx:if="{{bannerPreviewUrls.length > 0}}" style="width: 100%; height: 220rpx; border-radius: 12rpx; overflow: hidden; margin-bottom: 20rpx; border: 1rpx solid #30363d; background: #0d1117;">
             <swiper style="width:100%;height:100%;" autoplay circular interval="3000">
               <swiper-item wx:for="{{bannerPreviewUrls}}" wx:key="index">
                 <image lazy-load src="{{item}}" mode="aspectFit" style="width:100%;height:100%;" />
               </swiper-item>
             </swiper>
           </view>
-          <view wx:else style="width: 100%; height: 120rpx; border-radius: 12rpx; margin-bottom: 16rpx; border: 1rpx dashed #30363d; background: #0d1117; display: flex; align-items: center; justify-content: center;">
-            <text style="font-size: 24rpx; color: #484f58;">暂无头图，点右上角添加</text>
+          <view wx:else style="width: 100%; height: 120rpx; border-radius: 12rpx; margin-bottom: 20rpx; border: 1rpx dashed #30363d; background: #0d1117; display: flex; align-items: center; justify-content: center;">
+            <text style="font-size: 24rpx; color: #64748b;">当前赛季「{{bannerCurrentSeason}}」暂无可展示头图（或已全部隐藏）</text>
           </view>
 
-          <view wx:for="{{bannerItems}}" wx:key="index" style="display:flex;gap:12rpx;align-items:center;margin-bottom:12rpx;">
-            <text style="flex-shrink:0;font-size:22rpx;color:#484f58;width:48rpx;">{{index + 1}}.</text>
-            <image wx:if="{{item}}" src="{{item}}" mode="aspectFill" catchtap="previewBlockImage" data-src="{{item}}"
-              style="flex-shrink:0;width:96rpx;height:64rpx;border-radius:8rpx;border:1rpx solid #30363d;background:#0d1117;" />
-            <view wx:else style="flex-shrink:0;width:96rpx;height:64rpx;border-radius:8rpx;border:1rpx dashed #30363d;background:#0d1117;"></view>
-            <input class="form-input" style="flex:1;min-width:0;box-sizing:border-box;background:rgba(0,0,0,0.2);border:1rpx solid rgba(255,255,255,0.1);border-radius:12rpx;padding:16rpx;color:#fff;font-size:22rpx;"
-              placeholder="图片 URL（https:// 或 cloud://）" value="{{item}}" bindinput="onBannerItemInput" data-index="{{index}}" />
-            <text bindtap="removeBannerItem" data-index="{{index}}" style="flex-shrink:0;color:#ff5050;font-size:22rpx;padding:8rpx 12rpx;">删除</text>
+          <!-- 头图条目列表 -->
+          <view wx:for="{{bannerItems}}" wx:key="index"
+            style="padding: 16rpx; border-radius: 14rpx; margin-bottom: 16rpx; opacity: {{item.hidden ? '0.58' : '1'}}; background: {{item.pinned ? 'rgba(251,191,36,0.06)' : 'rgba(255,255,255,0.03)'}}; border: 1rpx {{item.hidden ? 'dashed' : 'solid'}} {{item.pinned ? 'rgba(251,191,36,0.48)' : 'rgba(255,255,255,0.09)'}};">
+            <view style="display:flex; gap:12rpx; align-items:center; margin-bottom: 12rpx;">
+              <text style="flex-shrink:0; font-size:22rpx; font-weight:bold; color:{{item.pinned ? '#fbbf24' : '#64748b'}}; width:40rpx;">#{{index + 1}}</text>
+              <image wx:if="{{item.url}}" src="{{item.url}}" mode="aspectFill" catchtap="previewBlockImage" data-src="{{item.url}}"
+                style="flex-shrink:0; width:108rpx; height:68rpx; border-radius:8rpx; border:1rpx solid #30363d; background:#0d1117;" />
+              <view wx:else style="flex-shrink:0; width:108rpx; height:68rpx; border-radius:8rpx; border:1rpx dashed #30363d; background:#0d1117;"></view>
+              <input class="form-input" style="flex:1; min-width:0; box-sizing:border-box; background:rgba(0,0,0,0.25); border:1rpx solid rgba(255,255,255,0.12); border-radius:12rpx; padding:14rpx 16rpx; color:#fff; font-size:22rpx;"
+                placeholder="图片 URL（https:// 或 cloud://）" value="{{item.url}}" bindinput="onBannerItemInput" data-index="{{index}}" />
+            </view>
+
+            <view style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10rpx; padding-left: 40rpx;">
+              <view style="display:flex; align-items:center; gap:10rpx; flex-wrap:wrap;">
+                <picker range="{{bannerSeasons}}" bindchange="onBannerItemSeasonChange" data-index="{{index}}">
+                  <view style="display:inline-flex; align-items:center; gap:6rpx; padding:4rpx 16rpx; border-radius:999rpx; font-size:20rpx; color:#79c0ff; background:rgba(56,189,248,0.12); border:1rpx solid rgba(56,189,248,0.3);">
+                    <text>赛季: {{item.season || '通用'}} ▾</text>
+                  </view>
+                </picker>
+                <view wx:if="{{item.pinned}}" style="padding:2rpx 12rpx; border-radius:6rpx; font-size:18rpx; font-weight:bold; color:#fbbf24; background:rgba(251,191,36,0.16); border:1rpx solid rgba(251,191,36,0.4);">📌 已置顶</view>
+                <view wx:if="{{item.hidden}}" style="padding:2rpx 12rpx; border-radius:6rpx; font-size:18rpx; color:#f87171; background:rgba(248,113,113,0.14); border:1rpx solid rgba(248,113,113,0.35);">🙈 已隐藏</view>
+              </view>
+
+              <view style="display:flex; align-items:center; gap:12rpx;">
+                <view bindtap="toggleBannerItemPin" data-index="{{index}}"
+                  style="padding:6rpx 18rpx; border-radius:999rpx; font-size:21rpx; color:{{item.pinned ? '#fbbf24' : '#cbd5e1'}}; background:{{item.pinned ? 'rgba(251,191,36,0.18)' : 'rgba(255,255,255,0.06)'}}; border:1rpx solid {{item.pinned ? 'rgba(251,191,36,0.45)' : 'rgba(255,255,255,0.14)'}};">
+                  {{item.pinned ? '取消置顶' : '📌 置顶'}}
+                </view>
+                <view bindtap="toggleBannerItemHide" data-index="{{index}}"
+                  style="padding:6rpx 18rpx; border-radius:999rpx; font-size:21rpx; color:{{item.hidden ? '#4ade80' : '#94a3b8'}}; background:{{item.hidden ? 'rgba(74,222,128,0.14)' : 'rgba(255,255,255,0.06)'}}; border:1rpx solid {{item.hidden ? 'rgba(74,222,128,0.35)' : 'rgba(255,255,255,0.14)'}};">
+                  {{item.hidden ? '👁 显示' : '🙈 隐藏'}}
+                </view>
+                <view bindtap="removeBannerItem" data-index="{{index}}"
+                  style="padding:6rpx 16rpx; border-radius:999rpx; font-size:21rpx; color:#ff5050; background:rgba(255,80,80,0.1); border:1rpx solid rgba(255,80,80,0.28);">
+                  删除
+                </view>
+              </view>
+            </view>
           </view>
 
           <view class="form-actions" style="margin-top: 24rpx;">
             <button class="btn-primary" style="width:100%;height:80rpx;background:rgba(0,200,255,0.12);color:#00d4ff;border:1rpx solid rgba(0,200,255,0.2);border-radius:40rpx;display:flex;align-items:center;justify-content:center;font-size:28rpx;"
-              bindtap="saveBanner" disabled="{{bannerLoading}}">{{bannerLoading ? '保存中...' : '保存头图'}}</button>
+              bindtap="saveBanner" disabled="{{bannerLoading}}">{{bannerLoading ? '保存中...' : '保存头图配置'}}</button>
           </view>
         </view>
 
