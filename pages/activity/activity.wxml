@@ -88,14 +88,14 @@
         <view class="act-header" bindtap="onExpand" data-id="{{item.id}}">
           <view class="act-header-top">
             <view class="act-badges">
-              <image lazy-load wx:if="{{item.subType === 'collab' && item.collabLogo}}" src="{{item.collabLogo}}" mode="aspectFit" class="collab-logo" style="width:100rpx; height:40rpx; border-radius:4rpx; margin-right:10rpx;" />
-              <view class="badge badge-top" wx:if="{{item.pinned || item.status === '置顶'}}">📌 置顶</view>
-              <view class="badge badge-go" wx:if="{{item.dateStatus === '进行中' && item.hasDate}}">进行中</view>
-              <view class="badge badge-soon" wx:if="{{item.dateStatus === '即将开始'}}">即将开始</view>
-              <view class="badge badge-ended" wx:if="{{item.dateStatus === '已结束'}}">已结束</view>
-              <view class="badge badge-official" wx:if="{{item.subType === 'regular'}}">常规</view>
-              <view class="badge badge-soon" wx:if="{{item.subType === 'season'}}">赛季</view>
-              <view class="badge badge-official" wx:if="{{item.subType === 'collab'}}">联动</view>
+              <image lazy-load wx:if="{{item.subType === 'collab' && item.collabLogo}}" src="{{item.collabLogo}}" mode="aspectFit" class="collab-logo" />
+              <view class="badge badge-top" wx:if="{{item.pinned || item.status === '置顶'}}"><text class="badge-emoji">📌</text><text class="badge-txt">置顶</text></view>
+              <view class="badge badge-go" wx:if="{{item.dateStatus === '进行中' && item.hasDate}}"><text class="badge-txt">进行中</text></view>
+              <view class="badge badge-soon" wx:if="{{item.dateStatus === '即将开始'}}"><text class="badge-txt">即将开始</text></view>
+              <view class="badge badge-ended" wx:if="{{item.dateStatus === '已结束'}}"><text class="badge-txt">已结束</text></view>
+              <view class="badge badge-official" wx:if="{{item.subType === 'regular'}}"><text class="badge-txt">常规</text></view>
+              <view class="badge badge-soon" wx:if="{{item.subType === 'season'}}"><text class="badge-txt">赛季</text></view>
+              <view class="badge badge-official" wx:if="{{item.subType === 'collab'}}"><text class="badge-txt">联动</text></view>
             </view>
             <text class="act-expand-hint">{{!collapsedMap[item.id] ? (_l.clickToCollapse || '收起') + ' ▲' : (_l.clickToExpand || '点击展开全文') + ' ▼'}}</text>
           </view>
@@ -215,13 +215,13 @@
         <view class="act-header" bindtap="onExpand" data-id="{{item.id}}">
           <view class="act-header-top">
             <view class="act-badges">
-              <image lazy-load wx:if="{{item.subType === 'collab' && item.collabLogo}}" src="{{item.collabLogo}}" mode="aspectFit" class="collab-logo" style="width:100rpx; height:40rpx; border-radius:4rpx; margin-right:10rpx;" />
-              <view class="badge badge-go" wx:if="{{item.dateStatus === '进行中'}}">进行中</view>
-              <view class="badge badge-soon" wx:if="{{item.dateStatus === '即将开始'}}">即将开始</view>
-              <view class="badge badge-ended" wx:if="{{item.dateStatus === '已结束'}}">已结束</view>
-              <view class="badge badge-official" wx:if="{{item.subType === 'regular'}}">常规</view>
-              <view class="badge badge-soon" wx:if="{{item.subType === 'season'}}">赛季</view>
-              <view class="badge badge-top" wx:if="{{item.subType === 'collab'}}">联动</view>
+              <image lazy-load wx:if="{{item.subType === 'collab' && item.collabLogo}}" src="{{item.collabLogo}}" mode="aspectFit" class="collab-logo" />
+              <view class="badge badge-go" wx:if="{{item.dateStatus === '进行中'}}"><text class="badge-txt">进行中</text></view>
+              <view class="badge badge-soon" wx:if="{{item.dateStatus === '即将开始'}}"><text class="badge-txt">即将开始</text></view>
+              <view class="badge badge-ended" wx:if="{{item.dateStatus === '已结束'}}"><text class="badge-txt">已结束</text></view>
+              <view class="badge badge-official" wx:if="{{item.subType === 'regular'}}"><text class="badge-txt">常规</text></view>
+              <view class="badge badge-soon" wx:if="{{item.subType === 'season'}}"><text class="badge-txt">赛季</text></view>
+              <view class="badge badge-top" wx:if="{{item.subType === 'collab'}}"><text class="badge-txt">联动</text></view>
             </view>
             <text class="act-expand-hint">{{!collapsedMap[item.id] ? (_l.clickToCollapse || '收起') + ' ▲' : (_l.clickToExpand || '点击展开全文') + ' ▼'}}</text>
           </view>
