@@ -362,7 +362,7 @@
           <text class="title-sub">{{_l.catchLogSubtitle}}</text>
         </view>
         <view class="history-ops" style="display:flex; gap:12rpx; align-items:center;">
-          <view class="capsule-btn primary lg" bindtap="onGenerateImage" wx:if="{{history.length > 0 && showLogShareBtn}}">{{_l.catchGenImage}}</view>
+          <view class="capsule-btn primary lg" bindtap="onGenerateImage" wx:if="{{showLogShareBtn}}">{{_l.catchGenImage}}</view>
           <view class="capsule-btn warning md" bindtap="onUndo" wx:if="{{history.length > 0}}">{{_l.catchUndo}}</view>
           <view class="capsule-btn danger sm" bindtap="onClearHistory" wx:if="{{history.length > 0}}">{{_l.catchClear}}</view>
         </view>
