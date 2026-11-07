@@ -26,9 +26,13 @@
 }
 .tab {
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   padding: 16rpx 0;
   font-size: 25rpx;
+  line-height: 1.2;
   color: #64748B;
   font-weight: 600;
   border-radius: 12rpx;
@@ -113,16 +117,25 @@
 }
 .act-badges {
   display: flex;
+  align-items: center;
   gap: 10rpx;
   margin-bottom: 12rpx;
   flex-wrap: wrap;
 }
 .badge {
-  padding: 4rpx 14rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38rpx;
+  padding: 0 14rpx;
   border-radius: 8rpx;
-  font-size: 19rpx;
+  font-size: 20rpx;
+  line-height: 1;
+  text-align: center;
   color: #1E293B;
   font-weight: 700;
+  box-sizing: border-box;
+  white-space: nowrap;
 }
 .badge-go {
   background: #DCFCE7;
@@ -220,17 +233,25 @@
 }
 .act-rewards {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: 8rpx;
 }
 .act-reward {
-  padding: 4rpx 14rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36rpx;
+  padding: 0 14rpx;
   background: #EFF6FF;
   border: 1rpx solid #BFDBFE;
   border-radius: 8rpx;
   font-size: 20rpx;
+  line-height: 1;
+  text-align: center;
   color: #1D4ED8;
   font-weight: 600;
+  box-sizing: border-box;
 }
 .act-date {
   font-size: 21rpx;
@@ -794,12 +815,12 @@
 .board-cal-glyph { font-size: 30rpx; line-height: 1; }
 .board-title { font-size: 36rpx; font-weight: 800; color: #1D2B4F; letter-spacing: 2rpx; white-space: nowrap; }
 .board-head-right { display: flex; align-items: center; gap: 12rpx; flex-shrink: 0; }
-.board-season-chip { background: #FFFFFF; color: #1D2B4F; font-size: 22rpx; font-weight: 700; padding: 8rpx 18rpx; border-radius: 999rpx; border: 3rpx solid #1D2B4F; max-width: 280rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.board-season-chip { display: inline-flex; align-items: center; justify-content: center; line-height: 1.2; text-align: center; background: #FFFFFF; color: #1D2B4F; font-size: 22rpx; font-weight: 700; padding: 8rpx 18rpx; border-radius: 999rpx; border: 3rpx solid #1D2B4F; max-width: 280rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .board-arrow { font-size: 22rpx; color: #1D2B4F; font-weight: 700; }
 .board-panel { background: #FFFDF8; border-radius: 20rpx; padding: 20rpx 16rpx 24rpx; border: 3rpx solid #2B4C7E; }
 .board-filter-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12rpx; margin-bottom: 16rpx; padding-bottom: 14rpx; border-bottom: 2rpx dashed rgba(29, 43, 79, 0.15); }
 .board-filter-tabs { display: flex; align-items: center; gap: 10rpx; }
-.board-filter-tab { font-size: 22rpx; font-weight: 700; color: #1D2B4F; background: rgba(29, 43, 79, 0.07); padding: 8rpx 20rpx; border-radius: 999rpx; border: 2rpx solid transparent; }
+.board-filter-tab { display: inline-flex; align-items: center; justify-content: center; line-height: 1.2; text-align: center; font-size: 22rpx; font-weight: 700; color: #1D2B4F; background: rgba(29, 43, 79, 0.07); padding: 8rpx 20rpx; border-radius: 999rpx; border: 2rpx solid transparent; }
 .board-filter-tab.active { background: #2563EB; color: #FFFFFF; border-color: #1D4ED8; box-shadow: 0 4rpx 12rpx rgba(37, 99, 235, 0.22); }
 .board-filter-hint { font-size: 20rpx; color: rgba(29, 43, 79, 0.62); font-weight: 600; }
 .gantt-wrap { margin-bottom: 18rpx; width: 100%; overflow: hidden; }
@@ -810,7 +831,7 @@
 .gantt-grid { position: absolute; top: 60rpx; left: 0; right: 0; bottom: 0; pointer-events: none; }
 .gantt-gridline { position: absolute; top: 0; bottom: 0; width: 2rpx; background: rgba(29, 43, 79, 0.12); }
 .gantt-group-title { margin: 18rpx 0 10rpx; position: relative; z-index: 1; }
-.gantt-group-text { display: inline-block; font-size: 24rpx; font-weight: 800; padding: 6rpx 20rpx; border-radius: 999rpx; color: #FFFFFF; background: #3B82F6; }
+.gantt-group-text { display: inline-flex; align-items: center; justify-content: center; line-height: 1.2; text-align: center; font-size: 24rpx; font-weight: 800; padding: 8rpx 20rpx; border-radius: 999rpx; color: #FFFFFF; background: #3B82F6; }
 .gantt-group-text.grp-spawn { background: #0EA5E9; color: #FFFFFF; }
 .gantt-group-text.grp-seed { background: #22C55E; color: #FFFFFF; }
 .gantt-group-text.grp-quest { background: #F59E0B; color: #FFFFFF; }
@@ -838,7 +859,7 @@
 .cd-left { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6rpx; }
 .cd-title { font-size: 25rpx; font-weight: 700; color: #1D2B4F; white-space: normal; word-break: break-word; line-height: 1.35; }
 .cd-dates { font-size: 20rpx; color: rgba(29, 43, 79, 0.68); white-space: normal; word-break: break-word; }
-.cd-badge { flex-shrink: 0; font-size: 20rpx; font-weight: 700; line-height: 1.4; text-align: right; padding: 8rpx 16rpx; border-radius: 999rpx; color: #FFFFFF; background: #16A34A; white-space: nowrap; }
+.cd-badge { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20rpx; font-weight: 700; line-height: 1.2; text-align: center; padding: 8rpx 18rpx; border-radius: 999rpx; color: #FFFFFF; background: #16A34A; white-space: nowrap; }
 .cd-soon .cd-badge { background: #0284C7; }
 .cd-ended .cd-badge { background: #94A3B8; }
 .cd-ended .cd-title { color: rgba(29, 43, 79, 0.55); }
