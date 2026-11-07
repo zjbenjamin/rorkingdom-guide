@@ -15,7 +15,7 @@
       <view class="board-frame">
         <view class="board-head" bindtap="toggleBoard">
           <view class="board-head-left">
-            <view class="board-cal-icon"><text class="board-cal-glyph">📅</text></view>
+            <image class="board-cal-logo" src="https://img.remit.ee/i/ZQZBWvDqP4rG" mode="aspectFit" />
             <text class="board-title">{{_l.countdownTitle}}</text>
           </view>
           <view class="board-head-right">
