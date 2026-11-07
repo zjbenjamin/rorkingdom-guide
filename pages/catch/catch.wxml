@@ -83,10 +83,7 @@
               <image src="/images/dice/dice_shiny.png" style="width:28rpx; height:28rpx; flex-shrink:0;" mode="aspectFit"></image>
               <text class="stat-label">{{_l.catchCarnival}}</text>
             </view>
-            <view style="display:flex; align-items:center; justify-content:center; gap:8rpx;">
-              <image src="/images/dice/dice_shiny.png" style="width:38rpx; height:38rpx; flex-shrink:0;" mode="aspectFit"></image>
-              <text class="stat-value">{{carnivalCount}}</text>
-            </view>
+            <text class="stat-value">{{carnivalCount}}</text>
           </view>
           <view class="stat-card lucky">
             <text class="stat-label">{{_l.catchLuckyBox}}</text>
