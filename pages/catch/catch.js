@@ -1127,6 +1127,10 @@ Page({
       usedDice: isUsedDice,
       diceDeductedInModal: !!self._diceDeductedInModal,
       isRoundEnd: true,
+      dateKey: getTodayDateKey(),
+      timestamp: Date.now(),
+      diceSnapshotDate: getTodayDateKey(),
+      diceSnapshotStrictToday: true,
       diceSnapshot: Object.assign({}, self._getAllObtainedDiceCounts())
     };
     return record;
@@ -1210,49 +1214,28 @@ Page({
     if (dt === '龙龙骰' || dt === '词条骰子' || dt.indexOf('词条') >= 0) return '龙龙骰';
     return '龙龙骰';
   },
-  _getDailyDiceStats: function() {
-    var today = getTodayDateKey();
-    var stats = wx.getStorageSync('daily_dice_stats');
-    if (stats && stats.date === today && stats.counts) {
-      var normalized = { '异色龙龙骰': 0, '龙龙骰': 0, '奇异龙龙骰': 0, '污染龙龙骰': 0 };
-      var changed = false;
-      for (var k in stats.counts) {
-        if (!Object.prototype.hasOwnProperty.call(stats.counts, k)) continue;
-        var nk = this._normalizeDiceType(k);
-        if (nk !== k) changed = true;
-        normalized[nk] = (normalized[nk] || 0) + (stats.counts[k] || 0);
-      }
-      stats.counts = normalized;
-      if (changed) wx.setStorageSync('daily_dice_stats', stats);
-      return stats;
+  _isPickedTodayWindow: function(rec, todayKey, startMs, endMs) {
+    if (!rec) return false;
+    if (typeof rec.timestamp === 'number' && rec.timestamp > 0) {
+      return rec.timestamp >= startMs && rec.timestamp <= endMs;
     }
-    var counts = { '异色龙龙骰': 0, '龙龙骰': 0, '奇异龙龙骰': 0, '污染龙龙骰': 0 };
-    var hist = this.data.history || [];
-    for (var i = 0; i < hist.length; i++) {
-      var rec = hist[i];
-      if (!rec) continue;
-      if (rec.dateKey && rec.dateKey !== today) continue;
-      if (rec.resultRaw === 'add_dice' || (rec.result === '龙龙骰' && rec.resultRaw !== 'use_dice')) {
-        var b = rec.balls || '';
-        if (b.indexOf('异色龙龙骰染色') >= 0) continue;
-        var dt = this._normalizeDiceType(rec.diceType || b);
-        counts[dt] = (counts[dt] || 0) + 1;
-      }
+    if (rec.dateKey) {
+      return rec.dateKey === todayKey;
     }
-    var newStats = { date: today, counts: counts };
-    wx.setStorageSync('daily_dice_stats', newStats);
-    return newStats;
+    return false;
   },
-  _getAllObtainedDiceCounts: function() {
-    var daily = this._getDailyDiceStats();
-    var dailyCounts = (daily && daily.counts) || {};
-    var totalStats = wx.getStorageSync('total_dice_stats');
-    var counts = { '异色龙龙骰': 0, '龙龙骰': 0, '奇异龙龙骰': 0, '污染龙龙骰': 0 };
+  // 严格统计今日 0:00:00 - 23:59:59 期间拾取的龙龙骰数量
+  _getDailyDiceStats: function() {
+    var now = new Date();
+    var today = getTodayDateKey(now);
+    var startMs = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).getTime();
+    var endMs = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).getTime();
+
     var histCounts = { '异色龙龙骰': 0, '龙龙骰': 0, '奇异龙龙骰': 0, '污染龙龙骰': 0 };
     var hist = this.data.history || [];
     for (var i = 0; i < hist.length; i++) {
       var rec = hist[i];
-      if (!rec) continue;
+      if (!this._isPickedTodayWindow(rec, today, startMs, endMs)) continue;
       if (rec.resultRaw === 'add_dice' || (rec.result === '龙龙骰' && rec.resultRaw !== 'use_dice')) {
         var b = rec.balls || '';
         if (b.indexOf('异色龙龙骰染色') >= 0) continue;
@@ -1260,40 +1243,68 @@ Page({
         histCounts[dt] = (histCounts[dt] || 0) + 1;
       }
     }
-    if (totalStats && totalStats.counts) {
-      for (var k in totalStats.counts) {
-        if (!Object.prototype.hasOwnProperty.call(totalStats.counts, k)) continue;
-        var nk = this._normalizeDiceType(k);
-        counts[nk] = (counts[nk] || 0) + (totalStats.counts[k] || 0);
+
+    var stats = wx.getStorageSync('daily_dice_stats');
+    var logs = [];
+    if (stats && stats.date === today && Array.isArray(stats.logs)) {
+      for (var li = 0; li < stats.logs.length; li++) {
+        var lg = stats.logs[li];
+        if (lg && lg.ts >= startMs && lg.ts <= endMs && lg.type) {
+          logs.push({ type: this._normalizeDiceType(lg.type), ts: lg.ts });
+        }
       }
     }
-    var types = ['异色龙龙骰', '龙龙骰', '奇异龙龙骰', '污染龙龙骰'];
-    for (var ti = 0; ti < types.length; ti++) {
-      var t = types[ti];
-      counts[t] = Math.max(counts[t] || 0, dailyCounts[t] || 0, histCounts[t] || 0);
+    var logCounts = { '异色龙龙骰': 0, '龙龙骰': 0, '奇异龙龙骰': 0, '污染龙龙骰': 0 };
+    for (var j = 0; j < logs.length; j++) {
+      var lt = logs[j].type;
+      logCounts[lt] = (logCounts[lt] || 0) + 1;
     }
-    var currentShinyRemain = this.data.carnivalCount != null ? this.data.carnivalCount : (wx.getStorageSync('carnival_count') || 0);
-    if (counts['异色龙龙骰'] < currentShinyRemain) {
-      counts['异色龙龙骰'] = currentShinyRemain;
-    }
-    wx.setStorageSync('total_dice_stats', { counts: counts });
-    return counts;
+
+    var counts = {
+      '异色龙龙骰': Math.max(histCounts['异色龙龙骰'] || 0, logCounts['异色龙龙骰'] || 0),
+      '龙龙骰': Math.max(histCounts['龙龙骰'] || 0, logCounts['龙龙骰'] || 0),
+      '奇异龙龙骰': Math.max(histCounts['奇异龙龙骰'] || 0, logCounts['奇异龙龙骰'] || 0),
+      '污染龙龙骰': Math.max(histCounts['污染龙龙骰'] || 0, logCounts['污染龙龙骰'] || 0)
+    };
+    var newStats = { date: today, counts: counts, logs: logs };
+    wx.setStorageSync('daily_dice_stats', newStats);
+    return newStats;
+  },
+  _getAllObtainedDiceCounts: function() {
+    var daily = this._getDailyDiceStats();
+    return Object.assign({ '异色龙龙骰': 0, '龙龙骰': 0, '奇异龙龙骰': 0, '污染龙龙骰': 0 }, (daily && daily.counts) || {});
   },
   _incDailyDice: function(diceType, delta) {
     var normType = this._normalizeDiceType(diceType);
+    var now = new Date();
+    var today = getTodayDateKey(now);
     var stats = this._getDailyDiceStats();
+    var logs = Array.isArray(stats.logs) ? stats.logs.slice() : [];
+    if (delta > 0) {
+      for (var a = 0; a < delta; a++) {
+        logs.push({ type: normType, ts: Date.now() });
+      }
+    } else if (delta < 0) {
+      var toRemove = Math.abs(delta);
+      for (var r = logs.length - 1; r >= 0 && toRemove > 0; r--) {
+        if (logs[r] && logs[r].type === normType) {
+          logs.splice(r, 1);
+          toRemove--;
+        }
+      }
+    }
     var c = (stats.counts[normType] || 0) + delta;
     stats.counts[normType] = Math.max(0, c);
+    stats.date = today;
+    stats.logs = logs;
     wx.setStorageSync('daily_dice_stats', stats);
-
-    var totalCounts = this._getAllObtainedDiceCounts();
-    totalCounts[normType] = Math.max(0, (totalCounts[normType] || 0) + delta);
-    wx.setStorageSync('total_dice_stats', { counts: totalCounts });
     return stats;
   },
   _getTodayDiceItems: function(targetRec) {
-    var counts = this._getAllObtainedDiceCounts();
-    if (targetRec && targetRec.diceSnapshot) {
+    var today = getTodayDateKey();
+    var daily = this._getDailyDiceStats();
+    var counts = Object.assign({ '异色龙龙骰': 0, '龙龙骰': 0, '奇异龙龙骰': 0, '污染龙龙骰': 0 }, (daily && daily.counts) || {});
+    if (targetRec && targetRec.diceSnapshotStrictToday && targetRec.diceSnapshotDate === today && targetRec.diceSnapshot) {
       var snap = targetRec.diceSnapshot;
       counts = {
         '异色龙龙骰': Math.max(counts['异色龙龙骰'] || 0, snap['异色龙龙骰'] || 0),
@@ -1379,6 +1390,8 @@ Page({
       usedDice: !!this.data.sessionUsedDice,
       contractBall: this.data.contractBall || '',
       contractBallImg: this.data.contractBallImg || '',
+      diceSnapshotDate: getTodayDateKey(),
+      diceSnapshotStrictToday: true,
       diceSnapshot: this._getAllObtainedDiceCounts()
     };
   },
@@ -1893,14 +1906,17 @@ Page({
         ctx.fillText(i18n.t('imgNoBallsUsed'), 106, ballSectionY + 16);
       }
       
-      // ─── 7.5 获取的所有龙龙骰数量统计 ───
+      // ─── 7.5 今日(0:00-23:59)拾取的所有龙龙骰数量统计 ───
       var diceRowBaseY = (parsedBalls.length === 0 ? (ballSectionY + 26) : (ballSectionY + ballGridHeight + 28));
-      ctx.font = '14px sans-serif';
+      ctx.font = '13px sans-serif';
       ctx.fillStyle = '#94a3b8';
-      ctx.fillText('获骰统计', 36, diceRowBaseY + 14);
+      ctx.fillText('今日获骰', 36, diceRowBaseY + 12);
+      ctx.font = '9px sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,0.38)';
+      ctx.fillText('0:00-23:59', 36, diceRowBaseY + 25);
       ctx.font = 'bold 11px sans-serif';
       ctx.fillStyle = totalObtainedDice > 0 ? '#ffd54f' : 'rgba(255,255,255,0.4)';
-      ctx.fillText('共 ' + totalObtainedDice + ' 个', 36, diceRowBaseY + 34);
+      ctx.fillText('共 ' + totalObtainedDice + ' 个', 36, diceRowBaseY + 39);
       var dColW = (width - 40 - 106) / 2;
       for (var di = 0; di < todayDiceItems.length; di++) {
         var dItem = todayDiceItems[di];
@@ -2558,11 +2574,11 @@ Page({
       }
     });
   },
-  onClearHistory: function() { var self=this; wx.showModal({ title:'清空', content:'确定清空？', success:function(r){ if(r.confirm){ wx.removeStorageSync('catch_history'); wx.removeStorageSync('total_catches'); wx.removeStorageSync('success_catches'); wx.setStorageSync('new_round_started', true); self.setData({history:[],totalCatches:0,successCatches:0}) } } }) },
+  onClearHistory: function() { var self=this; wx.showModal({ title:'清空', content:'确定清空？', success:function(r){ if(r.confirm){ wx.removeStorageSync('catch_history'); wx.removeStorageSync('daily_dice_stats'); wx.removeStorageSync('total_catches'); wx.removeStorageSync('success_catches'); wx.setStorageSync('new_round_started', true); self.setData({history:[],totalCatches:0,successCatches:0}) } } }) },
   
   onEncounterTab: function(e) { this.setData({ encounterTab: e.currentTarget.dataset.t }) },
   addEncounterRecord: function(type, icon, count, skipPity, diceType, ballImg) {
-    var record = { time: formatTimeShort(), dateKey: getTodayDateKey(), balls: type, result: skipPity ? '龙龙骰' : '奇遇', resultRaw: skipPity ? 'add_dice' : 'event', diceType: diceType || '', ballImg: ballImg || (skipPity && diceType ? DICE_ICONS[diceType] : ''), total: skipPity ? 0 : 1, icon: icon, count: count, pityBefore: this.data.pityCount || 0 }
+    var record = { time: formatTimeShort(), dateKey: getTodayDateKey(), timestamp: Date.now(), balls: type, result: skipPity ? '龙龙骰' : '奇遇', resultRaw: skipPity ? 'add_dice' : 'event', diceType: diceType || '', ballImg: ballImg || (skipPity && diceType ? DICE_ICONS[diceType] : ''), total: skipPity ? 0 : 1, icon: icon, count: count, pityBefore: this.data.pityCount || 0 }
     var h = [record].concat(this.data.history).slice(0, 20)
     wx.setStorageSync('catch_history', h)
     this.setData({ history: h })
