@@ -121,7 +121,13 @@ Page({
       if (u === 'https://img.remit.ee/i/ZQZBWvDqP4rG') u = defaultLogo
       if (u) {
         wx.setStorageSync('season_logo_url', u)
-        self.setData({ seasonLogoUrl: u })
+        if (u.indexOf('cloud://') === 0) {
+          cloudUrl.convert(u, function(realUrl) {
+            self.setData({ seasonLogoUrl: realUrl || u })
+          })
+        } else {
+          self.setData({ seasonLogoUrl: u })
+        }
       }
     }).catch(function() {})
   },

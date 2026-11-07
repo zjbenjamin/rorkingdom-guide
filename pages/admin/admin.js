@@ -118,6 +118,7 @@ Page({
     bannerPreviewUrls: [],
     bannerLoading: false,
     seasonLogoInput: 'https://img.remit.ee/i/WX0FEAjMVvvY',
+    seasonLogoPreview: 'https://img.remit.ee/i/WX0FEAjMVvvY',
     seasonLogoSaving: false,
     pageConfigs: [],
     calendarSeasons: [],
@@ -324,6 +325,20 @@ Page({
       bannerPreviewUrls: previewUrls
     })
   },
+  _resolveSeasonLogoPreview: function(u) {
+    var self = this
+    var url = String(u || '').trim() || 'https://img.remit.ee/i/WX0FEAjMVvvY'
+    if (url.indexOf('cloud://') === 0 && wx.cloud) {
+      wx.cloud.getTempFileURL({ fileList: [url] }).then(function(res) {
+        var temp = res.fileList && res.fileList[0] && res.fileList[0].tempFileURL
+        self.setData({ seasonLogoPreview: temp || url })
+      }).catch(function() {
+        self.setData({ seasonLogoPreview: url })
+      })
+    } else {
+      self.setData({ seasonLogoPreview: url })
+    }
+  },
   loadSeasonLogoConfig: function() {
     var self = this
     var defaultLogo = 'https://img.remit.ee/i/WX0FEAjMVvvY'
@@ -332,14 +347,23 @@ Page({
       .then(function(res) {
         var u = (res.data && res.data.url) ? String(res.data.url).trim() : defaultLogo
         if (u === 'https://img.remit.ee/i/ZQZBWvDqP4rG') u = defaultLogo
-        self.setData({ seasonLogoInput: u || defaultLogo })
+        var finalUrl = u || defaultLogo
+        self.setData({ seasonLogoInput: finalUrl })
+        self._resolveSeasonLogoPreview(finalUrl)
       })
       .catch(function() {
-        self.setData({ seasonLogoInput: defaultLogo })
+        self.setData({ seasonLogoInput: defaultLogo, seasonLogoPreview: defaultLogo })
       })
   },
   onSeasonLogoInput: function(e) {
-    this.setData({ seasonLogoInput: e.detail.value })
+    var val = e.detail.value
+    this.setData({ seasonLogoInput: val })
+    this._resolveSeasonLogoPreview(val)
+  },
+  resetSeasonLogoDefault: function() {
+    var defaultLogo = 'https://img.remit.ee/i/WX0FEAjMVvvY'
+    this.setData({ seasonLogoInput: defaultLogo, seasonLogoPreview: defaultLogo })
+    this.saveSeasonLogo()
   },
   uploadSeasonLogoImage: function() {
     var self = this
@@ -361,7 +385,8 @@ Page({
             wx.hideLoading()
             if (upRes.fileID) {
               self.setData({ seasonLogoInput: upRes.fileID })
-              wx.showToast({ title: '已上传，请点保存', icon: 'success' })
+              self._resolveSeasonLogoPreview(upRes.fileID)
+              self.saveSeasonLogo()
             }
           },
           fail: function() {
@@ -382,6 +407,7 @@ Page({
     }).then(function() {
       wx.setStorageSync('season_logo_url', u)
       self.setData({ seasonLogoSaving: false, seasonLogoInput: u })
+      self._resolveSeasonLogoPreview(u)
       wx.showToast({ title: '赛季LOGO已同步保存', icon: 'success' })
     }).catch(function(err) {
       self.setData({ seasonLogoSaving: false })
