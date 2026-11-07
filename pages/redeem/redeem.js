@@ -51,23 +51,51 @@ Page({
     }).catch(function(e) { console.error(e) })
   },
   
+  _parseExpireMs: function(expireStr) {
+    var s = String(expireStr || '').trim();
+    var m = s.match(/(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})(?:\s+(\d{1,2}):(\d{1,2}))?/);
+    if (!m) return null;
+    var y = parseInt(m[1], 10);
+    var mo = parseInt(m[2], 10) - 1;
+    var d = parseInt(m[3], 10);
+    var hh = m[4] !== undefined ? parseInt(m[4], 10) : 23;
+    var mm = m[5] !== undefined ? parseInt(m[5], 10) : 59;
+    return new Date(y, mo, d, hh, mm, 59).getTime();
+  },
+
   fetchCodes: function() {
     var self = this;
     if (!db) return;
     self.setData({ loading: true });
-    db.collection('redeem_codes').orderBy('createTime', 'desc').get()
+    var nowMs = Date.now();
+    db.collection('redeem_codes').orderBy('createTime', 'desc').limit(100).get()
       .then(function(res) {
         var codes = res.data || [];
         codes.forEach(function(c) {
+          var createMs = 0;
           if (c.createTime) {
             var d = new Date(c.createTime);
+            createMs = d.getTime() || 0;
             c.createTimeStr = d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate();
           }
+          c._createMs = createMs;
           if (c.expireTime && c.expireTime.length >= 10) {
             var ed = c.expireTime.substring(0, 10);
             var et = c.expireTime.length > 11 ? ' ' + c.expireTime.substring(11, 16) : '';
             c.expireTimeStr = ed + et;
+            var expMs = self._parseExpireMs(c.expireTime);
+            if (expMs !== null && nowMs > expMs) {
+              c.isExpired = true;
+            }
           }
+          c.isExpired = !!c.isExpired;
+        });
+        // 未过期兑换码自动置顶排在前面，同状态按创建时间倒序排列
+        codes.sort(function(a, b) {
+          if (a.isExpired !== b.isExpired) {
+            return a.isExpired ? 1 : -1;
+          }
+          return (b._createMs || 0) - (a._createMs || 0);
         });
         self.setData({ codes: codes, loading: false });
       })
