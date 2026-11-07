@@ -64,11 +64,13 @@ var DICE_REMOTE_ICONS = {
   '/images/dice/dice_strange.png': 'https://img.remit.ee/i/gtBOE570SHS4',
   '/images/dice/dice_polluted.png': 'https://img.remit.ee/i/VWTgWa0JFPeC',
   '/images/dice/s5_logo_v2.png': 'https://img.remit.ee/i/WX0FEAjMVvvY',
+  '/images/dice/ball_puzzle.png': 'https://img.remit.ee/i/G1bkPBZ3t7gm',
   'https://img.remit.ee/i/AincnIOhIo24': '/images/dice/dice_normal.png',
   'https://img.remit.ee/i/bpUFDBGUtlOi': '/images/dice/dice_shiny.png',
   'https://img.remit.ee/i/gtBOE570SHS4': '/images/dice/dice_strange.png',
   'https://img.remit.ee/i/VWTgWa0JFPeC': '/images/dice/dice_polluted.png',
-  'https://img.remit.ee/i/WX0FEAjMVvvY': '/images/dice/s5_logo_v2.png'
+  'https://img.remit.ee/i/WX0FEAjMVvvY': '/images/dice/s5_logo_v2.png',
+  'https://img.remit.ee/i/G1bkPBZ3t7gm': '/images/dice/ball_puzzle.png'
 };
 function getTodayDateKey(d) {
   if (!d) d = new Date()
@@ -104,7 +106,8 @@ Page({
       {id:15,name:'绝缘球',color:'#8b5cf6',icon:'🛡️',count:0,freeCount:0,rate:'绝缘精灵+45%',price:3000},
       {id:16,name:'调温球',color:'#f97316',icon:'🌡️',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
       {id:17,name:'淘沙球',color:'#d4a017',icon:'🏖️',count:0,freeCount:0,rate:'提升对应属性50%捕捉概率',price:3000},
-      {id:18,name:'童话球',color:'#f472b6',icon:'🧚',count:0,freeCount:0,rate:'童话系+70%',price:800,img:'https://img.remit.ee/api/file/CAACAgUAAyEGAASHRsPbAAEYB8ZqaEBixsb7T3jYYu7SRMZ1uJv9MgAC2yUAAqj4SVcLsuCtMJ10xj0E.webp'}
+      {id:18,name:'童话球',color:'#f472b6',icon:'🧚',count:0,freeCount:0,rate:'童话系+70%',price:800,img:'https://img.remit.ee/api/file/CAACAgUAAyEGAASHRsPbAAEYB8ZqaEBixsb7T3jYYu7SRMZ1uJv9MgAC2yUAAqj4SVcLsuCtMJ10xj0E.webp'},
+      {id:19,name:'拼图球',color:'#f59e0b',icon:'🧩',count:0,freeCount:0,rate:'提升对应属性捕捉概率',price:3000,img:'https://img.remit.ee/i/G1bkPBZ3t7gm'}
     ],
     selectedBall: null, selectedBallCount: 0, expandedBallIndex: -1,
     totalCatches: 0, successCatches: 0, successRate: 0, pityCount: 0, pityHint: '基础概率', history: [], result: '',
@@ -356,16 +359,26 @@ Page({
         if (res.data && res.data.balls && res.data.balls.length > 0) {
           var cloudBalls = res.data.balls;
           var cloudMap = {};
-          for (var i = 0; i < cloudBalls.length; i++) { cloudMap[String(cloudBalls[i].id)] = cloudBalls[i]; }
+          var cloudByName = {};
+          for (var i = 0; i < cloudBalls.length; i++) {
+            cloudMap[String(cloudBalls[i].id)] = cloudBalls[i];
+            if (cloudBalls[i].name) cloudByName[cloudBalls[i].name] = cloudBalls[i];
+          }
           var merged = [];
-          var defaultIds = {};
+          var usedCloudIds = {};
           for (var j = 0; j < defaultBalls.length; j++) {
-            defaultIds[String(defaultBalls[j].id)] = true;
-            merged.push(cloudMap[String(defaultBalls[j].id)] || defaultBalls[j]);
+            var dbItem = defaultBalls[j];
+            var matchedCloud = cloudMap[String(dbItem.id)] || cloudByName[dbItem.name];
+            if (matchedCloud) {
+              usedCloudIds[String(matchedCloud.id)] = true;
+              merged.push(matchedCloud);
+            } else {
+              merged.push(dbItem);
+            }
           }
           // 云端自定义球（管理后台新增）必须并入，否则捕捉统计看不到
           for (var k = 0; k < cloudBalls.length; k++) {
-            if (!defaultIds[String(cloudBalls[k].id)]) merged.push(cloudBalls[k]);
+            if (!usedCloudIds[String(cloudBalls[k].id)]) merged.push(cloudBalls[k]);
           }
           self.syncBallsConfig(merged);
         } else {
@@ -432,7 +445,7 @@ Page({
         craftMaterials: cb.craftMaterials || '',
         // 按当前语言显示当地货币（CNY 自动换算）
         cnyDisplay: cnyPrice > 0 ? i18n.formatCny(cnyPrice) : '',
-        img: cb.img || lb.img || '',
+        img: (String(cb.name || '').indexOf('拼图') !== -1) ? 'https://img.remit.ee/i/G1bkPBZ3t7gm' : (cb.img || lb.img || ''),
         source: cb.source || '',
         isBuy: !!cb.isBuy,
         isCraft: !!cb.isCraft,

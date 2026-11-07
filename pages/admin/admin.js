@@ -2064,26 +2064,38 @@ openModal: function(e) {
       {id:15,name:'绝缘球',color:'#8b5cf6',icon:'🛡️',count:0,freeCount:0,desc:'绝缘精灵+45%',price:3000},
       {id:16,name:'调温球',color:'#f97316',icon:'🌡️',count:0,freeCount:0,desc:'提升对应属性50%捕捉概率',price:3000},
       {id:17,name:'淘沙球',color:'#d4a017',icon:'🏖️',count:0,freeCount:0,desc:'提升对应属性50%捕捉概率',price:3000},
-      {id:18,name:'童话球',color:'#f472b6',icon:'🧚',count:0,freeCount:0,desc:'童话系+70%',price:800,img:'https://img.remit.ee/api/file/CAACAgUAAyEGAASHRsPbAAEYB8ZqaEBixsb7T3jYYu7SRMZ1uJv9MgAC2yUAAqj4SVcLsuCtMJ10xj0E.webp'}
+      {id:18,name:'童话球',color:'#f472b6',icon:'🧚',count:0,freeCount:0,desc:'童话系+70%',price:800,img:'https://img.remit.ee/api/file/CAACAgUAAyEGAASHRsPbAAEYB8ZqaEBixsb7T3jYYu7SRMZ1uJv9MgAC2yUAAqj4SVcLsuCtMJ10xj0E.webp'},
+      {id:19,name:'拼图球',color:'#f59e0b',icon:'🧩',count:0,freeCount:0,desc:'提升对应属性捕捉概率',price:3000,img:'https://img.remit.ee/i/G1bkPBZ3t7gm'}
     ];
     db.collection('site_config').doc('ball_images').get().then(res => {
       if(res.data && res.data.balls) {
         var cloudBalls = res.data.balls;
         var cloudMap = {};
-        for (var i = 0; i < cloudBalls.length; i++) { cloudMap[String(cloudBalls[i].id)] = cloudBalls[i]; }
+        var cloudByName = {};
+        for (var i = 0; i < cloudBalls.length; i++) {
+          cloudMap[String(cloudBalls[i].id)] = cloudBalls[i];
+          if (cloudBalls[i].name) cloudByName[cloudBalls[i].name] = cloudBalls[i];
+        }
         var merged = [];
+        var usedCloudIds = {};
         for (var j = 0; j < defaultBalls.length; j++) {
-          merged.push(cloudMap[String(defaultBalls[j].id)] || defaultBalls[j]);
+          var dbItem = defaultBalls[j];
+          var matchedCloud = cloudMap[String(dbItem.id)] || cloudByName[dbItem.name];
+          if (matchedCloud) {
+            usedCloudIds[String(matchedCloud.id)] = true;
+            merged.push(matchedCloud);
+          } else {
+            merged.push(dbItem);
+          }
         }
         // 追加不在默认列表中的云端自定义球
-        var defaultIds = {};
-        for (var k = 0; k < defaultBalls.length; k++) { defaultIds[String(defaultBalls[k].id)] = true; }
         for (var m = 0; m < cloudBalls.length; m++) {
-          if (!defaultIds[String(cloudBalls[m].id)]) {
+          if (!usedCloudIds[String(cloudBalls[m].id)]) {
             merged.push(cloudBalls[m]);
           }
         }
-        // 旧数据：特殊球 CNY 曾记在 price，拆到 cnyPrice；补齐合成球消耗洛克贝字段
+        var needAutoSyncPuzzle = false;
+        // 旧数据：特殊球 CNY 曾记在 price，拆到 cnyPrice；补齐合成球消耗洛克贝字段；同步拼图球预设图标
         for (var n = 0; n < merged.length; n++) {
           var mb = merged[n];
           var patch = {};
@@ -2093,11 +2105,18 @@ openModal: function(e) {
           } else if (mb.cnyPrice == null) {
             patch.cnyPrice = 0;
           }
+          if (String(mb.name || '').indexOf('拼图') !== -1 && mb.img !== 'https://img.remit.ee/i/G1bkPBZ3t7gm') {
+            patch.img = 'https://img.remit.ee/i/G1bkPBZ3t7gm';
+            needAutoSyncPuzzle = true;
+          }
           patch.craftCostRoco = !!(mb.craftCostRoco || (mb.isCraft && mb.craftPrice > 0));
           patch.craftPrice = mb.craftPrice != null ? (parseInt(mb.craftPrice, 10) || 0) : (patch.craftCostRoco ? (parseInt(mb.price, 10) || 0) : 0);
           merged[n] = Object.assign({}, mb, patch);
         }
         self.setData({ ballsConfig: merged });
+        if (needAutoSyncPuzzle) {
+          db.collection('site_config').doc('ball_images').set({ data: { balls: merged } }).catch(function() {});
+        }
       } else {
         self.setData({ ballsConfig: defaultBalls });
       }
