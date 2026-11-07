@@ -9,6 +9,39 @@ var cloudUrl = require('../../utils/cloudUrl')
 var notify = require('../../utils/notify')
 var db = null
 
+// 将深色背景下保存的浅色富文本字色转换为适合浅色亮底阅读的高对比度颜色
+function adaptRichBlocksForLightTheme(blocks) {
+  if (!Array.isArray(blocks)) return []
+  var colorMap = {
+    '#ffffff': '#1E293B',
+    '#fff': '#1E293B',
+    'rgba(255,255,255,0.5)': '#64748B',
+    'rgba(255,255,255,0.3)': '#94A3B8',
+    '#00d4ff': '#0284C7',
+    '#4dc9f6': '#0284C7',
+    '#00e676': '#16A34A',
+    '#ffd700': '#D97706',
+    '#ffcc00': '#D97706',
+    '#ffab40': '#EA580C'
+  }
+  return blocks.map(function(b) {
+    if (!b || typeof b !== 'object') return b
+    var copy = Object.assign({}, b)
+    if (copy.color) {
+      var lc = String(copy.color).trim().toLowerCase()
+      if (colorMap[lc]) copy.color = colorMap[lc]
+    } else {
+      copy.color = '#1E293B'
+    }
+    if (copy.html && typeof copy.html === 'string') {
+      copy.html = copy.html
+        .replace(/color\s*:\s*(#fff(?:fff)?|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))/gi, 'color:#1E293B')
+        .replace(/color\s*:\s*rgba\(\s*255\s*,\s*255\s*,\s*255\s*,\s*0\.[35]\s*\)/gi, 'color:#64748B')
+    }
+    return copy
+  })
+}
+
 // 富文本块内的 cloud:// 封面/图片转临时链接
 function convertRichCloudUrls(list, callback) {
   if (!list || !list.length || !wx.cloud) { callback(list); return }
@@ -135,7 +168,7 @@ Page({
               title: title,
               desc: desc,
               // 富文本/联动字段必须带上，否则视频卡片、联动Logo会丢
-              richContent: item.richContent || [],
+              richContent: adaptRichBlocksForLightTheme(item.richContent || []),
               subType: item.subType || '',
               collabLogo: item.collabLogo || '',
               status: item.pinned ? '置顶' : dateStatus,
