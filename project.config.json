@@ -2,31 +2,118 @@
   "description": "洛手助手洛手助手版本",
   "packOptions": {
     "ignore": [
-      { "type": "folder", "value": ".worktrees" },
-      { "type": "folder", "value": ".agents" },
-      { "type": "folder", "value": "aliyun-push-server" },
-      { "type": "folder", "value": "node_modules" },
-      { "type": "folder", "value": "docs" },
-      { "type": "folder", "value": "cert" },
-      { "type": "folder", "value": "cloudfunctions" },
-      { "type": "folder", "value": "cloudfunctionTemplate" },
-      { "type": "folder", "value": "scratch" },
-      { "type": "folder", "value": "data" },
-      { "type": "suffix", "value": ".md" },
-      { "type": "suffix", "value": ".bak" },
-      { "type": "suffix", "value": ".ps1" },
-      { "type": "suffix", "value": ".pem" },
-      { "type": "suffix", "value": ".csr" },
-      { "type": "suffix", "value": ".cert" },
-      { "type": "suffix", "value": ".txt" },
-      { "type": "suffix", "value": ".py" },
-      { "type": "suffix", "value": ".html" },
-      { "type": "prefix", "value": "wiki_" },
-      { "type": "prefix", "value": "fix" },
-      { "type": "prefix", "value": "shell" },
-      { "type": "prefix", "value": "test" },
-      { "type": "file", "value": "all_images.json" },
-      { "type": "file", "value": "find_dupes.ps1" }
+      {
+        "type": "folder",
+        "value": ".worktrees"
+      },
+      {
+        "type": "folder",
+        "value": ".agents"
+      },
+      {
+        "type": "folder",
+        "value": "aliyun-push-server"
+      },
+      {
+        "type": "folder",
+        "value": "node_modules"
+      },
+      {
+        "type": "folder",
+        "value": "docs"
+      },
+      {
+        "type": "folder",
+        "value": "cert"
+      },
+      {
+        "type": "folder",
+        "value": "cloudfunctions"
+      },
+      {
+        "type": "folder",
+        "value": "cloudfunctionTemplate"
+      },
+      {
+        "type": "folder",
+        "value": "scratch"
+      },
+      {
+        "type": "folder",
+        "value": "data"
+      },
+      {
+        "type": "suffix",
+        "value": ".md"
+      },
+      {
+        "type": "suffix",
+        "value": ".bak"
+      },
+      {
+        "type": "suffix",
+        "value": ".ps1"
+      },
+      {
+        "type": "suffix",
+        "value": ".pem"
+      },
+      {
+        "type": "suffix",
+        "value": ".csr"
+      },
+      {
+        "type": "suffix",
+        "value": ".cert"
+      },
+      {
+        "type": "suffix",
+        "value": ".txt"
+      },
+      {
+        "type": "suffix",
+        "value": ".py"
+      },
+      {
+        "type": "suffix",
+        "value": ".html"
+      },
+      {
+        "type": "prefix",
+        "value": "wiki_"
+      },
+      {
+        "type": "prefix",
+        "value": "fix"
+      },
+      {
+        "type": "prefix",
+        "value": "shell"
+      },
+      {
+        "type": "prefix",
+        "value": "test"
+      },
+      {
+        "type": "file",
+        "value": "all_images.json"
+      },
+      {
+        "type": "file",
+        "value": "find_dupes.ps1"
+      },
+      {
+        "type": "folder",
+        "value": ".mimocode"
+      },
+      {
+        "type": "prefix",
+        "value": "scratch_"
+      },
+      {
+        "type": "suffix",
+        "value": ".xlsx"
+      }
     ],
     "include": []
   },
@@ -44,7 +131,7 @@
     "minified": true,
     "autoAudits": false,
     "uglifyFileName": false,
-    "uploadWithSourceMap": true,
+    "uploadWithSourceMap": false,
     "enhance": true,
     "showShadowRootInWxmlPanel": true,
     "packNpmManually": false,
