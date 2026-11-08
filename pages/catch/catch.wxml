@@ -81,7 +81,7 @@
           <view class="stat-card carnival">
             <view style="display:flex; align-items:center; justify-content:center; gap:6rpx;">
               <image src="/images/dice/dice_shiny.png" style="width:28rpx; height:28rpx; flex-shrink:0;" mode="aspectFit"></image>
-              <text class="stat-label">{{_l.catchCarnival}}</text>
+              <text class="stat-label">{{_l.catchShinyDicePanel || '异色龙龙骰'}}</text>
             </view>
             <text class="stat-value">{{carnivalCount}}</text>
           </view>
@@ -136,9 +136,17 @@
             <text class="btn-text">{{_l.catchUseDiceBtn}}</text>
           </view>
         </view>
-        <view class="help-hint" style="display:flex; align-items:center; justify-content:center; gap:8rpx;">
-          <image src="/images/dice/dice_shiny.png" style="width:26rpx; height:26rpx; flex-shrink:0;" mode="aspectFit"></image>
-          <text>{{_l.catchCarnivalHint}}</text>
+        <view class="dice-notice-bar">
+          <view class="dice-notice-main">
+            <view class="dice-notice-icon-wrap">
+              <image src="/images/dice/dice_shiny.png" class="dice-notice-icon" mode="aspectFit"></image>
+            </view>
+            <text class="dice-notice-text">异色龙龙骰可跨场累计 · 不占保底与奇遇</text>
+          </view>
+          <view class="dice-notice-badge">
+            <view class="dice-notice-badge-dot"></view>
+            <text>有效期至 2026-12-31</text>
+          </view>
         </view>
         <view wx:if="{{sessionUsedDice}}" style="margin-top: 12rpx; padding: 10rpx 20rpx; border-radius: 12rpx; background: rgba(251, 191, 36, 0.14); border: 1rpx solid rgba(251, 191, 36, 0.45); display: flex; align-items: center; justify-content: center; gap: 10rpx;">
           <image src="/images/dice/dice_shiny.png" style="width: 30rpx; height: 30rpx; flex-shrink: 0;" mode="aspectFit"></image>
@@ -279,22 +287,48 @@
         </view>
       </view>
 
-      <!-- 入库记录 -->
-      <view class="special-history-list" wx:if="{{specialHistory.length > 0}}">
-        <view class="history-item-mini" wx:for="{{specialHistory}}" wx:key="index">
-          <text class="h-type {{item.type === '购买' ? 'buy' : (item.type === '活动' ? 'activity' : 'craft')}}">{{item.type}}</text>
-          <view style="display:flex; align-items:center; gap:8rpx;">
-              <image wx:if="{{item.img && item.img.length > 5}}" src="{{item.img}}" style="width:28rpx; height:28rpx; border-radius:50%;" mode="aspectFill"></image>
-              <image wx:elif="{{item.icon && item.icon.length > 5}}" src="{{item.icon}}" style="width:28rpx; height:28rpx; border-radius:50%;" mode="aspectFill"></image>
-              <text wx:elif="{{item.icon}}" style="font-size:28rpx;">{{item.icon}}</text>
-              <text class="h-name">{{item.ball}}</text>
+      <!-- 入库记录（按年月日归档 · 活动/购买/合成/特殊分类排序 · 点击展开当日明细） -->
+      <view class="special-history-groups" wx:if="{{specialHistoryGroups && specialHistoryGroups.length > 0}}">
+        <view class="sh-group-header-bar">
+          <text class="sh-section-title">📦 仓库变动明细（点击日期展开）</text>
+          <text class="sh-section-sub">分类排序：活动 · 购买 · 合成 · 特殊</text>
+        </view>
+        <view class="sh-date-card {{group.expanded ? 'expanded' : ''}}" wx:for="{{specialHistoryGroups}}" wx:for-item="group" wx:key="dateKey">
+          <view class="sh-date-row" bindtap="onToggleSpecialDateGroup" data-date="{{group.dateKey}}">
+            <view class="sh-date-left">
+              <text class="sh-date-arrow {{group.expanded ? 'open' : ''}}">▸</text>
+              <text class="sh-date-label">{{group.dateLabel}}</text>
+              <text class="sh-today-tag" wx:if="{{group.isToday}}">今日</text>
             </view>
-          <text class="h-count">x{{item.count}}</text>
-          <view class="h-cost" wx:if="{{(item.displayCost || item.cost) > 0}}" style="display:flex; align-items:center; gap:4rpx;">
-            <image src="https://r2.image-upload.app/ptImg/yhJkDL2B.png" style="width:22rpx; height:22rpx;" mode="aspectFit"></image>
-            <text style="font-size:18rpx; font-weight:700; color:#ffab40;">{{item.displayCost || item.cost}}</text>
+            <view class="sh-date-right">
+              <view class="sh-cat-pills">
+                <text class="sh-cat-pill {{cat.typeClass}}" wx:for="{{group.categories}}" wx:for-item="cat" wx:key="type">{{cat.type}}+{{cat.totalCount}}</text>
+              </view>
+              <text class="sh-date-total">共 +{{group.totalCount}}</text>
+            </view>
           </view>
-          <text class="h-time">{{item.time}}</text>
+          <view class="sh-date-body" wx:if="{{group.expanded}}">
+            <view class="sh-cat-block" wx:for="{{group.categories}}" wx:for-item="cat" wx:key="type">
+              <view class="sh-cat-header">
+                <text class="h-type {{cat.typeClass}}">{{cat.type}}</text>
+                <text class="sh-cat-summary">{{cat.items.length}} 笔变动 · 合计 +{{cat.totalCount}} 球</text>
+              </view>
+              <view class="history-item-mini" wx:for="{{cat.items}}" wx:for-item="item" wx:key="idx">
+                <view style="display:flex; align-items:center; gap:10rpx; flex:1; min-width:0;">
+                  <image wx:if="{{item.img && item.img.length > 5}}" src="{{item.img}}" style="width:32rpx; height:32rpx; border-radius:50%; flex-shrink:0;" mode="aspectFill"></image>
+                  <image wx:elif="{{item.icon && item.icon.length > 5}}" src="{{item.icon}}" style="width:32rpx; height:32rpx; border-radius:50%; flex-shrink:0;" mode="aspectFill"></image>
+                  <text wx:elif="{{item.icon}}" style="font-size:28rpx; flex-shrink:0;">{{item.icon}}</text>
+                  <text class="h-name">{{item.ball}}</text>
+                </view>
+                <text class="h-count">+{{item.count}}</text>
+                <view class="h-cost" wx:if="{{(item.displayCost || item.cost) > 0}}" style="display:flex; align-items:center; gap:4rpx;">
+                  <image src="https://r2.image-upload.app/ptImg/yhJkDL2B.png" style="width:22rpx; height:22rpx;" mode="aspectFit"></image>
+                  <text style="font-size:18rpx; font-weight:700; color:#ffab40;">{{item.displayCost || item.cost}}</text>
+                </view>
+                <text class="h-time">{{item.shortTime || item.time}}</text>
+              </view>
+            </view>
+          </view>
         </view>
       </view>
 

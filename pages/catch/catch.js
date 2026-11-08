@@ -129,7 +129,7 @@ Page({
     craftBalls: ['国王球','绝缘球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','棱镜球','淘沙球'],
     cnyBalls: [],
     attributeBalls: ['绝缘球','美妙球','好战球','光合球','网兜球','暗星球','调温球','变幻球','淘沙球','童话球'],
-    specialCount: '', specialHistory: [],
+    specialCount: '', specialHistory: [], specialHistoryGroups: [], expandedSpecialDates: {},
     totalBallUsed: 0,
     hasActiveBalls: false,
     ballDecrease: {},
@@ -625,6 +625,7 @@ Page({
       continuePity: wx.getStorageSync('continue_pity') || false,
       quickRecordMode: wx.getStorageSync('quick_record_mode') || false,
       specialHistory: wx.getStorageSync('special_history') || [],
+      specialHistoryGroups: this._buildSpecialHistoryGroups(wx.getStorageSync('special_history') || [], this.data.expandedSpecialDates),
       sessionUsedDice: !!wx.getStorageSync('session_used_dice'),
       lastWealthAdjust: wx.getStorageSync('last_wealth_adjust') || null
     })
@@ -1529,8 +1530,22 @@ Page({
         totalObtainedDice += (todayDiceItems[tdi].count || 0);
       }
       var diceRows = todayDiceItems.length > 2 ? 2 : 1;
-      var diceSectionHeight = 18 + diceRows * 22;
-      var height = Math.max(700, (hasHistory ? 680 : 0) + ballGridHeight + remarkOffset + diceSectionHeight + 60);
+      var diceSectionHeight = 28 + diceRows * 32;
+      var hasPetImgEarly = false;
+      if (last && last.capturedPets && last.capturedPets.length > 0) {
+        for (var epi = 0; epi < last.capturedPets.length; epi++) {
+          if (last.capturedPets[epi] && last.capturedPets[epi].img && last.capturedPets[epi].img.length > 5) {
+            hasPetImgEarly = true; break;
+          }
+        }
+      }
+      if (!hasPetImgEarly && last && last.petImageUrl && last.petImageUrl.length > 5) {
+        hasPetImgEarly = true;
+      }
+      var isDiceShinyEarly = !!(last && (last.usedDice || self.data.sessionUsedDice || (self.data.history && self.data.history[0] && self.data.history[0].resultRaw === 'use_dice')));
+      var hasBottomShowcase = hasPetImgEarly || !!(last && last.contractBall) || isDiceShinyEarly;
+      var bottomReduction = hasBottomShowcase ? 0 : 136;
+      var height = Math.max(620, (hasHistory ? 680 : 0) + ballGridHeight + remarkOffset + diceSectionHeight + 60 - bottomReduction);
       var imgScale = height > 700 ? Math.max(0.6, 1 - (height - 700) / 800) : 1;
       
       // ─── 2. 画布初始化 ───
@@ -1758,7 +1773,7 @@ Page({
       // ─── 6. 历史记录详情 ───
       if (!last) { setTimeout(saveCanvas, 500); return; }
       
-      var boxH = 370 + ballGridHeight + remarkOffset + diceSectionHeight;
+      var boxH = 370 + ballGridHeight + remarkOffset + diceSectionHeight - bottomReduction;
       roundRect(20, 240, width - 40, boxH, 12, 'rgba(255,255,255,0.05)', 'rgba(255,255,255,0.1)');
       
       ctx.fillStyle = '#e6edf3';
@@ -1957,42 +1972,59 @@ Page({
         ctx.fillText(i18n.t('imgNoBallsUsed'), 106, ballSectionY + 16);
       }
       
-      // ─── 7.5 今日(0:00-23:59)拾取的所有龙龙骰数量统计 ───
+      // ─── 7.5 今日累计拾取龙龙骰统计（美观卡片化排版）───
       var diceRowBaseY = (parsedBalls.length === 0 ? (ballSectionY + 26) : (ballSectionY + ballGridHeight + 28));
-      ctx.font = '13px sans-serif';
-      ctx.fillStyle = '#94a3b8';
-      ctx.fillText('今日获骰', 36, diceRowBaseY + 12);
-      ctx.font = '9px sans-serif';
-      ctx.fillStyle = 'rgba(255,255,255,0.38)';
-      ctx.fillText('0:00-23:59', 36, diceRowBaseY + 25);
-      ctx.font = 'bold 11px sans-serif';
-      ctx.fillStyle = totalObtainedDice > 0 ? '#ffd54f' : 'rgba(255,255,255,0.4)';
-      ctx.fillText('共 ' + totalObtainedDice + ' 个', 36, diceRowBaseY + 39);
-      var dColW = (width - 40 - 106) / 2;
+      roundRect(36, diceRowBaseY + 2, 3.5, 13, 1.5, '#ffd54f');
+      var dHeaderX = 46;
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillStyle = '#cbd5e1';
+      var dTitlePre = '今日累计拾取龙龙骰 ';
+      ctx.fillText(dTitlePre, dHeaderX, diceRowBaseY + 13);
+      var dNumX = dHeaderX + ctx.measureText(dTitlePre).width;
+      ctx.font = 'bold 15px sans-serif';
+      ctx.fillStyle = totalObtainedDice > 0 ? '#ffd54f' : 'rgba(255,255,255,0.45)';
+      var dNumStr = String(totalObtainedDice);
+      ctx.fillText(dNumStr, dNumX, diceRowBaseY + 13.5);
+      var dUnitX = dNumX + ctx.measureText(dNumStr).width + 3;
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillText('个', dUnitX, diceRowBaseY + 13);
+
+      var dColGap = 10;
+      var dColW = (width - 72 - dColGap) / 2;
+      var dCardH = 26;
       for (var di = 0; di < todayDiceItems.length; di++) {
         var dItem = todayDiceItems[di];
         var dCol = di % 2;
         var dRow = Math.floor(di / 2);
-        var dx = 106 + dCol * dColW;
-        var dy = diceRowBaseY + 14 + dRow * 22;
-        var dIconSz = 16;
+        var dx = 36 + dCol * (dColW + dColGap);
+        var dCardY = diceRowBaseY + 22 + dRow * (dCardH + 6);
+        var hasDCnt = (dItem.count || 0) > 0;
+        var dCardBg = hasDCnt ? 'rgba(255,213,79,0.08)' : 'rgba(255,255,255,0.025)';
+        var dCardBd = hasDCnt ? 'rgba(255,213,79,0.28)' : 'rgba(255,255,255,0.07)';
+        roundRect(dx, dCardY, dColW, dCardH, 7, dCardBg, dCardBd);
+        var dIconSz = 17;
+        var dIconX = dx + 8;
+        var dIconY = dCardY + Math.round((dCardH - dIconSz) / 2);
         if (dItem.img) {
           loadImg(dItem.img, (function(ix, iy, sz) {
             return function(img) {
               if (img) {
-                try { ctx.drawImage(img, ix, iy - sz + 3, sz, sz); } catch (e) {}
+                try { ctx.drawImage(img, ix, iy, sz, sz); } catch (e) {}
               }
             };
-          })(dx, dy, dIconSz));
+          })(dIconX, dIconY, dIconSz));
         }
-        var dTextX = dx + (dItem.img ? (dIconSz + 4) : 0);
-        var dText = (dItem.img ? '' : dItem.icon) + dItem.type + ' ' + dItem.count + '个';
+        var dTextY = dCardY + 17;
+        var dNameX = dx + (dItem.img ? (dIconSz + 13) : 10);
+        ctx.font = '12px sans-serif';
+        ctx.fillStyle = hasDCnt ? '#f1f5f9' : 'rgba(255,255,255,0.45)';
+        ctx.fillText(dItem.type, dNameX, dTextY);
+        ctx.textAlign = 'right';
         ctx.font = 'bold 12px sans-serif';
-        if (ctx.measureText(dText).width > dColW - (dItem.img ? (dIconSz + 6) : 4)) {
-          ctx.font = 'bold 11px sans-serif';
-        }
-        ctx.fillStyle = dItem.color || '#ffd54f';
-        ctx.fillText(dText, dTextX, dy);
+        ctx.fillStyle = hasDCnt ? (dItem.activeColor || '#ffd54f') : 'rgba(255,255,255,0.32)';
+        ctx.fillText((dItem.count || 0) + ' 个', dx + dColW - 10, dTextY);
+        ctx.textAlign = 'left';
       }
       
       var petImgY = (parsedBalls.length === 0 ? (ballSectionY + 35) : (ballSectionY + ballGridHeight + 40)) + diceSectionHeight;
@@ -2170,42 +2202,6 @@ Page({
         ctx.font = 'bold 13px sans-serif';
         ctx.fillStyle = '#ffd54f';
         ctx.fillText('异色龙龙骰染色', dcTextX, dcY + Math.round(dcH * 0.72));
-      } else if (!hasPetImg) {
-        // 新一轮或无精灵图时，在底部展示四类龙龙骰图标与获取数量总览卡片
-        var cardGap = 8;
-        var totalCardsW = width - 72;
-        var singleCardW = (totalCardsW - cardGap * 3) / 4;
-        var singleCardH = Math.max(82, Math.round(92 * imgScale));
-        var cardTopY = petImgY + Math.max(0, Math.round((petSize - singleCardH) / 2));
-        for (var cdi = 0; cdi < todayDiceItems.length; cdi++) {
-          var cdItem = todayDiceItems[cdi];
-          var cdX = 36 + cdi * (singleCardW + cardGap);
-          var hasCnt = (cdItem.count || 0) > 0;
-          var bgCol = hasCnt ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.025)';
-          var bdCol = hasCnt ? 'rgba(255,213,79,0.32)' : 'rgba(255,255,255,0.08)';
-          roundRect(cdX, cardTopY, singleCardW, singleCardH, 10, bgCol, bdCol);
-          var cdIconSz = Math.round(30 * imgScale);
-          var cdIconX = cdX + Math.round((singleCardW - cdIconSz) / 2);
-          var cdIconY = cardTopY + 10;
-          if (cdItem.img) {
-            loadImg(cdItem.img, (function(ix, iy, sz) {
-              return function(img) {
-                if (img) {
-                  try { ctx.drawImage(img, ix, iy, sz, sz); } catch (e) {}
-                }
-              };
-            })(cdIconX, cdIconY, cdIconSz));
-          }
-          ctx.textAlign = 'center';
-          var centerCardX = cdX + singleCardW / 2;
-          ctx.font = '10px sans-serif';
-          ctx.fillStyle = hasCnt ? '#e2e8f0' : 'rgba(255,255,255,0.45)';
-          ctx.fillText(cdItem.type, centerCardX, cardTopY + cdIconSz + 24);
-          ctx.font = 'bold 13px sans-serif';
-          ctx.fillStyle = hasCnt ? (cdItem.activeColor || '#ffd54f') : 'rgba(255,255,255,0.38)';
-          ctx.fillText('×' + (cdItem.count || 0), centerCardX, cardTopY + cdIconSz + 42);
-          ctx.textAlign = 'left';
-        }
       }
       
       // ─── 8. 底部签名 ───
@@ -2288,7 +2284,7 @@ Page({
     var todayDiceClipList = this._getTodayDiceItems(last);
     var totalClipDice = 0;
     for (var cdi = 0; cdi < todayDiceClipList.length; cdi++) totalClipDice += (todayDiceClipList[cdi].count || 0);
-    var todayDiceClipText = '共' + totalClipDice + '个（' + todayDiceClipList.map(function(x) { return x.type + x.count + '个'; }).join('、') + '）';
+    var todayDiceClipText = '今日累计拾取龙龙骰 ' + totalClipDice + ' 个（' + todayDiceClipList.map(function(x) { return x.type + x.count + '个'; }).join('、') + '）';
     var isDiceClip = !!(last.usedDice || this.data.sessionUsedDice || (this.data.history && this.data.history[0] && this.data.history[0].resultRaw === 'use_dice'));
     var remainDiceClip = this.data.carnivalCount != null ? this.data.carnivalCount : (last.carnivalCount != null ? last.carnivalCount : 0);
     var statusClipStr = last.resultRaw === 'ongoing' ? ('新一轮进行中（保底 ' + (this.data.pityCount || 0) + '/80）') : localizeResultText(last.resultRaw, last.result);
@@ -3061,6 +3057,8 @@ Page({
             totalBallUsed: 0,
             usedBallTotal: 0,
             specialHistory: [],
+            specialHistoryGroups: [],
+            expandedSpecialDates: {},
             ballCheckRecords: [],
             selectedBall: null,
             selectedBallCount: 0, expandedBallIndex: -1,
@@ -3400,6 +3398,121 @@ Page({
       setTimeout(function() { self.setData({ ballDecrease: {} }) }, 2500)
     }
   },
+  // 咕噜球仓库变动记录：按年-月-日分组，日内按「活动 -> 购买 -> 合成 -> 特殊」分类排序，点击日期才展开当日明细
+  _buildSpecialHistoryGroups: function(list, expandedMap) {
+    var arr = Array.isArray(list) ? list : [];
+    if (!arr.length) return [];
+    var exp = expandedMap || {};
+    var todayKey = getTodayDateKey();
+    var balls = this.data.balls || [];
+    var ballMetaMap = {};
+    for (var bi = 0; bi < balls.length; bi++) {
+      if (balls[bi] && balls[bi].name) {
+        ballMetaMap[balls[bi].name] = balls[bi];
+      }
+    }
+    var typeOrder = ['活动', '购买', '合成', '特殊'];
+    var typeClassMap = {
+      '活动': 'activity',
+      '购买': 'buy',
+      '合成': 'craft',
+      '特殊': 'special'
+    };
+    var groupsByDate = {};
+    var dateKeys = [];
+    for (var i = 0; i < arr.length; i++) {
+      var rec = arr[i];
+      if (!rec) continue;
+      var timeStr = String(rec.time || '').trim();
+      var dKey = rec.dateKey || '';
+      var shortTime = timeStr;
+      var mFull = timeStr.match(/^(\d{4})-(\d{2})-(\d{2})\s+(.+)$/);
+      if (mFull) {
+        if (!dKey) dKey = mFull[1] + '-' + mFull[2] + '-' + mFull[3];
+        shortTime = mFull[4];
+      } else {
+        var mDate = timeStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (mDate && !dKey) dKey = mDate[1] + '-' + mDate[2] + '-' + mDate[3];
+      }
+      if (!dKey || !/^\d{4}-\d{2}-\d{2}$/.test(dKey)) {
+        dKey = todayKey;
+      }
+      if (!groupsByDate[dKey]) {
+        var parts = dKey.split('-');
+        var dLabel = parts.length === 3 ? (parts[0] + '年' + parts[1] + '月' + parts[2] + '日') : dKey;
+        groupsByDate[dKey] = {
+          dateKey: dKey,
+          dateLabel: dLabel,
+          isToday: dKey === todayKey,
+          expanded: !!exp[dKey],
+          totalCount: 0,
+          byType: { '活动': [], '购买': [], '合成': [], '特殊': [] }
+        };
+        dateKeys.push(dKey);
+      }
+      var normType = rec.type;
+      if (typeOrder.indexOf(normType) === -1) normType = '特殊';
+      var bMeta = ballMetaMap[rec.ball] || {};
+      var resolvedImg = rec.img || bMeta.img || '';
+      var resolvedIcon = rec.icon || bMeta.icon || '';
+      var cnt = parseInt(rec.count, 10) || 0;
+      groupsByDate[dKey].totalCount += cnt;
+      groupsByDate[dKey].byType[normType].push({
+        idx: i,
+        type: normType,
+        typeClass: typeClassMap[normType] || 'special',
+        ball: rec.ball,
+        count: cnt,
+        cost: rec.cost || 0,
+        displayCost: rec.displayCost || rec.cost || 0,
+        time: timeStr,
+        shortTime: shortTime,
+        img: resolvedImg,
+        icon: resolvedIcon
+      });
+    }
+    dateKeys.sort(function(a, b) { return a < b ? 1 : (a > b ? -1 : 0); });
+    var result = [];
+    for (var di = 0; di < dateKeys.length; di++) {
+      var dk = dateKeys[di];
+      var g = groupsByDate[dk];
+      var cats = [];
+      for (var ti = 0; ti < typeOrder.length; ti++) {
+        var tName = typeOrder[ti];
+        var tItems = g.byType[tName];
+        if (tItems && tItems.length > 0) {
+          var catTotal = 0;
+          for (var ci = 0; ci < tItems.length; ci++) catTotal += (tItems[ci].count || 0);
+          cats.push({
+            type: tName,
+            typeClass: typeClassMap[tName] || 'special',
+            totalCount: catTotal,
+            items: tItems
+          });
+        }
+      }
+      result.push({
+        dateKey: g.dateKey,
+        dateLabel: g.dateLabel,
+        isToday: g.isToday,
+        expanded: g.expanded,
+        totalCount: g.totalCount,
+        categories: cats
+      });
+    }
+    return result;
+  },
+  onToggleSpecialDateGroup: function(e) {
+    var dateKey = e.currentTarget.dataset.date;
+    if (!dateKey) return;
+    var exp = Object.assign({}, this.data.expandedSpecialDates || {});
+    exp[dateKey] = !exp[dateKey];
+    var groups = this._buildSpecialHistoryGroups(this.data.specialHistory || [], exp);
+    this.setData({
+      expandedSpecialDates: exp,
+      specialHistoryGroups: groups
+    });
+  },
   onSpecialTab: function(e) {
     var tab = e.currentTarget.dataset.t
     this.setData({
@@ -3455,7 +3568,8 @@ Page({
     var newCosts = self.data.totalCosts + totalCost
     wx.setStorageSync('total_costs', newCosts)
     var accumulated = self.data.totalGains - newCosts
-    var h = [{type: t, ball: ballName, count: v, cost: totalCost, displayCost: displayCost, time: formatTime(), icon: ballIcon, img: ballImg}].concat(self.data.specialHistory).slice(0, 50)
+    var todayKey = getTodayDateKey()
+    var h = [{type: t, ball: ballName, count: v, cost: totalCost, displayCost: displayCost, time: formatTime(), dateKey: todayKey, icon: ballIcon, img: ballImg}].concat(self.data.specialHistory).slice(0, 100)
     wx.setStorageSync('special_history', h)
     var balls = self.data.balls.slice()
     for (var i = 0; i < balls.length; i++) {
@@ -3470,7 +3584,8 @@ Page({
     var hasActive = false
     for (var i = 0; i < balls.length; i++) { if (balls[i].count > 0) { hasActive = true; break } }
     self.saveBallsToStorage(balls);
-      self.setData({ specialHistory: h, specialCount: '', balls: balls, totalBallUsed: totalBallUsed, totalCosts: newCosts, accumulatedWealth: accumulated, totalWealth: self.data.initialWealth + accumulated, hasActiveBalls: hasActive, canStartCapture: self.data.wealthSet && hasActive })
+    var shGroups = self._buildSpecialHistoryGroups(h, self.data.expandedSpecialDates);
+    self.setData({ specialHistory: h, specialHistoryGroups: shGroups, specialCount: '', balls: balls, totalBallUsed: totalBallUsed, totalCosts: newCosts, accumulatedWealth: accumulated, totalWealth: self.data.initialWealth + accumulated, hasActiveBalls: hasActive, canStartCapture: self.data.wealthSet && hasActive })
     self.updateGemCost()
     wx.showToast({title: totalCost > 0 ? t + ballName + ' +' + v + ' 消耗💵' + totalCost : t + ballName + ' +' + v, icon: 'none'})
   },

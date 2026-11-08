@@ -344,6 +344,7 @@ var i18n = {
     catchInitHint: '请先初始化洛克贝资产并购买咕噜球',
     catchEncounterCount: '累计奇遇次数',
     catchCarnival: '龙龙骰',
+    catchShinyDicePanel: '异色龙龙骰',
     catchLuckyBox: '龙骑士',
     catchCarnivalHint: '龙龙骰可以累计【有效期截至2026-12-31】，不占用保底和奇遇',
     catchPityTitle: '保底进度监测',
