@@ -121,6 +121,25 @@ function recognizeTimeSlotIndex(timeStr) {
   return 3
 }
 
+function getTodayDateStr(now) {
+  var d = now || new Date()
+  var y = d.getFullYear()
+  var m = d.getMonth() + 1
+  var day = d.getDate()
+  return y + '-' + (m < 10 ? '0' + m : m) + '-' + (day < 10 ? '0' + day : day)
+}
+
+// 根据当前本地时间自动匹配预设上架时段：
+// 0: 08:00-12:00 (下架 12:00), 1: 12:00-16:00 (下架 16:00), 2: 16:00-20:00 (下架 20:00), 3: 20:00-24:00 (下架 23:59)
+function getCurrentTimeSlotIndex(now) {
+  var d = now || new Date()
+  var mins = d.getHours() * 60 + d.getMinutes()
+  if (mins < 12 * 60) return 0
+  if (mins < 16 * 60) return 1
+  if (mins < 20 * 60) return 2
+  return 3
+}
+
 function normalizeLimitCount(val) {
   if (val === undefined || val === null) return ''
   var s = String(val).trim()
@@ -343,43 +362,27 @@ Page({
     var pad = function(n) { return n < 10 ? '0' + n : n }
     return pad(s.getMonth() + 1) + '-' + pad(s.getDate()) + ' ' + pad(s.getHours()) + ':' + pad(s.getMinutes()) + ' - ' + pad(e.getHours()) + ':' + pad(e.getMinutes())
   },
-  // 上架时按远行商人日程（remoteSelling）自动匹配单品的下架日期与时段
+  _getAutoOfflineState: function() {
+    var now = new Date()
+    var today = getTodayDateStr(now)
+    var slotIdx = getCurrentTimeSlotIndex(now)
+    var timeStr = TIME_SLOT_ENDS[slotIdx] || '23:59'
+    return {
+      todayDate: today,
+      offlineDate: today,
+      timeSlotIndex: slotIdx,
+      offlineTimeStr: timeStr
+    }
+  },
+  // 上架时若单品已有下架时间则自动识别所属预设时段
   applyScheduleTime: function(item) {
     if (!item) return item
     var out = Object.assign({}, item)
     if (out.offlineDate || out._offlineDate) {
-      // 已有下架时间时，仍自动识别所属时段
       var existIdx = recognizeTimeSlotIndex(out.offlineTimeStr || out._offlineTimeStr)
       out._timeSlotIndex = existIdx
       return out
     }
-    var name = String(out.name || '').trim()
-    if (!name) return out
-    var list = this.data.remoteSelling || []
-    var now = Date.now()
-    var upcoming = null, fallback = null
-    for (var i = 0; i < list.length; i++) {
-      var p = list[i]
-      if (!p || !p.end || String(p.name || '').trim() !== name) continue
-      if (p.end > now) {
-        if (!upcoming || p.end < upcoming.end) upcoming = p
-      } else {
-        if (!fallback || p.end > fallback.end) fallback = p
-      }
-    }
-    var match = upcoming || fallback
-    if (!match) return out
-    var e = new Date(match.end)
-    // 整点 00:00 结束视为上一日 23:59
-    if (e.getHours() === 0 && e.getMinutes() === 0) e = new Date(match.end - 60000)
-    var pad = function(n) { return n < 10 ? '0' + n : '' + n }
-    var dateStr = e.getFullYear() + '-' + pad(e.getMonth() + 1) + '-' + pad(e.getDate())
-    var timeStr = pad(e.getHours()) + ':' + pad(e.getMinutes())
-    out.offlineDate = dateStr
-    out.offlineTimeStr = timeStr
-    out._offlineDate = dateStr
-    out._offlineTimeStr = timeStr
-    out._timeSlotIndex = recognizeTimeSlotIndex(timeStr)
     return out
   },
   calculateRemoteRound: function() {
@@ -815,13 +818,21 @@ Page({
         available.push(it)
       }
     }
-    this.setData({
+    var updates = {
       showAddSellingItemModal: true,
       availableItems: available,
       selectedForSelling: {},
       selectedCountForModal: 0,
-      batchLimitCount: ''
-    })
+      batchLimitCount: '',
+      todayDate: getTodayDateStr()
+    }
+    if (!this._manualOfflineTimeModified) {
+      var autoState = this._getAutoOfflineState()
+      updates.offlineDate = autoState.offlineDate
+      updates.timeSlotIndex = autoState.timeSlotIndex
+      updates.offlineTimeStr = autoState.offlineTimeStr
+    }
+    this.setData(updates)
   },
   closeAddSellingItemModal: function() {
     this.setData({ showAddSellingItemModal: false })
@@ -840,7 +851,15 @@ Page({
     
     selected[item.id] = !selected[item.id]
     var newSelectedCount = Object.keys(selected).filter(function(k){ return selected[k] }).length
-    this.setData({ selectedForSelling: selected, selectedCountForModal: newSelectedCount })
+    var updates = { selectedForSelling: selected, selectedCountForModal: newSelectedCount }
+    if (newSelectedCount > 0 && !this._manualOfflineTimeModified) {
+      var autoState = this._getAutoOfflineState()
+      updates.todayDate = autoState.todayDate
+      updates.offlineDate = autoState.offlineDate
+      updates.timeSlotIndex = autoState.timeSlotIndex
+      updates.offlineTimeStr = autoState.offlineTimeStr
+    }
+    this.setData(updates)
   },
   serializeItems: function(items) {
     return serializeItems(items)
@@ -898,20 +917,30 @@ Page({
       if (typeof serializeItems === 'function') text = serializeItems(updated);
       else if (self.serializeItems) text = self.serializeItems(updated);
       
-      var now = Date.now();
-      var updateData = { currentSelling: text, showCountdown: text !== '', updateTime: db.serverDate() };
-      // THE FIX: always sync the local timer state so old expired timers in DB are overwritten!
-      if (!self.data.offlineTime) {
-        updateData.offlineTime = null;
-        updateData.offlineDate = '';
-        updateData.offlineTimeStr = '23:59';
+      var finalDate = self.data.offlineDate;
+      var finalSlotIdx = self.data.timeSlotIndex;
+      var finalTimeStr = self.data.offlineTimeStr || '23:59';
+      if (!self._manualOfflineTimeModified) {
+        var autoState = self._getAutoOfflineState();
+        finalDate = autoState.offlineDate;
+        finalSlotIdx = autoState.timeSlotIndex;
+        finalTimeStr = autoState.offlineTimeStr;
+      } else if (finalDate && finalSlotIdx === -1) {
+        finalSlotIdx = recognizeTimeSlotIndex(finalTimeStr);
       }
-      
-            if (self.data.offlineTime && now >= self.data.offlineTime) {
-        updateData.offlineTime = null;
-        updateData.offlineDate = '';
-        updateData.offlineTimeStr = '23:59';
+      var finalOfflineTime = null;
+      if (finalDate) {
+        var timeForParse = finalTimeStr === '23:59' ? '23:59:59' : (finalTimeStr + ':00');
+        finalOfflineTime = new Date(finalDate.replace(/-/g, '/') + ' ' + timeForParse).getTime();
       }
+      var updateData = {
+        currentSelling: text,
+        showCountdown: text !== '',
+        offlineDate: finalDate || '',
+        offlineTimeStr: finalTimeStr || '23:59',
+        offlineTime: finalOfflineTime,
+        updateTime: db.serverDate()
+      };
   
       wx.showLoading({ title: '上架中...' });
       var updatePromise = db.collection('page_config').doc('merchant').update({ data: updateData });
@@ -923,15 +952,25 @@ Page({
         throw err;
       }).then(function() {
         wx.hideLoading();
-        var nextState = { currentSellingText: text, showAddSellingItemModal: false, selectedForSelling: {}, selectedCountForModal: 0, batchLimitCount: '' };
-        if (updateData.offlineTime === null) {
-          nextState.offlineTime = null;
-          nextState.offlineDate = '';
-          nextState.offlineTimeStr = '23:59';
-          nextState.timeSlotIndex = -1;
+        var nextState = {
+          currentSellingText: text,
+          showAddSellingItemModal: false,
+          selectedForSelling: {},
+          selectedCountForModal: 0,
+          batchLimitCount: '',
+          offlineDate: finalDate || '',
+          offlineTimeStr: finalTimeStr || '23:59',
+          offlineTime: finalOfflineTime,
+          timeSlotIndex: finalDate ? finalSlotIdx : -1
+        };
+        if (!finalOfflineTime) {
           nextState.remainingTimeStr = '';
         }
+        if (!self.data.showSellingModal) {
+          self._manualOfflineTimeModified = false;
+        }
         self.setData(nextState); self.syncSellingArrays(updated);
+        if (typeof self.startCountdownTimer === 'function') self.startCountdownTimer();
         wx.showToast({ title: '上架成功', icon: 'success' });
       }).catch(function(err) {
         wx.hideLoading();
@@ -969,20 +1008,30 @@ Page({
       if (typeof serializeItems === 'function') text = serializeItems(updated);
       else if (self.serializeItems) text = self.serializeItems(updated);
   
-      var now = Date.now();
-      var updateData = { currentSelling: text, showCountdown: text !== '', updateTime: db.serverDate() };
-      // THE FIX: always sync the local timer state so old expired timers in DB are overwritten!
-      if (!self.data.offlineTime) {
-        updateData.offlineTime = null;
-        updateData.offlineDate = '';
-        updateData.offlineTimeStr = '23:59';
+      var finalDate = self.data.offlineDate;
+      var finalSlotIdx = self.data.timeSlotIndex;
+      var finalTimeStr = self.data.offlineTimeStr || '23:59';
+      if (!self._manualOfflineTimeModified) {
+        var autoState = self._getAutoOfflineState();
+        finalDate = autoState.offlineDate;
+        finalSlotIdx = autoState.timeSlotIndex;
+        finalTimeStr = autoState.offlineTimeStr;
+      } else if (finalDate && finalSlotIdx === -1) {
+        finalSlotIdx = recognizeTimeSlotIndex(finalTimeStr);
       }
-      
-            if (self.data.offlineTime && now >= self.data.offlineTime) {
-        updateData.offlineTime = null;
-        updateData.offlineDate = '';
-        updateData.offlineTimeStr = '23:59';
+      var finalOfflineTime = null;
+      if (finalDate) {
+        var timeForParse = finalTimeStr === '23:59' ? '23:59:59' : (finalTimeStr + ':00');
+        finalOfflineTime = new Date(finalDate.replace(/-/g, '/') + ' ' + timeForParse).getTime();
       }
+      var updateData = {
+        currentSelling: text,
+        showCountdown: text !== '',
+        offlineDate: finalDate || '',
+        offlineTimeStr: finalTimeStr || '23:59',
+        offlineTime: finalOfflineTime,
+        updateTime: db.serverDate()
+      };
   
       wx.showLoading({ title: '上架中...' });
       var updatePromise = db.collection('page_config').doc('merchant').update({ data: updateData });
@@ -994,15 +1043,19 @@ Page({
         throw err;
       }).then(function() {
         wx.hideLoading();
-        var nextState = { currentSellingText: text, showAddSellingItemModal: false };
-        if (updateData.offlineTime === null) {
-          nextState.offlineTime = null;
-          nextState.offlineDate = '';
-          nextState.offlineTimeStr = '23:59';
-          nextState.timeSlotIndex = -1;
+        var nextState = {
+          currentSellingText: text,
+          showAddSellingItemModal: false,
+          offlineDate: finalDate || '',
+          offlineTimeStr: finalTimeStr || '23:59',
+          offlineTime: finalOfflineTime,
+          timeSlotIndex: finalDate ? finalSlotIdx : -1
+        };
+        if (!finalOfflineTime) {
           nextState.remainingTimeStr = '';
         }
         self.setData(nextState); self.syncSellingArrays(updated);
+        if (typeof self.startCountdownTimer === 'function') self.startCountdownTimer();
         wx.showToast({ title: '已上架: ' + item.name, icon: 'success' });
       }).catch(function(err) {
         wx.hideLoading();
@@ -1014,9 +1067,17 @@ Page({
     }
   },
   openSellingModal: function() {
-    this.setData({ showSellingModal: true })
+    var updates = { showSellingModal: true, todayDate: getTodayDateStr() }
+    if (!this._manualOfflineTimeModified) {
+      var autoState = this._getAutoOfflineState()
+      updates.offlineDate = autoState.offlineDate
+      updates.timeSlotIndex = autoState.timeSlotIndex
+      updates.offlineTimeStr = autoState.offlineTimeStr
+    }
+    this.setData(updates)
   },
   closeSellingModal: function() {
+    this._manualOfflineTimeModified = false
     this.setData({ showSellingModal: false })
   },
   onSellingInput: function(e) {
@@ -1061,7 +1122,8 @@ Page({
     if (self.data.offlineDate) {
       var timeStr = self.data.offlineTimeStr || '23:59'
       var dateStr = self.data.offlineDate.replace(/-/g, '/')
-      offlineTime = new Date(dateStr + ' ' + timeStr + ':00').getTime()
+      var timeForParse = timeStr === '23:59' ? '23:59:59' : (timeStr + ':00')
+      offlineTime = new Date(dateStr + ' ' + timeForParse).getTime()
     }
     
     var data = {
@@ -1110,6 +1172,7 @@ Page({
         nextState.customItems = customItemsText
         nextState.useCustom = true
       }
+      self._manualOfflineTimeModified = false
       self.setData(nextState); self.syncSellingArrays(parsed)
       self.markNewItems()
       if (typeof self.startCountdownTimer === 'function') self.startCountdownTimer()
@@ -1163,7 +1226,8 @@ Page({
     if (self.data.offlineDate) {
       var timeStr = self.data.offlineTimeStr || '23:59'
       var dateStr = self.data.offlineDate.replace(/-/g, '/')
-      offlineTime = new Date(dateStr + ' ' + timeStr + ':00').getTime()
+      var timeForParse = timeStr === '23:59' ? '23:59:59' : (timeStr + ':00')
+      offlineTime = new Date(dateStr + ' ' + timeForParse).getTime()
     }
 
     var data = {
@@ -1211,8 +1275,10 @@ Page({
         nextState.customItems = customItemsText
         nextState.useCustom = true
       }
+      self._manualOfflineTimeModified = false
       self.setData(nextState); self.syncSellingArrays(parsed)
       self.markNewItems()
+      if (typeof self.startCountdownTimer === 'function') self.startCountdownTimer()
       wx.showToast({ title: '已更新，未推送通知', icon: 'success' })
     }).catch(function() {
       self.setData({ sellingSubmitting: false })
@@ -1226,14 +1292,38 @@ Page({
     if (currentSelling[index]) {
       currentSelling[index]._offlineDate = e.detail.value;
       currentSelling[index].offlineDate = e.detail.value;
-      if (!currentSelling[index]._offlineTimeStr) {
-        currentSelling[index]._offlineTimeStr = '23:59';
-        currentSelling[index].offlineTimeStr = '23:59';
+      if (!currentSelling[index]._offlineTimeStr || currentSelling[index]._timeSlotIndex === -1 || currentSelling[index]._timeSlotIndex === undefined) {
+        var autoSlot = getCurrentTimeSlotIndex();
+        var autoTime = TIME_SLOT_ENDS[autoSlot] || '23:59';
+        currentSelling[index]._offlineTimeStr = autoTime;
+        currentSelling[index].offlineTimeStr = autoTime;
+        currentSelling[index]._timeSlotIndex = autoSlot;
+      } else {
+        currentSelling[index]._timeSlotIndex = recognizeTimeSlotIndex(currentSelling[index]._offlineTimeStr || '23:59');
       }
-      currentSelling[index]._timeSlotIndex = recognizeTimeSlotIndex(currentSelling[index]._offlineTimeStr || '23:59');
       var text = serializeItems(currentSelling);
       this.setData({ currentSelling: currentSelling, currentSellingText: text });
       if(typeof self !== 'undefined') self.syncSellingArrays(currentSelling); else this.syncSellingArrays(currentSelling);
+    }
+  },
+  onItemTimeSlotChange: function(e) {
+    var index = e.currentTarget.dataset.index;
+    var slotIdx = parseInt(e.detail.value, 10);
+    if (isNaN(slotIdx) || slotIdx < 0 || slotIdx >= TIME_SLOT_ENDS.length) slotIdx = getCurrentTimeSlotIndex();
+    var timeStr = TIME_SLOT_ENDS[slotIdx] || '23:59';
+    var currentSelling = this.data.currentSelling.slice();
+    if (currentSelling[index]) {
+      if (!currentSelling[index]._offlineDate) {
+        var today = getTodayDateStr();
+        currentSelling[index]._offlineDate = today;
+        currentSelling[index].offlineDate = today;
+      }
+      currentSelling[index]._timeSlotIndex = slotIdx;
+      currentSelling[index]._offlineTimeStr = timeStr;
+      currentSelling[index].offlineTimeStr = timeStr;
+      var text = serializeItems(currentSelling);
+      this.setData({ currentSelling: currentSelling, currentSellingText: text });
+      this.syncSellingArrays(currentSelling);
     }
   },
   onItemTimeChange: function(e) {
@@ -1264,14 +1354,24 @@ Page({
     }
   },
   onCurrentOfflineDateChange: function(e) {
-    this.setData({ offlineDate: e.detail.value });
+    var updates = { offlineDate: e.detail.value };
+    if (this.data.timeSlotIndex === -1) {
+      var autoSlot = getCurrentTimeSlotIndex();
+      updates.timeSlotIndex = autoSlot;
+      updates.offlineTimeStr = TIME_SLOT_ENDS[autoSlot] || '23:59';
+    }
+    this.setData(updates);
   },
   onCurrentTimeSlotChange: function(e) {
-    var index = parseInt(e.detail.value);
-    this.setData({
+    var index = parseInt(e.detail.value, 10);
+    var updates = {
       timeSlotIndex: index,
       offlineTimeStr: TIME_SLOT_ENDS[index] || '23:59'
-    });
+    };
+    if (!this.data.offlineDate) {
+      updates.offlineDate = getTodayDateStr();
+    }
+    this.setData(updates);
   },
   clearCurrentOfflineDate: function() {
     this.setData({
@@ -1285,22 +1385,36 @@ Page({
     var allItems = this.data.currentSelling || [];
     var item = allItems[rawIndex];
     if (!item) return;
-    var tsi = -1;
-    if (item.offlineDate) {
-      tsi = recognizeTimeSlotIndex(item.offlineTimeStr || '23:59');
-      if (tsi === -1) tsi = 3;
-    }
+    this._savedUnifiedOfflineState = {
+      offlineDate: this.data.offlineDate,
+      offlineTimeStr: this.data.offlineTimeStr,
+      timeSlotIndex: this.data.timeSlotIndex
+    };
+    var today = getTodayDateStr();
+    var autoSlot = getCurrentTimeSlotIndex();
+    var targetDate = item.offlineDate || today;
+    var tsi = item.offlineDate ? recognizeTimeSlotIndex(item.offlineTimeStr || '23:59') : autoSlot;
+    if (tsi === -1) tsi = autoSlot;
+    var targetTimeStr = item.offlineDate ? (item.offlineTimeStr || TIME_SLOT_ENDS[tsi] || '23:59') : (TIME_SLOT_ENDS[tsi] || '23:59');
     this.setData({
+      todayDate: today,
       showIndividualOfflineModal: true,
       currentOfflineItem: item,
       currentOfflineIndex: rawIndex,
-      offlineDate: item.offlineDate || '',
-      offlineTimeStr: item.offlineTimeStr || '23:59',
+      offlineDate: targetDate,
+      offlineTimeStr: targetTimeStr,
       timeSlotIndex: tsi
     });
   },
   closeIndividualOfflineModal: function() {
-    this.setData({ showIndividualOfflineModal: false });
+    var updates = { showIndividualOfflineModal: false };
+    if (this._savedUnifiedOfflineState) {
+      updates.offlineDate = this._savedUnifiedOfflineState.offlineDate;
+      updates.offlineTimeStr = this._savedUnifiedOfflineState.offlineTimeStr;
+      updates.timeSlotIndex = this._savedUnifiedOfflineState.timeSlotIndex;
+      this._savedUnifiedOfflineState = null;
+    }
+    this.setData(updates);
   },
   setIndividualOffline: function() {
     var self = this;
@@ -1318,6 +1432,7 @@ Page({
       }
     }
     
+    var savedUnified = self._savedUnifiedOfflineState;
     if (targetIndex !== -1) {
       currentSelling[targetIndex]._offlineDate = self.data.offlineDate || '';
       currentSelling[targetIndex]._offlineTimeStr = self.data.offlineTimeStr || '23:59';
@@ -1331,11 +1446,18 @@ Page({
         data: { currentSelling: text, showCountdown: text !== '', updateTime: db.serverDate() }
       }).then(function() {
         wx.hideLoading();
-        self.setData({ 
+        var nextUpdates = { 
           currentSelling: currentSelling, 
           currentSellingText: text,
           showIndividualOfflineModal: false
-        });
+        };
+        if (savedUnified) {
+          nextUpdates.offlineDate = savedUnified.offlineDate;
+          nextUpdates.offlineTimeStr = savedUnified.offlineTimeStr;
+          nextUpdates.timeSlotIndex = savedUnified.timeSlotIndex;
+          self._savedUnifiedOfflineState = null;
+        }
+        self.setData(nextUpdates);
         self.syncSellingArrays(currentSelling);
         self.startCountdownTimer();
         wx.showToast({ title: '设置成功', icon: 'success' });
@@ -1344,28 +1466,42 @@ Page({
         wx.showToast({ title: '设置失败', icon: 'none' });
       });
     } else {
-      self.setData({ showIndividualOfflineModal: false });
+      self.closeIndividualOfflineModal();
       wx.showToast({ title: '找不到商品', icon: 'none' });
     }
   },
 
   onOfflineDateChange: function(e) {
-    this.setData({ offlineDate: e.detail.value })
+    this._manualOfflineTimeModified = true
+    var updates = { offlineDate: e.detail.value }
+    if (this.data.timeSlotIndex === -1) {
+      var autoSlot = getCurrentTimeSlotIndex()
+      updates.timeSlotIndex = autoSlot
+      updates.offlineTimeStr = TIME_SLOT_ENDS[autoSlot] || '23:59'
+    }
+    this.setData(updates)
   },
   onOfflineTimeChange: function(e) {
+    this._manualOfflineTimeModified = true
     this.setData({ offlineTimeStr: e.detail.value })
   },
   onTimeSlotChange: function(e) {
-    var index = parseInt(e.detail.value)
-    this.setData({
+    this._manualOfflineTimeModified = true
+    var index = parseInt(e.detail.value, 10)
+    var updates = {
       timeSlotIndex: index,
       offlineTimeStr: TIME_SLOT_ENDS[index] || '23:59'
-    })
+    }
+    if (!this.data.offlineDate) {
+      updates.offlineDate = getTodayDateStr()
+    }
+    this.setData(updates)
   },
   onLimitCountInput: function(e) {
     this.setData({ limitCount: e.detail.value })
   },
   clearOfflineDate: function() {
+    this._manualOfflineTimeModified = true
     this.setData({ offlineDate: '', offlineTimeStr: '23:59', timeSlotIndex: -1 })
   },
   onSellingItemImageUrlInput: function(e) {

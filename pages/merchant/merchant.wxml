@@ -410,14 +410,14 @@
                     </picker>
                   </view>
                 </view>
-                <!-- 行4：单品下架时间 (仅选择日期后显示) -->
+                <!-- 行4：单品下架时段 (仅选择日期后显示) -->
                 <view class="selling-edit-card-actions" style="margin-top: 12rpx;" wx:if="{{item._offlineDate}}">
-                  <text style="font-size: 24rpx; color: rgba(255,255,255,0.6); width: 120rpx; flex-shrink: 0; white-space: nowrap;">具体时间</text>
+                  <text style="font-size: 24rpx; color: rgba(255,255,255,0.6); width: 120rpx; flex-shrink: 0; white-space: nowrap;">预设时段</text>
                   <view style="flex: 1; min-width: 0;">
-                    <picker mode="time" value="{{item._offlineTimeStr === '23:59' ? '23:59' : (item._offlineTimeStr || '23:59')}}" bindchange="onItemTimeChange" data-index="{{index}}" disabled="{{!item._offlineDate}}">
+                    <picker mode="selector" range="{{timeSlotLabels}}" value="{{item._timeSlotIndex !== -1 && item._timeSlotIndex !== undefined ? item._timeSlotIndex : 0}}" bindchange="onItemTimeSlotChange" data-index="{{index}}" disabled="{{!item._offlineDate}}">
                       <view class="picker-value mini" style="padding: 0 16rpx; display: flex; justify-content: space-between; align-items: center;">
-                        <text style="flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item._offlineTimeStr || '选择具体时间'}}</text>
-                        <text class="picker-arrow" wx:if="{{item._offlineDate && !item._offlineTimeStr}}">▼</text>
+                        <text style="flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item._timeSlotIndex !== -1 && item._timeSlotIndex !== undefined ? timeSlotLabels[item._timeSlotIndex] : '选择时间段'}}</text>
+                        <text class="picker-arrow">▼</text>
                       </view>
                     </picker>
                   </view>
@@ -515,6 +515,23 @@
         </view>
       </view>
       <view class="modal-footer">
+        <view class="selling-edit-card-actions" style="width: 100%; margin-bottom: 12rpx;" wx:if="{{selectedCountForModal > 0}}">
+          <text style="font-size: 24rpx; color: rgba(255,255,255,0.6); width: 160rpx; flex-shrink: 0; white-space: nowrap;">上架时段</text>
+          <view style="flex: 1; display: grid; grid-template-columns: 1.1fr 1.3fr; gap: 12rpx; min-width: 0;">
+            <picker mode="date" value="{{offlineDate || todayDate}}" start="{{todayDate}}" bindchange="onOfflineDateChange">
+              <view class="picker-value mini" style="padding: 0 14rpx; display: flex; justify-content: space-between; align-items: center;">
+                <text style="font-size: 24rpx; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{offlineDate || todayDate}}</text>
+                <text class="picker-arrow" style="font-size: 20rpx;">▾</text>
+              </view>
+            </picker>
+            <picker mode="selector" range="{{timeSlotLabels}}" value="{{timeSlotIndex !== -1 ? timeSlotIndex : 0}}" bindchange="onTimeSlotChange">
+              <view class="picker-value mini" style="padding: 0 14rpx; display: flex; justify-content: space-between; align-items: center;">
+                <text style="font-size: 24rpx; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{timeSlotIndex !== -1 ? timeSlotLabels[timeSlotIndex] : timeSlotLabels[0]}}</text>
+                <text class="picker-arrow" style="font-size: 20rpx;">▾</text>
+              </view>
+            </picker>
+          </view>
+        </view>
         <view class="selling-edit-card-actions" style="width: 100%; margin-bottom: 12rpx;" wx:if="{{selectedCountForModal > 0}}">
           <text style="font-size: 24rpx; color: rgba(255,255,255,0.6); width: 160rpx; flex-shrink: 0; white-space: nowrap;">预设限售数量</text>
           <input class="modal-input mini" type="number" placeholder="留空用商品库预设/不限" value="{{batchLimitCount}}" bindinput="onBatchLimitInput" style="flex: 1;" />
